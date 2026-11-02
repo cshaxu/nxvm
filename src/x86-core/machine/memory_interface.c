@@ -134,6 +134,39 @@ lib_status x86_core_machine_install_memory_device_routes(x86_core_machine *machi
     return status;
 }
 
+lib_status x86_core_machine_set_memory_device_range(x86_core_machine *machine,
+    const void *owner, lib_u32 physical_start, lib_size bytes)
+{
+    x86_core_machine_memory_device_provider *selected = LIB_NULL;
+    lib_u32 old_start;
+    lib_size old_bytes;
+
+    if (machine == LIB_NULL || owner == LIB_NULL ||
+        (lib_u64)bytes > (lib_u64)LIB_UINT32_MAX + 1u - physical_start)
+        return LIB_STATUS_INVALID_ARGUMENT;
+    for (lib_size index = 0u; index < machine->executor_memory.connect.device_provider_count; ++index) {
+        x86_core_machine_memory_device_provider *provider =
+            &machine->executor_memory.connect.device_providers[index];
+        if (provider->owner != owner) continue;
+        if (selected != LIB_NULL || !provider->overlay || provider->raw_decode)
+            return LIB_STATUS_INVALID_STATE;
+        selected = provider;
+    }
+    if (selected == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    if (bytes == 0u) physical_start = 0u;
+    if (selected->physical_start == physical_start && selected->bytes == bytes)
+        return LIB_STATUS_OK;
+    old_start = selected->physical_start;
+    old_bytes = selected->bytes;
+    selected->physical_start = physical_start;
+    selected->bytes = bytes;
+    if (old_bytes != 0u)
+        x86_core_machine_signal_memory_decode_change(machine, old_start, old_bytes);
+    if (bytes != 0u)
+        x86_core_machine_signal_memory_decode_change(machine, physical_start, bytes);
+    return LIB_STATUS_OK;
+}
+
 lib_status x86_core_machine_set_memory_instruction_read(x86_core_machine *machine,
     const void *owner, x86_core_machine_memory_device_instruction_read read)
 {

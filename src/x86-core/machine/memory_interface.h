@@ -131,6 +131,10 @@ lib_status x86_core_machine_install_memory_device_routes(x86_core_machine *machi
     const x86_core_machine_memory_device_route *routes, lib_size count,
     x86_core_machine_memory_write_observer observer,
     const x86_core_machine_memory_parity_config *parity, void *owner);
+/* Owning execution thread: move or disable an owner's single non-raw overlay
+ * route. Zero bytes disables it; old and new CPU memory views are invalidated. */
+lib_status x86_core_machine_set_memory_device_range(x86_core_machine *machine,
+    const void *owner, lib_u32 physical_start, lib_size bytes);
 lib_status x86_core_machine_remove_memory_device_routes(x86_core_machine *machine,
     const void *owner);
 /* Select an optional immutable executable source for all routes owned by this

@@ -2,6 +2,7 @@
 #include "lib/types/file.h"
 
 #include "x86-core/machine/machine_interface.h"
+#include "x86-core/machine/debug_interface.h"
 #include "x86-core/machine/machine.h"
 
 static lib_status overlay_read(void *opaque, lib_u32 physical,
@@ -768,6 +769,143 @@ static lib_i32 registration_provider_cache_contract(void)
     return failed;
 }
 
+typedef struct movable_range_fixture {
+    lib_u8 value;
+    lib_u32 reads;
+} movable_range_fixture;
+
+static lib_status range_read(void *owner, lib_u32 physical, lib_uptr destination,
+    lib_uptr bytes, lib_bool observe_only)
+{
+    movable_range_fixture *fixture = owner;
+    (void)physical;
+    if (owner == LIB_NULL || destination == 0u || bytes == 0u)
+        return LIB_STATUS_INVALID_ARGUMENT;
+    if (!observe_only) ++fixture->reads;
+    lib_memory_set((void *)destination, fixture->value, bytes);
+    return LIB_STATUS_OK;
+}
+
+static lib_status range_write(void *owner, lib_u32 physical, lib_uptr source,
+    lib_uptr bytes)
+{
+    movable_range_fixture *fixture = owner;
+    (void)physical;
+    if (fixture == LIB_NULL || source == 0u || bytes != 1u)
+        return LIB_STATUS_INVALID_ARGUMENT;
+    fixture->value = *(const lib_u8 *)source;
+    return LIB_STATUS_OK;
+}
+
+static lib_status range_query(void *owner, lib_u32 physical, lib_uptr bytes,
+    x86_core_machine_memory_access access)
+{
+    (void)physical;
+    (void)access;
+    return owner != LIB_NULL && bytes != 0u ? LIB_STATUS_OK : LIB_STATUS_INVALID_ARGUMENT;
+}
+
+static lib_bool range_cache_probe(void *owner, lib_u32 physical, lib_size bytes)
+{
+    return owner != LIB_NULL && (physical & 15u) == 0u && bytes == 16u;
+}
+
+static lib_bool range_cpu_read(x86_core_machine *machine, lib_u32 eip,
+    lib_u32 steps, lib_u8 expected)
+{
+    const x86_core_cpu_debug_register_patch entry = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP),
+        .values = {[X86_CORE_CPU_DEBUG_CS] = 0u, [X86_CORE_CPU_DEBUG_EIP] = eip}};
+    x86_core_machine_run_result result = {0};
+    lib_u32 eax;
+    if (x86_core_machine_debug_patch_registers(machine, &entry) != LIB_STATUS_OK)
+        return LIB_FALSE;
+    for (lib_u32 i = 0u; i < steps; ++i)
+        if (x86_core_machine_debug_step(machine, &result) != LIB_STATUS_OK ||
+            result.executed != 1u) return LIB_FALSE;
+    return x86_core_machine_debug_read_register(machine, X86_CORE_CPU_DEBUG_EAX, &eax) ==
+        LIB_STATUS_OK && (eax & 0xffu) == expected;
+}
+
+static lib_i32 movable_range_contract(void)
+{
+    const x86_core_machine_executor_config config = {
+        .memory_bytes = 2u * 1024u * 1024u, .cpu_profile = X86_CORE_CPU_PROFILE_80486SX};
+    const x86_core_cpu_debug_register_patch cr0 = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CR0),
+        .values = {[X86_CORE_CPU_DEBUG_CR0] = 0x10u}};
+    const x86_core_machine_memory_device_route provider = {
+        0x9000u, 16u, {range_read, range_write, range_query},
+        X86_CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT, LIB_NULL};
+    const lib_u8 code[] = {0xb8u, 0u, 0u, 0x8eu, 0xd8u, 0xa0u, 0u, 0x20u};
+    const lib_u8 ram = 0x42u;
+    const lib_u8 device_write = 0x66u;
+    movable_range_fixture overlay = {.value = 0x3cu};
+    lib_u8 value = 0u;
+    lib_u32 reads = 0u;
+    lib_bool fill = LIB_FALSE;
+    lib_u32 decoded = 0u;
+    x86_core_machine *machine = LIB_NULL;
+    lib_i32 failed = x86_core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK;
+    if (!failed) failed |= x86_core_machine_install_memory_device_routes(machine, &provider,
+        1u, LIB_NULL, LIB_NULL, &overlay) != LIB_STATUS_OK ||
+        x86_core_machine_set_memory_cache_probe(machine, &overlay, range_cache_probe) != LIB_STATUS_OK ||
+        x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+        x86_core_machine_reset(machine) != LIB_STATUS_OK ||
+        x86_core_machine_memory_write(machine, 0x1000u, code, sizeof(code)) != LIB_STATUS_OK ||
+        x86_core_machine_memory_write(machine, 0x2000u, &ram, 1u) != LIB_STATUS_OK ||
+        x86_core_machine_set_memory_device_range(machine, &overlay, 0u, 0u) != LIB_STATUS_OK ||
+        x86_core_machine_memory_query_cpu_cache(&machine->executor_memory, 0x2000u,
+            LIB_FALSE, LIB_TRUE, &decoded, &fill) != LIB_STATUS_OK || !fill ||
+        x86_core_machine_debug_patch_registers(machine, &cr0) != LIB_STATUS_OK ||
+        !range_cpu_read(machine, 0x1000u, 3u, ram) ||
+        x86_core_machine_set_memory_device_range(machine, &overlay, 0x2000u, 16u) != LIB_STATUS_OK ||
+        !range_cpu_read(machine, 0x1005u, 1u, overlay.value) || overlay.reads == 0u;
+    reads = overlay.reads;
+    if (!failed) failed |= !range_cpu_read(machine, 0x1005u, 1u, overlay.value) ||
+        overlay.reads != reads ||
+        x86_core_machine_memory_write(machine, 0x2000u, &device_write, 1u) != LIB_STATUS_OK ||
+        overlay.value != device_write || !range_cpu_read(machine, 0x1005u, 1u, device_write);
+    reads = overlay.reads;
+    if (!failed) failed |= !range_cpu_read(machine, 0x1005u, 1u, device_write) ||
+        overlay.reads != reads ||
+        x86_core_machine_set_memory_device_range(machine, &overlay, 0x3000u, 16u) != LIB_STATUS_OK ||
+        !range_cpu_read(machine, 0x1005u, 1u, ram) ||
+        x86_core_machine_memory_read(machine, 0x3000u, &value, 1u) != LIB_STATUS_OK ||
+        value != overlay.value ||
+        x86_core_machine_set_memory_device_range(machine, &overlay, LIB_UINT32_MAX, 2u) !=
+            LIB_STATUS_INVALID_ARGUMENT ||
+        x86_core_machine_set_memory_device_range(machine, &ram, 0u, 0u) !=
+            LIB_STATUS_INVALID_ARGUMENT ||
+        x86_core_machine_set_memory_device_range(machine, &overlay, 0u, 0u) != LIB_STATUS_OK ||
+        x86_core_machine_memory_read(machine, 0x3000u, &value, 1u) != LIB_STATUS_OK || value != 0u;
+    x86_core_machine_destroy(machine);
+    return failed;
+}
+
+static lib_i32 ambiguous_range_contract(void)
+{
+    const x86_core_machine_executor_config config = {
+        .memory_bytes = 65536u, .cpu_profile = X86_CORE_CPU_PROFILE_80386};
+    const x86_core_machine_memory_device_route routes[] = {
+        {0x8000u, 1u, {overlay_read, overlay_write, overlay_query},
+            X86_CORE_MACHINE_MEMORY_PROVIDER_OVERLAY, LIB_NULL},
+        {0x9000u, 1u, {overlay_read, overlay_write, overlay_query},
+            X86_CORE_MACHINE_MEMORY_PROVIDER_OVERLAY, LIB_NULL}};
+    x86_core_machine *machine = LIB_NULL;
+    lib_u8 owner = 0x3cu;
+    lib_i32 failed = x86_core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK;
+    if (!failed) failed |= x86_core_machine_install_memory_device_routes(machine, routes,
+            2u, LIB_NULL, LIB_NULL, &owner) != LIB_STATUS_OK ||
+        x86_core_machine_set_memory_device_range(machine, &owner, 0x3000u, 1u) !=
+            LIB_STATUS_INVALID_STATE ||
+        machine->executor_memory.connect.device_providers[0].physical_start != 0x8000u ||
+        machine->executor_memory.connect.device_providers[1].physical_start != 0x9000u;
+    x86_core_machine_destroy(machine);
+    return failed;
+}
+
 lib_i32 main(void)
 {
     const x86_core_machine_executor_config config = {
@@ -792,7 +930,7 @@ lib_i32 main(void)
         registration_matching_capacity() ||
         registration_standard_transaction() ||
         registration_failure_observer_contract() || instruction_read_contract() ||
-        cpu_overlay_contract();
+        cpu_overlay_contract() || movable_range_contract() || ambiguous_range_contract();
 
     for (lib_u32 mode = 0u; mode < 5u; ++mode)
         failed |= registration_atomicity(mode);
