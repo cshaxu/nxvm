@@ -1,4 +1,31 @@
-# M5 T583 S6 — Active: isolated real-product first-setup observation
+# M5 T583 S7 — Active: Setup date acceptance and restart
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T583 S7 after S6 product-path evidence. |
+| Admission And Approval | Owner requested completion of the four PC110 receivers and automatic sequential execution. |
+| Objective | Verify a deliberate valid firmware date edit, acceptance and retention through normal product exit and independent restart. |
+| Non-goals | No Shared changes, owner-media writes, fabricated CMOS, blind input or acceptance claims without guest evidence. |
+| Reference Baseline | 093ca6863 and the T583 coverage ledger; S6 established real EXE Setup and DOS on both widths and variants. |
+| Candidate Proposal | [T583 coverage ledger](../etc/evidence/t583-first-setup-ledger.md). |
+| Files And ABI Surface | Task-owned native observer and NXVM evidence initially; no public API or production changes. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding, UI and source policy. |
+| Verification | Inspect firmware controls and guest observations, enter a valid date in an isolated task environment, verify acceptance, normal shutdown and retained value in a new process; complete repository units and document gate. |
+| Expected Markers | Observed edited date, successful guest acceptance, retained CMOS and independent restart evidence. |
+| Asset Needs | Private media and existing EXEs; preserve owner files. |
+| Reporting Requirements | Separate observed and unverified date, RTC, product and native boundaries. |
+| Stop Conditions | No user-desktop focus theft or fabricated guest configuration. |
+| Exit Criteria | Reviewed direct evidence for the scoped date path or an accurately documented remaining boundary. |
+| Original Owner Request | Complete the four queued PC110 tasks. |
+| Similar-Issue Sweep | Compare both firmware variants and widths without treating one observation as all four. |
+
+# M5 T583 S6 — Closed: isolated real-product first-setup observation
+
+Both actual EXEs and both display variants reached first Setup and DOS, saved
+guest CMOS through normal exit, and reached DOS on a new process without Setup
+input. Native Window messages were sent only on isolated desktops. Deliberate
+date acceptance, actual-product zero-filled TFT CMOS, and interactive RDP remain
+open; the x64 repository unit suite passed 712/712.
 
 | Field | Required record |
 | --- | --- |
@@ -15,7 +42,7 @@
 | Asset Needs | Existing firmware and private copies of guest media; preserve all owner files. |
 | Reporting Requirements | Native desktop versus hidden observation, host errors, process results, input/frame identities, coverage and exact remaining receivers. |
 | Stop Conditions | No foreground window or desktop switch, no blind setup input, no unsafe state fabrication, and no unsupported native coverage claim. |
-| Exit Criteria | Real product first-setup path observed or isolated native observation boundary accurately diagnosed; retain every unverified variant and host width. |
+| Exit Criteria | Reviewed 093ca6863: first Setup, DOS, normal save and saved-state restart observed for both variants and both host widths; remaining date and native TFT boundaries retained for subsequent work. |
 | Original Owner Request | Complete the four queued PC110 tasks without foreground long-running processes. |
 | Similar-Issue Sweep | Compare DSTN/TFT, x64/x86, first/retained CMOS and actual entry versus Machine-only probes. |
 
