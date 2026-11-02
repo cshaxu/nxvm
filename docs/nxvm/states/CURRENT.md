@@ -1,5 +1,25 @@
 # M5 T582 S39 — Active: execution and timing architecture convergence
 
+### Masked-span candidate withdrawn; crossing defect open
+
+A generic masked-span candidate reduced isolated query work but did not
+establish a PC110 improvement. Its testing exposed an existing cross-mask
+multi-byte routing defect in ordinary RAM and provider-decline paths. A
+partial correction did not cover both, so the candidate and its task-owned
+artifacts were withdrawn. The existing committed implementation remains.
+Further design must preserve provider errors, partial writes, parity and
+observers without creating a second routing owner. The usability objective
+remains open; see S39 evidence.
+
+### Approximate timing investigation
+
+The owner asked whether Turbo could use L1 timing. A temporary fixed-tick
+selector removed detailed timing and observation and shortened one x64 private
+PC110 menu-marker run, but changed guest time and returned an incomplete
+response frame. It is an experiment, not a qualified L1 model or an approved
+production precision downgrade. The existing Turbo and timing semantics are
+unchanged. See S39 evidence for the adjacent baseline and limits.
+
 ### External wait-window scan upper bound not adopted
 
 A task-only ablation of the existing wait-window search at the middle startup

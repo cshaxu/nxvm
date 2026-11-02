@@ -1,5 +1,113 @@
 # T582 S39 — execution and timing convergence
 
+## Owner-requested approximate timing upper bound
+
+The existing Turbo runner changes the instruction quantum and wall-clock
+pacing; it still retires instructions and advances devices on the existing
+guest-time axis. L1 is an evidence/accuracy grade, not an existing switch or
+a specific per-instruction formula. To investigate the owner's question, a
+task-only CPU replacement discarded the existing timing selector and its
+metadata and returned a constant four ticks per ordinary instruction, while
+leaving other CPU and Machine code in place. This is deliberately incomplete:
+it is not a correct proposed Turbo implementation, changes guest-visible
+timing and observation, and was not installed in any product.
+
+In a synthetic CPU-only two-million-instruction NOP/JMP loop, the 486SX
+baseline/constant/constant/baseline took 828/266/274/646 ms x64 and
+1,312/486/498/991 ms x86. Both variants ended at the same PC, but their timing
+metadata differed; other profiles also execute this generic probe. The samples
+show potential for reducing selector work in this synthetic loop, not a
+whole-Machine bound or hardware equivalence.
+
+On private PC110 media at ten million retired instructions, baseline versus
+constant-four timing was 16,942/14,533 ms x64 and 22,493/17,725 ms x86.
+Baseline ended at 79,964,294 ticks and PC `0003dbc5`; the constant-four run
+ended at 40,832,154 ticks and PC `000fdd4f`. With constant eight ticks the
+single runs were 14,823 ms x64 and 20,046 ms x86, at 81,943,132 ticks and
+PC `000fea86`. These are different guest states and one ordered run per
+variant, so durations are not equal-work speedup measurements.
+
+A single private-media x64 constant-eight product-path experiment reached the
+two-pixel Personaware menu marker at sample 104 and its response-frame marker
+after 6 seconds, exiting zero in 113.14 seconds. The earlier current-source
+sample reached those markers at 176 and 8 seconds, but the runs were not
+adjacent and used different guest timing. Visual inspection of the candidate's
+response capture showed an incompletely drawn World Clock overlay, without
+the time fields. This is promising evidence for further design, not proof of
+complete startup/interaction, correct device timing, x86 performance, RDP
+usability or an approved precision downgrade. Neither a timing mode nor any
+other production interface or artifact was changed by these experiments.
+
+An adjacent subsequent production-timing run used the same guest probe,
+private-input seed and current cached libraries, differing in the timing
+selector. It reached the menu marker at sample 189 and the response marker at
+8 seconds, exiting zero in 201.41 seconds; its final RTC read 21 seconds. The
+candidate-first 104/6 and baseline 189/8 observations suggest a materially
+shorter startup marker, but are only one ordered pair. The candidate response
+frame is visibly less complete than the baseline response frame, so 6 versus
+8 seconds is not a same-completion comparison. Guest PC and virtual time also
+differ. No equivalence, precise improvement or RDP claim follows. Baseline
+summary, guest log and response-frame SHA-256 respectively:
+`6D017B961BA6E6522A0280622B3151D70D1504BFA79451F7AB8DCFF84935A628`,
+`50CE8AEB5E4543FD747B27E6B01E3E26067656DA7B39CBB4B81E158E330033D6`,
+`420944B8AB383B63DE244FE6BD4D5FA0149CF4551DC90997E53681819B56F283`.
+
+CPU-only, fixed-product four-tick, fixed-product eight-tick, boot summary,
+guest log and intermediate frame SHA-256 respectively:
+`66A5C2DE9AADB88F30BABE77CD92A1D7996BF4D9347516E405AB5B278AD05FC4`,
+`E445F7E83B2BD21A01C9BF411B1EE96ACF6DF4C2C3BE78D3716AAB266B210DE9`,
+`E329CF6EEDE30B5E101A4D562FD94BA8C4ADD34D8F8397330D2F5FADE379198F`,
+`7CEBB3286D5E1717BABEF3F88503079D2471B4A3E2E7B023A323C17D6C84420D`,
+`5BDF01AB585C9F8AC7C1FC1343783A0A161D40FF089ECB484E3E5EBE2C3FAF85`,
+`893558D4851CFD75F5B728AA4FA15A2A0367F6B3C2058043665A951D036288BD`.
+
+## Masked-span candidate and existing crossing defect
+
+A task-only candidate admitted a span within one aligned 16-byte block when
+no bit potentially present in that block was cleared by the active address
+mask. A seeded mathematical check of 500,000 inputs accepted 38,790 and
+found no changed decoded byte. A separately compiled predicate checked
+500,000 cases per host width, accepted 38,741 and found no mismatch. An
+isolated two-million-call masked RAM cache-query comparison measured
+baseline/candidate 307/18 ms x64 and 375/12 ms x86; with masking disabled,
+20 million calls measured baseline/candidate/candidate/baseline
+113/132/133/113 ms x64 and 115/123/116/115 ms x86. These are isolated
+measurements, not evidence of a PC110 startup benefit.
+
+A stronger test found that a multi-byte RAM access spanning a cleared address
+bit could read back the written bytes while placing them at the wrong backing
+addresses. The pre-change baseline and the candidate both failed the actual
+placement assertion. A further standalone probe registered a provider whose
+query accepted the whole access but whose operation returned UNSUPPORTED;
+both baseline and candidate returned success while the wrapped low-address
+bytes remained zero rather than 56h,78h. This is a pre-existing generic Core
+memory-routing defect, not evidence that this optimization caused it.
+
+An exploratory correction covered ordinary-RAM discontinuity and preflighted
+bounds, and passed focused tests on both widths, but did not cover the distinct
+provider-decline fallback. Treating that partial correction as a complete fix
+would leave inconsistent routing semantics. The candidate and the task-owned
+binaries generated from it were restored to the committed baseline; no
+production change or new release was retained. The issue remains open for a
+single-owner design covering RAM, provider-decline, aliases, bounds, callback
+errors, partial writes, parity and observers without duplicating routes.
+
+An earlier version of the candidate passed 712/712 unit and 48/48 default
+integration tests per host width, plus profile groups 3/3, 5/5 and 6/6, and
+selected MyRaidenII startup/Console probes. Those results do not qualify the
+later partial correction or the reverted baseline as a new complete test run.
+No full-drawing, RDP or performance acceptance is implied.
+
+Forward, reverse, compiled-predicate/masked-query, unmasked-query, provider-
+decline probe, interim qualification and external probe log SHA-256:
+`8DC421843A91F41CC1A0BBD85323346702998CD9E569F15351F083B790E25CC0`,
+`287A0D7BF941B49A322DA482979415258360C697712022D260CE9864E7886C4D`,
+`8DE777E473A193A1F64F374DFB8CD3F9F7B96065C5DE13FE2562D3BD29B5428E`,
+`64304C30E46A6D0773533260BE35A2AB8EAA4BF18D6D17A0A764F80D02E56DA1`,
+`8D61EFACA323D620800FEE22833DAD723154DAA5081D62BE2945615568685887`,
+`FDF660C8AF223BE17580B9CB77C8F83FEE9F91EA1A8310763AA216A696791237`,
+`967DA35EAB5E644EC43CE85C27514053F9C5755F2BF774CC74AE742ACA119573`.
+
 ## Current response-stage sampling
 
 An x64 task-only product-path probe linked against current cached Release
