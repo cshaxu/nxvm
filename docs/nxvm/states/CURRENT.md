@@ -1,3 +1,24 @@
+# M5 T584 S1 — Active: product interaction evidence and route audit
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New — M5 T584 S1 after T583 closure. |
+| Admission And Approval | Owner directed automatic completion of the first four PC110 queue receivers. |
+| Objective | Audit current desktop, Console, input, lifecycle and Personaware routes against existing evidence; identify and verify the next unproven owner path. |
+| Non-goals | No user-desktop focus theft, user-media writes, fabricated guest results or treating native message injection as human RDP input. |
+| Reference Baseline | 56005541d, T583 real-product observations, T580 S87/S90 and current source/tests. |
+| Candidate Proposal | [Product interaction](../proposals/m5-pc110-product-interaction.md); [T584 history](../history/M5-T584-pc110-product-interaction.md). |
+| Files And ABI Surface | Initially NXVM task evidence and private diagnostics; no public API or Shared change. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding, UI and source policy. |
+| Verification | Inventory source/test/host routes, verify actual prerequisites and run the smallest justified isolated product observation; full repository units and documentation gate before S closure. |
+| Expected Markers | Named routes, real owner checkpoints, precise remaining desktop and RDP boundaries. |
+| Asset Needs | Existing guest firmware and independent media copies; preserve owner files. |
+| Reporting Requirements | Distinguish actual product from machine-only evidence, observed interaction from accepted input, and unavailable environments. |
+| Stop Conditions | No foreground window or desktop switch; no unreviewed Shared modification. |
+| Exit Criteria | Reviewed route inventory and a concrete evidence-based next batch without claiming unavailable manual interaction. |
+| Original Owner Request | Complete the first four PC110 queue tasks. |
+| Similar-Issue Sweep | Compare both display variants, both widths, Window versus Console and normal versus failed teardown. |
+
 # M5 T583 S9 — Closed: x86 Setup date/time and retained restart
 
 Both x86 actual products accepted edited dates and hours and retained them

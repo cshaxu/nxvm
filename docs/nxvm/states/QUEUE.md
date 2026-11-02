@@ -92,7 +92,7 @@ The former first candidate, [PC110: board, chipset and firmware mapping](../hist
 [MyPC110: first-time configuration and restart](../history/M5-T583-pc110-first-setup.md)
 is closed as T583. The remaining candidates retain their requested order:
 
-1. [MyPC110: desktop and interactive product qualification](../proposals/m5-pc110-product-interaction.md)
+1. [MyPC110: desktop and interactive product qualification](../proposals/m5-pc110-product-interaction.md) — admitted as T584; see Current.
 2. [MyPC110: remaining device and model qualification](../proposals/m5-pc110-device-model-qualification.md)
 3. [MyPC110: final product qualification](../proposals/m5-pc110-final-qualification.md)
 4. [MyNeoGeo: Metal Slug 2](../proposals/myneogeo-metal-slug2.md)

@@ -1,8 +1,8 @@
 # Product UX
 
-XT, AT, DeskPro 386, default PC/AT and future PC110 share one NXVM interaction
-model. The fixed-build/INI cutover is complete for the four implemented
-products; this does not claim PC110 delivery.
+XT, AT, DeskPro 386, default PC/AT and PC110 share one NXVM interaction
+model. Each product uses its own executable and adjacent INI; PC110's two
+firmware variants are selected as described below.
 
 ## NXVM
 
@@ -40,14 +40,14 @@ PC110 uses the same monitor, lifecycle, input and debugger. Hardware-specific
 setup belongs to its firmware and documented configuration, not another
 control Console or VDM/DOS-launch interface.
 
-The prepublication PC110 host binding reserves F12 make/break for its virtual
+The PC110 host binding reserves F12 make/break for its virtual
 resume-button level. While the guest has requested firmware suspend, a new
 press wakes that hardware path; it does not resume a monitor-paused machine
 or send F12 to the guest. Other keys and the shared PC hotkeys retain their
 normal meanings. This is an emulator binding, not an original PC110 key map;
-it does not qualify a published PC110 product or a working suspend toggle.
+it does not by itself qualify a working suspend toggle.
 
-The prepublication inking-pad adapter uses host pointer movement to move a
+The inking-pad adapter uses host pointer movement to move a
 bounded virtual pen and the left button for pen contact while the guest has
 enabled the pad. The same pointer events continue to the guest's independent
 PS/2 pointing device. This L2 binding is not a claim of physical pen timing;
