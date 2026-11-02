@@ -82,6 +82,13 @@ lib_status x86_core_machine_clock_domain_source_ticks_until(
         return LIB_STATUS_OK;
     }
     required -= domain->phase;
+    if (required <= LIB_UINT32_MAX) {
+        const lib_u32 narrow = (lib_u32)required;
+        const lib_u32 quotient = narrow / domain->numerator;
+        const lib_u32 remainder = narrow % domain->numerator;
+        *out_source_ticks = (lib_u64)quotient + (remainder != 0u);
+        return *out_source_ticks == 0u ? LIB_STATUS_INVALID_STATE : LIB_STATUS_OK;
+    }
     *out_source_ticks = required / domain->numerator;
     if (required % domain->numerator != 0u) ++*out_source_ticks;
     return *out_source_ticks == 0u ? LIB_STATUS_INVALID_STATE : LIB_STATUS_OK;
