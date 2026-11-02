@@ -85,3 +85,49 @@ input queue event as success. Repeat the same semantic checkpoints on x86
 and the TFT seeded/empty cases after the route is understood. Desktop/native
 input remains with the next queued interaction receiver; this probe does not
 claim that receiver passes.
+
+## S2: independently initialized DSTN interaction in progress
+
+On x64, an isolated fresh-DSTN Product-factory/Machine probe reached the same
+ERROR frame (`b9ea224d…ad9159b96`). After a single Enter make/break was
+accepted through the Emulator input queue, the published frame changed to
+the firmware date/time page (1994-01-01 00:00:00); its PPM SHA-256 was
+`0644016d2ee985038efc43e069a260768de91ac98231a7891a5463ebd45f8edd`.
+A second Enter was accepted, after which the firmware returned to text POST
+and displayed `20096 KB OK`. These observations demonstrate guest response,
+not native Window input or successful persistence. The first probe does not
+invoke the Product's configuration-save callback at teardown; a separate
+isolated round-trip probe must do so after shutdown and unbinding, then start
+a new process using its own saved CMOS. No configured seed was fabricated.
+By sample 87 its published frame showed `Starting PC DOS...`, loaded DOS
+drivers, and the inking-pad calibration prompt. The frame SHA-256 is
+`75a43c909f79609524cbd7a1c1b938ff39023ea28c116c275b52738e4b8f2b29`.
+This proves the first fresh-DSTN x64 guest reached the selected DOS media via
+the Product-factory/Machine path; the independent saved-CMOS restart and
+native product interaction are still open.
+The probe exited normally and both private input disk hashes stayed unchanged;
+its log SHA-256 is
+`d26fdec531bd1472f990b539ebbf9390754679e500ac9bb71bc58418ea2f434c`.
+
+The S2 x64 complete repository unit suite passed 712/712; log SHA-256
+`0c3bf326ce8792df344be74854d79cf32424821e9caa63e418a0bac3a1dbf46e`.
+
+An independent fresh-DSTN x64 repeat matched the ERROR, date and DOS frames
+before sending the next input. It shut down and unbound the Emulator Machine,
+then invoked the same App `save_configuration` callback used by Product
+teardown. The process exited 0 and wrote a 128-byte DSTN CMOS image, SHA-256
+`344bc634dee98f58818f696d1fa7743fd7d0c917e0f9b33d9a84d0a037681628`.
+Both copied media retained their original hashes. This proves the App callback
+can save the guest-produced state in the probe, not yet that a real product
+process automatically performs that teardown. First-run log SHA-256:
+`ce7cd7b4e602ecc701ad8938ba36058221bc8af0f8a5577bbd83140c14415321`.
+
+A separate new x64 process loaded that saved DSTN file and received no Setup
+key events. It reached the identical PC DOS calibration frame, then shut down
+normally through the same probe teardown. Its initial RTC seconds were `20`,
+matching the first process's final `20`; its final seconds were `40`. The
+copied media hashes were unchanged. This directly supports the x64 DSTN
+Product-factory/Machine save-and-restart route; it does not establish the
+native application entry/session teardown, native Window input, other host
+width or TFT cases. Restart log SHA-256:
+`b9bb20105211027316867cc7b9f5238612d331a5e0a1658bde6e4ec420f3da87`.

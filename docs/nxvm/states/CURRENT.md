@@ -1,3 +1,32 @@
+# M5 T583 S2 — Active: derived-DSTN Setup and persistence diagnosis
+
+An independently empty DSTN x64 guest accepted ERROR/date input, restarted
+POST and reached PC DOS. A second fresh run repeated that route, then invoked
+the existing Product save callback after Machine shutdown/unbinding. A new
+process restored that guest-produced CMOS and reached the same DOS frame
+without Setup input. These Product-factory/Machine probes preserve copied
+media but do not qualify native App entry/session teardown or Window input.
+The x64 repository unit suite passed 712/712; see the ledger for hashes.
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T583 S2 after S1 closure 671a93c24. |
+| Admission And Approval | Owner directed completion of the first four queued PC110 tasks and automatic sequential execution. |
+| Objective | Observe actual derived-DSTN first-time Setup input, saving, restart and DOS boot through the existing Product/Machine route, and identify the first unproven or failed boundary. |
+| Non-goals | No fabricated CMOS, firmware mutation, host BIOS interception, user-media writes, Shared changes or desktop qualification claim. |
+| Reference Baseline | 671a93c24; S1 fresh-DSTN ERROR observation and existing T580 S87/S90. |
+| Candidate Proposal | [T583 coverage ledger](../etc/evidence/t583-first-setup-ledger.md), next batch. |
+| Files And ABI Surface | Initially NXVM evidence and task-owned probe only; no production interface or source changes. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding, UI and source policy. |
+| Verification | Use isolated media and absent saved CMOS; identify guest frames before each existing input event, observe save and new-process restart if reached, record outputs and media hashes. Run complete repository unit suite before S closure. |
+| Expected Markers | ERROR 00173/00163, actual Setup response, persisted guest configuration and selected DOS-media checkpoint distinguished from event enqueue and time budgets. |
+| Asset Needs | Existing external firmware and task-owned copies of configured disks only; preserve owner files. |
+| Reporting Requirements | Record screenshots/frame hashes, inputs, guest response, process status, observed boundaries, verification and exact next S. |
+| Stop Conditions | No guest state fabrication, direct writes to user files, speculative key injection or claim of native Window/RDP verification from the probe. |
+| Exit Criteria | Establish a reproducible first actual setup/persistence boundary and evidence-led next step; do not claim all first-setup variants qualified. |
+| Original Owner Request | Complete queued PC110 tasks including independent first setup and restart. |
+| Similar-Issue Sweep | Retain TFT seeded and genuinely empty CMOS, x86, reset/start and separate process restart as open ledger cases. |
+
 # M5 T583 S1 — Closed: PC110 first-configuration inventory
 
 The x64 repository unit suite passed 712/712, and the product CMOS lifecycle
