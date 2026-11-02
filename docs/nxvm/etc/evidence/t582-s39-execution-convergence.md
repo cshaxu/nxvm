@@ -1,5 +1,20 @@
 # T582 S39 — execution and timing convergence
 
+## Repeated 486 string-form classification
+
+A task-only x64 counter recorded calls to the existing string-form classifier
+through the private-media ten-million-instruction startup checkpoint. It
+reported 15816610 classifications for opcode `AB`, versus 5272818 `AB`
+timing results in the separate preceding probe: approximately three per
+instruction. The unmodified clock path reached 79964294 ticks and PC
+`0003dbc5`; instrumentation changes host cost and the counts come from
+separate runs. The classifier supplies the repeat, operand-cache and prefix
+decode calculations. A same-instruction handoff may remove repeated work,
+but must preserve their validation, direct test coverage, and all timing and
+fault observations; it has not yet been implemented or shown to improve
+startup. No production or artifact was changed. Log SHA-256:
+`DF01DA8D47BAA9858E14DB5F02BDD089CF9382D98D1DD77F36D2A8AB9129A6FF`.
+
 ## Dynamic-multiply timing loop frequency
 
 A task-only counter in the existing `ceiling_log2` timing helper recorded 59
