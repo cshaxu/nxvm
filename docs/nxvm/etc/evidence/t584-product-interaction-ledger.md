@@ -56,6 +56,39 @@ Console/RDP paths remain unverified by S1. Diagnose the earlier exit-check
 uncertainty without inferring a product bug. Do not use a Machine-injected
 pointer event as evidence that native Window capture or RDP input worked.
 
+## S3: guest inking calibration through Emulator Machine
+
+The current Product factory and Emulator Machine were exercised on both host
+widths for both display variants with guest-saved CMOS and private overlay
+media. A task-owned observer submitted absolute KVM mouse contact/release
+events through the existing Machine queue only after each guest screen was
+observed. The actual DOS driver progressed through upper-left, upper-right,
+lower-left and lower-right prompts, displayed that calibration data was saved,
+and then reached the Personaware launcher. The four Machine probes exited 0.
+These are actual guest-driver and Machine/IRQ observations, not full App Window
+capture, physical mouse or RDP evidence. A guest save into an overlay is not
+proof that calibration persists after the overlay is discarded.
+
+The shared prompt frames, in order, have PPM SHA-256 values
+`75a43c909f79609524cbd7a1c1b938ff39023ea28c116c275b52738e4b8f2b29`,
+`d73ddfd8d9e847158a1371a1c0753087939d81ff6355cf40d98ea86f7e7e6932`,
+`837aea1a909f3e502e2a0e660e6ee8409ded58f4a1cc24d9336051e9019eef58`, and
+`d1b005bc3fc694de1557dacbc41e0fe064dd755c3b562da4e1fb1bdb7253dded`.
+The saved-calibration text region and launcher region were verified separately
+because cursor and clock pixels vary. A first matrix observer incorrectly
+required the entire saved frame to match; after inspecting the actual saved
+text, its task-owned watcher was corrected to match the stable text region.
+No product code or guest state was altered by that observer correction.
+
+Probe-log SHA-256 values are DSTN x64
+`dc5423805ff55e9e23909fa2e035876056ee74f4a7296b0e7b3b235adf94fcb2`,
+DSTN x86 `b204b849220332620e8497278fc38c10d00398acf4ec0f94589c7946573c822f`,
+TFT x64 `17342073550865eaefe17b630a04fd2a2b0b39785801613846b712d4753a75b3`,
+and TFT x86 `6681c20a5a123fc36c487fcbc110648ba0de219c40af6a2e4dca5445f1a15490`.
+The two private source-disk hashes were unchanged in each case. The x64 full
+repository unit suite passed 712/712; its log SHA-256 is
+`bec5e1d45d55d56c0a72c6541fb64aed30c48a2329266382f5f4b1788412bcaa`.
+
 ## S2 in progress: observer correction and test contention
 
 Both widths and variants reached the actual Personaware World Clock and the
