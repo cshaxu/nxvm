@@ -1,5 +1,31 @@
 # T582 S39 — execution and timing convergence
 
+## Current response-stage sampling
+
+An x64 task-only product-path probe linked against current cached Release
+libraries used private CMOS and media copies. Its one-second frame marker
+reported the Personaware menu at sample 176; after injecting an ordinary
+Enter make/break pair, its frame-change condition fired after 8 seconds. Both
+the probe and sampler exited zero. Visual inspection confirms the menu in
+the first capture and a World Clock overlay with time fields in the second;
+the latter remains an intermediate frame, not proof that all drawing or
+interactive work completed. These are single sampled timings and are not
+native Window/RDP measurements or proof of an end-to-end improvement.
+
+The sampler took 1,249 worker-thread instruction-pointer observations after
+the input was queued. Leading exclusive labels were CPU refresh 74, Machine
+run 50, CPU physical read 47, elapsed publication 37, instruction boundary
+35 and timing selection 33. There was one worker context-read error at exit.
+Sampling, inlining and nearest-symbol attribution prevent treating these as
+inclusive costs or adding them across call layers. The current response path
+still distributes work across CPU, memory and Machine; physical reads merit
+further investigation against the existing cache and bus contracts. No
+production code, user media or released executable changed. Guest log,
+sampling log and intermediate response-frame SHA-256 respectively:
+`269B38D579568F5A796788808847158EE5D0B729D0B071BBE28FCC1982D5BFB7`,
+`9BB2F179F27ED9F557CF0D708B9C0694109131756D70C7CFFBE660E3614CA1F1`,
+`F5DBA5C5A8D5F71A78AB4FD70B0694639D6AD9ED27A5C7797E1D78F6A6511C16`.
+
 ## Current shared execution-path sampling
 
 A task-only x64 probe linked against the current cached Release libraries used
