@@ -1,3 +1,24 @@
+# M5 T585 S13 — Closed: reconcile PC110 storage evidence
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T585 S13 after S12. |
+| Admission And Approval | Owner directed autonomous completion of the first four PC110 tasks and approved Shared x86-core corrections. |
+| Objective | Reconcile contradictory PC110 storage references and discard any unnecessary internal-ATA routing draft. |
+| Non-goals | No internal ATA rerouting based on superseded evidence, unused Shared interface or artificial external card. |
+| Reference Baseline | [S12 audit](../etc/evidence/t585-s12-pcic-io-audit.md), upstream live dump and revised Pluto report, existing PC110 ATA and Ricoh owners. |
+| Candidate Proposal | [Device and model qualification](../proposals/m5-pc110-device-model-qualification.md). |
+| Files And ABI Surface | Documentation only after withdrawing the uncommitted X86 Core draft. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding and source policy. |
+| Verification | Verify working tree against the delivered S11 source and artifact baseline; documentation governance and existing qualified product evidence. |
+| Expected Markers | Evidence establishes what is known about internal ATA versus the external PC Card and explicitly corrects S12. |
+| Asset Needs | No user media mutation. |
+| Reporting Requirements | Reference conflict, withdrawn draft and actual remaining external-card gap. |
+| Stop Conditions | No unsupported equivalence between two storage paths or fake device. |
+| Exit Criteria | [S13 correction](../etc/evidence/t585-s13-storage-correction.md) records the conflicting references and restored S11 source/artifact baseline; an external-card receiver requires a concrete device. |
+| Original Owner Request | Complete the first four PC110 queue tasks. |
+| Similar-Issue Sweep | Source recency, both physical slots, ATA owner, PC Card I/O and actual product boot evidence. |
+
 # M5 T585 S12 — Closed: PC110 PC Card I/O and ATA ownership audit
 
 | Field | Required record |

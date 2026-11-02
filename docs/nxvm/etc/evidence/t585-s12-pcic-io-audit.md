@@ -1,5 +1,14 @@
 # T585 S12 — PC110 PC Card I/O ownership audit
 
+> **S13 correction:** The proposed connection of internal ATA through Ricoh
+> is withdrawn. The same upstream project's newer `Discovery/Pluto/readme.md`
+> and `Discovery/Live-Dump/README.md` explicitly correct the older storage
+> note: the observed internal disks use the ATA channel, while socket A held
+> a separate sound/SCSI card. The present direct ATA route is therefore not
+> evidence of a PC Card decode bug. Keep the paragraphs below as the original
+> audit reasoning, not the current routing decision. The missing receiver for
+> an actual external I/O card remains a separate, unqualified capability.
+
 Current source has one board-owned ATA PIO controller directly registered on
 1F0h–1F7h and 3F6h in `mypc110_machine_hdc`. It has booted the selected DOS
 and Personaware media. `x86_rb5c396_decode_io()` independently decodes two
