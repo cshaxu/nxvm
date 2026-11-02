@@ -152,6 +152,33 @@ lib_status x86_rb5c396_decode_memory(const x86_rb5c396 *chip, lib_u8 slot,
     return LIB_STATUS_OK;
 }
 
+lib_status x86_rb5c396_decode_io(const x86_rb5c396 *chip, lib_u8 slot,
+    lib_u8 window, lib_u16 port, x86_rb5c396_io_mapping *out_mapping)
+{
+    const lib_u8 *registers;
+    lib_u8 base, offset_base, control;
+    lib_u32 first, last, card, span;
+    if (chip == LIB_NULL || out_mapping == LIB_NULL || slot >= X86_RB5C396_SLOT_COUNT ||
+        window >= X86_RB5C396_IO_WINDOW_COUNT) return LIB_STATUS_INVALID_ARGUMENT;
+    registers = chip->registers[slot];
+    if ((registers[0x06u] & (0x40u << window)) == 0u) return LIB_STATUS_UNSUPPORTED;
+    base = (lib_u8)(0x08u + window * 4u);
+    offset_base = (lib_u8)(0x36u + window * 2u);
+    first = (lib_u32)registers[base] | ((lib_u32)registers[base + 1u] << 8u);
+    last = (lib_u32)registers[base + 2u] | ((lib_u32)registers[base + 3u] << 8u);
+    if (first > last || port < first || port > last) return LIB_STATUS_UNSUPPORTED;
+    card = (port + ((lib_u32)registers[offset_base] & 0xfeu) +
+        ((lib_u32)registers[offset_base + 1u] << 8u)) & 0xffffu;
+    span = last - port + 1u;
+    if (span > 0x10000u - card) span = 0x10000u - card;
+    control = (lib_u8)(registers[0x07u] >> (window * 4u));
+    *out_mapping = (x86_rb5c396_io_mapping){
+        .card_port = (lib_u16)card, .contiguous_bytes = span,
+        .data_16bit = (control & 1u) != 0u, .card_io16 = (control & 2u) != 0u,
+        .zero_wait = (control & 4u) != 0u, .wait_state = (control & 8u) != 0u};
+    return LIB_STATUS_OK;
+}
+
 lib_status x86_rb5c396_read(x86_rb5c396 *chip, lib_u16 port,
     lib_u8 *out_value)
 {
@@ -211,7 +238,9 @@ lib_status x86_rb5c396_write(x86_rb5c396 *chip, lib_u16 port,
         if ((value & 0x20u) != 0u && (chip->registers[slot][0x05u] & 0x08u) != 0u)
             chip->registers[slot][0x04u] |= 0x08u;
         chip->registers[slot][selected] = value & (lib_u8)~0x20u;
-    } else
+    } else if (selected == 0x36u || selected == 0x38u)
+        chip->registers[slot][selected] = value & 0xfeu;
+    else
         chip->registers[slot][selected] = value;
     return LIB_STATUS_OK;
 }

@@ -68,6 +68,49 @@ static lib_bool memory_windows(void)
     return !failed;
 }
 
+static lib_bool io_windows(void)
+{
+    x86_rb5c396 *chip = LIB_NULL;
+    x86_rb5c396_io_mapping mapping;
+    lib_u8 value;
+    lib_bool failed = x86_rb5c396_create(&chip) != LIB_STATUS_OK;
+    if (failed) return LIB_FALSE;
+    for (lib_u8 slot = 0u; slot < X86_RB5C396_SLOT_COUNT; ++slot) {
+        for (lib_u8 window = 0u; window < X86_RB5C396_IO_WINDOW_COUNT; ++window) {
+            const lib_u8 bank = (lib_u8)(slot << 6u);
+            const lib_u8 base = (lib_u8)(bank + 0x08u + window * 4u);
+            const lib_u8 offset = (lib_u8)(bank + 0x36u + window * 2u);
+            failed |= !write_register(chip, (lib_u8)(bank + 0x06u), 0u) ||
+                x86_rb5c396_decode_io(chip, slot, window, 0x0200u, &mapping) !=
+                    LIB_STATUS_UNSUPPORTED ||
+                !write_register(chip, base, 0u) || !write_register(chip, (lib_u8)(base + 1u), 2u) ||
+                !write_register(chip, (lib_u8)(base + 2u), 0x0fu) ||
+                !write_register(chip, (lib_u8)(base + 3u), 2u) ||
+                !write_register(chip, offset, 0xffu) ||
+                select_register(chip, offset) != LIB_STATUS_OK ||
+                x86_rb5c396_read(chip, X86_RB5C396_DATA_PORT, &value) != LIB_STATUS_OK || value != 0xfeu ||
+                !write_register(chip, (lib_u8)(offset + 1u), 0xfdu) ||
+                !write_register(chip, (lib_u8)(bank + 0x07u), 0xffu) ||
+                !write_register(chip, (lib_u8)(bank + 0x06u), (lib_u8)(0x40u << window));
+            failed |= x86_rb5c396_decode_io(chip, slot, window, 0x0200u, &mapping) != LIB_STATUS_OK ||
+                mapping.card_port != 0xfffeu || mapping.contiguous_bytes != 2u ||
+                !mapping.data_16bit || !mapping.card_io16 || !mapping.zero_wait || !mapping.wait_state ||
+                x86_rb5c396_decode_io(chip, slot, window, 0x0202u, &mapping) != LIB_STATUS_OK ||
+                mapping.card_port != 0u || mapping.contiguous_bytes != 14u ||
+                x86_rb5c396_decode_io(chip, slot, window, 0x0210u, &mapping) != LIB_STATUS_UNSUPPORTED;
+        }
+    }
+    failed |= !write_register(chip, 0x4eu, 0xffu) || !write_register(chip, 0x4fu, 1u) ||
+        x86_rb5c396_decode_io(chip, 1u, 1u, 0x0200u, &mapping) != LIB_STATUS_UNSUPPORTED ||
+        x86_rb5c396_decode_io(chip, 2u, 0u, 0u, &mapping) != LIB_STATUS_INVALID_ARGUMENT ||
+        x86_rb5c396_decode_io(chip, 0u, 2u, 0u, &mapping) != LIB_STATUS_INVALID_ARGUMENT ||
+        x86_rb5c396_decode_io(chip, 0u, 0u, 0u, LIB_NULL) != LIB_STATUS_INVALID_ARGUMENT;
+    x86_rb5c396_reset(chip);
+    failed |= x86_rb5c396_decode_io(chip, 1u, 1u, 0x0200u, &mapping) != LIB_STATUS_UNSUPPORTED;
+    x86_rb5c396_destroy(chip);
+    return !failed;
+}
+
 int main(void)
 {
     x86_rb5c396 *chip = LIB_NULL;
@@ -187,5 +230,5 @@ int main(void)
             LIB_STATUS_OK || x86_rb5c396_read(chip, X86_RB5C396_DATA_PORT, &value) !=
             LIB_STATUS_OK || value != 0x2cu;
     x86_rb5c396_destroy(chip);
-    return failed || !memory_windows() ? 1 : 0;
+    return failed || !memory_windows() || !io_windows() ? 1 : 0;
 }

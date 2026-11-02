@@ -11,6 +11,7 @@ typedef struct x86_rb5c396 x86_rb5c396;
 #define X86_RB5C396_SLOT_COUNT 2u
 #define X86_RB5C396_REGISTER_COUNT 60u
 #define X86_RB5C396_MEMORY_WINDOW_COUNT 5u
+#define X86_RB5C396_IO_WINDOW_COUNT 2u
 #define X86_RB5C396_IDENTIFICATION_REGISTER 0x00u
 #define X86_RB5C396_INTERFACE_STATUS_REGISTER 0x01u
 #define X86_RB5C396_CHIP_IDENTIFICATION_REGISTER 0x3au
@@ -38,6 +39,15 @@ typedef struct x86_rb5c396_memory_mapping {
     lib_u8 wait_states;
 } x86_rb5c396_memory_mapping;
 
+typedef struct x86_rb5c396_io_mapping {
+    lib_u16 card_port;
+    lib_u32 contiguous_bytes;
+    lib_bool data_16bit;
+    lib_bool card_io16;
+    lib_bool zero_wait;
+    lib_bool wait_state;
+} x86_rb5c396_io_mapping;
+
 lib_status x86_rb5c396_create(x86_rb5c396 **out_chip);
 void x86_rb5c396_destroy(x86_rb5c396 *chip);
 /* Controller reset clears internal register state but preserves physical
@@ -57,6 +67,9 @@ lib_status x86_rb5c396_memory_window_range(const x86_rb5c396 *chip, lib_u8 slot,
     lib_u8 window, lib_u32 *out_first, lib_u32 *out_bytes);
 lib_status x86_rb5c396_decode_memory(const x86_rb5c396 *chip, lib_u8 slot,
     lib_u8 window, lib_u32 physical, x86_rb5c396_memory_mapping *out_mapping);
+/* Decode one enabled I/O window; socket type and device routing belong to the board. */
+lib_status x86_rb5c396_decode_io(const x86_rb5c396 *chip, lib_u8 slot,
+    lib_u8 window, lib_u16 port, x86_rb5c396_io_mapping *out_mapping);
 lib_status x86_rb5c396_read(x86_rb5c396 *chip, lib_u16 port,
     lib_u8 *out_value);
 lib_status x86_rb5c396_write(x86_rb5c396 *chip, lib_u16 port,
