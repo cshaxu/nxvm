@@ -34,6 +34,7 @@ typedef struct x86_rb5c396_memory_mapping {
     lib_bool attribute;
     lib_bool write_protected;
     lib_bool data_16bit;
+    lib_bool zero_wait;
     lib_u8 wait_states;
 } x86_rb5c396_memory_mapping;
 
@@ -44,12 +45,16 @@ void x86_rb5c396_destroy(x86_rb5c396 *chip);
 void x86_rb5c396_reset(x86_rb5c396 *chip);
 lib_status x86_rb5c396_set_slot_inputs(x86_rb5c396 *chip, lib_u8 slot,
     const x86_rb5c396_slot_inputs *inputs);
+lib_status x86_rb5c396_get_slot_inputs(const x86_rb5c396 *chip, lib_u8 slot,
+    x86_rb5c396_slot_inputs *out_inputs);
 /* Zero means no selected ISA status-change interrupt for this socket. */
 lib_status x86_rb5c396_status_irq(const x86_rb5c396 *chip, lib_u8 slot,
     lib_u8 *out_irq);
 /* Decode one enabled window. Unsupported means this window does not select
  * the address; socket population and overlapping-window policy belong to the
  * attached board. The returned span ends at a window or card-address wrap. */
+lib_status x86_rb5c396_memory_window_range(const x86_rb5c396 *chip, lib_u8 slot,
+    lib_u8 window, lib_u32 *out_first, lib_u32 *out_bytes);
 lib_status x86_rb5c396_decode_memory(const x86_rb5c396 *chip, lib_u8 slot,
     lib_u8 window, lib_u32 physical, x86_rb5c396_memory_mapping *out_mapping);
 lib_status x86_rb5c396_read(x86_rb5c396 *chip, lib_u16 port,

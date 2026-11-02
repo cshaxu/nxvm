@@ -26,7 +26,7 @@ static lib_bool memory_windows(void)
                 x86_rb5c396_decode_memory(chip, slot, window, 0xd0000u, &mapping) !=
                     LIB_STATUS_UNSUPPORTED ||
                 !write_register(chip, base, 0xd0u) ||
-                !write_register(chip, (lib_u8)(base + 1u), 0x80u) ||
+                !write_register(chip, (lib_u8)(base + 1u), 0xc0u) ||
                 !write_register(chip, (lib_u8)(base + 2u), 0xdfu) ||
                 !write_register(chip, (lib_u8)(base + 3u), 0xc0u) ||
                 !write_register(chip, (lib_u8)(base + 4u), 0x30u) ||
@@ -35,7 +35,8 @@ static lib_bool memory_windows(void)
             failed |= x86_rb5c396_decode_memory(chip, slot, window, 0xd0000u, &mapping) !=
                     LIB_STATUS_OK || mapping.card_address != 0u ||
                 mapping.contiguous_bytes != 0x10000u || !mapping.attribute ||
-                !mapping.write_protected || !mapping.data_16bit || mapping.wait_states != 3u ||
+                !mapping.write_protected || !mapping.data_16bit || !mapping.zero_wait ||
+                mapping.wait_states != 3u ||
                 x86_rb5c396_decode_memory(chip, slot, window, 0xdffffu, &mapping) !=
                     LIB_STATUS_OK || mapping.card_address != 0xffffu ||
                 mapping.contiguous_bytes != 1u ||

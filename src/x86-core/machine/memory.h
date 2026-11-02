@@ -55,6 +55,7 @@ typedef struct {
     lib_bool cpu_only;
     /* A selected board decode that replaces an otherwise valid lower route. */
     lib_u8 replacement;
+    lib_bool partial_claim;
     /* An open-bus board window used only when no installed device decodes the
      * access. It is never a reset-ROM source. */
     lib_u8 fallback;

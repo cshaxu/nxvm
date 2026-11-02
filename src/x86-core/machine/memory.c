@@ -15,6 +15,24 @@ static lib_u32 x86_core_machine_memory_decode_address(const t_ram *ram,
     return offset & ~ram->data.address_clear_mask;
 }
 
+/* A contiguous host copy is valid only while every guest address decodes to
+ * the next backing byte. In particular, A20 can wrap inside one access. */
+static lib_bool x86_core_machine_memory_crosses_decode(const t_ram *ram,
+    lib_u32 physical, lib_uptr bytes)
+{
+    const lib_u32 mask = ram->data.address_clear_mask;
+    const lib_u64 last = (lib_u64)physical + bytes - 1u;
+    lib_u32 step;
+
+    if (bytes <= 1u || mask == 0u || last > LIB_UINT32_MAX ||
+        last < ram->connect.address_decode.first ||
+        physical > ram->connect.address_decode.last) return LIB_FALSE;
+    if ((lib_u64)x86_core_machine_memory_decode_address(ram, physical) + bytes - 1u !=
+        x86_core_machine_memory_decode_address(ram, (lib_u32)last)) return LIB_TRUE;
+    step = mask & (~mask + 1u);
+    return (physical & ~(step - 1u)) != ((lib_u32)last & ~(step - 1u));
+}
+
 static lib_status x86_core_machine_memory_offset(const t_ram *ram,
     lib_u32 physical, lib_u32 decoded, lib_size size, lib_size *out_offset)
 {
@@ -96,6 +114,7 @@ static lib_status x86_core_machine_memory_route_resolve(const t_ram *ram,
             return LIB_STATUS_OK;
         }
         if (status != LIB_STATUS_UNSUPPORTED) {
+            *out_provider = provider;
             if (notify_failure)
                 x86_core_machine_memory_note_provider_failure(provider, physical,
                     bytes, access, status);
@@ -145,6 +164,7 @@ static lib_status x86_core_machine_memory_route_resolve(const t_ram *ram,
                 return LIB_STATUS_OK;
             }
             if (status != LIB_STATUS_UNSUPPORTED) {
+                *out_provider = provider;
                 if (notify_failure)
                     x86_core_machine_memory_note_provider_failure(provider, wrapped,
                         bytes, access, status);
@@ -173,6 +193,30 @@ static lib_bool x86_core_machine_memory_is_plain_span(const t_ram *ram, lib_u32 
             return LIB_FALSE;
     }
     return LIB_TRUE;
+}
+
+/* Lower-priority byte routes must not split an accepted device word access. */
+static lib_bool x86_core_machine_memory_higher_provider(
+    const x86_core_machine_memory_device_provider *candidate,
+    const x86_core_machine_memory_device_provider *selected)
+{
+    lib_u8 candidate_tier, selected_tier;
+    if (candidate == LIB_NULL || candidate == selected) return LIB_FALSE;
+    if (selected == LIB_NULL) return LIB_TRUE;
+    candidate_tier = candidate->raw_decode ? 0u : candidate->replacement ? 1u :
+        candidate->fallback ? 3u : 2u;
+    selected_tier = selected->raw_decode ? 0u : selected->replacement ? 1u :
+        selected->fallback ? 3u : 2u;
+    return candidate_tier < selected_tier ||
+        (candidate_tier == selected_tier && candidate < selected);
+}
+
+static lib_bool x86_core_machine_memory_has_partial_claim(const t_ram *ram)
+{
+    for (lib_uptr index = 0u; index < ram->connect.device_provider_count; ++index)
+        if (ram->connect.device_providers[index].partial_claim &&
+            ram->connect.device_providers[index].bytes != 0u) return LIB_TRUE;
+    return LIB_FALSE;
 }
 
 /* Reset-cache fetches use the CPU's architected high reset address before the
@@ -436,6 +480,7 @@ static void x86_core_machine_memory_append_device_provider(t_ram *ram,
     provider->raw_decode = raw_decode;
     provider->cpu_only = LIB_FALSE;
     provider->replacement = replacement;
+    provider->partial_claim = LIB_FALSE;
     provider->fallback = fallback;
 }
 
@@ -561,7 +606,7 @@ static lib_status x86_core_machine_memory_read_routed(t_ram *ram, lib_u32 physic
     lib_bool instruction_fetch, lib_bool cpu_access)
 {
     lib_size offset;
-    const x86_core_machine_memory_device_provider *provider;
+    const x86_core_machine_memory_device_provider *provider = LIB_NULL;
     lib_u32 provider_physical;
     lib_status status;
 
@@ -571,18 +616,40 @@ static lib_status x86_core_machine_memory_read_routed(t_ram *ram, lib_u32 physic
     status = x86_core_machine_memory_route_resolve(ram, physical, byte,
         X86_CORE_MACHINE_MEMORY_ACCESS_READ, LIB_TRUE, &provider,
         &provider_physical, &offset, cpu_access);
-    if (status != LIB_STATUS_OK) return status;
-    if (provider == LIB_NULL && byte > 1u && !x86_core_machine_memory_is_plain_span(ram, physical, byte)) {
+    if (status != LIB_STATUS_OK && !(status == LIB_STATUS_INTERNAL_ERROR &&
+        provider == LIB_NULL && x86_core_machine_memory_crosses_decode(ram, physical, byte)))
+        return status;
+    if ((provider == LIB_NULL || !provider->raw_decode) &&
+        x86_core_machine_memory_crosses_decode(ram, physical, byte)) {
+        for (lib_uptr index = 0u; index < byte; ++index) {
+            status = x86_core_machine_memory_read_routed(ram, physical + (lib_u32)index,
+                destination + index, 1u, observe_only, instruction_fetch, cpu_access);
+            if (status != LIB_STATUS_OK) return status;
+        }
+        return LIB_STATUS_OK;
+    }
+    if (byte > 1u && (provider == LIB_NULL ||
+        x86_core_machine_memory_has_partial_claim(ram)) &&
+        !x86_core_machine_memory_is_plain_span(ram, physical, byte)) {
         lib_uptr index;
         for (index = 0u; index < byte; ++index) {
-            const x86_core_machine_memory_device_provider *single_provider;
+            const x86_core_machine_memory_device_provider *single_provider = LIB_NULL;
             lib_size single_offset;
+            lib_u32 single_physical;
             status = x86_core_machine_memory_route_resolve(ram,
                 physical + (lib_u32)index, 1u,
-                X86_CORE_MACHINE_MEMORY_ACCESS_READ, LIB_TRUE, &single_provider,
-                &provider_physical, &single_offset, cpu_access);
-            if (status != LIB_STATUS_OK) return status;
-            if (single_provider != LIB_NULL) {
+                X86_CORE_MACHINE_MEMORY_ACCESS_READ, provider == LIB_NULL, &single_provider,
+                &single_physical, &single_offset, cpu_access);
+            if (status != LIB_STATUS_OK) {
+                if (provider == LIB_NULL) return status;
+                if (single_provider == LIB_NULL || !single_provider->partial_claim ||
+                    !x86_core_machine_memory_higher_provider(single_provider, provider)) break;
+            }
+            if ((single_provider != LIB_NULL && (provider == LIB_NULL ||
+                    (single_provider->partial_claim &&
+                    x86_core_machine_memory_higher_provider(single_provider, provider)))) ||
+                (provider == LIB_NULL && single_provider == LIB_NULL &&
+                    single_offset != offset + index)) {
                 for (index = 0u; index < byte; ++index) {
                     status = x86_core_machine_memory_read_routed(ram,
                         physical + (lib_u32)index, destination + index, 1u,
@@ -704,7 +771,7 @@ lib_status x86_core_machine_memory_write_physical(t_ram *ram, lib_u32 physical,
 {
     lib_size offset;
     lib_uptr index;
-    const x86_core_machine_memory_device_provider *provider;
+    const x86_core_machine_memory_device_provider *provider = LIB_NULL;
     lib_u32 provider_physical;
     lib_status status;
 
@@ -714,18 +781,40 @@ lib_status x86_core_machine_memory_write_physical(t_ram *ram, lib_u32 physical,
     status = x86_core_machine_memory_route_resolve(ram, physical, byte,
         X86_CORE_MACHINE_MEMORY_ACCESS_WRITE, LIB_TRUE, &provider,
         &provider_physical, &offset, cpu_access);
-    if (status != LIB_STATUS_OK) return status;
-    if (provider == LIB_NULL && byte > 1u && !x86_core_machine_memory_is_plain_span(ram, physical, byte)) {
+    if (status != LIB_STATUS_OK && !(status == LIB_STATUS_INTERNAL_ERROR &&
+        provider == LIB_NULL && x86_core_machine_memory_crosses_decode(ram, physical, byte)))
+        return status;
+    if ((provider == LIB_NULL || !provider->raw_decode) &&
+        x86_core_machine_memory_crosses_decode(ram, physical, byte)) {
+        for (index = 0u; index < byte; ++index) {
+            status = x86_core_machine_memory_write_physical(ram, physical + (lib_u32)index,
+                source + index, 1u, cpu_access);
+            if (status != LIB_STATUS_OK) return status;
+        }
+        return LIB_STATUS_OK;
+    }
+    if (byte > 1u && (provider == LIB_NULL ||
+        x86_core_machine_memory_has_partial_claim(ram)) &&
+        !x86_core_machine_memory_is_plain_span(ram, physical, byte)) {
         lib_uptr index;
         for (index = 0u; index < byte; ++index) {
-            const x86_core_machine_memory_device_provider *single_provider;
+            const x86_core_machine_memory_device_provider *single_provider = LIB_NULL;
             lib_size single_offset;
+            lib_u32 single_physical;
             status = x86_core_machine_memory_route_resolve(ram,
                 physical + (lib_u32)index, 1u,
-                X86_CORE_MACHINE_MEMORY_ACCESS_WRITE, LIB_TRUE, &single_provider,
-                &provider_physical, &single_offset, cpu_access);
-            if (status != LIB_STATUS_OK) return status;
-            if (single_provider != LIB_NULL) {
+                X86_CORE_MACHINE_MEMORY_ACCESS_WRITE, provider == LIB_NULL, &single_provider,
+                &single_physical, &single_offset, cpu_access);
+            if (status != LIB_STATUS_OK) {
+                if (provider == LIB_NULL) return status;
+                if (single_provider == LIB_NULL || !single_provider->partial_claim ||
+                    !x86_core_machine_memory_higher_provider(single_provider, provider)) break;
+            }
+            if ((single_provider != LIB_NULL && (provider == LIB_NULL ||
+                    (single_provider->partial_claim &&
+                    x86_core_machine_memory_higher_provider(single_provider, provider)))) ||
+                (provider == LIB_NULL && single_provider == LIB_NULL &&
+                    single_offset != offset + index)) {
                 for (index = 0u; index < byte; ++index) {
                     status = x86_core_machine_memory_write_physical(ram,
                         physical + (lib_u32)index, source + index, 1u, cpu_access);

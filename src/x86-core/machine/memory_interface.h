@@ -104,7 +104,9 @@ typedef enum x86_core_machine_memory_provider_mode {
     X86_CORE_MACHINE_MEMORY_PROVIDER_FALLBACK,
     /* CPU physical overlay before ordinary aliases/address-line decoding.
      * DMA never sees this provider; its ordinary RAM/device route is retained. */
-    X86_CORE_MACHINE_MEMORY_PROVIDER_CPU_OVERLAY
+    X86_CORE_MACHINE_MEMORY_PROVIDER_CPU_OVERLAY,
+    /* A replacement whose partial windows may split a lower wide route. */
+    X86_CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT_PARTIAL
 } x86_core_machine_memory_provider_mode;
 
 typedef struct x86_core_machine_memory_device_route {

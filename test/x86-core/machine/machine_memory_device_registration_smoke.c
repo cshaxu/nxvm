@@ -906,6 +906,92 @@ static lib_i32 ambiguous_range_contract(void)
     return failed;
 }
 
+static lib_status partial_read(void *owner, lib_u32 physical, lib_uptr destination,
+    lib_uptr bytes, lib_bool observe_only)
+{
+    (void)observe_only;
+    lib_memory_copy((void *)destination, (lib_u8 *)owner + physical - 0x8000u, bytes);
+    return LIB_STATUS_OK;
+}
+
+static lib_status partial_write(void *owner, lib_u32 physical, lib_uptr source, lib_uptr bytes)
+{
+    lib_memory_copy((lib_u8 *)owner + physical - 0x8000u, (const void *)source, bytes);
+    return LIB_STATUS_OK;
+}
+
+static lib_status partial_query(void *owner, lib_u32 physical, lib_uptr bytes,
+    x86_core_machine_memory_access access)
+{
+    (void)access;
+    if (physical == 0x8000u && bytes == 1u && ((lib_u8 *)owner)[1] == 0xeeu)
+        return LIB_STATUS_IO_ERROR;
+    return physical == 0x8000u && bytes == 1u ? LIB_STATUS_OK : LIB_STATUS_UNSUPPORTED;
+}
+
+static lib_status full_query(void *owner, lib_u32 physical, lib_uptr bytes,
+    x86_core_machine_memory_access access)
+{
+    (void)owner; (void)physical; (void)bytes; (void)access;
+    return LIB_STATUS_OK;
+}
+
+static lib_i32 partial_claim_contract(void)
+{
+    const x86_core_machine_executor_config config = {
+        .memory_bytes = 65536u, .cpu_profile = X86_CORE_CPU_PROFILE_80386};
+    const x86_core_machine_memory_device_route upper = {
+        0x8000u, 2u, {partial_read, partial_write, partial_query},
+        X86_CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT_PARTIAL, LIB_NULL};
+    const x86_core_machine_memory_device_route lower = {
+        0x8000u, 2u, {partial_read, partial_write, full_query},
+        X86_CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT, LIB_NULL};
+    const lib_u8 input[2] = {0x31u, 0x42u};
+    lib_u8 top[2] = {0u, 0u}, bottom[2] = {0u, 0u}, output[2] = {0u, 0u};
+    x86_core_machine *machine = LIB_NULL;
+    lib_i32 failed;
+    if (x86_core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK) return 1;
+    failed = x86_core_machine_install_memory_device_routes(machine, &upper, 1u,
+            LIB_NULL, LIB_NULL, top) != LIB_STATUS_OK ||
+        x86_core_machine_install_memory_device_routes(machine, &lower, 1u,
+            LIB_NULL, LIB_NULL, bottom) != LIB_STATUS_OK ||
+        x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+        x86_core_machine_reset(machine) != LIB_STATUS_OK ||
+        x86_core_machine_memory_write(machine, 0x8000u, input, 2u) != LIB_STATUS_OK ||
+        x86_core_machine_memory_read(machine, 0x8000u, output, 2u) != LIB_STATUS_OK ||
+        top[0] != input[0] || bottom[1] != input[1] ||
+        lib_memory_compare(input, output, sizeof(input)) != 0;
+    top[1] = 0xeeu;
+    failed |= x86_core_machine_memory_read(machine, 0x8000u, output, 2u) != LIB_STATUS_IO_ERROR ||
+        x86_core_machine_memory_write(machine, 0x8000u, input, 2u) != LIB_STATUS_IO_ERROR;
+    x86_core_machine_destroy(machine);
+    return failed;
+}
+
+static lib_i32 masked_span_contract(void)
+{
+    const x86_core_machine_executor_config config = {
+        .memory_bytes = 1024u * 1024u,
+        .cpu_profile = X86_CORE_CPU_PROFILE_80386,
+        .address_decode = {0u, LIB_UINT32_MAX, 0u}};
+    x86_core_machine *machine = LIB_NULL;
+    const lib_u8 input[2] = {0x31u, 0x42u};
+    lib_u8 output[2] = {0u, 0u};
+    lib_i32 failed;
+
+    if (x86_core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK) return 1;
+    failed = x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+        x86_core_machine_reset(machine) != LIB_STATUS_OK ||
+        x86_core_machine_signal_address_clear_mask(machine, 0x100000u) != LIB_STATUS_OK ||
+        x86_core_machine_memory_write(machine, 0xfffffu, input, sizeof(input)) != LIB_STATUS_OK ||
+        x86_core_machine_memory_read(machine, 0xfffffu, output, sizeof(output)) != LIB_STATUS_OK ||
+        lib_memory_compare(input, output, sizeof(input)) != 0 ||
+        x86_core_machine_memory_read(machine, 0u, output, 1u) != LIB_STATUS_OK || output[0] != input[1];
+    if (failed) lib_c_printf("masked span failure: %u %u\n", output[0], output[1]);
+    x86_core_machine_destroy(machine);
+    return failed;
+}
+
 lib_i32 main(void)
 {
     const x86_core_machine_executor_config config = {
@@ -993,6 +1079,7 @@ lib_i32 main(void)
         x86_core_machine_observe_address_clear_mask(machine, &clear_mask) != LIB_STATUS_OK || clear_mask != 0x00100000u ||
         x86_core_machine_signal_address_clear_mask(machine, 0u) != LIB_STATUS_OK ||
         x86_core_machine_observe_address_clear_mask(machine, &clear_mask) != LIB_STATUS_OK || clear_mask != 0u;
+    if (!failed) failed |= masked_span_contract() || partial_claim_contract();
     if (!failed) lib_c_printf("CORE-MEMORY-DEVICE:OK\n");
     x86_core_machine_destroy(machine);
     return failed ? 1 : 0;

@@ -109,9 +109,13 @@ lib_status x86_core_machine_install_memory_device_routes(x86_core_machine *machi
                     route->mode == X86_CORE_MACHINE_MEMORY_PROVIDER_CPU_OVERLAY;
             break;
         case X86_CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT:
+        case X86_CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT_PARTIAL:
             status = x86_core_machine_memory_register_replacement_device_provider(memory,
                 route->physical_start, route->bytes, route->callbacks.read,
                 route->callbacks.write, route->callbacks.query, owner, route->failure);
+            if (status == LIB_STATUS_OK && route->mode ==
+                X86_CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT_PARTIAL)
+                memory->connect.device_providers[memory->connect.device_provider_count - 1u].partial_claim = LIB_TRUE;
             break;
         case X86_CORE_MACHINE_MEMORY_PROVIDER_FALLBACK:
             status = x86_core_machine_memory_register_fallback_device_provider(memory,
