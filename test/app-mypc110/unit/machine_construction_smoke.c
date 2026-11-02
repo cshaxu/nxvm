@@ -34,6 +34,30 @@ static lib_bool mypc110_test_port(emulator_machine_driver *driver,
     return LIB_TRUE;
 }
 
+static lib_bool mypc110_test_es488(emulator_machine_driver *driver)
+{
+    static const struct { lib_bool write; lib_u16 port; lib_u8 value; } steps[] = {
+        {LIB_FALSE, 0x22eu, 0x00u}, {LIB_TRUE, 0x226u, 0x00u},
+        {LIB_FALSE, 0x22eu, 0x00u}, {LIB_TRUE, 0x226u, 0x01u},
+        {LIB_TRUE, 0x226u, 0x00u}, {LIB_FALSE, 0x22eu, 0x80u},
+        {LIB_FALSE, 0x22au, 0xaau}, {LIB_FALSE, 0x22eu, 0x00u},
+        {LIB_TRUE, 0x22cu, 0xe1u}, {LIB_FALSE, 0x22au, 0x02u},
+        {LIB_FALSE, 0x22eu, 0x80u}, {LIB_FALSE, 0x22au, 0x01u},
+        {LIB_FALSE, 0x22eu, 0x00u}, {LIB_TRUE, 0x22cu, 0xe7u},
+        {LIB_FALSE, 0x22au, 0x48u}, {LIB_FALSE, 0x22au, 0x82u},
+        {LIB_TRUE, 0x22cu, 0xffu}, {LIB_FALSE, 0x22eu, 0x00u},
+        {LIB_TRUE, 0x22cu, 0xe1u}, {LIB_TRUE, 0x226u, 0x01u},
+        {LIB_FALSE, 0x22eu, 0x00u}, {LIB_TRUE, 0x226u, 0x00u},
+        {LIB_FALSE, 0x22au, 0xaau}, {LIB_FALSE, 0x22au, 0xffu}
+    };
+    for (lib_size i = 0u; i < sizeof(steps) / sizeof(steps[0]); ++i) {
+        lib_u8 value = steps[i].value;
+        if (!mypc110_test_port(driver, steps[i].write, steps[i].port, &value) ||
+            (!steps[i].write && value != steps[i].value)) return LIB_FALSE;
+    }
+    return LIB_TRUE;
+}
+
 static lib_bool mypc110_test_memory(emulator_machine_driver *driver,
     lib_bool write, lib_u32 address, lib_u8 *value)
 {
@@ -400,6 +424,7 @@ int main(int argc, char **argv)
             LIB_STATUS_OK || driver.copy_frame(driver.context, &frame, &console,
                 &produced) != LIB_STATUS_OK || produced))
         failed = 5;
+    if (!failed && !mypc110_test_es488(&driver)) failed = 80;
     if (!failed) {
         const x86_debug_request cmos_reads[] = {
             {.operation = X86_DEBUG_WRITE_PORT, .port = 0x70u, .address = 0x0eu, .bytes = 1u},
@@ -518,6 +543,8 @@ int main(int argc, char **argv)
             .port = 0x03e1u, .bytes = 1u};
         lib_u8 rtc_index = 0x09u;
         lib_u8 rtc_year = 0x24u;
+        lib_u8 dsp_command = 0xe1u;
+        lib_u8 dsp_status = 0u;
 
         if (!mypc110_test_port(&driver, LIB_TRUE, 0x70u, &rtc_index) ||
             !mypc110_test_port(&driver, LIB_TRUE, 0x71u, &rtc_year) ||
@@ -525,7 +552,10 @@ int main(int argc, char **argv)
                 &response, sizeof(response), &response_bytes) != LIB_STATUS_OK ||
             driver.execute_debug(driver.context, &write, sizeof(write),
                 &response, sizeof(response), &response_bytes) != LIB_STATUS_OK ||
+            !mypc110_test_port(&driver, LIB_TRUE, 0x22cu, &dsp_command) ||
             !driver.reset(driver.context) ||
+            !mypc110_test_port(&driver, LIB_FALSE, 0x22eu, &dsp_status) ||
+            dsp_status != 0u ||
             driver.execute_debug(driver.context, &select, sizeof(select),
                 &response, sizeof(response), &response_bytes) != LIB_STATUS_OK ||
             driver.execute_debug(driver.context, &read, sizeof(read),

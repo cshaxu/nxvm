@@ -1,3 +1,24 @@
+# M5 T585 S15 — Closed: PC110 ES488 DSP identification
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T585 S15 after S14. |
+| Admission And Approval | Owner directed autonomous completion of the first four PC110 tasks and approved sourced L1/L2 models. |
+| Objective | Implement the PC110 ES488 guest-visible reset and identity protocol as the first bounded part of onboard audio. |
+| Non-goals | No claim of DMA playback, FM synthesis, audible output or verified physical power-on configuration. |
+| Reference Baseline | [S14 design](../etc/evidence/t585-s14-pc110-audio-design.md), upstream PC110 ES488 live observations and the current port bus. |
+| Candidate Proposal | [Device and model qualification](../proposals/m5-pc110-device-model-qualification.md). |
+| Files And ABI Surface | PC110 App-local device, construction and existing tests; no Lib/Emulator modifications. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding and source policy. |
+| Verification | Actual Core port path, reset sequence, response readiness and ordering, unknown commands and board reset on both widths; cached full unit suite and affected product integration. |
+| Expected Markers | Configured guest can observe reset AAh, DSP version 2.01 and ESS identity 48h/82h without fabricating audio. |
+| Asset Needs | Preserve all owner media, firmware, CMOS and configuration. |
+| Reporting Requirements | Distinguish L1 default decode and remaining real audio work from observed identification. |
+| Stop Conditions | No second bus, false sound-output claim or silently replacing an existing port owner. |
+| Exit Criteria | [S15 evidence](../etc/evidence/t585-s15-es488-identification.md) records the bounded protocol, actual Core route, dual-width 712/712 unit and 9/9 firmware integration results and deployed artifacts. DMA, audible PCM and FM remain separate work. |
+| Original Owner Request | Complete the first four PC110 queue tasks. |
+| Similar-Issue Sweep | Reset without edge, stale responses, read-status flags, unknown command and reset reuse. |
+
 # M5 T585 S14 — Closed: PC110 onboard audio design audit
 
 | Field | Required record |
