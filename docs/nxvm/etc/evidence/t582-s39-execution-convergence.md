@@ -1,5 +1,28 @@
 # T582 S39 — execution and timing convergence
 
+## Current shared execution-path sampling
+
+A task-only x64 probe linked against the current cached Release libraries used
+private CMOS and media copies. The native thread sampler observed 4,201 worker
+instruction pointers during host seconds 5–30 and 5,014 during seconds 30–60.
+It deliberately terminated the guest at 65 seconds; guest exit code 1 is
+expected and is not a completed boot. The sampler exited successfully. Guest
+executable SHA-256:
+`0E1FFB4A55B9E10A0E8B6DD24EFB40D6BAAFB8A971B77566D82AF7E0F6A4B272`.
+
+Among the latter 5,014 exclusive samples were CPU refresh 283, Machine run
+241, board deadline observation 204, elapsed-time publication 156, memory
+route resolution 150, timing selection 130, keyboard input collection 122,
+and clock-domain advancement 122. Inlining, symbol attribution, sampling and
+host scheduling preclude summing these as component costs or treating them as
+the source of the full performance gap. Startup work remains distributed
+across shared execution and device paths; this does not establish DOS readiness,
+complete guest-state correctness, other-profile speedups or RDP behavior.
+Previously rejected deadline and memory-route candidates remain rejected. No
+production source, public interface, owner media or release artifact changed.
+Sampling log SHA-256:
+`C854C2B9DC090B45621B6AF37E55A4702B6A1807537DFC53C48A586085D5124D`.
+
 ## Host logical-processor comparison
 
 A task-only x64 diagnostic pinned its own execution thread to logical
