@@ -1,4 +1,29 @@
-# M5 T584 S6 — Active: interaction qualification reconciliation
+# M5 T584 S7 — Active: private-media inking calibration persistence
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T584 S7 after S6 qualification reconciliation. |
+| Admission And Approval | Owner requested completion of the first four PC110 receivers and protection of owner media. |
+| Objective | Verify whether guest-saved four-corner inking calibration survives process restart when writes are retained on a task-owned disk copy. |
+| Non-goals | No owner-media writes, user-desktop switch, fabricated guest state or claim of physical/RDP capture. |
+| Reference Baseline | c86ce42e0, T584 S3 overlay calibration and current Product/Machine storage contracts. |
+| Candidate Proposal | [Product interaction](../proposals/m5-pc110-product-interaction.md); [interaction ledger](../etc/evidence/t584-product-interaction-ledger.md). |
+| Files And ABI Surface | Task-private media and observer plus NXVM evidence; no public API or Shared change. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding, UI and source policy. |
+| Verification | Calibrate on an isolated writable disk copy, verify guest save and normal exit, independently restart using that same copy, observe guest path and run repository units/documentation gate. |
+| Expected Markers | Guest save, disk-copy before/after hashes, second-process calibration/launcher behavior and honest persistence conclusion. |
+| Asset Needs | Existing source media copied into a task-owned directory; source images never opened writable. |
+| Reporting Requirements | Distinguish private retained writes from discarded overlay and disclose unsupported persistence. |
+| Stop Conditions | No owner-media mutation or guessing an unobserved guest prompt. |
+| Exit Criteria | Reviewed persistence observation or an identified real guest/storage gap. |
+| Original Owner Request | Complete the first four PC110 queue tasks. |
+| Similar-Issue Sweep | Compare retained writes and overlay behavior without inventing a second persistence path. |
+
+# M5 T584 S6 — Closed: interaction qualification reconciliation
+
+Full x64 units passed 712/712; PC110 external-firmware integrations passed
+9/9 on both widths. The honest physical-input and RDP limits are recorded;
+private-media inking calibration persistence remains in S7.
 
 | Field | Required record |
 | --- | --- |
@@ -15,7 +40,7 @@
 | Asset Needs | Existing EXEs and owner-managed firmware; preserve owner media and configuration. |
 | Reporting Requirements | Do not equate injected Machine/native messages or mocks with physical/RDP input; record any failed result. |
 | Stop Conditions | No foreground desktop change or unsupported completion claim. |
-| Exit Criteria | Reviewed interaction coverage and all applicable qualification gates, with unavailable human-input boundaries explicitly retained. |
+| Exit Criteria | Reviewed c86ce42e0: applicable unit/integration results and interaction boundaries recorded, with the private-media calibration receiver admitted next. |
 | Original Owner Request | Complete the first four PC110 queue tasks. |
 | Similar-Issue Sweep | Compare Console/Window, both widths and display variants, guest input and host capture. |
 
