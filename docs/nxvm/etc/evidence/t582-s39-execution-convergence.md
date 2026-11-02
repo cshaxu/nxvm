@@ -4588,6 +4588,34 @@ and Machine-port probe log SHA-256 respectively:
 `6A0F0291415FCAFCB3EBB1C82DC3D1979C2C552FEB7246B64DA3D091E0BEE6F5`,
 `925332B224985EA3E28CD75E6FE2FC4C30AE1C47D35F109E93186CFD67D78410`.
 
+### I/O permission-check compilation experiment
+
+The current x64 Release `_p_input` contains the protected-mode I/O bitmap
+check in its body. A task-only GCC `noinline` experiment kept the same
+permission check and port path but prevented inlining of the existing bitmap
+helper. The x64 disassembly showed one fewer saved register and a 0x50-byte
+stack allocation instead of 0x68; the object was 77 bytes smaller. This
+compiler-specific attribute is an experiment, not a proposed portable contract.
+
+At the private-media 60-million-instruction checkpoint, ordered baseline/
+candidate times were 86,849/83,002 ms on x64 and 111,778/106,679 ms on x86;
+the last 30-million intervals were 40,445/37,868 and 52,129/47,662 ms. All
+reported 365,365,343 guest ticks and PC `00038887`. These single ordered pairs
+do not prove stable gain or complete-state equivalence. In a subsequent x64
+candidate-then-baseline private-media run, the menu was sampled at 181/186
+seconds and the input frame-change marker at 8/8 seconds; total process times
+were 193.51/198.10 seconds. The menu frame hashes matched. These coarse samples
+do not establish a repeatable end-to-end improvement or native Window/RDP
+experience; both remain slow. No x86 full-boot comparison was performed.
+
+The attribute and its compiler-specific maintenance cost are not justified by
+these limited results; no production code, API, test or executable changed.
+Disassembly, fixed-work, candidate system and baseline system log SHA-256:
+`349FAD168196B4E474568AFD172BCDB8FA5DF98582E0DC12EE14AC1FAD5A378B`,
+`6A2977791B41E8C4879F4F4048A77E9C597C0B61C753D2FA54064BEF24FF0A62`,
+`1C43C38D1AAF716174248F999491E2EC4F09E3E4DE0752F6942FDA25E98055ED`,
+`B0B59B63F8C968677C20C12B7785C8FAB36B01024D936AC8EDC66771AF30F89A`.
+
 
 ### Current prefix-dispatch reuse recheck
 

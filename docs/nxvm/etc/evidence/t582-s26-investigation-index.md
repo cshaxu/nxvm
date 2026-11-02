@@ -100,6 +100,8 @@ These are bounded improvements; none establishes real-time performance.
   [S39 middle-phase sample](t582-s39-execution-convergence.md#startup-middle-phase-instruction-samples).
 - Sampled middle-phase opcode execution and port-read stages:
   [S39 attribution](t582-s39-execution-convergence.md#startup-middle-opcode-and-port-read-attribution).
+- I/O bitmap permission-helper compilation boundary:
+  [S39 experiment](t582-s39-execution-convergence.md#io-permission-check-compilation-experiment).
 - Forced-inline conditional-jump helper upper bound:
   [S39 comparison](t582-s39-execution-convergence.md#conditional-branch-compiler-upper-bound-probe).
 - Scheduler-only pacing-field suppression prototype:

@@ -1,5 +1,12 @@
 # M5 T582 S39 — Active: execution and timing architecture convergence
 
+### I/O permission compilation experiment not adopted
+
+A task-only compiler hint changed the port-input stack frame and improved one
+fixed-work sample on each width, but one adjacent x64 full-menu comparison did
+not establish a repeatable practical improvement. The nonportable hint was not
+adopted; PC110 usability remains unresolved. See S39 evidence.
+
 ### Startup-middle port-read attribution
 
 Task-only x64 sampling attributed a substantial portion of sampled ordinary
