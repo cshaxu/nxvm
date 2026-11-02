@@ -1,4 +1,31 @@
-# M5 T584 S2 — Active: Personaware keyboard and pause/resume matrix
+# M5 T584 S3 — Active: inking calibration owner path
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T584 S3 after S2 product keyboard matrix. |
+| Admission And Approval | Owner requested automatic completion of the first four PC110 receivers. |
+| Objective | Verify the current inking input, IRQ and guest calibration route using the existing machine and tests; identify what remains for genuine native capture. |
+| Non-goals | No user-desktop focus theft, pointer clipping of the user desktop, owner-media writes or claiming injected Machine events are physical input. |
+| Reference Baseline | 2cc5e8c60; S1/S2 actual product keyboard evidence and existing inking tests. |
+| Candidate Proposal | [Product interaction](../proposals/m5-pc110-product-interaction.md); [interaction ledger](../etc/evidence/t584-product-interaction-ledger.md). |
+| Files And ABI Surface | Initially task-owned isolated diagnostics and NXVM evidence; no public API or Shared change. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding, UI and source policy. |
+| Verification | Exercise existing inking/IRQ and relevant Machine route with observed guest state; run repository units and documentation gate. |
+| Expected Markers | Guest-visible calibration progress and precise source/host boundary evidence. |
+| Asset Needs | Existing EXEs, external firmware and private disk copies only. |
+| Reporting Requirements | Separate component/driver and actual native Window input results; retain unavailable human/RDP cases. |
+| Stop Conditions | No guessed physical hardware claim, desktop switching or unreviewed Shared modification. |
+| Exit Criteria | Reviewed owner-path evidence or an explicit reproducible gap for corrective work. |
+| Original Owner Request | Complete the first four PC110 queue tasks. |
+| Similar-Issue Sweep | Trace inking and PS/2 event ownership, capture/release and queue delivery. |
+
+# M5 T584 S2 — Closed: Personaware keyboard and pause/resume matrix
+
+Both variants and both widths entered the actual Personaware World Clock,
+paused/resumed, returned and exited. The original TFT exit-observer failures
+and stale pause-notification bug are retained; both TFT cases passed with a
+corrected observer. The original x86 unit run had two timeouts and the complete
+serial rerun passed 712/712. Native pointer and RDP remain separate.
 
 | Field | Required record |
 | --- | --- |
@@ -15,7 +42,7 @@
 | Asset Needs | Existing EXEs, independently copied media and guest-produced CMOS. |
 | Reporting Requirements | Per-case and host evidence, failed checks, actual RDP/manual boundary, and unresolved teardown observations. |
 | Stop Conditions | No desktop switching, pointer clipping of the user desktop or unreviewed Shared modification. |
-| Exit Criteria | Reviewed scoped matrix or a precise, reproducible defect and next corrective batch. |
+| Exit Criteria | Reviewed 2cc5e8c60: real-product keyboard and pause/resume matrix, corrected TFT observer reruns and 712/712 x86 units; failures and host limits retained. |
 | Original Owner Request | Complete the first four PC110 queue tasks. |
 | Similar-Issue Sweep | Compare both firmware variants and both host widths against the same product path. |
 
