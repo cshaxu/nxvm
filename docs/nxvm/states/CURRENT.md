@@ -1,4 +1,31 @@
-# M5 T583 S8 — Active: in-process cold restart and reset
+# M5 T583 S9 — Active: x86 Setup date/time and retained restart
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T583 S9 after S8 lifecycle evidence. |
+| Admission And Approval | Owner requested completion of the four PC110 receivers and automatic sequential execution. |
+| Objective | Verify deliberate x86 date/time edits and retention for both PC110 variants, then reconcile the first-configuration receiver. |
+| Non-goals | No Shared changes, owner-media writes, fabricated CMOS, blind input or stale-frame success. |
+| Reference Baseline | d06778ba6 and the T583 coverage ledger. |
+| Candidate Proposal | [T583 coverage ledger](../etc/evidence/t583-first-setup-ledger.md). |
+| Files And ABI Surface | Task-owned isolated observer and NXVM evidence initially; no production API changes. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding, UI and source policy. |
+| Verification | Observe Setup, edit valid date/time on x86 for both variants, save via normal product teardown and verify separate-process boot and CMOS; complete repository units and document gate. |
+| Expected Markers | Edited Setup frame, RTC fields after save and restart, DOS frame and normal exit. |
+| Asset Needs | Private media copies and existing EXEs; preserve all owner files. |
+| Reporting Requirements | Per-variant evidence, exit, tests, unverified desktop and retained product gaps. |
+| Stop Conditions | No user-desktop focus theft or synthetic guest configuration. |
+| Exit Criteria | Reviewed date/time and restart evidence or an explicitly identified real remaining defect. |
+| Original Owner Request | Complete the four queued PC110 tasks. |
+| Similar-Issue Sweep | Compare x86 variants against S7's x64 route and S8's lifecycle results. |
+
+# M5 T583 S8 — Closed: in-process cold restart and reset
+
+All four actual EXE/variant combinations reached DOS after both stop/start and
+reset/resume, with new POST frames. Three exited normally on the first run;
+the DSTN x86 repeat exited normally with an explicitly recorded wait and exit
+code. The original DSTN x86 exit-check failure remains unexplained. Full x86
+units passed 712/712.
 
 | Field | Required record |
 | --- | --- |
@@ -15,7 +42,7 @@
 | Asset Needs | Private media copies and guest-produced configuration; preserve all owner files. |
 | Reporting Requirements | Per-variant and width checkpoints, actual exit, unverified conditions and exact results. |
 | Stop Conditions | No user-desktop focus theft or claim from stale frames. |
-| Exit Criteria | Reviewed lifecycle behavior or explicit evidence-backed remaining receiver. |
+| Exit Criteria | Reviewed d06778ba6: both restart paths reached new POST/DOS in all four cases; normal teardown completed in an independent DSTN x86 repeat, with the first exit-check failure retained as unresolved. |
 | Original Owner Request | Complete the four queued PC110 tasks. |
 | Similar-Issue Sweep | Compare both variants, both widths and stop/start versus reset/resume. |
 
