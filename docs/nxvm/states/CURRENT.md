@@ -1,5 +1,15 @@
 # M5 T582 S39 — Active: execution and timing architecture convergence
 
+### Local string-form handoff remains experimental
+
+An unwrapped local-argument timing prototype reached the same stable PC110
+frame as a following baseline in one x64 private-media pair, but both took
+minutes and x86 fixed-work samples were mixed. The prototype removes helper
+entries still used by tests; a scratch forwarding version passes focused
+tests but changes generated layout and did not establish a consistent
+benefit. Preserve the individual timing tests and qualify a single-owner
+design before changing Shared production; usability remains unproven.
+
 ### Masked-span candidate withdrawn; crossing defect open
 
 A generic masked-span candidate reduced isolated query work but did not

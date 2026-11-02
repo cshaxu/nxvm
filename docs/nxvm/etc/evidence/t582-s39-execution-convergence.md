@@ -29,6 +29,22 @@ Unwrapped comparison, focused-test and wrapped comparison logs SHA-256:
 `0E93E298B4E5FF0610F15E99BB6E0CB034C2B962B69346FF91D1DDB41B7D02D1`,
 `D619746981663878B8668DB5827BCA686328C43E1B51BB9175AD5EA8B8F28268`.
 
+The unwrapped prototype was then exercised through the x64 PC110 product
+factory using private copies of the same media and CMOS as a subsequent
+baseline. It reached the stable complete frame at sample 216, 29 samples
+after Enter, and exited zero in 219.88 seconds. The following baseline reached
+the same frame at sample 256, 35 samples after Enter, and exited zero in
+260.69 seconds. Both frame SHA-256 values were
+`E5C1AB80C00F84C1B80C1069EFA58FD01D761FDE7AC07F7982F0B0B34AB0DE99`;
+both final RTC reports had second 23. This single candidate-first ordered
+pair suggests a possible end-to-end benefit, but does not establish complete
+state equivalence, a reproducible gain, x86 behavior or native Window/RDP
+interaction. Both times remain too slow for the requested usability. The
+prototype still lacks the original test entry points and is not a release.
+Candidate and baseline guest log SHA-256 respectively:
+`F58967C37DDF5A4B3A61CEBA3CBE6416E3C6D1397002ECE234FB6DB2F8E72CE9`,
+`416F4028F3CD72451D7B0867209BF99468142637F6983BEF31DF8B47DB25866`.
+
 ## Repeated 486 string-form classification
 
 A task-only x64 counter recorded calls to the existing string-form classifier
