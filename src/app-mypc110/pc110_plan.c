@@ -349,7 +349,9 @@ lib_status mypc110_machine_construction_create(const x86_nxvm_machine_config *co
     *out_construction = (x86_nxvm_machine_construction){0};
     if (config == LIB_NULL || assets == LIB_NULL || assets->bios[0u].data == LIB_NULL ||
         assets->bios[0u].bytes != MYPC110_FIRMWARE_BYTES ||
-        assets->font.data == LIB_NULL || assets->font.bytes != MYPC110_FONT_ROM_BYTES) {
+        assets->font.data == LIB_NULL || assets->font.bytes != MYPC110_FONT_ROM_BYTES ||
+        (config->memory_bytes != 0u &&
+            config->memory_bytes != mypc110_machine_configuration.memory_bytes)) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
     plan = lib_allocate_zero(1u, sizeof(*plan));

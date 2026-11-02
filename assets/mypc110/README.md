@@ -6,6 +6,9 @@ with DSTN selected and read the adjacent `mypc110.ini`. While stopped, use
 is not persisted across process launches. Each display has its own CMOS file;
 deployment does not rewrite the INI or user-owned CMOS files.
 
+The current machine supports 20 MiB of memory. Omit `memory_kib` to use that
+default or set it to `20480`; other explicit values are rejected.
+
 F12 is the virtual PC110 resume button. When the guest has input focus, use
 it to wake firmware that has entered its own suspend state. This is separate
 from the monitor's `resume` command, which resumes a paused emulator.

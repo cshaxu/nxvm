@@ -349,6 +349,13 @@ int main(int argc, char **argv)
     cmos[0x3fu] = 0xf3u;
     cmos[0x40u] = 0x44u;
     cmos[0x7fu] = 0x7eu;
+    {
+        x86_nxvm_machine_config invalid_memory = config;
+        invalid_memory.memory_bytes = 4u * 1024u * 1024u;
+        if (mypc110_machine_construction_create(&invalid_memory, &assets, &construction) !=
+                LIB_STATUS_INVALID_ARGUMENT || construction.profile.context != LIB_NULL)
+            return 1;
+    }
     if (mypc110_machine_construction_create(&config, &assets, &construction) != LIB_STATUS_OK)
         failed = 1;
     else if (construction.topology.planar_parity.refresh_status_source !=
