@@ -1,14 +1,127 @@
 #include "app-mypc110/pc110_pcic_interface.h"
 #include "lib/types/test.h"
 
+static lib_bool write_register(x86_core_machine *machine, lib_u8 index, lib_u8 value)
+{
+    return x86_core_machine_bus_write(machine, X86_RB5C396_INDEX_PORT, index) == LIB_STATUS_OK &&
+        x86_core_machine_bus_write(machine, X86_RB5C396_DATA_PORT, value) == LIB_STATUS_OK;
+}
+
+static lib_status lower_read(void *owner, lib_u32 physical, lib_uptr destination,
+    lib_uptr bytes, lib_bool observe_only)
+{
+    (void)observe_only;
+    lib_memory_copy((void *)destination, (lib_u8 *)owner + physical - 0xc0000u, bytes);
+    return LIB_STATUS_OK;
+}
+
+static lib_status lower_write(void *owner, lib_u32 physical, lib_uptr source,
+    lib_uptr bytes)
+{
+    lib_memory_copy((lib_u8 *)owner + physical - 0xc0000u, (const void *)source, bytes);
+    return LIB_STATUS_OK;
+}
+
+static lib_status lower_query(void *owner, lib_u32 physical, lib_uptr bytes,
+    x86_core_machine_memory_access access)
+{
+    (void)owner; (void)physical; (void)bytes; (void)access;
+    return LIB_STATUS_OK;
+}
+
+static int memory_card_smoke(x86_core_machine *machine, mypc110_pcic *pcic, lib_u8 *lower)
+{
+    lib_storage_medium *common = LIB_NULL, *attribute = LIB_NULL, *second = LIB_NULL;
+    lib_u8 data = 0x5au, actual = 0u;
+    int failed = 0;
+
+    if (lib_storage_medium_create_zero_overlay(8192u, &common) != LIB_STATUS_OK ||
+        lib_storage_medium_create_zero_overlay(8192u, &attribute) != LIB_STATUS_OK ||
+        lib_storage_medium_create_zero_overlay(8192u, &second) != LIB_STATUS_OK) {
+        failed = 1;
+        goto done;
+    }
+    failed |= lib_storage_medium_write_at(common, 0u, &data, 1u) != LIB_STATUS_OK;
+    failed |= mypc110_pcic_set_memory_card(pcic, 0u, common, attribute, LIB_FALSE) != LIB_STATUS_OK;
+    failed |= !write_register(machine, 0x10u, 0xc0u) ||
+        !write_register(machine, 0x11u, 0x80u) ||
+        !write_register(machine, 0x12u, 0xc0u) ||
+        !write_register(machine, 0x13u, 0u) ||
+        !write_register(machine, 0x14u, 0x40u) ||
+        !write_register(machine, 0x15u, 0x3fu) ||
+        !write_register(machine, 0x06u, 1u);
+    failed |= x86_core_machine_memory_read(machine, 0xc0000u, &actual, 1u) != LIB_STATUS_OK ||
+        actual != data;
+    data = 0xa5u;
+    failed |= x86_core_machine_memory_write(machine, 0xc0000u, &data, 1u) != LIB_STATUS_OK ||
+        lib_storage_medium_read_at(common, 0u, &actual, 1u) != LIB_STATUS_OK || actual != data;
+    {
+        const lib_u8 pair[2] = {0x81u, 0x82u};
+        lib_u8 observed[2] = {0u, 0u};
+        failed |= x86_core_machine_memory_write(machine, 0xc0fffu, pair, 2u) != LIB_STATUS_OK ||
+            x86_core_machine_memory_read(machine, 0xc0fffu, observed, 2u) != LIB_STATUS_OK ||
+            lib_memory_compare(pair, observed, 2u) != 0 || lower[0x1000u] != pair[1] ||
+            lib_storage_medium_read_at(common, 0xfffu, &actual, 1u) != LIB_STATUS_OK || actual != pair[0];
+    }
+    failed |= !write_register(machine, 0x15u, 0x7fu) ||
+        x86_core_machine_memory_read(machine, 0xc0000u, &actual, 1u) != LIB_STATUS_OK || actual != 0u;
+    data = 0x33u;
+    failed |= x86_core_machine_memory_write(machine, 0xc0000u, &data, 1u) != LIB_STATUS_OK ||
+        lib_storage_medium_read_at(attribute, 0u, &actual, 1u) != LIB_STATUS_OK || actual != data;
+    failed |= !write_register(machine, 0x15u, 0xffu);
+    data = 0x44u;
+    failed |= x86_core_machine_memory_write(machine, 0xc0000u, &data, 1u) != LIB_STATUS_OK ||
+        lib_storage_medium_read_at(attribute, 0u, &actual, 1u) != LIB_STATUS_OK || actual != 0x33u;
+    {
+        const x86_rb5c396_slot_inputs absent = {0};
+        const x86_rb5c396_slot_inputs present = {.card_present = LIB_TRUE, .ready = LIB_TRUE};
+        failed |= mypc110_pcic_set_slot_inputs(pcic, 0u, &absent) != LIB_STATUS_OK ||
+            pcic->range_bytes != 0u ||
+            x86_core_machine_memory_read(machine, 0xc0000u, &actual, 1u) != LIB_STATUS_OK ||
+            actual != lower[0] ||
+            mypc110_pcic_set_slot_inputs(pcic, 0u, &present) != LIB_STATUS_OK ||
+            x86_core_machine_memory_read(machine, 0xc0000u, &actual, 1u) != LIB_STATUS_OK ||
+            actual != 0x33u;
+    }
+    data = 0x77u;
+    failed |= lib_storage_medium_write_at(second, 0u, &data, 1u) != LIB_STATUS_OK ||
+        mypc110_pcic_set_memory_card(pcic, 1u, second, LIB_NULL, LIB_TRUE) != LIB_STATUS_OK ||
+        !write_register(machine, 0x50u, 0xd0u) || !write_register(machine, 0x51u, 0u) ||
+        !write_register(machine, 0x52u, 0xd0u) || !write_register(machine, 0x53u, 0u) ||
+        !write_register(machine, 0x54u, 0x30u) || !write_register(machine, 0x55u, 0x3fu) ||
+        !write_register(machine, 0x46u, 1u) ||
+        x86_core_machine_memory_read(machine, 0xd0000u, &actual, 1u) != LIB_STATUS_OK || actual != data;
+    data = 0x99u;
+    failed |= x86_core_machine_memory_write(machine, 0xd0000u, &data, 1u) != LIB_STATUS_OK ||
+        lib_storage_medium_read_at(second, 0u, &actual, 1u) != LIB_STATUS_OK || actual != 0x77u;
+    mypc110_pcic_reset(pcic);
+    failed |= pcic->range_bytes != 0u ||
+        x86_core_machine_memory_read(machine, 0xc0000u, &actual, 1u) != LIB_STATUS_OK ||
+        actual != lower[0];
+    failed |= mypc110_pcic_set_memory_card(pcic, 0u, LIB_NULL, LIB_NULL, LIB_FALSE) != LIB_STATUS_OK;
+    failed |= mypc110_pcic_set_memory_card(pcic, 1u, LIB_NULL, LIB_NULL, LIB_FALSE) != LIB_STATUS_OK;
+    failed |= pcic->range_bytes != 0u;
+done:
+    (void)mypc110_pcic_set_memory_card(pcic, 0u, LIB_NULL, LIB_NULL, LIB_FALSE);
+    (void)mypc110_pcic_set_memory_card(pcic, 1u, LIB_NULL, LIB_NULL, LIB_FALSE);
+    if (common != LIB_NULL) (void)lib_storage_medium_destroy(&common);
+    if (attribute != LIB_NULL) (void)lib_storage_medium_destroy(&attribute);
+    if (second != LIB_NULL) (void)lib_storage_medium_destroy(&second);
+    return failed;
+}
+
 int main(void)
 {
     const x86_core_machine_executor_config config = {
-        .memory_bytes = 65536u, .cpu_profile = X86_CORE_CPU_PROFILE_80486SX};
+        .memory_bytes = 2u * 1024u * 1024u, .cpu_profile = X86_CORE_CPU_PROFILE_80486SX};
     x86_core_machine *machine = LIB_NULL;
     x86_rb5c396 *controller = LIB_NULL;
     x86_nxvm_board_pic_bus *master = LIB_NULL, *slave = LIB_NULL;
     mypc110_pcic pcic = {0};
+    lib_u8 lower[8192] = {0};
+    const x86_core_machine_memory_device_route lower_route = {
+        0xc0000u, sizeof(lower), {lower_read, lower_write, lower_query},
+        X86_CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT, LIB_NULL};
     lib_u32 value = 0u;
     const x86_rb5c396_slot_inputs present = {.card_present = LIB_TRUE};
     const x86_rb5c396_slot_inputs absent = {0};
@@ -20,6 +133,8 @@ int main(void)
             X86_NXVM_BOARD_PIC_TOPOLOGY_CASCADED) != LIB_STATUS_OK ||
         mypc110_pcic_initialize(&pcic, controller, master, slave) != LIB_STATUS_OK ||
         mypc110_pcic_install_routes(machine, &pcic) != LIB_STATUS_OK ||
+        x86_core_machine_install_memory_device_routes(machine, &lower_route, 1u,
+            LIB_NULL, LIB_NULL, lower) != LIB_STATUS_OK ||
         x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
         x86_core_machine_reset(machine) != LIB_STATUS_OK) result = 1;
     else if (x86_core_machine_bus_write(machine, X86_RB5C396_INDEX_PORT, 0u) !=
@@ -89,6 +204,7 @@ int main(void)
             x86_nxvm_board_pic_irq_source_is_asserted(pcic.irq[0])) result = 9;
     else if (x86_core_machine_bus_write(machine, X86_RB5C396_DATA_PORT, 0x58u) != LIB_STATUS_OK ||
             !x86_nxvm_board_pic_irq_source_is_asserted(pcic.irq[0])) result = 10;
+    if (result == 0 && memory_card_smoke(machine, &pcic, lower)) result = 12;
     mypc110_pcic_reset(&pcic);
     if (x86_nxvm_board_pic_irq_source_is_asserted(pcic.irq[0]) ||
         x86_nxvm_board_pic_irq_source_is_asserted(pcic.irq[1])) result = 11;

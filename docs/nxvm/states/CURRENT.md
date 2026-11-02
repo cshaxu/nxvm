@@ -1,3 +1,45 @@
+# M5 T585 S7 — Active: PC110 card media and I/O assessment
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T585 S7 after the S6 receiver. |
+| Admission And Approval | Owner directed autonomous completion of the first four PC110 tasks and approved sourced L1/L2 models. |
+| Objective | Assess and complete the next real PC Card media and I/O receiver gaps against the controller and product ownership. |
+| Non-goals | No mutation of owner media, fabricated I/O-card support, second bus or unsupported physical-timing claim. |
+| Reference Baseline | [S6 memory receiver](../etc/evidence/t585-s6-pcic-memory.md), Ricoh manual and current PC110 product/slot ownership. |
+| Candidate Proposal | [Device and model qualification](../proposals/m5-pc110-device-model-qualification.md). |
+| Files And ABI Surface | Determine from current source and reference evidence; preserve Shared boundaries and independent component tests. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding and source policy. |
+| Verification | Real owner path where available, both widths, relevant unit/integration and artifact rules; explicitly retain unsupported devices and physical-input limits. |
+| Expected Markers | Observable and correctly owned card/media paths or a precise sourced disposition for each remaining gap. |
+| Asset Needs | Disposable task-owned media only; preserve user INI, firmware and disks. |
+| Reporting Requirements | Distinguish memory cards, I/O cards, onboard ATA and wake/status semantics. |
+| Stop Conditions | No silently accepted wrong routing, user-media mutation or unsupported completeness claim. |
+| Exit Criteria | Reviewed device/media disposition and implemented receiver work validated at its actual boundary, with all remaining work explicitly tracked. |
+| Original Owner Request | Complete the first four PC110 queue tasks. |
+| Similar-Issue Sweep | Both sockets, mapping and ownership, errors, status and interrupt/wake paths. |
+
+# M5 T585 S6 — Closed: PC110 memory-card bus receiver
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T585 S6 after S5 at 192aaa3d2. |
+| Admission And Approval | Owner directed autonomous completion of the first four PC110 tasks and approved sourced L1/L2 models. |
+| Objective | Connect the Ricoh memory-window decoder to a bounded PC110 memory-card backing through the existing Core route. |
+| Non-goals | No second bus, permanent 16-MiB active overlay, mutation of owner media, fake I/O-card support or physical timing claim. |
+| Reference Baseline | S4 decoder cf2782271; S5 Core range 175aff537; current PC110 and Storage ownership. |
+| Candidate Proposal | [Device and model qualification](../proposals/m5-pc110-device-model-qualification.md); [S5 evidence](../etc/evidence/t585-s5-core-device-range.md). |
+| Files And ABI Surface | Ricoh bounds/timing contract, PC110 adapter, any necessary Core masked-span correction and corresponding tests. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding and source policy. |
+| Verification | Actual Core memory read/write, disabled/no-card RAM fallback, mapping and card changes, attributes, protection, cache, crossings and both widths; repository gates and 14 releases. |
+| Expected Markers | Guest bus observes card bytes only in enabled windows; RAM fallback and cache remain correct on move/removal. |
+| Asset Needs | Disposable task-owned memory-card medium; preserve owner configuration, disks and firmware. |
+| Reporting Requirements | Separate machine-boundary attachment from later product commands, I/O cards, wake routing and physical claims. |
+| Stop Conditions | No owner-media mutation, silent wrong routing, second memory bus or broad always-active overlay. |
+| Exit Criteria | Shared 6f68a2bde and MyRaidenII 0e6cd7e95 reviewed; full dual-width unit/integration and release evidence in [S6 record](../etc/evidence/t585-s6-pcic-memory.md); product adapter delivered in the NXVM S6 commit. |
+| Original Owner Request | Complete the first four PC110 queue tasks. |
+| Similar-Issue Sweep | Both slots and windows, offset/attribute changes, cross-boundary accesses, A20/masked spans, overlapping providers, reset and removal. |
+
 # M5 T585 S5 — Closed: movable Core memory-device range
 
 | Field | Required record |

@@ -274,7 +274,9 @@ static lib_status mypc110_machine_after_firmware(void *opaque, x86_core_machine 
 
     if (plan == LIB_NULL || core == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     plan->core = core;
-    status = mypc110_firmware_install_routes(core, &plan->firmware);
+    status = mypc110_pcic_install_routes(core, &plan->pcic);
+    if (status == LIB_STATUS_OK)
+        status = mypc110_firmware_install_routes(core, &plan->firmware);
     if (status == LIB_STATUS_OK)
         status = mypc110_config_install_routes(core, &plan->firmware,
             plan->configuration_chip);
@@ -290,8 +292,6 @@ static lib_status mypc110_machine_after_firmware(void *opaque, x86_core_machine 
         status = mypc110_lpt_install_routes(core, &plan->lpt);
     if (status == LIB_STATUS_OK)
         status = mypc110_display_install_routes(core, plan->display_controller);
-    if (status == LIB_STATUS_OK)
-        status = mypc110_pcic_install_routes(core, &plan->pcic);
     return status;
 }
 
