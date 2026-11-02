@@ -20,11 +20,18 @@ static lib_u8 x86_rb5c396_interface_status(const x86_rb5c396 *chip,
         ((chip->registers[slot][2u] & 0x20u) == 0u || inputs->card_present)) {
         value |= 0x40u;
     }
-    if (inputs->ready) value |= 0x20u;
-    if (inputs->write_protected) value |= 0x10u;
+    if ((chip->registers[slot][3u] & 0x20u) != 0u) {
+        if (!inputs->card_present || !inputs->io_irq_asserted) value |= 0x20u;
+        if ((chip->registers[slot][3u] & 0x80u) == 0u &&
+            (!inputs->card_present || !inputs->io_status_asserted))
+            value |= 0x01u;
+    } else {
+        if (inputs->ready) value |= 0x20u;
+        if (inputs->write_protected) value |= 0x10u;
+        if (inputs->battery_detect_2) value |= 0x02u;
+        if (inputs->battery_detect_1) value |= 0x01u;
+    }
     if (inputs->card_present) value |= 0x0cu;
-    if (inputs->battery_detect_2) value |= 0x02u;
-    if (inputs->battery_detect_1) value |= 0x01u;
     return value;
 }
 
@@ -77,7 +84,9 @@ lib_status x86_rb5c396_set_slot_inputs(x86_rb5c396 *chip, lib_u8 slot,
             if (old->battery_detect_1 && !inputs->battery_detect_1)
                 chip->registers[slot][0x04u] |= 0x01u;
         }
-    }
+    } else if (inputs->card_present && (chip->registers[slot][0x03u] & 0x80u) == 0u &&
+        (!old->card_present || !old->io_status_asserted) && inputs->io_status_asserted)
+        chip->registers[slot][0x04u] |= 0x01u;
     chip->inputs[slot] = *inputs;
     return LIB_STATUS_OK;
 }
@@ -91,6 +100,12 @@ lib_status x86_rb5c396_get_slot_inputs(const x86_rb5c396 *chip, lib_u8 slot,
     return LIB_STATUS_OK;
 }
 
+static lib_bool x86_rb5c396_valid_irq(lib_u8 irq)
+{
+    return irq == 3u || irq == 4u || irq == 5u || irq == 7u || irq == 9u ||
+        irq == 10u || irq == 11u || irq == 12u || irq == 14u || irq == 15u;
+}
+
 lib_status x86_rb5c396_status_irq(const x86_rb5c396 *chip, lib_u8 slot,
     lib_u8 *out_irq)
 {
@@ -100,16 +115,28 @@ lib_status x86_rb5c396_status_irq(const x86_rb5c396 *chip, lib_u8 slot,
         return LIB_STATUS_INVALID_ARGUMENT;
     *out_irq = 0u;
     pending = chip->registers[slot][0x04u] & chip->registers[slot][0x05u] & 0x0fu;
-    /* STSCHG/RI is not yet modeled; do not reinterpret a memory battery
-     * latch as an I/O-card status signal after a type change. */
-    if ((chip->registers[slot][0x03u] & 0x20u) != 0u) pending &= (lib_u8)~0x07u;
+    if ((chip->registers[slot][0x03u] & 0x20u) != 0u)
+        pending &= (chip->registers[slot][0x03u] & 0x80u) != 0u ? 0x08u : 0x09u;
     if ((chip->registers[slot][0x16u] & 0x10u) != 0u)
         pending &= (lib_u8)~0x08u;
     if ((chip->registers[slot][0x03u] & 0x10u) != 0u || pending == 0u)
         return LIB_STATUS_OK;
     irq = chip->registers[slot][0x05u] >> 4u;
-    if (irq == 3u || irq == 4u || irq == 5u || irq == 7u || irq == 9u ||
-        irq == 10u || irq == 11u || irq == 12u || irq == 14u || irq == 15u)
+    if (x86_rb5c396_valid_irq(irq)) *out_irq = irq;
+    return LIB_STATUS_OK;
+}
+
+lib_status x86_rb5c396_io_irq(const x86_rb5c396 *chip, lib_u8 slot,
+    lib_u8 *out_irq)
+{
+    lib_u8 control, irq;
+    if (chip == LIB_NULL || out_irq == LIB_NULL || slot >= X86_RB5C396_SLOT_COUNT)
+        return LIB_STATUS_INVALID_ARGUMENT;
+    *out_irq = 0u;
+    control = chip->registers[slot][0x03u];
+    irq = control & 0x0fu;
+    if ((control & 0x20u) != 0u && chip->inputs[slot].card_present &&
+        chip->inputs[slot].io_irq_asserted && x86_rb5c396_valid_irq(irq))
         *out_irq = irq;
     return LIB_STATUS_OK;
 }
@@ -221,7 +248,7 @@ lib_status x86_rb5c396_read(x86_rb5c396 *chip, lib_u16 port,
     else if (selected == 0x04u) {
         *out_value = chip->registers[slot][selected];
         if ((chip->registers[slot][0x03u] & 0x20u) != 0u)
-            *out_value &= (lib_u8)~0x07u;
+            *out_value &= (chip->registers[slot][0x03u] & 0x80u) != 0u ? 0x18u : 0x19u;
         if ((chip->registers[0u][0x1eu] & 0x04u) == 0u)
             chip->registers[slot][selected] = 0u;
     } else
@@ -246,7 +273,18 @@ lib_status x86_rb5c396_write(x86_rb5c396 *chip, lib_u16 port,
         selected == X86_RB5C396_INTERFACE_STATUS_REGISTER ||
         selected == X86_RB5C396_CHIP_IDENTIFICATION_REGISTER)
         return LIB_STATUS_OK;
-    if (selected == 0x1eu)
+    if (selected == 0x03u) {
+        const lib_u8 previous = chip->registers[slot][selected];
+        /* A newly selected status-change input starts a fresh source view;
+         * do not reinterpret an old memory battery latch as STSCHG. */
+        if (((previous ^ value) & 0x20u) != 0u)
+            chip->registers[slot][0x04u] &= (lib_u8)~0x07u;
+        if ((value & 0xa0u) == 0x20u && chip->inputs[slot].card_present &&
+            chip->inputs[slot].io_status_asserted &&
+            (previous & 0xa0u) != 0x20u)
+            chip->registers[slot][0x04u] |= 0x01u;
+        chip->registers[slot][selected] = value;
+    } else if (selected == 0x1eu)
         chip->registers[0u][selected] = value;
     else if (selected == 0x04u) {
         if ((chip->registers[0u][0x1eu] & 0x04u) != 0u)

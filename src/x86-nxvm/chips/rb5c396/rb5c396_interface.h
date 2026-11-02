@@ -27,6 +27,9 @@ typedef struct x86_rb5c396_slot_inputs {
     lib_bool write_protected;
     lib_bool battery_detect_2;
     lib_bool battery_detect_1;
+    /* Logical assertions of the active-low I/O-card IREQ and STSCHG pins. */
+    lib_bool io_irq_asserted;
+    lib_bool io_status_asserted;
 } x86_rb5c396_slot_inputs;
 
 typedef struct x86_rb5c396_memory_mapping {
@@ -59,6 +62,8 @@ lib_status x86_rb5c396_get_slot_inputs(const x86_rb5c396 *chip, lib_u8 slot,
     x86_rb5c396_slot_inputs *out_inputs);
 /* Zero means no selected ISA status-change interrupt for this socket. */
 lib_status x86_rb5c396_status_irq(const x86_rb5c396 *chip, lib_u8 slot,
+    lib_u8 *out_irq);
+lib_status x86_rb5c396_io_irq(const x86_rb5c396 *chip, lib_u8 slot,
     lib_u8 *out_irq);
 /* Decode one enabled window. Unsupported means this window does not select
  * the address; socket population and overlapping-window policy belong to the

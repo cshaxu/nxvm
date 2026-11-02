@@ -137,6 +137,59 @@ static lib_bool socket_status_changes(void)
     return !failed;
 }
 
+static lib_bool io_signals(void)
+{
+    x86_rb5c396 *chip = LIB_NULL;
+    x86_rb5c396_slot_inputs input;
+    lib_u8 status_irq, io_irq, value;
+    lib_bool failed = x86_rb5c396_create(&chip) != LIB_STATUS_OK;
+    if (failed) return LIB_FALSE;
+    for (lib_u8 slot = 0u; slot < X86_RB5C396_SLOT_COUNT; ++slot) {
+        const lib_u8 bank = (lib_u8)(slot << 6u);
+        input = (x86_rb5c396_slot_inputs){.card_present = LIB_TRUE,
+            .io_irq_asserted = LIB_TRUE, .io_status_asserted = LIB_TRUE};
+        failed |= !write_register(chip, (lib_u8)(bank + 3u), 0x65u) ||
+            !write_register(chip, (lib_u8)(bank + 5u), 0xa1u) ||
+            x86_rb5c396_set_slot_inputs(chip, slot, &input) != LIB_STATUS_OK ||
+            x86_rb5c396_status_irq(chip, slot, &status_irq) != LIB_STATUS_OK || status_irq != 10u ||
+            x86_rb5c396_io_irq(chip, slot, &io_irq) != LIB_STATUS_OK || io_irq != 5u ||
+            select_register(chip, (lib_u8)(bank + 1u)) != LIB_STATUS_OK ||
+            x86_rb5c396_read(chip, X86_RB5C396_DATA_PORT, &value) != LIB_STATUS_OK || value != 0x0cu ||
+            select_register(chip, (lib_u8)(bank + 4u)) != LIB_STATUS_OK ||
+            x86_rb5c396_read(chip, X86_RB5C396_DATA_PORT, &value) != LIB_STATUS_OK || value != 9u ||
+            x86_rb5c396_status_irq(chip, slot, &status_irq) != LIB_STATUS_OK || status_irq != 0u ||
+            x86_rb5c396_io_irq(chip, slot, &io_irq) != LIB_STATUS_OK || io_irq != 5u;
+        input.io_irq_asserted = LIB_FALSE;
+        input.io_status_asserted = LIB_FALSE;
+        failed |= x86_rb5c396_set_slot_inputs(chip, slot, &input) != LIB_STATUS_OK ||
+            x86_rb5c396_io_irq(chip, slot, &io_irq) != LIB_STATUS_OK || io_irq != 0u ||
+            select_register(chip, (lib_u8)(bank + 1u)) != LIB_STATUS_OK ||
+            x86_rb5c396_read(chip, X86_RB5C396_DATA_PORT, &value) != LIB_STATUS_OK || value != 0x2du ||
+            !write_register(chip, (lib_u8)(bank + 3u), 0xe5u);
+        input.io_status_asserted = LIB_TRUE;
+        failed |= x86_rb5c396_set_slot_inputs(chip, slot, &input) != LIB_STATUS_OK ||
+            x86_rb5c396_status_irq(chip, slot, &status_irq) != LIB_STATUS_OK || status_irq != 0u ||
+            select_register(chip, (lib_u8)(bank + 4u)) != LIB_STATUS_OK ||
+            x86_rb5c396_read(chip, X86_RB5C396_DATA_PORT, &value) != LIB_STATUS_OK || value != 0u;
+    }
+    x86_rb5c396_reset(chip);
+    failed |= x86_rb5c396_io_irq(chip, 0u, &io_irq) != LIB_STATUS_OK || io_irq != 0u ||
+        x86_rb5c396_io_irq(chip, 2u, &io_irq) != LIB_STATUS_INVALID_ARGUMENT;
+    input = (x86_rb5c396_slot_inputs){.io_status_asserted = LIB_TRUE};
+    failed |= !write_register(chip, 3u, 0x65u) || !write_register(chip, 5u, 0xa1u) ||
+        x86_rb5c396_set_slot_inputs(chip, 0u, &input) != LIB_STATUS_OK ||
+        select_register(chip, 1u) != LIB_STATUS_OK ||
+        x86_rb5c396_read(chip, X86_RB5C396_DATA_PORT, &value) != LIB_STATUS_OK || value != 0x21u ||
+        select_register(chip, 4u) != LIB_STATUS_OK ||
+        x86_rb5c396_read(chip, X86_RB5C396_DATA_PORT, &value) != LIB_STATUS_OK;
+    input.card_present = LIB_TRUE;
+    failed |= x86_rb5c396_set_slot_inputs(chip, 0u, &input) != LIB_STATUS_OK ||
+        x86_rb5c396_status_irq(chip, 0u, &status_irq) != LIB_STATUS_OK || status_irq != 10u ||
+        x86_rb5c396_read(chip, X86_RB5C396_DATA_PORT, &value) != LIB_STATUS_OK || value != 9u;
+    x86_rb5c396_destroy(chip);
+    return !failed;
+}
+
 static lib_bool io_windows(void)
 {
     x86_rb5c396 *chip = LIB_NULL;
@@ -299,5 +352,6 @@ int main(void)
             LIB_STATUS_OK || x86_rb5c396_read(chip, X86_RB5C396_DATA_PORT, &value) !=
             LIB_STATUS_OK || value != 0x2cu;
     x86_rb5c396_destroy(chip);
-    return failed || !memory_windows() || !io_windows() || !socket_status_changes() ? 1 : 0;
+    return failed || !memory_windows() || !io_windows() || !socket_status_changes() ||
+        !io_signals() ? 1 : 0;
 }
