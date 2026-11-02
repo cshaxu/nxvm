@@ -1,3 +1,24 @@
+# M5 T585 S18 — Active: PC110 FM output architecture
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T585 S18 after S17. |
+| Admission And Approval | Owner directed autonomous completion of PC110 queue tasks and permits sourced L2 and estimated L1 models. |
+| Objective | Design the minimum single-clock, single-PCM path for guest-programmed YM3812 output alongside ES488, then implement bounded real FM output with matching tests. |
+| Non-goals | No silent register-only device claimed as music; no second host stream, guest clock, or imported unreviewed third-party code. |
+| Reference Baseline | [S14 audio design](../etc/evidence/t585-s14-pc110-audio-design.md), [S16 PCM delivery](../etc/evidence/t585-s16-es488-playback-work.md), [S17 timers](../etc/evidence/t585-s17-opl2-timers.md), [S18 mixing investigation](../etc/evidence/t585-s18-fm-mixing-design.md), and available chip references. |
+| Candidate Proposal | [Device and model qualification](../proposals/m5-pc110-device-model-qualification.md). |
+| Files And ABI Surface | PC110 App audio and tests first; do not modify Shared without demonstrated need. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding and source policy. |
+| Verification | Guest register programming produces nonzero waveform via the real PCM receiver, plus simultaneous PCM/FM, reset and dual-width checks. |
+| Expected Markers | Meaningful generated sound, not only timer/status success. |
+| Asset Needs | Disposable test inputs; preserve all owner media, firmware and configuration. |
+| Reporting Requirements | Clearly distinguish bounded estimated synthesis, authoritative register behavior, production integration and real audibility. |
+| Stop Conditions | Do not mislabel a partial model as complete YM3812, or bypass backpressure and lifecycle ownership. |
+| Exit Criteria | Reviewed single-path design, bounded FM production and meaningful receiver tests, or explicit continuation of incomplete scope. |
+| Original Owner Request | Complete the first four PC110 queue tasks. |
+| Similar-Issue Sweep | Mixing, sample clocks, envelope reset, simultaneous ES488 playback, silence and backpressure. |
+
 # M5 T585 S17 — Closed: PC110 YM3812 register and timer path
 
 | Field | Required record |
