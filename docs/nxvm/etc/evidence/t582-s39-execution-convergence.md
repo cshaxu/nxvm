@@ -45,6 +45,23 @@ Candidate and baseline guest log SHA-256 respectively:
 `F58967C37DDF5A4B3A61CEBA3CBE6416E3C6D1397002ECE234FB6DB2F8E72CE9`,
 `416F4028F3CD72451D7B0867209BF99468142637F6983BEF31DF8B47DB25866`.
 
+A further scratch variant made the two local-argument calculations externally
+linkable instead of static, without adding forwarding wrappers. The original
+helper names and test signatures still require a real migration; this is not
+production-ready. At the fixed checkpoint, baseline/candidate was 17985/16337
+ms x64 and 22097/22506 ms x86; an x86 reverse-order candidate/baseline pair
+was 23461/23895 ms. All reported the same instruction count, ticks and PC;
+the x86 direction changed and the samples do not prove complete equivalence.
+Its later x64 private-media stable-frame run exited zero in 252.05 seconds,
+with the same frame hash and final RTC second 23 as the preceding baseline.
+This is not an adjacent reversed product comparison; it remains too slow and
+does not establish a reproducible gain or native desktop behavior. No Shared
+source, interface, test or release artifact was changed. Fixed-work forward,
+reverse and guest logs SHA-256 respectively:
+`D776174DF80055D7F1FA7F6AD1B74DA9684ACD9B2B1A05EEF16194428FCB7E25`,
+`5A57BC0C49752451247AD5FACA38F5899B6D5C674652BC612EB2D1586803F32C`,
+`03DFD7158069520045A3BA2B7A4BF520344A77E294E9A16D92E3ADE7C76077C3`.
+
 ## Repeated 486 string-form classification
 
 A task-only x64 counter recorded calls to the existing string-form classifier
