@@ -1,5 +1,16 @@
 # T582 S39 — execution and timing convergence
 
+## Dynamic-multiply timing loop frequency
+
+A task-only counter in the existing `ceiling_log2` timing helper recorded 59
+calls and 261 total loop iterations through the private-media x64 startup
+checkpoint of ten million instructions, 79964294 ticks and PC `0003dbc5`.
+The instrumented run took 17729 ms. This early-boot count does not describe
+later arithmetic-heavy workloads, x86 or full startup. It does show that
+replacing this loop cannot materially improve the measured checkpoint, so no
+Shared production change or receiver rebuild was made. Log SHA-256:
+`AB07FBEA5342DD384EB27B36886E5416A476B63DA5C8EE6EFFBC5F6F5C8E4236`.
+
 ## Startup timing spread by opcode
 
 A task-only wrapper recorded the existing completed timing result by primary
