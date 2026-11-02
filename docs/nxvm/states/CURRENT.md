@@ -1,4 +1,31 @@
-# M5 T584 S3 — Active: inking calibration owner path
+# M5 T584 S4 — Active: Console display and graphics handoff
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T584 S4 after S3 guest inking evidence. |
+| Admission And Approval | Owner requested automatic completion of the first four PC110 receivers. |
+| Objective | Verify actual PC110 Console-display startup, graphical Window handoff and monitor return for both control policies. |
+| Non-goals | No user-desktop focus theft, user-media writes, fabricated frames or treating native message injection as physical RDP input. |
+| Reference Baseline | b12b86e3e and T584 S1–S3 evidence. |
+| Candidate Proposal | [Product interaction](../proposals/m5-pc110-product-interaction.md); [interaction ledger](../etc/evidence/t584-product-interaction-ledger.md). |
+| Files And ABI Surface | Task-owned isolated diagnostics and NXVM evidence initially; no public API or Shared change. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding, UI and source policy. |
+| Verification | Exercise real EXEs and independent INI/media with Console display, both control policies, Window graphics, product keyboard and lifecycle; complete repository units and document gate. |
+| Expected Markers | Actual graphical Window, guest response, monitor pause/resume and normal exit. |
+| Asset Needs | Existing EXEs and private media/configuration only. |
+| Reporting Requirements | Distinguish native Console/Window handoff from physical input or RDP, and record actual host restrictions. |
+| Stop Conditions | No desktop switching, global user-pointer clipping or unreviewed Shared change. |
+| Exit Criteria | Reviewed Console-control policy behavior or a precise reproducible defect. |
+| Original Owner Request | Complete the first four PC110 queue tasks. |
+| Similar-Issue Sweep | Compare control 0/1, host widths and both display variants. |
+
+# M5 T584 S3 — Closed: inking calibration owner path
+
+Both variants and both widths completed four-corner inking calibration through
+the existing Emulator Machine queue, guest controller/IRQ and DOS driver,
+then reached Personaware. Private input media stayed unchanged, all probes
+exited 0 and full x64 units passed 712/712. Actual native capture, interactive
+RDP and calibration persistence outside an overlay were not established.
 
 | Field | Required record |
 | --- | --- |
@@ -15,7 +42,7 @@
 | Asset Needs | Existing EXEs, external firmware and private disk copies only. |
 | Reporting Requirements | Separate component/driver and actual native Window input results; retain unavailable human/RDP cases. |
 | Stop Conditions | No guessed physical hardware claim, desktop switching or unreviewed Shared modification. |
-| Exit Criteria | Reviewed owner-path evidence or an explicit reproducible gap for corrective work. |
+| Exit Criteria | Reviewed b12b86e3e: guest-visible four-corner calibration and launcher on both variants and widths; host capture remains separately scoped. |
 | Original Owner Request | Complete the first four PC110 queue tasks. |
 | Similar-Issue Sweep | Trace inking and PS/2 event ownership, capture/release and queue delivery. |
 
