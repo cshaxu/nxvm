@@ -1,21 +1,42 @@
-# M5 T585 S7 — Active: PC110 card media and I/O assessment
+# M5 T585 S8 — Active: Ricoh socket status-change completion
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T585 S8 after S7 at 5c54e8714. |
+| Admission And Approval | Owner directed autonomous completion of the first four PC110 tasks and approved sourced L1/L2 models. |
+| Objective | Audit and implement documented socket ready and memory-card battery status-change semantics using the existing chip and PIC path. |
+| Non-goals | No fabricated physical battery, I/O-card IRQ/wake or product media availability claim. |
+| Reference Baseline | Ricoh EA-028-9804 status registers; S2/S3 card-detect and PIC receiver; S6 memory-card attachment. |
+| Candidate Proposal | [Device and model qualification](../proposals/m5-pc110-device-model-qualification.md). |
+| Files And ABI Surface | Ricoh chip and tests, PC110 socket adapter and tests if needed; keep existing single status and PIC ownership. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding and source policy. |
+| Verification | Both sockets and card types, actual Core port/PIC delivery, masks, read/write acknowledgement, reset and dual-width repository release gates. |
+| Expected Markers | Correct ready and battery status changes without duplicate owners or false interrupt claims. |
+| Asset Needs | Task-owned fixtures; do not modify user firmware, configuration or media. |
+| Reporting Requirements | Distinguish documented pin semantics from untested physical cards and deferred I/O-card wake. |
+| Stop Conditions | No fabricated physical-device support, silent fault or second interrupt path. |
+| Exit Criteria | Sourced status contract and its actual PIC connection verified on both widths with required release and evidence. |
+| Original Owner Request | Complete the first four PC110 queue tasks. |
+| Similar-Issue Sweep | Both sockets, ready transitions, battery states, card type, status acknowledgement and reset. |
+
+# M5 T585 S7 — Closed: Ricoh PC Card I/O-window decode
 
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation — M5 T585 S7 after the S6 receiver. |
 | Admission And Approval | Owner directed autonomous completion of the first four PC110 tasks and approved sourced L1/L2 models. |
-| Objective | Assess and complete the next real PC Card media and I/O receiver gaps against the controller and product ownership. |
-| Non-goals | No mutation of owner media, fabricated I/O-card support, second bus or unsupported physical-timing claim. |
+| Objective | Implement the documented Ricoh I/O-window address and offset decode, after auditing the current card/media ownership. |
+| Non-goals | No mutation of owner media, fabricated I/O-card support, product insertion claim, second bus or unsupported physical-timing claim. |
 | Reference Baseline | [S6 memory receiver](../etc/evidence/t585-s6-pcic-memory.md), Ricoh manual and current PC110 product/slot ownership. |
 | Candidate Proposal | [Device and model qualification](../proposals/m5-pc110-device-model-qualification.md). |
 | Files And ABI Surface | Determine from current source and reference evidence; preserve Shared boundaries and independent component tests. |
 | Applicable Rules | NXVM guide, execution, documentation, architecture, coding and source policy. |
-| Verification | Real owner path where available, both widths, relevant unit/integration and artifact rules; explicitly retain unsupported devices and physical-input limits. |
-| Expected Markers | Observable and correctly owned card/media paths or a precise sourced disposition for each remaining gap. |
+| Verification | Chip register and window contract on both widths, followed by full required cached unit/integration and release rules; retain product and device limitations. |
+| Expected Markers | Two slots and both I/O windows decode with documented offset and control fields; the separate product receiver remains explicit. |
 | Asset Needs | Disposable task-owned media only; preserve user INI, firmware and disks. |
 | Reporting Requirements | Distinguish memory cards, I/O cards, onboard ATA and wake/status semantics. |
 | Stop Conditions | No silently accepted wrong routing, user-media mutation or unsupported completeness claim. |
-| Exit Criteria | Reviewed device/media disposition and implemented receiver work validated at its actual boundary, with all remaining work explicitly tracked. |
+| Exit Criteria | Shared 5c54e8714 reviewed; both unit suites 712/712, both registered integration suites 48/48 and fourteen release identities recorded in [S7 evidence](../etc/evidence/t585-s7-pcic-io-decode.md). Media attachment, port-bus receiver, card IRQ/wake and actual I/O devices remain subsequent work. |
 | Original Owner Request | Complete the first four PC110 queue tasks. |
 | Similar-Issue Sweep | Both sockets, mapping and ownership, errors, status and interrupt/wake paths. |
 
