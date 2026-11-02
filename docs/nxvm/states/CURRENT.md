@@ -7,8 +7,9 @@ frame as a following baseline in one x64 private-media pair, but both took
 minutes and x86 fixed-work samples were mixed. The prototype removes helper
 entries still used by tests; a scratch forwarding version passes focused
 tests but changes generated layout and did not establish a consistent
-benefit. Preserve the individual timing tests and qualify a single-owner
-design before changing Shared production; usability remains unproven.
+benefit. A scratch single-path migration of the six direct-test files passed
+their focused tests, but one fixed-work pair per width did not show a gain;
+its expanded internal contract is not adopted. Usability remains unproven.
 
 ### Masked-span candidate withdrawn; crossing defect open
 

@@ -62,6 +62,20 @@ reverse and guest logs SHA-256 respectively:
 `5A57BC0C49752451247AD5FACA38F5899B6D5C674652BC612EB2D1586803F32C`,
 `03DFD7158069520045A3BA2B7A4BF520344A77E294E9A16D92E3ADE7C76077C3`.
 
+A further scratch single-path variant used one private encoded string class
+through both existing Core timing functions and migrated their 85 direct calls
+in six test files to supply that class. No forwarding implementations or
+global state were needed. All six existing translated tests passed on each
+host width with assertions enabled. One fixed-checkpoint baseline/candidate
+pair took 18571/19386 ms x64 and 23060/24104 ms x86, with the same ten
+million instructions, ticks and PC. The single ordered pair is vulnerable to
+host drift and does not establish a definitive regression or full equivalence;
+it does not demonstrate a gain sufficient to justify the added private
+classifier contract and widespread test-call changes. No production source,
+test or artifact was changed. The scratch test and comparison log SHA-256:
+`33D0BED5AFB4A0DBC96C0FAB9532EF69941F204B6515455EDA6F66BA4CE65319`,
+`B3B5E89C9F7BDF1975CA15815797AE90D8301E9DB87213BFD1452FE79ECFCDF4`.
+
 ## Repeated 486 string-form classification
 
 A task-only x64 counter recorded calls to the existing string-form classifier
