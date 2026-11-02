@@ -6,6 +6,15 @@ with DSTN selected and read the adjacent `mypc110.ini`. While stopped, use
 is not persisted across process launches. Each display has its own CMOS file;
 deployment does not rewrite the INI or user-owned CMOS files.
 
+While stopped, `pccard insert a overlay <common-image>|<attribute-image>`
+or `pccard insert b ...` schedules a memory card for the next start/reset;
+`pccard eject a` and `pccard eject b` schedule removal. Paths may contain
+spaces; `|` separates the two required images. Modes are `readonly`, `overlay`
+and `direct`: overlay writes are temporary, while direct writes change the
+common image. Attribute-image writes use a temporary overlay in writable modes.
+The selection
+is not persisted after exit. These commands provide memory cards, not I/O cards.
+
 The current machine supports 20 MiB of memory. Omit `memory_kib` to use that
 default or set it to `20480`; other explicit values are rejected.
 

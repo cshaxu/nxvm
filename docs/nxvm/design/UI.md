@@ -36,6 +36,12 @@ the next cold start firmware only while stopped. Selection is not persisted
 in INI; each variant retains its own CMOS file. Both variants are embedded
 in each of the two host-architecture EXEs.
 
+The stopped monitor accepts `pccard insert <a|b> <readonly|overlay|direct>
+<common-image>|<attribute-image>` and `pccard eject <a|b>`. These schedule
+memory-card changes at the next start/reset; the two images are explicit.
+Only the common image can be modified on disk; attribute writes use a temporary
+overlay in writable modes. Card selections are not persisted.
+
 PC110 uses the same monitor, lifecycle, input and debugger. Hardware-specific
 setup belongs to its firmware and documented configuration, not another
 control Console or VDM/DOS-launch interface.

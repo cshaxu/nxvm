@@ -29,9 +29,34 @@ typedef struct mypc110_machine_plan {
     x86_core_machine *core;
     x86_rb5c396 *pcic_controller;
     mypc110_pcic pcic;
-    mypc110_vdisplay *vdisplay;
+    mypc110_product_context *product;
     lib_i32 pen_x, pen_y;
 } mypc110_machine_plan;
+
+static lib_status mypc110_machine_apply_cards(mypc110_machine_plan *plan)
+{
+    for (lib_u8 slot = 0u; slot < MYPC110_CARD_SLOT_COUNT; ++slot) {
+        mypc110_card_slot *entry = &plan->product->cards.slot[slot];
+        lib_storage_medium *old_common, *old_attribute;
+        lib_status status, close_status;
+        if (lib_atomic_i32_load_explicit(&entry->pending, LIB_MEMORY_ORDER_SEQ_CST) == 0)
+            continue;
+        old_common = entry->active_common;
+        old_attribute = entry->active_attribute;
+        status = mypc110_pcic_set_memory_card(&plan->pcic, slot,
+            entry->pending_common, entry->pending_attribute, entry->pending_readonly);
+        /* The receiver adopts these pointers before it updates its IRQ/route. */
+        entry->active_common = entry->pending_common;
+        entry->active_attribute = entry->pending_attribute;
+        entry->pending_common = LIB_NULL;
+        entry->pending_attribute = LIB_NULL;
+        lib_atomic_i32_store_explicit(&entry->pending, 0, LIB_MEMORY_ORDER_SEQ_CST);
+        close_status = mypc110_product_card_close_pair(&old_common, &old_attribute);
+        if (status != LIB_STATUS_OK) return status;
+        if (close_status != LIB_STATUS_OK) return close_status;
+    }
+    return LIB_STATUS_OK;
+}
 
 static lib_status mypc110_machine_before_reset(void *opaque, x86_nxvm_board_state *board)
 {
@@ -43,8 +68,10 @@ static lib_status mypc110_machine_before_reset(void *opaque, x86_nxvm_board_stat
     lib_status status;
 
     if (plan == LIB_NULL || board == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    display = plan->vdisplay;
-    if (display == LIB_NULL) return LIB_STATUS_OK;
+    if (plan->product == LIB_NULL) return LIB_STATUS_OK;
+    status = mypc110_machine_apply_cards(plan);
+    if (status != LIB_STATUS_OK) return status;
+    display = &plan->product->display;
     selected = (mypc110_display_variant)lib_atomic_i32_load_explicit(
         &display->requested, LIB_MEMORY_ORDER_SEQ_CST);
     if (selected == display->active) return LIB_STATUS_OK;
@@ -73,14 +100,32 @@ static lib_status mypc110_machine_before_reset(void *opaque, x86_nxvm_board_stat
     return LIB_STATUS_OK;
 }
 
-lib_status mypc110_machine_attach_vdisplay(void *context,
+lib_status mypc110_machine_attach_product(void *context,
     x86_nxvm_machine_construction *construction)
 {
     mypc110_machine_plan *plan;
     if (context == LIB_NULL || construction == LIB_NULL || construction->profile.context == LIB_NULL)
         return LIB_STATUS_INVALID_ARGUMENT;
     plan = construction->profile.context;
-    plan->vdisplay = context;
+    plan->product = context;
+    plan->product->plan = plan;
+    return LIB_STATUS_OK;
+}
+
+lib_status mypc110_machine_release_cards(mypc110_product_context *context)
+{
+    mypc110_machine_plan *plan;
+    if (context == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    plan = context->plan;
+    if (plan == LIB_NULL) return LIB_STATUS_OK;
+    for (lib_u8 slot = 0u; slot < MYPC110_CARD_SLOT_COUNT; ++slot) {
+        mypc110_card_slot *entry = &context->cards.slot[slot];
+        lib_status status = mypc110_pcic_set_memory_card(&plan->pcic, slot,
+            LIB_NULL, LIB_NULL, LIB_FALSE);
+        if (status != LIB_STATUS_OK) return status;
+        status = mypc110_product_card_close_pair(&entry->active_common, &entry->active_attribute);
+        if (status != LIB_STATUS_OK) return status;
+    }
     return LIB_STATUS_OK;
 }
 
@@ -300,6 +345,7 @@ static void mypc110_machine_release(void *opaque)
     mypc110_machine_plan *plan = opaque;
 
     if (plan == LIB_NULL) return;
+    if (plan->product != LIB_NULL) plan->product->plan = LIB_NULL;
     x86_f65535_destroy(plan->display_controller);
     x86_rb5c396_destroy(plan->pcic_controller);
     x86_vl82c420_destroy(plan->configuration_chip);

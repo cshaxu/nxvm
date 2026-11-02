@@ -9,10 +9,10 @@
 
 lib_i32 main(void)
 {
-    mypc110_vdisplay display;
+    mypc110_product_context context;
     x86_nxvm_product_machine_binding binding = vm_app_machine;
-    if (mypc110_product_initialize_vdisplay(&display) != LIB_STATUS_OK) return 1;
-    binding.context = &display;
+    if (mypc110_product_initialize(&context) != LIB_STATUS_OK) return 1;
+    binding.context = &context;
     return x86_nxvm_product_run(MYPC110_PRODUCT_NAME, APP_PRODUCT_INI_NAME,
         &binding);
 }

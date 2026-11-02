@@ -36,13 +36,16 @@ static lib_status mypc110_prepare(const x86_nxvm_machine_config *config,
 
 static const char *mypc110_cmos_names[] = {"mypc110-dstn.cmos", "mypc110-tft.cmos"};
 
-lib_status mypc110_product_initialize_vdisplay(mypc110_vdisplay *display)
+lib_status mypc110_product_initialize(mypc110_product_context *context)
 {
     lib_u8 path[1024];
     lib_status status;
-    if (display == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    *display = (mypc110_vdisplay){0};
+    mypc110_vdisplay *display;
+    if (context == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    *context = (mypc110_product_context){0};
+    display = &context->display;
     mypc110_vdisplay_initialize(display);
+    mypc110_product_cards_initialize(&context->cards);
     display->firmware[MYPC110_DISPLAY_DSTN] = &mypc110_dstn_firmware;
     display->firmware[MYPC110_DISPLAY_TFT] = &mypc110_tft_firmware;
     for (lib_size index = 0u; index < 2u; ++index) {
@@ -61,7 +64,11 @@ lib_status mypc110_product_initialize_vdisplay(mypc110_vdisplay *display)
 static lib_bool mypc110_product_submit(void *context, emulator_machine *machine,
     emulator_session_machine_state state, const char *line, emulator_session_command_result *out)
 {
-    mypc110_vdisplay *display = context;
+    mypc110_product_context *product = context;
+    mypc110_vdisplay *display;
+    if (product == LIB_NULL) return LIB_FALSE;
+    display = &product->display;
+    if (mypc110_product_card_submit(&product->cards, machine, state, line, out)) return LIB_TRUE;
     if (mypc110_vdisplay_submit(display, machine, state, line, out)) return LIB_TRUE;
     return display->standard.submit(display->standard.context, machine, state, line, out);
 }
@@ -69,29 +76,37 @@ static lib_bool mypc110_product_submit(void *context, emulator_machine *machine,
 static lib_status mypc110_product_configure_extensions(void *context,
     x86_nxvm_product_machine *machine, x86_ibmpc_product_command_extensions *out)
 {
-    mypc110_vdisplay *display = context;
+    mypc110_product_context *product = context;
+    mypc110_vdisplay *display;
     lib_status status;
-    if (display == LIB_NULL || out == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    if (product == LIB_NULL || out == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    display = &product->display;
     status = x86_nxvm_product_configure_standard_extensions(machine, &display->standard);
     if (status != LIB_STATUS_OK) return status;
-    if (display->standard.help.count + 1u > sizeof(display->help) / sizeof(display->help[0]))
+    if (display->standard.help.count + 3u > sizeof(display->help) / sizeof(display->help[0]))
         return LIB_STATUS_LIMIT_EXCEEDED;
     for (lib_size index = 0u; index < display->standard.help.count; ++index)
         display->help[index] = display->standard.help.rows[index];
     display->help[display->standard.help.count] = (emulator_product_help_row){
         "vdisplay=dstn|tft", "select display while stopped"};
-    *out = (x86_ibmpc_product_command_extensions){.context = display,
+    display->help[display->standard.help.count + 1u] = (emulator_product_help_row){
+        "pccard insert <a|b> <mode> <common>|<attribute>", "schedule a memory card while stopped"};
+    display->help[display->standard.help.count + 2u] = (emulator_product_help_row){
+        "pccard eject <a|b>", "schedule card removal while stopped"};
+    *out = (x86_ibmpc_product_command_extensions){.context = product,
         .submit = mypc110_product_submit,
-        .help = {display->help, display->standard.help.count + 1u}};
+        .help = {display->help, display->standard.help.count + 3u}};
     return LIB_STATUS_OK;
 }
 
 static lib_status mypc110_save_configuration(void *context, x86_nxvm_machine *machine)
 {
-    mypc110_vdisplay *display = context;
+    mypc110_product_context *product = context;
+    mypc110_vdisplay *display;
     lib_u8 path[1024];
     lib_status status;
-    if (display == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    if (product == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    display = &product->display;
     status = x86_nxvm_machine_capture_cmos(machine, display->cmos[display->active],
         X86_NXVM_MACHINE_EXTENDED_CMOS_SEED_BYTES);
     if (status == LIB_STATUS_OK)
@@ -107,7 +122,9 @@ static lib_status mypc110_save_configuration(void *context, x86_nxvm_machine *ma
         if (status != LIB_STATUS_OK) return status;
         display->dirty[index] = LIB_FALSE;
     }
-    return LIB_STATUS_OK;
+    status = mypc110_machine_release_cards(product);
+    if (status == LIB_STATUS_OK) status = mypc110_product_cards_close_pending(&product->cards);
+    return status;
 }
 
 const x86_nxvm_product_machine_binding vm_app_machine = {
@@ -122,7 +139,7 @@ const x86_nxvm_product_machine_binding vm_app_machine = {
     .bios_count = 1u,
     .firmware = &mypc110_dstn_firmware,
     .prepare = mypc110_prepare,
-    .attach_context = mypc110_machine_attach_vdisplay,
+    .attach_context = mypc110_machine_attach_product,
     .save_configuration = mypc110_save_configuration,
     .configure_extensions = mypc110_product_configure_extensions
 };

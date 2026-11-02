@@ -1,4 +1,4 @@
-# M5 T585 S10 — Active: PC110 memory-card media lifecycle
+# M5 T585 S10 — Closed: PC110 memory-card media lifecycle
 
 | Field | Required record |
 | --- | --- |
@@ -15,7 +15,7 @@
 | Asset Needs | Task-owned temporary card images only; preserve user INI, firmware and disks. |
 | Reporting Requirements | State exact command/configuration, write mode, attribute-space behavior and timing of insertion/removal. |
 | Stop Conditions | No user-media mutation without requested mode, dangling lease, second machine execution path or silent missing-attribute claim. |
-| Exit Criteria | Real product-to-machine card media lifecycle and error handling validated with required release and evidence. |
+| Exit Criteria | Real product extension to worker and guest memory route, both socket leases, access modes, failure and teardown verified; dual-width 712/712 units and 9/9 PC110 integrations, final focused test and deployed artifacts are recorded in [S10 evidence](../etc/evidence/t585-s10-pcic-media.md). Physical cards and DOS driver recognition are not claimed. |
 | Original Owner Request | Complete the first four PC110 queue tasks. |
 | Similar-Issue Sweep | Two slots, stop/reset/start, failed open, replacement/eject, exit and write-protected media. |
 

@@ -95,7 +95,7 @@ if(COMMAND nxvm_require_manifest)
     add_library(mypc110-selectable-firmware STATIC
         $<TARGET_OBJECTS:mypc110-selectable-firmware-tft>
         $<TARGET_OBJECTS:mypc110-selectable-firmware-dstn>)
-    add_library(mypc110-product STATIC product_binding.c product_vdisplay.c)
+    add_library(mypc110-product STATIC product_binding.c product_vdisplay.c product_card.c)
     target_include_directories(mypc110-product PUBLIC "${CMAKE_SOURCE_DIR}/src"
         "${CMAKE_BINARY_DIR}/generated")
     target_compile_definitions(mypc110-product PRIVATE
