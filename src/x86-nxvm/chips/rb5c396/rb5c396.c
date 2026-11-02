@@ -90,6 +90,39 @@ lib_status x86_rb5c396_status_irq(const x86_rb5c396 *chip, lib_u8 slot,
     return LIB_STATUS_OK;
 }
 
+lib_status x86_rb5c396_decode_memory(const x86_rb5c396 *chip, lib_u8 slot,
+    lib_u8 window, lib_u32 physical, x86_rb5c396_memory_mapping *out_mapping)
+{
+    const lib_u8 *registers;
+    lib_u8 base;
+    lib_u32 first, last, offset, address, span;
+
+    if (chip == LIB_NULL || out_mapping == LIB_NULL || slot >= X86_RB5C396_SLOT_COUNT ||
+        window >= X86_RB5C396_MEMORY_WINDOW_COUNT) return LIB_STATUS_INVALID_ARGUMENT;
+    registers = chip->registers[slot];
+    if ((registers[0x06u] & (1u << window)) == 0u) return LIB_STATUS_UNSUPPORTED;
+    base = (lib_u8)(0x10u + window * 8u);
+    first = ((lib_u32)(registers[base + 1u] & 0x0fu) << 20u) |
+        ((lib_u32)registers[base] << 12u);
+    last = ((lib_u32)(registers[base + 3u] & 0x0fu) << 20u) |
+        ((lib_u32)registers[base + 2u] << 12u) | 0x0fffu;
+    if (first < 0x00010000u || first > last || physical < first || physical > last)
+        return LIB_STATUS_UNSUPPORTED;
+    offset = ((lib_u32)(registers[base + 5u] & 0x3fu) << 20u) |
+        ((lib_u32)registers[base + 4u] << 12u);
+    address = (physical + offset) & 0x03ffffffu;
+    span = last - physical + 1u;
+    if (span > 0x04000000u - address) span = 0x04000000u - address;
+    *out_mapping = (x86_rb5c396_memory_mapping){
+        .card_address = address,
+        .contiguous_bytes = span,
+        .attribute = (registers[base + 5u] & 0x40u) != 0u,
+        .write_protected = (registers[base + 5u] & 0x80u) != 0u,
+        .data_16bit = (registers[base + 1u] & 0x80u) != 0u,
+        .wait_states = registers[base + 3u] >> 6u};
+    return LIB_STATUS_OK;
+}
+
 lib_status x86_rb5c396_read(x86_rb5c396 *chip, lib_u16 port,
     lib_u8 *out_value)
 {
