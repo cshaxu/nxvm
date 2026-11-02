@@ -1,4 +1,31 @@
-# M5 T584 S1 — Active: product interaction evidence and route audit
+# M5 T584 S2 — Active: Personaware keyboard and pause/resume matrix
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T584 S2 after S1 route audit. |
+| Admission And Approval | Owner requested automatic completion of the four PC110 receivers. |
+| Objective | Exercise actual Personaware keyboard entry and application pause/resume across both widths and both display variants. |
+| Non-goals | No user-desktop focus theft, user-media writes, fabricated frame results or physical/RDP pointer claims. |
+| Reference Baseline | ed5bcfb8c and T583 guest-saved CMOS and restart evidence. |
+| Candidate Proposal | [Product interaction](../proposals/m5-pc110-product-interaction.md); [interaction ledger](../etc/evidence/t584-product-interaction-ledger.md). |
+| Files And ABI Surface | Task-owned isolated diagnostics and NXVM evidence initially; no public API or Shared change. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding, UI and source policy. |
+| Verification | Observe calibration, launcher, World Clock, pause/resume, return and normal exit using native messages on isolated desktops; compare widths/variants, run repository units and document gate. |
+| Expected Markers | Observed guest responses, lifecycle completion, normal process exit and unchanged private media. |
+| Asset Needs | Existing EXEs, independently copied media and guest-produced CMOS. |
+| Reporting Requirements | Per-case and host evidence, failed checks, actual RDP/manual boundary, and unresolved teardown observations. |
+| Stop Conditions | No desktop switching, pointer clipping of the user desktop or unreviewed Shared modification. |
+| Exit Criteria | Reviewed scoped matrix or a precise, reproducible defect and next corrective batch. |
+| Original Owner Request | Complete the first four PC110 queue tasks. |
+| Similar-Issue Sweep | Compare both firmware variants and both host widths against the same product path. |
+
+# M5 T584 S1 — Closed: product interaction evidence and route audit
+
+Actual DSTN x64 product input reached the Personaware launcher and World Clock,
+returned to the launcher and exited normally. The audit distinguished native
+messages from true pointer capture and RDP interaction. Full x64 repository
+units passed 712/712; the UI documentation's obsolete prepublication status
+was corrected.
 
 | Field | Required record |
 | --- | --- |
@@ -15,7 +42,7 @@
 | Asset Needs | Existing guest firmware and independent media copies; preserve owner files. |
 | Reporting Requirements | Distinguish actual product from machine-only evidence, observed interaction from accepted input, and unavailable environments. |
 | Stop Conditions | No foreground window or desktop switch; no unreviewed Shared modification. |
-| Exit Criteria | Reviewed route inventory and a concrete evidence-based next batch without claiming unavailable manual interaction. |
+| Exit Criteria | Reviewed ed5bcfb8c: actual product keyboard evidence and the remaining Window, Console, pointer and RDP boundaries were recorded. |
 | Original Owner Request | Complete the first four PC110 queue tasks. |
 | Similar-Issue Sweep | Compare both display variants, both widths, Window versus Console and normal versus failed teardown. |
 
