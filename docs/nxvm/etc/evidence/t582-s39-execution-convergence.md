@@ -15,6 +15,19 @@ fault observations; it has not yet been implemented or shown to improve
 startup. No production or artifact was changed. Log SHA-256:
 `DF01DA8D47BAA9858E14DB5F02BDD089CF9382D98D1DD77F36D2A8AB9129A6FF`.
 
+A scratch-only follow-up passed the outer classification to the two inner
+users through process-global variables. Those variables are unsafe for
+multiple Machines, reentrancy and direct helper calls, so this is not an
+eligible implementation or proof of equivalence. Baseline / candidate /
+candidate / baseline took 17378 / 17358 / 18432 / 18282 ms x64 and 21032 /
+21901 / 24356 / 24097 ms x86 at the same 10000000-instruction, 79964294-tick,
+`0003dbc5` checkpoint. Guest state beyond that checkpoint was not compared.
+These sequential samples show no clear benefit for this implementation and
+cannot bound a safe local-argument handoff, whose generated code would differ.
+They do not justify adding global state, interfaces or releasing a product.
+No production source or artifact changed. Log SHA-256:
+`435830F18C2CDFF7D94B1B8D8F91041FD4C5DEB05B88275B9B53232C64BF2182`.
+
 ## Dynamic-multiply timing loop frequency
 
 A task-only counter in the existing `ceiling_log2` timing helper recorded 59
