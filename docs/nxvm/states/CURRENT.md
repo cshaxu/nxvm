@@ -1,3 +1,24 @@
+# M5 T583 S6 — Active: isolated real-product first-setup observation
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T583 S6 after S5 closure 0868d19a5. |
+| Admission And Approval | Owner requested completion of the four queued PC110 receivers and prohibits foreground long-running tasks. |
+| Objective | Establish a safe background native-window observation route and exercise the actual executable's first Setup and DOS path where the host permits it. |
+| Non-goals | No user-desktop focus theft, fabricated guest input, production/Shared changes, owner-media writes or headless-machine evidence presented as native product proof. |
+| Reference Baseline | 0868d19a5; S2–S5 guest and product persistence evidence; retained T580 S87 native diagnostic. |
+| Candidate Proposal | [T583 coverage ledger](../etc/evidence/t583-first-setup-ledger.md), real App entry/session batch. |
+| Files And ABI Surface | Initially task-owned background observer and NXVM evidence only; no public API or production code change. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding, UI and source policy. |
+| Verification | Run the two actual EXEs for DSTN and TFT on separate isolated desktops with copied media and no saved CMOS; use frame-observed input and normal exit. Exercise an actual date edit and persisted restart where supported. Complete repository units before closure. |
+| Expected Markers | Explicit host capability result; actual product Setup responses, saved CMOS and selected DOS frame where observable; no claim from queue acceptance alone. |
+| Asset Needs | Existing firmware and private copies of guest media; preserve all owner files. |
+| Reporting Requirements | Native desktop versus hidden observation, host errors, process results, input/frame identities, coverage and exact remaining receivers. |
+| Stop Conditions | No foreground window or desktop switch, no blind setup input, no unsafe state fabrication, and no unsupported native coverage claim. |
+| Exit Criteria | Real product first-setup path observed or isolated native observation boundary accurately diagnosed; retain every unverified variant and host width. |
+| Original Owner Request | Complete the four queued PC110 tasks without foreground long-running processes. |
+| Similar-Issue Sweep | Compare DSTN/TFT, x64/x86, first/retained CMOS and actual entry versus Machine-only probes. |
+
 # M5 T583 S5 — Closed: real-product CMOS restore and teardown
 
 The current deployed EXEs were run in isolated hidden-console processes on
