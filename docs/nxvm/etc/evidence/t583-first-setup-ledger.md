@@ -22,8 +22,69 @@ coverage remain in their own queued tasks.
 | --- | --- | --- | --- |
 | DSTN x64 | Guest ERROR, date confirmation and DOS observed by factory/Machine probe in S2; deliberate date edits remain open. | Guest-produced CMOS saved by App callback and loaded by new probe process; DOS observed in S2. | Open: exercise the real executable/session and lifecycle in a later batch. |
 | DSTN x86 | Guest ERROR, date confirmation and DOS observed by factory/Machine probe in S3; deliberate date edits remain open. | Guest-produced CMOS saved by App callback and loaded by new probe process; DOS observed in S3. | Open: real executable/session and lifecycle. |
-| TFT x64 | Open: distinguish absent-file seeded default from independently empty CMOS. | Open. | Open. |
-| TFT x86 | Open: distinguish absent-file seeded default from independently empty CMOS. | Open. | Open. |
+| TFT x64 | Independently empty CMOS reached Setup/DOS; absent-file seeded default reached Setup and began DOS in S4. Deliberate date edits remain open. | Guest-produced empty/seeded CMOS loaded by new probe processes; DOS observed in S4. | Open. |
+| TFT x86 | Independently empty CMOS reached Setup/DOS; seeded default reached Setup but not DOS within the first observation budget. Real-product first-run DOS remains open. | Guest-produced empty/seeded CMOS loaded by new probe processes; DOS observed in S4. | Open. |
+
+## S4: TFT independently empty CMOS in progress
+
+On both host widths, the TFT probe began from a task-owned 128-byte all-zero
+CMOS image, not the embedded configured seed. It matched the same ERROR,
+date and DOS frame checkpoints as the DSTN runs, sending two Enter pairs only
+after the matching screens. Both first-run processes exited 0 and saved
+guest-produced TFT CMOS via the existing App callback, with SHA-256
+`344bc634dee98f58818f696d1fa7743fd7d0c917e0f9b33d9a84d0a037681628`.
+Both sets of copied disk hashes remained unchanged. First-run logs: x64
+`2da08f453e0794f2116d662c265987a26318799daec61bdb6ad4126e7e07366e`,
+x86 `c9620ca687a2c5eff5aec80d783a0a196ebb5d53a5b31a073b327ac5993518d0`.
+Independent second processes on both widths loaded their saved TFT CMOS and
+reached the same DOS frame without Setup input, then exited 0. Media copies
+remained unchanged. Restart logs: x64
+`8b2d4d75a7e98ee89a861e23b3ff4b18bd1ef928684d3b8190af801db71bb09e`,
+x86 `f4b3bd7241e61066e09bfe498a07d94ad9c85f4f5e26a2fa68a6f72546ed18b0`.
+The probe's initial RTC print occurs before the switch from default DSTN to
+TFT, so it cannot prove the TFT RTC was restored. A separate short rerun on
+each width loaded a saved TFT image with seconds `39`, switched to TFT, then
+shut down and captured seconds `39` through the existing safe teardown path.
+An earlier scratch attempt to read RTC while the executor was still bound
+exited 1, as `x86_nxvm_machine_capture_rtc()` explicitly rejects that state;
+it is not a product failure or a successful observation. Deliberate date edits
+remain open. No native Window or full App/session claim is made.
+The x64 complete unit suite passed
+712/712; log SHA-256
+`1cb8958742fb53cc35812c0d41cf1d04822d940f73929a4bb2338c715c7bcf70`.
+
+The first separate absent-file seeded-default observations on both widths
+displayed the same ERROR 00173/00163 screen. Their driver intentionally
+classified that frame as requiring Setup and requested a normal shutdown;
+driver exit 2 reflects that classification, while both probes exited 0.
+These observations do not establish a defect. Two fresh seeded-default runs
+are continuing through actual Setup rather than assuming a direct DOS boot.
+Both seeded runs reached the date page, but its values were
+`2000-01-01 00:00:15`, unlike the all-zero image's 1994 page. The identical
+x64/x86 frame SHA-256 was
+`070bfb1bfa058b3b10f1208ba9623fe3c2d25a4e000c0243bd96eb93e2041ca8`.
+After inspecting that frame, one Enter pair was sent to each actual Machine;
+the original hash-specific driver did not mistake it for the 1994 page.
+The x64 first-run probe subsequently showed `Starting PC DOS...`; the x86
+probe was still in POST when its 96-sample observation budget ended. Both
+exited 0 and saved their guest-produced TFT CMOS. The hash-specific drivers
+later exited 1 because their original 1994 date checkpoint did not match;
+this is a diagnostic-harness limitation, not a guest failure. The two saved
+CMOS images were copied unchanged into isolated new-process restart runs.
+Initial seeded logs: x64
+`d036cc4d01c38f18cf61edb5826864abbba1f61b3220290546aa086fa6a6b4ec`,
+x86 `4aa31e93378783bb03b13d6a4e8d533bc7f5859110a2a0e7a003aca47dcff995`.
+Full first-run logs: x64
+`a62fe1162366a35123f471177633cf2915c3babf0c11729d1ad65d3150472370`,
+x86 `f8a847566e936454ba78afd3c932ae1db1ba9f961865d571eedbcba9b1e769de`.
+Both separate no-input restart processes subsequently reached the DOS
+calibration frame and exited 0. Their saved CMOS files retained the date
+`2000-01-01`, and RTC seconds advanced from `35` to `54` on x64 and `32`
+to `51` on x86. Private disk hashes remained unchanged. Restart logs: x64
+`43dcc7fda611d8c827456beb22482974cb48debb79420ab597978fb8ee4c924b`,
+x86 `b1b19769ffae1646d70956ecbd49ed8c7fb0ac82c3cc2064a04cf2b12810d48d`.
+The first x86 seeded process did not reach DOS within its sampling budget;
+its first-run DOS checkpoint stays open for the real-product receiver.
 
 ## Initial source evidence
 

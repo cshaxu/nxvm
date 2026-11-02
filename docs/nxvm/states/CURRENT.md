@@ -1,3 +1,32 @@
+# M5 T583 S4 — Active: TFT initial CMOS paths on both host widths
+
+Both host widths reached DOS from explicitly empty TFT CMOS after Setup, saved
+guest state, and reached DOS again in new processes without Setup input. For
+the absent-file seeded default, both reached the date page and persisted its
+`2000-01-01` date; both saved-state new processes reached DOS. The x64 first
+process began DOS, while the x86 first process was still in POST at the probe
+budget. That first-run checkpoint remains open for the real-product receiver;
+the budget is not a failure or a pass. Native App/session behavior remains open.
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T583 S4 after S3 closure 776920928. |
+| Admission And Approval | Owner requested the four PC110 receivers and automatic sequential execution. |
+| Objective | Observe truly empty TFT CMOS through first Setup, save and new-process DOS restart, and separately check the absent-file embedded-seed default on x64 and x86. |
+| Non-goals | No configured-CMOS fabrication, firmware mutation, user-media writes, Shared source changes or native Window/product-session qualification claim. |
+| Reference Baseline | 776920928; S2/S3 derived-DSTN observations and T580 firmware evidence. |
+| Candidate Proposal | [T583 coverage ledger](../etc/evidence/t583-first-setup-ledger.md), TFT empty-CMOS batch. |
+| Files And ABI Surface | Initially NXVM evidence and isolated scratch probes; no production source or public API changes. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding, UI and source policy. |
+| Verification | Run both host widths with a task-owned all-zero 128-byte TFT CMOS image and separately without a TFT CMOS file; use identified guest frames before input, independent copied media and save/restart; complete repository units. |
+| Expected Markers | Actual firmware setup response and DOS, guest-produced 128-byte CMOS, and DOS on a new process without Setup input. |
+| Asset Needs | Existing TFT firmware and copied PC110 disks; never change user INI, CMOS, media or ROM. |
+| Reporting Requirements | Frame/input, CMOS/log/media hashes, both process exit statuses and unverified product/native boundaries. |
+| Stop Conditions | No assumed screenshot or blind input; distinguish explicit empty image from the absent-file embedded-seed default. |
+| Exit Criteria | Record empty-TFT setup/save/restart and absent-file default or their first evidence-backed failures on both widths; keep full App/native paths as open cases. |
+| Original Owner Request | Complete the first four queued PC110 tasks. |
+| Similar-Issue Sweep | Compare both host widths, DSTN behavior, variant-specific CMOS ownership and restored RTC. |
+
 # M5 T583 S3 — Closed: derived-DSTN x86 setup and restart
 
 The x86 isolated factory/Machine run reached ERROR, date confirmation and
