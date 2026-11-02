@@ -117,9 +117,12 @@ a same-completion comparison. Final RTC seconds were 27 and 21. The single
 candidate-first ordered pair is encouraging but does not qualify elapsed-time
 accuracy, complete interaction, x86 boot speed or RDP behavior.
 
-The speed setter is permitted whenever the Machine is not running, so a real
-mode design must specify the paused transition, pending retirement, REP and
-debug behavior as well as physical-qualification rejection. PC110 currently
+The speed setter rejects while the NXVM executor is active. In the ordinary
+pause path, Emulator parks that executor inside its callback rather than
+stopping it, so a paused Machine does not by itself permit changing speed.
+The earlier wording that implied otherwise was incorrect. A real mode design
+must still specify startup, stopped and paused Debug behavior, pending
+retirement and REP, as well as physical-qualification rejection. PC110 currently
 selects Turbo at construction and other NXVM profiles can select it through
 their product, so changing Turbo would be visible across those machines. No
 production source, API or executable was changed by this probe.
@@ -147,12 +150,13 @@ the shorter menu marker is not purely host execution savings.
 
 The Session submits speed commands outside the CPU owner. A future design
 must transfer the selected policy at an existing executor boundary, not write
-CPU state from the monitor thread. In particular the executor can be parked
-inside its pause callback while serving Debug requests; applying a mode only on
-initial runner entry would leave a paused speed change or debug step stale.
+CPU state from the monitor thread. The normal paused callback retains the
+active executor and serves Debug requests there. Under the present speed
+setter, a normal paused speed change is rejected; any future relaxation
+would require an explicit transfer before Debug steps or resumed execution.
 Pending retirement must complete with the timing already selected for it.
-This ownership analysis is a design constraint, not a proposed second worker
-or a demonstrated safe implementation.
+This static ownership analysis does not establish synchronization for every
+startup, reset, stop or failure path and is not a demonstrated implementation.
 
 Unmodified functional-probe and scratch-adjusted-probe log SHA-256:
 `23E66B6815DD7C58398D80AA38B934C9508A3FD44C28B845836CC4852785A453`,
