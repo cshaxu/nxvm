@@ -1,5 +1,20 @@
 # T582 S39 — execution and timing convergence
 
+## Nominal 486 timing ablation
+
+A task-only 486 experiment replaced the nominal instruction term with three
+ticks while leaving the existing memory, decode and bus calculations in place.
+It deliberately changes guest time and incorrectly retains the original
+source classification, so it is not an L1 design or eligible production code.
+At ten million retired instructions, baseline/candidate elapsed times were
+19343/18693 ms x64 and 23600/22458 ms x86. Baseline ended at 79964294 ticks
+and PC `0003dbc5`; the candidate ended at 69489819 ticks and PC `0003e3c3`.
+The different guest paths and single ordered pairs prevent equal-work or
+end-to-end conclusions. These results do not show that nominal selection alone
+explains the usability gap, nor do they authorize a timing downgrade. No
+production file, owner media or artifact changed. Log SHA-256:
+`F4C0408BF28C8644E681ABA275F34E57FEC6181BDFC00CAC7EFA1FC01F7EE339`.
+
 ## Local string-form handoff experiments
 
 A scratch 486 timing model passed the already classified string form through
