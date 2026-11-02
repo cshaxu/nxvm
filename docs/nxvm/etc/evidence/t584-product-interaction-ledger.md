@@ -176,3 +176,29 @@ For `console_control=1`, DSTN x86 and TFT x64 logs are respectively
 These are isolated desktop/native-message results, not manual or RDP proof.
 The full x86 repository unit suite passed 712/712; its log SHA-256 is
 `77a279fe3cc315f44c0ddfd1412822154bdbe09ef6043e40bd1afac78ba242f1`.
+
+## S5: guest keyboard navigation and host input boundary
+
+The actual released DSTN x64 and TFT x86 products ran on isolated desktops
+with private media. After skipping inking calibration and reaching the
+Personaware launcher, a native extended Down key selected Calculator. Native
+Enter opened it, and `1`, keypad `+`, `2`, Enter produced a visible `3` in
+both cases. The identical result BMP SHA-256 was
+`30bedea5ea4e981aca4555a3edf01d3560bba38684767d7dce0078f95c41007e`.
+Both products paused and exited normally. Their observer logs have SHA-256
+values `feb9ca2851cd0529612e1884e956072919d54a1d876d3385b0abd049b14bb668`
+and `e52aa7b71d2e9f4af7c5c7df0c4989eda11f4285e85a86ba044aec67eaba0d26`.
+Both private input-disk pairs retained their original hashes.
+An initial task-generated Down message omitted the Win32 extended-key flag
+and did not select Calculator; the corrected native message did. This is an
+observer input correction, not an established product defect.
+
+The existing Lib hotkey matcher, Emulator Session input and Win32 capture
+contract tests cover controlled event and mocked native ownership cases. The
+actual Window keyboard path obtains modifier state through Win32 key-state
+queries, so posting key messages alone does not prove physical Ctrl+Alt chords.
+Native pointer capture requires real focus/capture and may clip the input
+desktop; this task did not redirect the user's pointer or switch desktops.
+Physical chords, actual pointer capture and interactive RDP remain unverified.
+The x64 complete repository unit suite passed 712/712; log SHA-256 is
+`3066d360b5086aa7f9b36600e89d3dc73bec4f66845b8dc9a0eb3c4315eba7d1`.
