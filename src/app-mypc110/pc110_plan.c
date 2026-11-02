@@ -28,6 +28,7 @@ typedef struct mypc110_machine_plan {
     x86_f65535 *display_controller;
     x86_core_machine *core;
     x86_rb5c396 *pcic_controller;
+    mypc110_pcic pcic;
     mypc110_vdisplay *vdisplay;
     lib_i32 pen_x, pen_y;
 } mypc110_machine_plan;
@@ -211,7 +212,7 @@ static void mypc110_machine_profile_reset(void *opaque,
 
     if (plan != LIB_NULL && phase == X86_NXVM_BOARD_RESET_BEFORE_DEVICES) {
         x86_f65535_reset(plan->display_controller);
-        x86_rb5c396_reset(plan->pcic_controller);
+        mypc110_pcic_reset(&plan->pcic);
         mypc110_inking_reset(&plan->inking);
     }
 }
@@ -238,6 +239,9 @@ static lib_status mypc110_machine_profile_create(
     plan->inking.pic_master = services->pic_master;
     plan->inking.pic_slave = services->pic_slave;
     status = mypc110_firmware_profile_create(services, &plan->firmware, out_binding);
+    if (status != LIB_STATUS_OK) return status;
+    status = mypc110_pcic_initialize(&plan->pcic, plan->pcic_controller,
+        services->pic_master, services->pic_slave);
     if (status != LIB_STATUS_OK) return status;
     plan->firmware.inking = &plan->inking;
     out_binding->context = plan;
@@ -287,7 +291,7 @@ static lib_status mypc110_machine_after_firmware(void *opaque, x86_core_machine 
     if (status == LIB_STATUS_OK)
         status = mypc110_display_install_routes(core, plan->display_controller);
     if (status == LIB_STATUS_OK)
-        status = mypc110_pcic_install_routes(core, plan->pcic_controller);
+        status = mypc110_pcic_install_routes(core, &plan->pcic);
     return status;
 }
 

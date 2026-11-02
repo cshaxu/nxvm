@@ -14,3 +14,8 @@ the present positive evidence, gaps and planned sequential receivers.
 S2 corrects card-detect status acknowledgement, shared global-register
 addressing and invalid-index bounds. Dual-width qualification and the
 remaining IRQ/window/card work are in the [S2 evidence](../etc/evidence/t585-s2-pcic-status.md).
+
+S3 connects the modeled card-detect ISA status IRQ through PC110's existing
+PIC and tests two sockets, acknowledgement and reset. INTR#/wake, other card
+status inputs, windows and media remain explicit subsequent work; see
+[S3 evidence](../etc/evidence/t585-s3-pcic-irq.md).

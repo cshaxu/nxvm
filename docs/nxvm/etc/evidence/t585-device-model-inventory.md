@@ -17,7 +17,8 @@ one route does not qualify a whole physical device.
 
 The selected follow-up sequence starts with S2 PC Card status/register
 semantics and bounds, S3 status-change interrupt routing, and S4 card windows
-and media. S5 then addresses power/APM, S6 audio and auxiliary devices,
+and media, including remaining card-status inputs. S5 then addresses power/APM
+and the controller's INTR#/RI_OUT# wake routing, S6 audio and auxiliary devices,
 S7 display/font and remaining-model reconciliation, and S8 complete device
 coverage and qualification. Split a batch into further numeric S tasks if
 implementation or verification warrants it. These names are planning scopes,

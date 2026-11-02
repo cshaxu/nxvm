@@ -1,3 +1,24 @@
+# M5 T585 S3 — Closed: PC Card ISA status-change interrupts
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T585 S3 after S2 at bb57b59da. |
+| Admission And Approval | Owner directed autonomous completion of the first four PC110 tasks and approved sourced L1/L2 models. |
+| Objective | Trace and implement Ricoh card-detect ISA interrupt selection, acknowledgement and PC110 PIC integration through existing owners. |
+| Non-goals | No second scheduler or interrupt controller, external source copying, fabricated media or physical-input claims. |
+| Reference Baseline | S2 bounded status receiver eeb281cb2 and the Ricoh EA-028-9804 manual. |
+| Candidate Proposal | [Device and model qualification](../proposals/m5-pc110-device-model-qualification.md); [S2 evidence](../etc/evidence/t585-s2-pcic-status.md). |
+| Files And ABI Surface | Existing Ricoh chip contract and tests, PC110 adapter and tests; Shared changes require all consumer release gates. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding and source policy. |
+| Verification | Both sockets, interrupt selection, masks, pending/ack/reset and actual board/PIC paths on both widths; complete applicable repository unit/integration and release gates. |
+| Expected Markers | Observable guest PIC request and acknowledgement with no duplicate source; explicit unimplemented card/window boundaries. |
+| Asset Needs | Existing Ricoh manual and owner-managed external firmware; preserve originals. |
+| Reporting Requirements | State source grade, actual changes, tested paths and unverified physical electrical behavior. |
+| Stop Conditions | Do not mutate owner media or claim unsupported card insertion or DMA. |
+| Exit Criteria | Reviewed Shared commit df12230c9, source-to-PIC tests, dual-width unit and integration evidence, 14 release artifacts and [S3 evidence](../etc/evidence/t585-s3-pcic-irq.md); INTR#/wake and card/window work remain subsequent. |
+| Original Owner Request | Complete the first four PC110 queue tasks. |
+| Similar-Issue Sweep | Both slots, selected IRQ changes, shared IRQ ownership, disabled events, reset and teardown. |
+
 # M5 T585 S2 — Closed: PC Card controller status and bounds
 
 | Field | Required record |
