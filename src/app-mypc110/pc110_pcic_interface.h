@@ -12,7 +12,9 @@ typedef struct mypc110_pcic {
     x86_nxvm_board_pic_bus *master;
     x86_nxvm_board_pic_bus *slave;
     x86_nxvm_board_pic_irq_source *irq[X86_RB5C396_SLOT_COUNT];
+    x86_nxvm_board_pic_irq_source *io_irq[X86_RB5C396_SLOT_COUNT];
     lib_u8 selected_irq[X86_RB5C396_SLOT_COUNT];
+    lib_u8 selected_io_irq[X86_RB5C396_SLOT_COUNT];
     x86_core_machine *machine;
     lib_storage_medium *common[X86_RB5C396_SLOT_COUNT];
     lib_storage_medium *attribute[X86_RB5C396_SLOT_COUNT];

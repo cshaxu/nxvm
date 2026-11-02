@@ -102,22 +102,35 @@ static lib_status mypc110_pcic_memory_write(void *owner, lib_u32 physical,
     return mypc110_pcic_memory_access(owner, physical, source, bytes, LIB_TRUE);
 }
 
+static lib_status mypc110_pcic_drive_irq(mypc110_pcic *pcic,
+    x86_nxvm_board_pic_irq_source **source, lib_u8 *current, lib_u8 selected)
+{
+    lib_status status;
+    if (selected == *current) return LIB_STATUS_OK;
+    x86_nxvm_board_pic_irq_source_deassert(*source);
+    if (selected != 0u) {
+        status = x86_nxvm_board_pic_irq_source_bind(source,
+            pcic->master, pcic->slave, selected);
+        if (status != LIB_STATUS_OK) return status;
+        x86_nxvm_board_pic_irq_source_assert(*source);
+    }
+    *current = selected;
+    return LIB_STATUS_OK;
+}
+
 static lib_status mypc110_pcic_refresh(mypc110_pcic *pcic)
 {
     lib_u8 selected;
     lib_status status;
     for (lib_u8 slot = 0u; slot < X86_RB5C396_SLOT_COUNT; ++slot) {
         status = x86_rb5c396_status_irq(pcic->controller, slot, &selected);
+        if (status == LIB_STATUS_OK) status = mypc110_pcic_drive_irq(pcic,
+            &pcic->irq[slot], &pcic->selected_irq[slot], selected);
+        if (status == LIB_STATUS_OK)
+            status = x86_rb5c396_io_irq(pcic->controller, slot, &selected);
+        if (status == LIB_STATUS_OK) status = mypc110_pcic_drive_irq(pcic,
+            &pcic->io_irq[slot], &pcic->selected_io_irq[slot], selected);
         if (status != LIB_STATUS_OK) return status;
-        if (selected == pcic->selected_irq[slot]) continue;
-        x86_nxvm_board_pic_irq_source_deassert(pcic->irq[slot]);
-        if (selected != 0u) {
-            status = x86_nxvm_board_pic_irq_source_bind(&pcic->irq[slot],
-                pcic->master, pcic->slave, selected);
-            if (status != LIB_STATUS_OK) return status;
-            x86_nxvm_board_pic_irq_source_assert(pcic->irq[slot]);
-        }
-        pcic->selected_irq[slot] = selected;
     }
     return LIB_STATUS_OK;
 }
@@ -131,6 +144,8 @@ lib_status mypc110_pcic_initialize(mypc110_pcic *pcic, x86_rb5c396 *controller,
     *pcic = (mypc110_pcic){.controller = controller, .master = master, .slave = slave};
     for (lib_u8 slot = 0u; slot < X86_RB5C396_SLOT_COUNT; ++slot) {
         status = x86_nxvm_board_pic_irq_source_bind(&pcic->irq[slot], master, slave, 3u);
+        if (status != LIB_STATUS_OK) return status;
+        status = x86_nxvm_board_pic_irq_source_bind(&pcic->io_irq[slot], master, slave, 3u);
         if (status != LIB_STATUS_OK) return status;
     }
     return mypc110_pcic_refresh(pcic);
@@ -170,7 +185,9 @@ void mypc110_pcic_reset(mypc110_pcic *pcic)
     if (pcic == LIB_NULL) return;
     for (lib_u8 slot = 0u; slot < X86_RB5C396_SLOT_COUNT; ++slot) {
         x86_nxvm_board_pic_irq_source_deassert(pcic->irq[slot]);
+        x86_nxvm_board_pic_irq_source_deassert(pcic->io_irq[slot]);
         pcic->selected_irq[slot] = 0u;
+        pcic->selected_io_irq[slot] = 0u;
     }
     x86_rb5c396_reset(pcic->controller);
     if (mypc110_pcic_memory_refresh(pcic) != LIB_STATUS_OK && pcic->machine != LIB_NULL)

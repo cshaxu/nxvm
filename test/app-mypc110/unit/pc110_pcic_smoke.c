@@ -49,6 +49,40 @@ static int status_pic_smoke(x86_core_machine *machine, mypc110_pcic *pcic,
         x86_nxvm_board_pic_get_interrupt(master, slave) != 0x0du ||
         x86_core_machine_bus_read(machine, X86_RB5C396_DATA_PORT, &value) != LIB_STATUS_OK || value != 4u ||
         x86_nxvm_board_pic_irq_source_is_asserted(pcic->irq[0]);
+    input.io_irq_asserted = LIB_TRUE;
+    input.io_status_asserted = LIB_TRUE;
+    if (!failed) failed = x86_core_machine_bus_write(machine, 0x20u, 0x20u) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(machine, 0xa0u, 0x11u) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(machine, 0xa1u, 0x70u) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(machine, 0xa1u, 0x02u) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(machine, 0xa1u, 0x01u) != LIB_STATUS_OK ||
+        !write_register(machine, 3u, 0x65u) || !write_register(machine, 5u, 0xa1u) ||
+        mypc110_pcic_set_slot_inputs(pcic, 0u, &input) != LIB_STATUS_OK ||
+        !x86_nxvm_board_pic_irq_source_is_asserted(pcic->irq[0]) ||
+        !x86_nxvm_board_pic_irq_source_is_asserted(pcic->io_irq[0]) ||
+        x86_nxvm_board_pic_get_interrupt(master, slave) != 0x72u ||
+        x86_core_machine_bus_write(machine, 0xa0u, 0x20u) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(machine, 0x20u, 0x20u) != LIB_STATUS_OK ||
+        x86_nxvm_board_pic_get_interrupt(master, slave) != 0x0du ||
+        !write_register(machine, 4u, 0u) ||
+        x86_core_machine_bus_read(machine, X86_RB5C396_DATA_PORT, &value) != LIB_STATUS_OK || value != 1u ||
+        x86_nxvm_board_pic_irq_source_is_asserted(pcic->irq[0]) ||
+        !x86_nxvm_board_pic_irq_source_is_asserted(pcic->io_irq[0]);
+    input.io_status_asserted = LIB_FALSE;
+    if (!failed) failed = mypc110_pcic_set_slot_inputs(pcic, 0u, &input) != LIB_STATUS_OK ||
+        !write_register(machine, 5u, 0x51u);
+    input.io_status_asserted = LIB_TRUE;
+    if (!failed) failed = mypc110_pcic_set_slot_inputs(pcic, 0u, &input) != LIB_STATUS_OK ||
+        pcic->selected_irq[0] != 5u || pcic->selected_io_irq[0] != 5u ||
+        !x86_nxvm_board_pic_irq_source_is_asserted(pcic->irq[0]) ||
+        !x86_nxvm_board_pic_irq_source_is_asserted(pcic->io_irq[0]) ||
+        !write_register(machine, 4u, 0u) ||
+        x86_core_machine_bus_read(machine, X86_RB5C396_DATA_PORT, &value) != LIB_STATUS_OK || value != 1u ||
+        x86_nxvm_board_pic_irq_source_is_asserted(pcic->irq[0]) ||
+        !x86_nxvm_board_pic_irq_source_is_asserted(pcic->io_irq[0]);
+    input.io_irq_asserted = LIB_FALSE;
+    if (!failed) failed = mypc110_pcic_set_slot_inputs(pcic, 0u, &input) != LIB_STATUS_OK ||
+        x86_nxvm_board_pic_irq_source_is_asserted(pcic->io_irq[0]);
     return failed;
 }
 

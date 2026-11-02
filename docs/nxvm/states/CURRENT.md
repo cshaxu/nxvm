@@ -1,4 +1,25 @@
-# M5 T585 S9 — Active: PC Card I/O interrupt signals
+# M5 T585 S10 — Active: PC110 memory-card media lifecycle
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T585 S10 after S9. |
+| Admission And Approval | Owner directed autonomous completion of the first four PC110 tasks and approved sourced L1/L2 models. |
+| Objective | Design and implement a safe product-to-PC110 memory-card attachment and removal path using the existing S6 receiver and Storage ownership. |
+| Non-goals | No mutation of owner media without an explicit writable mode, fake attribute memory or I/O-card data transport claim. |
+| Reference Baseline | S6 receiver, current product lifecycle, Session/worker ownership and Storage leases. |
+| Candidate Proposal | [Device and model qualification](../proposals/m5-pc110-device-model-qualification.md). |
+| Files And ABI Surface | App-local product/PC110 adapter and existing tests; keep Lib/Emulator unchanged unless an actual contract gap is separately established. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding and source policy. |
+| Verification | Actual product request to guest memory path, both sockets, insert/remove, failed open, lifecycle/restart and safe lease cleanup on both widths. |
+| Expected Markers | Explicit user-controlled media ownership reaches the existing card window without unsafe cross-thread access. |
+| Asset Needs | Task-owned temporary card images only; preserve user INI, firmware and disks. |
+| Reporting Requirements | State exact command/configuration, write mode, attribute-space behavior and timing of insertion/removal. |
+| Stop Conditions | No user-media mutation without requested mode, dangling lease, second machine execution path or silent missing-attribute claim. |
+| Exit Criteria | Real product-to-machine card media lifecycle and error handling validated with required release and evidence. |
+| Original Owner Request | Complete the first four PC110 queue tasks. |
+| Similar-Issue Sweep | Two slots, stop/reset/start, failed open, replacement/eject, exit and write-protected media. |
+
+# M5 T585 S9 — Closed: PC Card I/O interrupt signals
 
 | Field | Required record |
 | --- | --- |
@@ -15,7 +36,7 @@
 | Asset Needs | Task-owned signal fixtures; preserve all owner inputs. |
 | Reporting Requirements | Distinguish signal receivers from actual I/O card, I/O-window transport and RI_OUT wake. |
 | Stop Conditions | No fabricated physical-device behavior, duplicate interrupt owner or wrong IRQ route. |
-| Exit Criteria | Sourced signal contract and Core/PIC wiring verified on both widths with required release and evidence. |
+| Exit Criteria | Shared c7c7d345c reviewed; Core/PIC wiring and full dual-width qualification recorded in [S9 evidence](../etc/evidence/t585-s9-pcic-io-signals.md); PC110 receiver delivered in the NXVM S9 commit. |
 | Original Owner Request | Complete the first four PC110 queue tasks. |
 | Similar-Issue Sweep | Both sockets, type/mode switch, enable/mask, simultaneous status and functional interrupts, reset. |
 
