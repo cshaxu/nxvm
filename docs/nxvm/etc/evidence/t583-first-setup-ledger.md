@@ -20,10 +20,10 @@ coverage remain in their own queued tasks.
 
 | Variant and host | Empty/seeded first Setup | Saved-state new-process DOS boot | Full App entry/session path |
 | --- | --- | --- | --- |
-| DSTN x64 | Guest ERROR, date confirmation and DOS observed by factory/Machine probe in S2 and actual EXE in S6; deliberate date edits remain open. | Guest-produced CMOS saved and loaded by a new actual EXE process; DOS observed in S6. | Real App entry, native window-message Setup input, normal Session teardown and restart observed on an isolated desktop; interactive RDP remains open. |
+| DSTN x64 | Guest ERROR, date confirmation and DOS observed by factory/Machine probe in S2 and actual EXE in S6; deliberate date edit and retention verified in S7. | Guest-produced CMOS saved and loaded by a new actual EXE process; DOS observed in S6 and S7. | Real App entry, native window-message Setup input, normal Session teardown and restart observed on an isolated desktop; interactive RDP remains open. |
 | DSTN x86 | Guest ERROR, date confirmation and DOS observed by the actual EXE in S6; deliberate date edits remain open. | Guest-produced CMOS saved and loaded by a new actual EXE process; DOS observed in S6. | Real App entry, native window-message Setup input, normal Session teardown and restart observed on an isolated desktop; interactive RDP remains open. |
-| TFT x64 | Independently empty CMOS reached Setup/DOS; absent-file seeded default completed Setup and reached DOS in the real EXE in S6. Deliberate date edits remain open. | Guest-produced empty/seeded CMOS loaded by new processes; the real EXE reached DOS in S6. | Real App entry, native window-message Setup input, normal Session teardown and restart observed on an isolated desktop; interactive RDP remains open. |
-| TFT x86 | Independently empty CMOS reached Setup/DOS in S4; seeded default reached Setup and DOS in the actual EXE in S6. Deliberate date edits remain open. | Guest-produced seeded CMOS saved and loaded by a new actual EXE process; DOS observed in S6. | Real App entry, native window-message Setup input, normal Session teardown and restart observed on an isolated desktop; interactive RDP remains open. |
+| TFT x64 | Independently empty and absent-file seeded CMOS reached Setup/DOS in the actual EXE. Deliberate date/time edits and cross-process retention passed in S7. | Guest-produced empty/seeded CMOS loaded by new actual EXE processes; DOS observed in S6–S7. | Real App entry, native window-message Setup input, normal Session teardown and restart observed on an isolated desktop; interactive RDP remains open. |
+| TFT x86 | Independently empty and absent-file seeded CMOS reached Setup/DOS in the actual EXE. Deliberate date edits remain open. | Guest-produced empty/seeded CMOS saved and loaded by new actual EXE processes; DOS observed in S6–S7. | Real App entry, native window-message Setup input, normal Session teardown and restart observed on an isolated desktop; interactive RDP remains open. |
 
 ## S6: isolated native product observation in progress
 
@@ -81,6 +81,59 @@ The native EXE TFT runs use the normal absent-file seeded default; the actual
 EXE route with a truly zero-filled TFT CMOS remains unverified.
 The x64 full repository unit suite passed 712/712; log SHA-256
 `7b26d641258aa6a375dacb901a7663773b76dd857f1a48063ec30bc863be9c92`.
+
+## S7: deliberate date edit and empty-TFT product route
+
+A fresh DSTN x64 real executable reached the firmware date screen on its own
+isolated desktop. Native digit input changed the displayed date from
+`1994-01-01` to `1995-01-01`; the latter BMP SHA-256 is
+`19331f113f4ef2959f974e15b3f80d53a390d65bdea8ec5636f543652d6c0d38`.
+After Enter, the guest reached the DOS calibration frame and the real product
+paused and exited normally. Its 128-byte saved CMOS contains RTC year `95h`;
+the first-run log SHA-256 is
+`431d65878dcda7460355fc60b6d5cfefa0041d201862b2908ec68d7c3d50327c`.
+A new actual EXE process then booted to the same DOS frame without Setup input,
+paused and exited normally. The resulting CMOS still contains year `95h`;
+the restart log SHA-256 is
+`f15c10800d0b97e9dc2a4b6380f06bc3ea1b90798a08f8732d95a32296ba181d`.
+This is a native-message test on an isolated desktop, not interactive RDP input;
+the deliberate edit/restart here covers DSTN x64 only.
+
+The independent all-zero TFT CMOS x64 real-product run also traversed ERROR,
+Setup and DOS, then paused and exited normally. Its first-run log SHA-256 is
+`b7ee839cfc679abfbc79bbbe8bda5556ba0e75a278f04ba33ca15dfbd5d1294c`;
+its resulting guest CMOS SHA-256 is
+`344bc634dee98f58818f696d1fa7743fd7d0c917e0f9b33d9a84d0a037681628`.
+The independent x64 restart also reached DOS without Setup input and exited
+normally; its log SHA-256 is
+`69560c9afb7c2e7f148dce221b345b57ace9819be9b801f64b5c1a761cecc2ae`.
+The x86 first run likewise reached DOS and exited normally; its log SHA-256 is
+`267c23f6d8f1b53f0ca9fbca3be39801d3c019edb9608cdca18557e311aa13b9`.
+Its independent restart reached DOS without Setup input and exited normally;
+the restart log SHA-256 is
+`2d2fd7a9769d9aa2bea5130dd45458a15dd474c990762478c8b512807621de6a`.
+The x64 full repository unit suite
+passed 712/712; its log SHA-256 is
+`6f59905ebe11954f88cc5c9d65db64fa5ee7e9d2908b8b71cde6c5b6409f853e`.
+
+A separate TFT x64 seeded case changed the date to `1995-01-01` and the time
+from `00:00:15` to `12:00:15` in the actual firmware Setup screen. The native
+BMP SHA-256 is
+`51f9646c8bf776faa6eb2c3a0e54c767b53ac89b9a541a7b583ebbec5f7486e7`.
+After Enter the guest reached DOS and the product exited normally. Its saved
+CMOS contains year `95h` and hour `12h`; the first-run log SHA-256 is
+`4021ec0ac039b76c3c007127a06207a1864e3a203e4d3c4cf1575de9018708bf`.
+A new product process reached the same DOS frame without Setup input and
+exited normally; its saved CMOS retained year `95h` and hour `12h`. Its log
+SHA-256 is
+`07354fea77585762fc11b6d79253e035832925a075d069a0f17dcbaffbb50177`.
+
+An initial S7 observer used the repository root as its own working directory,
+although the guest EXE and media were isolated correctly. Its automatic
+frame detector therefore did not see those screenshots. The observer was
+normally stopped, its task-owned screenshots moved into the task directory,
+and a new fresh case started with the observer working directory corrected.
+The interrupted observation is not counted as Setup, boot or persistence proof.
 
 ## S5: real executable lifecycle and CMOS persistence
 
