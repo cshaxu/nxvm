@@ -25,6 +25,41 @@ coverage remain in their own queued tasks.
 | TFT x64 | Independently empty and absent-file seeded CMOS reached Setup/DOS in the actual EXE. Deliberate date/time edits and cross-process retention passed in S7. | Guest-produced empty/seeded CMOS loaded by new actual EXE processes; DOS observed in S6–S7. | Real App entry, native window-message Setup input, normal Session teardown and restart observed on an isolated desktop; interactive RDP remains open. |
 | TFT x86 | Independently empty and absent-file seeded CMOS reached Setup/DOS in the actual EXE. Deliberate date edits remain open. | Guest-produced empty/seeded CMOS saved and loaded by new actual EXE processes; DOS observed in S6–S7. | Real App entry, native window-message Setup input, normal Session teardown and restart observed on an isolated desktop; interactive RDP remains open. |
 
+## S8: in-process stop/start and reset/resume
+
+The actual EXEs, both variants and both host widths, each started from their
+own guest-saved CMOS on isolated desktops. After the DOS calibration frame the
+observer requested a real pause, received `Machine stopped.` after `stop`,
+and issued `start`. It required a new non-DOS frame before accepting a second
+DOS frame. It then paused, received `Machine reset and paused.`, sent `resume`,
+and again required a changed frame followed by DOS. One captured DSTN x64
+POST frame visibly shows `20096 KB OK` and has SHA-256
+`94c5272ffead1ebf7b989d7e8fb0bcce5019dbe8ae55be0819dfdc9b4308a515`.
+That exact POST frame was independently present after stop/start and after
+reset/resume in each of the four cases before their respective DOS frames.
+
+Both x64 cases and TFT x86 then paused and exited normally. First-run logs are
+DSTN x64 `cd2c10ed162179e44d81a0c8c5ba9dc8bf1500e77992180fad5aa9a2bf21fcb0`,
+TFT x64 `956c06f3769ef495d6d9b62b663046c5d49c055300c9f3098a58cccbcfbde56d`,
+and TFT x86 `0f22d5b2af127dae040361ac6489bbbe38ff4810c91c7d4bd74d87f1c3db2e601`.
+The DSTN x86 run reached both restart DOS checkpoints, but its observer exited
+1 after its final pause; its exit check did not distinguish a 10-second wait
+timeout from a nonzero process exit. This is not counted as a normal teardown.
+The log SHA-256 is
+`dada025b2f7dfbaff07bf90a899b34e9d5caa14108b4a0fa61d7d24e2e177d14`.
+An independent repeat with a diagnostic exit result and bounded 60-second wait
+again reached DOS after both restart paths and exited normally: wait returned
+`WAIT_OBJECT_0`, the exit code was available and was zero. Its log SHA-256 is
+`e77805ffe21a83d8d76ec32a860bcaa604fbbd12e724449372f899ddf67a787f`.
+The earlier failure's cause remains unknown because its observer did not log
+the individual exit-check results. All four private input-media hashes match their initial values;
+the saved CMOS configuration bytes from offset 0Eh onward also match their
+respective initial guest-produced images. The unsuccessful DSTN x86 teardown
+does not prove that its final RTC state was saved.
+
+The x86 full repository unit suite passed 712/712; log SHA-256 is
+`ee631116e749eb262bdeabb3ba1a8b389e28bb6815344694d4f78f05f78258bc`.
+
 ## S6: isolated native product observation in progress
 
 `CreateDesktopW` returned access denied inside the restricted execution
