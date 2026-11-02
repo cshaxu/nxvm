@@ -1,5 +1,26 @@
 # M5 T582 S39 — Active: execution and timing architecture convergence
 
+### Admitted bounded clock-deadline division candidate
+
+In `src/x86-core/machine/clock.c`, use the existing positive, post-phase
+deadline numerator as a 32-bit dividend only when it fits, retaining the
+existing full-width path otherwise. The ratio, rounding, error result, output,
+clock state and public interface remain unchanged for every machine. Extend
+the existing rational-clock boundary table and update the X86 Core source and
+test manifests. The x86 startup probe observed 10298986 of 10299355 deadline
+conversions within this range; scratch differential checks covered one
+million cases per width. Fixed-work performance is noisy and does not prove
+usability. Qualify the existing clock and affected scheduling tests, cached
+full Shared and product receivers, integrations and fourteen artifacts before
+delivery; inspect the actual diff. T582 remains open for the user-facing goal.
+
+Both widths passed 712 unit and 48 default integration tests, plus the
+5160/5170/DeskPro receiver groups and MyRaidenII selected-set probes. Fourteen
+PE widths were verified. The private-media PC110 menu/response marker took
+183/8 seconds on x64 and 251/11 on x86; the x86 response capture was still
+incomplete. These single runs do not establish a stable speedup or native
+Window/RDP usability. Continue S39 after this bounded optimization.
+
 ### Local string-form handoff remains experimental
 
 An unwrapped local-argument timing prototype reached the same stable PC110

@@ -1,5 +1,67 @@
 # T582 S39 — execution and timing convergence
 
+## Bounded clock-deadline division
+
+A task-owned x86 product-path startup sampler observed the real worker for
+host seconds 5–60 using WOW64 thread contexts. Among 4078 early and 4930
+late worker samples, the software 64-bit division helper appeared 105 and
+117 times; sampled leaf symbols also included CPU execution, memory routes,
+Machine scheduling and clock advancement. A second bounded run attributed
+90 such samples to clock-domain advance and 34 to deadline conversion by
+reading the helper's caller frame. Sampling, inlining, frame boundaries and
+host scheduling limit attribution; the guest was intentionally terminated
+after each observation, so neither is a completed boot.
+
+An x86 counter recorded 10299355 existing deadline conversions through the
+ten-million-instruction private-media checkpoint; 10298986 post-phase
+dividends fit in 32 bits. The production clock owner now uses 32-bit quotient
+and remainder for that bounded case and retains the existing full-width path
+otherwise. This changes neither clock results nor the public interface or
+guest-time policy. The source change is +7/-0 lines; four boundary cases
+were added to the existing test, and both X86 Core manifests were updated.
+One million deterministic random and edge inputs per host width matched the
+original status and output. The 32-bit x86 generated path uses a native
+divide instead of the multiword division helper; this is not a claim that
+the whole startup becomes fast.
+
+At ten million instructions, ordered baseline/candidate and reversed
+candidate/baseline pairs were 16489/16179 and 17437/22375 ms x64, and
+20432/20782 and 25026/25750 ms x86. Each reported 79964294 ticks and PC
+`0003dbc5`. Host drift is substantial and x86 directions differ, so these
+samples do not establish a stable overall speedup or complete-state equality.
+The x64 private-media product probe reached the Personaware menu at sample
+183 and its frame-change threshold after 8 seconds, exiting zero in 194.58
+seconds. The capture shows both World Clock time fields; it does not prove
+complete interactive rendering or native Window/RDP operation. Startup
+remains far too slow to close the user goal. The x86 probe reached the menu at
+sample 251 and its frame-change threshold after 11 seconds, exiting zero in
+266.01 seconds. Its capture still lacks the World Clock time fields, so it is
+not a completed-response measurement. The x86 guest log SHA-256 is
+`885569C1A91B34539C7FFAE6F024CF6B2438DCAEB75E3BB53B8E9CFF6820B09D`.
+
+Both widths passed 712/712 unit and 48/48 default integration tests, including
+native MIDI. The 5160, 5170 and DeskPro receiver groups passed 3/3, 5/5 and
+6/6 respectively on each width. Both MyRaidenII selected-set startup and
+Console probes passed; this is not an arcade-playability claim. Fourteen PE
+architectures were checked; MyPC110 and MyNES deployments match their cached
+build outputs. MyRaidenII deployments match the stripped builds apart from PE
+timestamp/checksum bytes changed by re-stripping. MyNES executables did not
+change. [Artifact inventory](t582-s39-clock-until-artifacts.json).
+
+Native x86 sampling, division-caller, input-count, differential, focused,
+full-gate, external-receiver and x64 guest logs SHA-256 respectively:
+`5E550E16CD1642C4ED44C4EEF77677E2E6ADC3B19967C9BC2A5E56B8527D90AA`,
+`9F14D53955271BBD5B22C8CB186565F2F1C62A19BCCB972C9BDAF585692AAE70`,
+`065A21959A4EA713BDE40FD06DB07754732FFF5D626D0494441EA8E4042F9BDA`,
+`282E6130300CF648D700DC71651D24412DF4FD1149FBF23F8599C1E77AAB497C`,
+`BCBAE5FB6AAA82818BD1D37D0B6F2711705A2DFF598F6EFB1207A2BA215A26F8`,
+`949A0001ACB586C432CC89BE729581EC4AC1EC088A35EA5A3F6C4A2C6432C4C7`,
+`967DA35EAB5E644EC43CE85C27514053F9C5755F2BF774CC74AE742ACA119573`,
+`B7D32C6F43B4772DB0721CE699C0FAC3B239E26B9405A3EFEE281DAF1FC207C0`.
+Fixed-work forward and reverse log SHA-256:
+`42C3C0381957796198FDB3A86EDE75F4CCCF1E97702429810DD2E93DD4F178B7`,
+`73FD8A355DED86E648470A7B232A50DAB731885A27446EEE8153AB6EA7314FF8`.
+
 ## Nominal 486 timing ablation
 
 A task-only 486 experiment replaced the nominal instruction term with three
