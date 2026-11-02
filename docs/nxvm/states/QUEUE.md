@@ -4,8 +4,8 @@ The entries below are ordered candidates; historical dispositions retain their o
 
 The owner promoted PC110 performance (former entry 14), admitted it as T582,
 and subsequently accepted [stage closure](../history/M5-T582-pc110-startup-performance.md)
-with unresolved performance and correctness debt recorded separately.
-Other pending candidates retain their relative order.
+with unresolved performance and correctness debt recorded separately. The
+pending candidates below follow the owner's subsequent priority order.
 
 MyPC110 display selection is owner-closed as [T581](../history/M5-T581-pc110-vdisplay.md).
 
@@ -85,16 +85,20 @@ The former first candidate, [PC110: board, chipset and firmware mapping](../hist
 6. [PC110: real firmware POST, setup and guest boot](../history/M5-T572-pc110-firmware-boot-proposal.md) is closed as M5 T572. It establishes the normal real-firmware execution checkpoint but makes no POST, Setup, DOS-boot or published-product claim.
 7. [PC110: C-segment ROM and shadow contract](../proposals/m5-pc110-c-segment-shadow.md) is closed as T574 by its source/proof stop condition.  It retained only the verified F-segment shadow and rejected an unproven C-segment alias.
 8. [PC110: protected bootstrap and real mapping admission](../proposals/m5-pc110-protected-bootstrap.md) is closed as T575: the real TFT path now crosses its proven, strict-by-default protected data-cache boundary without fabricated descriptors. Its next C-segment mapping boundary remains separately unproved.
-9. [MyPC110: product and guest qualification](../history/M5-T580-pc110-qualification-proposal.md) is closed as M5 T580 by owner direction. Its five remaining areas are transferred to candidates 14--18 below; closure is not a claim of complete qualification.
-10. [CPU differential tools and specification tests](../proposals/m5-differential-and-unit-evidence.md)
-11. [Retained-machine DOS and Windows qualification](../proposals/m5-retained-guest-qualification.md)
-12. [MyNeoGeo: Metal Slug 2](../proposals/myneogeo-metal-slug2.md)
-13. [x87 coprocessor execution](../proposals/m5-x87-coprocessor-execution.md)
-14. [MyPC110: startup performance and guest clocks](../history/M5-T582-pc110-startup-performance.md) is stage-closed as T582 by owner direction; its performance and correctness debts remain recorded separately.
-15. [MyPC110: first-time configuration and restart](../proposals/m5-pc110-first-setup.md)
-16. [MyPC110: desktop and interactive product qualification](../proposals/m5-pc110-product-interaction.md)
-17. [MyPC110: remaining device and model qualification](../proposals/m5-pc110-device-model-qualification.md)
-18. [MyPC110: final product qualification](../proposals/m5-pc110-final-qualification.md)
+9. [MyPC110: product and guest qualification](../history/M5-T580-pc110-qualification-proposal.md) is closed as M5 T580 by owner direction. Its remaining areas are tracked by stage-closed T582 and the four PC110 candidates below; closure is not a claim of complete qualification.
+
+## Current and pending candidates
+
+[MyPC110: first-time configuration and restart](../history/M5-T583-pc110-first-setup.md)
+is closed as T583. The remaining candidates retain their requested order:
+
+1. [MyPC110: desktop and interactive product qualification](../proposals/m5-pc110-product-interaction.md)
+2. [MyPC110: remaining device and model qualification](../proposals/m5-pc110-device-model-qualification.md)
+3. [MyPC110: final product qualification](../proposals/m5-pc110-final-qualification.md)
+4. [MyNeoGeo: Metal Slug 2](../proposals/myneogeo-metal-slug2.md)
+5. [CPU differential tools and specification tests](../proposals/m5-differential-and-unit-evidence.md)
+6. [Retained-machine DOS and Windows qualification](../proposals/m5-retained-guest-qualification.md)
+7. [x87 coprocessor execution](../proposals/m5-x87-coprocessor-execution.md)
 
 The former PC App test adapter candidate was transferred into T564 S13 by
 owner direction; its [proposal](../proposals/m5-pc-app-test-encapsulation.md)

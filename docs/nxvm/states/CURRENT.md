@@ -1,4 +1,10 @@
-# M5 T583 S9 — Active: x86 Setup date/time and retained restart
+# M5 T583 S9 — Closed: x86 Setup date/time and retained restart
+
+Both x86 actual products accepted edited dates and hours and retained them
+through normal teardown and a new-process DOS boot. The x64 full repository
+unit suite passed 712/712; PC110 integration passed 9/9 on both host widths.
+T583 is closed by the owner-authorized four-task sequence; the next receiver
+owns interactive qualification and the recorded inconclusive exit observation.
 
 | Field | Required record |
 | --- | --- |
@@ -15,7 +21,7 @@
 | Asset Needs | Private media copies and existing EXEs; preserve all owner files. |
 | Reporting Requirements | Per-variant evidence, exit, tests, unverified desktop and retained product gaps. |
 | Stop Conditions | No user-desktop focus theft or synthetic guest configuration. |
-| Exit Criteria | Reviewed date/time and restart evidence or an explicitly identified real remaining defect. |
+| Exit Criteria | Reviewed 16eea1c77: both x86 variants retained edited date and hour across actual process restart, reached DOS and exited normally. |
 | Original Owner Request | Complete the four queued PC110 tasks. |
 | Similar-Issue Sweep | Compare x86 variants against S7's x64 route and S8's lifecycle results. |
 
@@ -237,7 +243,7 @@ reuse a TFT-generated CMOS as proof of independent DSTN setup.
 | Objective | Reconcile the real first-configuration and restart path with existing source, fixtures and prior evidence, then establish reproducible next-step diagnostics and a coverage ledger. |
 | Non-goals | No fabricated CMOS, proprietary firmware change, owner media mutation, Shared implementation change or full-product qualification claim. |
 | Reference Baseline | 5715cd392, T580 S87/S90 and T582 S40; derived DSTN and TFT remain distinct build-provided firmware variants. |
-| Candidate Proposal | [First configuration and restart](../proposals/m5-pc110-first-setup.md); [coverage ledger](../etc/evidence/t583-first-setup-ledger.md). |
+| Candidate Proposal | [First configuration and restart](../history/M5-T583-pc110-first-setup-proposal.md); [coverage ledger](../etc/evidence/t583-first-setup-ledger.md). |
 | Files And ABI Surface | Initially NXVM task records and read-only App/integration source; any implementation requires a subsequently bounded S. |
 | Applicable Rules | NXVM guide, execution, documentation, architecture, coding, UI and source policy. |
 | Verification | Review actual firmware/CMOS and integration ownership; run existing suitable bounded diagnostics with private inputs when available, preserve hashes and report actual coverage. |
