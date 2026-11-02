@@ -20,10 +20,35 @@ coverage remain in their own queued tasks.
 
 | Variant and host | Empty/seeded first Setup | Saved-state new-process DOS boot | Full App entry/session path |
 | --- | --- | --- | --- |
-| DSTN x64 | Guest ERROR, date confirmation and DOS observed by factory/Machine probe in S2; deliberate date edits remain open. | Guest-produced CMOS saved by App callback and loaded by new probe process; DOS observed in S2. | Open: exercise the real executable/session and lifecycle in a later batch. |
-| DSTN x86 | Guest ERROR, date confirmation and DOS observed by factory/Machine probe in S3; deliberate date edits remain open. | Guest-produced CMOS saved by App callback and loaded by new probe process; DOS observed in S3. | Open: real executable/session and lifecycle. |
-| TFT x64 | Independently empty CMOS reached Setup/DOS; absent-file seeded default reached Setup and began DOS in S4. Deliberate date edits remain open. | Guest-produced empty/seeded CMOS loaded by new probe processes; DOS observed in S4. | Open. |
-| TFT x86 | Independently empty CMOS reached Setup/DOS; seeded default reached Setup but not DOS within the first observation budget. Real-product first-run DOS remains open. | Guest-produced empty/seeded CMOS loaded by new probe processes; DOS observed in S4. | Open. |
+| DSTN x64 | Guest ERROR, date confirmation and DOS observed by factory/Machine probe in S2; deliberate date edits remain open. | Guest-produced CMOS saved by App callback and loaded by new probe process; DOS observed in S2. | Real App lifecycle and save witnessed in S5; guest Setup/DOS remains open. |
+| DSTN x86 | Guest ERROR, date confirmation and DOS observed by factory/Machine probe in S3; deliberate date edits remain open. | Guest-produced CMOS saved by App callback and loaded by new probe process; DOS observed in S3. | Real App lifecycle and save witnessed in S5; guest Setup/DOS remains open. |
+| TFT x64 | Independently empty CMOS reached Setup/DOS; absent-file seeded default reached Setup and began DOS in S4. Deliberate date edits remain open. | Guest-produced empty/seeded CMOS loaded by new probe processes; DOS observed in S4. | Real App lifecycle and save witnessed in S5; guest Setup/DOS remains open. |
+| TFT x86 | Independently empty CMOS reached Setup/DOS; seeded default reached Setup but not DOS within the first observation budget. Real-product first-run DOS remains open. | Guest-produced empty/seeded CMOS loaded by new probe processes; DOS observed in S4. | Real App lifecycle and save witnessed in S5; guest Setup/DOS remains open. |
+
+## S5: real executable lifecycle and CMOS persistence
+
+On both host widths, a task-owned extension of the existing hidden-console
+process fixture copied the actual released MyPC110 EXE and independently
+guest-produced 128-byte CMOS images into isolated directories. For DSTN and
+TFT separately it selected the variant, issued `start`, `pause`, `debug`,
+`stop` and `exit`, and verified every monitor marker and zero process exit.
+Through the paused Debug port path it changed the RTC seconds register to
+`42h`. The selected variant's resulting file had that value, while every
+configuration byte from offset 0Eh onward matched the guest-produced input.
+The other variant's distinct, guest-produced `2000-01-01` CMOS remained
+byte-for-byte identical. The four x64/x86-by-variant cases passed; verification
+transcript SHA-256 is
+`049fed5bf010ac2367daa23793f1d623ee2a0652b4bc90af5945b2d77b0df698`.
+
+The x64 executable was SHA-256
+`11f05d0087e0f0ce4f90c7a9217294801298355b285d13e718e497a93b306d60`;
+the x86 executable was
+`63876fe16fa10b1ddd0349dbf490b031c79efa7adbdc39f12b64db6153a42875`.
+The temporary Debug write is a controlled persistence witness, not a claim
+that the guest Setup UI changed the date. These quick lifecycle cases do not
+boot DOS or test Window input. The complete x64 unit suite passed 712/712;
+log SHA-256
+`a25b1a7b5c1f5e1c6ef5cb845a02c51a97c28a2b3b8bede838f48fc1736e287b`.
 
 ## S4: TFT independently empty CMOS in progress
 

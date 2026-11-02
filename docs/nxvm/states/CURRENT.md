@@ -1,3 +1,31 @@
+# M5 T583 S5 — Active: real-product CMOS restore and teardown
+
+The current deployed EXEs were run in isolated hidden-console processes on
+both widths for both variants using guest-produced CMOS. Start/pause/stop/exit
+completed, a controlled paused Debug RTC write persisted through normal
+Product teardown, and the other variant's distinct CMOS remained byte-for-byte
+unchanged in all four cases. Full x64 units passed 712/712. This does not
+qualify guest Setup/DOS or native Window input through the real executable.
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T583 S5 after S4 closure 26df5a4cc. |
+| Admission And Approval | Owner requested completion of the first four queued PC110 tasks and automatic sequential execution. |
+| Objective | Verify actual released App entry, Session lifecycle and normal teardown load and save independently guest-produced CMOS for DSTN and TFT on both host widths. |
+| Non-goals | No fabricated configured CMOS, Shared changes, external media writes, blind input, or treating lifecycle-only runs as DOS/native UI proof. |
+| Reference Baseline | 26df5a4cc; S2–S4 guest-produced CMOS and current product artifacts. |
+| Candidate Proposal | [T583 coverage ledger](../etc/evidence/t583-first-setup-ledger.md), full App entry/session persistence batch. |
+| Files And ABI Surface | Initially NXVM evidence and a task-owned extension of the existing console process fixture; no production source or public API changes. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding, UI and source policy. |
+| Verification | Copy actual x64/x86 EXEs and guest-produced per-variant CMOS into private directories, run real monitor lifecycle and normal exit, verify preserved configuration, process exit and isolated data; complete repository units. |
+| Expected Markers | Real executable loads matching variant, reports start/stop, exits normally and leaves valid saved CMOS without cross-variant contamination. |
+| Asset Needs | Existing guest-produced task CMOS and copied executables only; never change owner INI, CMOS, media or ROM. |
+| Reporting Requirements | Executable and CMOS identities, lifecycle output, exit status, per-variant persistence, remaining first-boot/native limits and next step. |
+| Stop Conditions | No synthetic configured CMOS, user-file mutation, guessed guest input, or claim that lifecycle-only tests prove a DOS boot. |
+| Exit Criteria | Actual App entry and save-on-exit path verified for both widths and variants, or its first reproducible defect recorded with a repair receiver. |
+| Original Owner Request | Complete the first four queued PC110 tasks. |
+| Similar-Issue Sweep | Compare both display variants and host widths, file-missing behavior, matching CMOS isolation and start/stop/exit. |
+
 # M5 T583 S4 — Closed: TFT initial CMOS paths on both host widths
 
 Both host widths reached DOS from explicitly empty TFT CMOS after Setup, saved
