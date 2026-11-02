@@ -1,4 +1,31 @@
-# M5 T584 S4 — Active: Console display and graphics handoff
+# M5 T584 S5 — Active: product keyboard and host-input boundary
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T584 S5 after S4 Console handoff. |
+| Admission And Approval | Owner requested automatic completion of the four PC110 receivers. |
+| Objective | Exercise actual guest keyboard navigation and reconcile native hotkey/mouse capture against available host tests. |
+| Non-goals | No user-desktop focus theft, global pointer clipping, user-media writes or claiming injected messages prove physical input. |
+| Reference Baseline | e52cda74e and T584 S1–S4 evidence. |
+| Candidate Proposal | [Product interaction](../proposals/m5-pc110-product-interaction.md); [interaction ledger](../etc/evidence/t584-product-interaction-ledger.md). |
+| Files And ABI Surface | Task-owned isolated diagnostics and NXVM evidence initially; no public API or Shared change. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding, UI and source policy. |
+| Verification | Observe guest keyboard navigation, inspect existing hotkey and capture tests and host restrictions, run complete repository units and document gate. |
+| Expected Markers | Guest-visible key response, normal teardown and explicit real-host versus mock coverage. |
+| Asset Needs | Existing EXEs and private media/configuration only. |
+| Reporting Requirements | Separate native keyboard-message, mocked host capture and unavailable physical/RDP evidence. |
+| Stop Conditions | No desktop switching, global user-pointer clipping or unreviewed Shared change. |
+| Exit Criteria | Reviewed scoped evidence or a precise reproducible gap and its owner. |
+| Original Owner Request | Complete the first four PC110 queue tasks. |
+| Similar-Issue Sweep | Compare PC110 input, generic Product hotkeys and Window capture ownership. |
+
+# M5 T584 S4 — Closed: Console display and graphics handoff
+
+Actual products with `display=console` exercised both console-control policies,
+both firmware variants and both host widths through graphical Window handoff,
+Personaware, pause/resume and normal exit. The first prematurely interrupted
+observations and the cooked-buffer resume check were corrected and retained.
+Full x86 units passed 712/712; physical/RDP input remains unverified.
 
 | Field | Required record |
 | --- | --- |
@@ -15,7 +42,7 @@
 | Asset Needs | Existing EXEs and private media/configuration only. |
 | Reporting Requirements | Distinguish native Console/Window handoff from physical input or RDP, and record actual host restrictions. |
 | Stop Conditions | No desktop switching, global user-pointer clipping or unreviewed Shared change. |
-| Exit Criteria | Reviewed Console-control policy behavior or a precise reproducible defect. |
+| Exit Criteria | Reviewed e52cda74e: actual Console-to-Window handoff and return on both policies, variants and widths, with original observer errors retained. |
 | Original Owner Request | Complete the first four PC110 queue tasks. |
 | Similar-Issue Sweep | Compare control 0/1, host widths and both display variants. |
 
