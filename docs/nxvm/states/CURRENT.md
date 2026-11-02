@@ -1,4 +1,38 @@
-# M5 T582 S39 — Active: execution and timing architecture convergence
+# M5 T582 — Stage closed by owner direction
+
+The owner accepts stage closure even though the original PC110 usability goal
+has not been achieved. The delivered optimizations and non-Shared product
+boundaries were reviewed, and outstanding correctness and performance debt
+was preserved. S39's clock change
+and its dual-width receiver were delivered in 4fb901430, 340baabaf and
+fd4ecfedd. This authorization is not a claim that PC110 startup is usable.
+
+The review confirmed that MyPC110 silently accepted a memory size other than
+the implemented 20 MiB. Delivery bb712dc88 rejects unsupported explicit sizes
+while retaining the default and 20 MiB configuration. Both widths passed
+712 unit tests and the affected product integrations; the two rebuilt EXEs
+match their build outputs. No Shared API or component changed in S40.
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T582 S40 after S39 delivery. |
+| Admission And Approval | Owner authorized stage closure and a final non-Shared quality audit. |
+| Objective | Audit delivered performance work and product-owned code, correct the confirmed PC110 memory request mismatch, and close or explicitly transfer remaining gaps. |
+| Non-goals | No claim of achieved PC110 usability, Shared production changes, unrelated product modifications, or user media changes. |
+| Reference Baseline | Shared 4fb901430, NXVM 340baabaf and MyRaidenII fd4ecfedd. |
+| Candidate Proposal | [T582 proposal](../proposals/m5-pc110-startup-clock-performance.md), S40. |
+| Files And ABI Surface | MyPC110 construction, existing test, App release pair and NXVM task records. No public interface change. |
+| Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding, NXVM architecture and UI. |
+| Verification | Cached x64/x86 build, 712/712 units on each width, two affected integration tests per width, PE and artifact identity, actual-diff review. Full integration results belong to the previous S39 receiver. |
+| Expected Markers | Unsupported explicit RAM rejected; default and 20 MiB accepted; retained debt and unverified desktop/RDP limits recorded. |
+| Asset Needs | Existing firmware inputs; do not alter INI, CMOS, snapshots, disks or external ROMs. |
+| Reporting Requirements | Delivered changes and measured limits, applicable tests, artifact hashes, quality coverage and outstanding debt. |
+| Stop Conditions | Do not claim solved performance or erase user-owned unrelated changes; do not expand Shared or another App's production scope. |
+| Exit Criteria | Owner-directed stage closure after validated delivery bb712dc88 and recorded unresolved performance and memory-routing debt. This is not full performance acceptance. |
+| Original Owner Request | Close if further gains are difficult after final accounting and non-Shared quality review. |
+| Similar-Issue Sweep | Review all PC App configuration and lifecycle boundaries; make a limited read-only pass of MyNES and MyRaidenII. |
+
+# M5 T582 S39 — Closed: execution and timing architecture convergence
 
 ### Admitted bounded clock-deadline division candidate
 

@@ -196,14 +196,21 @@ Empty-CMOS first setup is a different workload and remains separately queued.
   fault/debug boundaries, guest timing, event ordering and the single
   execution owner. Compare representative workload and both host widths; do
   not claim viability based only on a fixed synthetic loop.
-- **S40: whole-product receiving and owner acceptance.** After the actual
+- **S40: owner-directed stage closure and quality review.** The owner accepts
+  closing T582 without claiming the PC110 usability objective was met. Review
+  the actual delivered source, all product-owned code, evidence and remaining
+  debt. Correct the confirmed MyPC110 unsupported-memory acceptance in its
+  App boundary and qualify the affected receivers. Preserve the unresolved
+  startup performance and Shared memory-boundary findings for later work.
+  Report the scope and limits of the review and verification explicitly.
+
+  Original full qualification, retained as follow-up criteria: after the actual
   performance objective is met, reconcile before/after DOS/Personaware startup,
   guest clock, RTC and ordinary operation on x86/x64 and applicable DSTN/TFT
   variants; validate responsive operation and report desktop/RDP evidence
   separately. Game is optional and does not define emulator usability. Run the
-  full Shared receiving gate below, review actual changes, publish and obtain
-  owner acceptance. If usability or any required gate remains unproven, keep
-  T582 open and insert the necessary numeric S work before this final gate.
+  applicable Shared receiving gate, review actual changes, publish and obtain
+  owner acceptance. These follow-up criteria are not met by stage closure.
 
 S26 is accepted as a bounded batch; the following work retains the unresolved
 whole-product objective. The owner's criterion

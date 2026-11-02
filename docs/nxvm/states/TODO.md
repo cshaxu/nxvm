@@ -5,12 +5,24 @@ The public-component entries were transferred to the open
 [T564 S6--S13 plan](../proposals/m5-softpc-rgb-frame-import.md) by owner
 direction; transfer is not a repair or a claim of implementation.
 
-- [ ] **MyPC110 startup RAM configuration (`TODO(Medium)`).** A 4 MiB request
-  produces a 20 MiB Machine because the PC110 composition uses a fixed plan.
-  Audit supported PC110 RAM sizes and their chipset, CMOS and open-bus mapping,
-  then admit a focused correction to the startup configuration contract.
+- [ ] **MyPC110 additional RAM configurations (`TODO(Medium)`).** The present
+  PC110 plan implements 20 MiB and rejects other explicit sizes. Audit possible
+  additional RAM sizes and their chipset, CMOS and open-bus mapping before
+  implementing them; do not silently accept a size that is not constructed.
   Do not treat a lower RAM setting as the T582 performance solution. See
   [S39 evidence](../etc/evidence/t582-s39-execution-convergence.md).
+- [ ] **X86 Core masked memory-span routing (`TODO(High)`).** A multi-byte
+  access crossing an address bit cleared by the active mask can reach the wrong
+  backing addresses. A provider that accepts the query but returns UNSUPPORTED
+  on the operation also exposes an incorrect fallback. Design and test one
+  consistent route covering RAM, provider decline, aliases, partial writes,
+  bounds, parity and observers; the S39 partial experiment was not retained.
+  See [S39 evidence](../etc/evidence/t582-s39-execution-convergence.md).
+- [ ] **MyPC110 usable startup and guest execution performance (`TODO(High)`).**
+  T582 delivered bounded optimizations, but the latest private-media runs still
+  needed minutes to reach the sampled interface. Establish a repeatable
+  representative improvement and desktop/RDP usability before considering
+  this goal met; see [S39 evidence](../etc/evidence/t582-s39-execution-convergence.md).
 - [ ] **Model40 x86 external-throughput qualification (`TODO(Medium)`).** The
   fixed 180-second Turbo DOS-installation terminal is not presently a
   differentiating CPU-semantic result: the isolated accepted S20 executable
