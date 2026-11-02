@@ -1,4 +1,10 @@
-# M5 T584 S7 — Active: private-media inking calibration persistence
+# M5 T584 S7 — Closed: private-media inking calibration persistence
+
+Both variants and both host widths completed guest calibration, saved CMOS and
+entered Personaware without further calibration input after independent
+restart. The full x64 unit suite passed 712/712. T584 is closed with physical
+host capture, physical hotkeys and interactive RDP explicitly transferred to
+final product qualification; those unavailable paths are not claimed passed.
 
 | Field | Required record |
 | --- | --- |
@@ -7,7 +13,7 @@
 | Objective | Verify whether guest-saved four-corner inking calibration survives process restart when writes are retained on a task-owned disk copy. |
 | Non-goals | No owner-media writes, user-desktop switch, fabricated guest state or claim of physical/RDP capture. |
 | Reference Baseline | c86ce42e0, T584 S3 overlay calibration and current Product/Machine storage contracts. |
-| Candidate Proposal | [Product interaction](../proposals/m5-pc110-product-interaction.md); [interaction ledger](../etc/evidence/t584-product-interaction-ledger.md). |
+| Candidate Proposal | [Product interaction](../history/M5-T584-pc110-product-interaction-proposal.md); [interaction ledger](../etc/evidence/t584-product-interaction-ledger.md). |
 | Files And ABI Surface | Task-private media and observer plus NXVM evidence; no public API or Shared change. |
 | Applicable Rules | NXVM guide, execution, documentation, architecture, coding, UI and source policy. |
 | Verification | Calibrate on an isolated writable disk copy, verify guest save and normal exit, independently restart using that same copy, observe guest path and run repository units/documentation gate. |
@@ -15,7 +21,7 @@
 | Asset Needs | Existing source media copied into a task-owned directory; source images never opened writable. |
 | Reporting Requirements | Distinguish private retained writes from discarded overlay and disclose unsupported persistence. |
 | Stop Conditions | No owner-media mutation or guessing an unobserved guest prompt. |
-| Exit Criteria | Reviewed persistence observation or an identified real guest/storage gap. |
+| Exit Criteria | Reviewed 378a5a01f: four Machine-path calibration/save/restart combinations, private-media integrity and x64 units. |
 | Original Owner Request | Complete the first four PC110 queue tasks. |
 | Similar-Issue Sweep | Compare retained writes and overlay behavior without inventing a second persistence path. |
 
@@ -32,7 +38,7 @@ private-media inking calibration persistence remains in S7.
 | Objective | Reconcile product interaction evidence, existing host capture tests, outstanding physical/RDP boundaries and required PC110 integration suites. |
 | Non-goals | No user-desktop switch, physical pointer clipping, fabricated RDP evidence or unreviewed Shared modification. |
 | Reference Baseline | a30e4237f and the T584 interaction ledger. |
-| Candidate Proposal | [Product interaction](../proposals/m5-pc110-product-interaction.md); [interaction ledger](../etc/evidence/t584-product-interaction-ledger.md). |
+| Candidate Proposal | [Product interaction](../history/M5-T584-pc110-product-interaction-proposal.md); [interaction ledger](../etc/evidence/t584-product-interaction-ledger.md). |
 | Files And ABI Surface | NXVM evidence/governance initially; no public API or production source change. |
 | Applicable Rules | NXVM guide, execution, documentation, architecture, coding, UI and source policy. |
 | Verification | Review retained source/test evidence, run complete repository units and PC110 external-firmware integrations on both host widths, and run documentation gate. |
@@ -58,7 +64,7 @@ interactive RDP were not claimed from posted messages or mocked tests.
 | Objective | Exercise actual guest keyboard navigation and reconcile native hotkey/mouse capture against available host tests. |
 | Non-goals | No user-desktop focus theft, global pointer clipping, user-media writes or claiming injected messages prove physical input. |
 | Reference Baseline | e52cda74e and T584 S1–S4 evidence. |
-| Candidate Proposal | [Product interaction](../proposals/m5-pc110-product-interaction.md); [interaction ledger](../etc/evidence/t584-product-interaction-ledger.md). |
+| Candidate Proposal | [Product interaction](../history/M5-T584-pc110-product-interaction-proposal.md); [interaction ledger](../etc/evidence/t584-product-interaction-ledger.md). |
 | Files And ABI Surface | Task-owned isolated diagnostics and NXVM evidence initially; no public API or Shared change. |
 | Applicable Rules | NXVM guide, execution, documentation, architecture, coding, UI and source policy. |
 | Verification | Observe guest keyboard navigation, inspect existing hotkey and capture tests and host restrictions, run complete repository units and document gate. |
@@ -85,7 +91,7 @@ Full x86 units passed 712/712; physical/RDP input remains unverified.
 | Objective | Verify actual PC110 Console-display startup, graphical Window handoff and monitor return for both control policies. |
 | Non-goals | No user-desktop focus theft, user-media writes, fabricated frames or treating native message injection as physical RDP input. |
 | Reference Baseline | b12b86e3e and T584 S1–S3 evidence. |
-| Candidate Proposal | [Product interaction](../proposals/m5-pc110-product-interaction.md); [interaction ledger](../etc/evidence/t584-product-interaction-ledger.md). |
+| Candidate Proposal | [Product interaction](../history/M5-T584-pc110-product-interaction-proposal.md); [interaction ledger](../etc/evidence/t584-product-interaction-ledger.md). |
 | Files And ABI Surface | Task-owned isolated diagnostics and NXVM evidence initially; no public API or Shared change. |
 | Applicable Rules | NXVM guide, execution, documentation, architecture, coding, UI and source policy. |
 | Verification | Exercise real EXEs and independent INI/media with Console display, both control policies, Window graphics, product keyboard and lifecycle; complete repository units and document gate. |
@@ -112,7 +118,7 @@ RDP and calibration persistence outside an overlay were not established.
 | Objective | Verify the current inking input, IRQ and guest calibration route using the existing machine and tests; identify what remains for genuine native capture. |
 | Non-goals | No user-desktop focus theft, pointer clipping of the user desktop, owner-media writes or claiming injected Machine events are physical input. |
 | Reference Baseline | 2cc5e8c60; S1/S2 actual product keyboard evidence and existing inking tests. |
-| Candidate Proposal | [Product interaction](../proposals/m5-pc110-product-interaction.md); [interaction ledger](../etc/evidence/t584-product-interaction-ledger.md). |
+| Candidate Proposal | [Product interaction](../history/M5-T584-pc110-product-interaction-proposal.md); [interaction ledger](../etc/evidence/t584-product-interaction-ledger.md). |
 | Files And ABI Surface | Initially task-owned isolated diagnostics and NXVM evidence; no public API or Shared change. |
 | Applicable Rules | NXVM guide, execution, documentation, architecture, coding, UI and source policy. |
 | Verification | Exercise existing inking/IRQ and relevant Machine route with observed guest state; run repository units and documentation gate. |
@@ -139,7 +145,7 @@ serial rerun passed 712/712. Native pointer and RDP remain separate.
 | Objective | Exercise actual Personaware keyboard entry and application pause/resume across both widths and both display variants. |
 | Non-goals | No user-desktop focus theft, user-media writes, fabricated frame results or physical/RDP pointer claims. |
 | Reference Baseline | ed5bcfb8c and T583 guest-saved CMOS and restart evidence. |
-| Candidate Proposal | [Product interaction](../proposals/m5-pc110-product-interaction.md); [interaction ledger](../etc/evidence/t584-product-interaction-ledger.md). |
+| Candidate Proposal | [Product interaction](../history/M5-T584-pc110-product-interaction-proposal.md); [interaction ledger](../etc/evidence/t584-product-interaction-ledger.md). |
 | Files And ABI Surface | Task-owned isolated diagnostics and NXVM evidence initially; no public API or Shared change. |
 | Applicable Rules | NXVM guide, execution, documentation, architecture, coding, UI and source policy. |
 | Verification | Observe calibration, launcher, World Clock, pause/resume, return and normal exit using native messages on isolated desktops; compare widths/variants, run repository units and document gate. |
@@ -166,7 +172,7 @@ was corrected.
 | Objective | Audit current desktop, Console, input, lifecycle and Personaware routes against existing evidence; identify and verify the next unproven owner path. |
 | Non-goals | No user-desktop focus theft, user-media writes, fabricated guest results or treating native message injection as human RDP input. |
 | Reference Baseline | 56005541d, T583 real-product observations, T580 S87/S90 and current source/tests. |
-| Candidate Proposal | [Product interaction](../proposals/m5-pc110-product-interaction.md); [T584 history](../history/M5-T584-pc110-product-interaction.md). |
+| Candidate Proposal | [Product interaction](../history/M5-T584-pc110-product-interaction-proposal.md); [T584 history](../history/M5-T584-pc110-product-interaction.md). |
 | Files And ABI Surface | Initially NXVM task evidence and private diagnostics; no public API or Shared change. |
 | Applicable Rules | NXVM guide, execution, documentation, architecture, coding, UI and source policy. |
 | Verification | Inventory source/test/host routes, verify actual prerequisites and run the smallest justified isolated product observation; full repository units and documentation gate before S closure. |
