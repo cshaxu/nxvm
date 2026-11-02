@@ -1,4 +1,31 @@
-# M5 T583 S7 — Active: Setup date acceptance and restart
+# M5 T583 S8 — Active: in-process cold restart and reset
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T583 S8 after S7 date/time evidence. |
+| Admission And Approval | Owner requested completion of the four PC110 receivers and automatic sequential execution. |
+| Objective | Verify stop/start and reset/resume on actual product processes using guest-saved configuration and isolated media. |
+| Non-goals | No Shared changes, owner-media writes, fabricated CMOS, blind input or treating a stale frame as a new boot. |
+| Reference Baseline | f01c84cd6 and the T583 coverage ledger. |
+| Candidate Proposal | [T583 coverage ledger](../etc/evidence/t583-first-setup-ledger.md). |
+| Files And ABI Surface | Task-owned isolated observer and NXVM evidence initially; no production API changes. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding, UI and source policy. |
+| Verification | Observe actual DOS, perform monitor stop/start and reset/resume, observe fresh POST then DOS, preserve CMOS/media; compare both widths and display variants; complete repository units and document gate. |
+| Expected Markers | Lifecycle completion, changed post-reset frame, restored DOS frame and normal exit. |
+| Asset Needs | Private media copies and guest-produced configuration; preserve all owner files. |
+| Reporting Requirements | Per-variant and width checkpoints, actual exit, unverified conditions and exact results. |
+| Stop Conditions | No user-desktop focus theft or claim from stale frames. |
+| Exit Criteria | Reviewed lifecycle behavior or explicit evidence-backed remaining receiver. |
+| Original Owner Request | Complete the four queued PC110 tasks. |
+| Similar-Issue Sweep | Compare both variants, both widths and stop/start versus reset/resume. |
+
+# M5 T583 S7 — Closed: Setup date acceptance and restart
+
+DSTN x64 and TFT x64 real firmware accepted edited dates and retained them
+across independent process restart; TFT also retained an edited hour. Both
+widths completed real EXE Setup and restart from truly empty TFT CMOS. The
+x64 complete unit suite passed 712/712. Interactive RDP and deliberate edits
+on x86 were not tested by this batch.
 
 | Field | Required record |
 | --- | --- |
@@ -15,7 +42,7 @@
 | Asset Needs | Private media and existing EXEs; preserve owner files. |
 | Reporting Requirements | Separate observed and unverified date, RTC, product and native boundaries. |
 | Stop Conditions | No user-desktop focus theft or fabricated guest configuration. |
-| Exit Criteria | Reviewed direct evidence for the scoped date path or an accurately documented remaining boundary. |
+| Exit Criteria | Reviewed f01c84cd6: actual x64 date edits, TFT time edit, cross-process retention, and zero-TFT Setup/restart on both widths; scope and remaining boundaries explicitly recorded. |
 | Original Owner Request | Complete the four queued PC110 tasks. |
 | Similar-Issue Sweep | Compare both firmware variants and widths without treating one observation as all four. |
 
