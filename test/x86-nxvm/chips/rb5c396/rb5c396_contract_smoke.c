@@ -233,6 +233,43 @@ static lib_bool io_windows(void)
     return !failed;
 }
 
+static lib_bool resume_output(void)
+{
+    x86_rb5c396 *chip = LIB_NULL;
+    x86_rb5c396_slot_inputs input = {0};
+    lib_u8 value;
+    lib_bool failed = x86_rb5c396_resume_output(LIB_NULL) ||
+        x86_rb5c396_create(&chip) != LIB_STATUS_OK;
+    if (failed) return LIB_FALSE;
+    for (lib_u8 slot = 0u; slot < X86_RB5C396_SLOT_COUNT; ++slot) {
+        const lib_u8 bank = (lib_u8)(slot << 6u);
+        x86_rb5c396_reset(chip);
+        input = (x86_rb5c396_slot_inputs){0};
+        failed |= x86_rb5c396_set_slot_inputs(chip, slot, &input) != LIB_STATUS_OK ||
+            !write_register(chip, (lib_u8)(bank + 0x05u), 0x08u) ||
+            !write_register(chip, (lib_u8)(bank + 0x16u), 0x10u) ||
+            x86_rb5c396_resume_output(chip);
+        input.card_present = LIB_TRUE;
+        failed |= x86_rb5c396_set_slot_inputs(chip, slot, &input) != LIB_STATUS_OK ||
+            !x86_rb5c396_resume_output(chip) ||
+            select_register(chip, (lib_u8)(bank + 0x04u)) != LIB_STATUS_OK ||
+            x86_rb5c396_read(chip, X86_RB5C396_DATA_PORT, &value) != LIB_STATUS_OK ||
+            x86_rb5c396_resume_output(chip);
+        input.io_status_asserted = LIB_TRUE;
+        failed |= !write_register(chip, (lib_u8)(bank + 0x03u), 0xa0u) ||
+            x86_rb5c396_set_slot_inputs(chip, slot, &input) != LIB_STATUS_OK ||
+            !x86_rb5c396_resume_output(chip) ||
+            !write_register(chip, (lib_u8)(bank + 0x03u), 0x20u) ||
+            x86_rb5c396_resume_output(chip);
+        input.card_present = LIB_FALSE;
+        failed |= x86_rb5c396_set_slot_inputs(chip, slot, &input) != LIB_STATUS_OK ||
+            select_register(chip, (lib_u8)(bank + 0x04u)) != LIB_STATUS_OK ||
+            x86_rb5c396_read(chip, X86_RB5C396_DATA_PORT, &value) != LIB_STATUS_OK;
+    }
+    x86_rb5c396_destroy(chip);
+    return !failed;
+}
+
 int main(void)
 {
     x86_rb5c396 *chip = LIB_NULL;
@@ -353,5 +390,5 @@ int main(void)
             LIB_STATUS_OK || value != 0x2cu;
     x86_rb5c396_destroy(chip);
     return failed || !memory_windows() || !io_windows() || !socket_status_changes() ||
-        !io_signals() ? 1 : 0;
+        !io_signals() || !resume_output() ? 1 : 0;
 }

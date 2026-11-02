@@ -141,6 +141,22 @@ lib_status x86_rb5c396_io_irq(const x86_rb5c396 *chip, lib_u8 slot,
     return LIB_STATUS_OK;
 }
 
+lib_bool x86_rb5c396_resume_output(const x86_rb5c396 *chip)
+{
+    if (chip == LIB_NULL) return LIB_FALSE;
+    for (lib_u8 slot = 0u; slot < X86_RB5C396_SLOT_COUNT; ++slot) {
+        const lib_u8 control = chip->registers[slot][0x03u];
+        if ((chip->registers[slot][0x16u] & 0x10u) != 0u &&
+            (chip->registers[slot][0x05u] & 0x08u) != 0u &&
+            (chip->registers[slot][0x04u] & 0x08u) != 0u)
+            return LIB_TRUE;
+        if ((control & 0xa0u) == 0xa0u && chip->inputs[slot].card_present &&
+            chip->inputs[slot].io_status_asserted)
+            return LIB_TRUE;
+    }
+    return LIB_FALSE;
+}
+
 lib_status x86_rb5c396_memory_window_range(const x86_rb5c396 *chip, lib_u8 slot,
     lib_u8 window, lib_u32 *out_first, lib_u32 *out_bytes)
 {

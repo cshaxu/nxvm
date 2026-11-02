@@ -65,6 +65,8 @@ lib_status x86_rb5c396_status_irq(const x86_rb5c396 *chip, lib_u8 slot,
     lib_u8 *out_irq);
 lib_status x86_rb5c396_io_irq(const x86_rb5c396 *chip, lib_u8 slot,
     lib_u8 *out_irq);
+/* Logical assertion of the shared RI_OUT# pin for either socket. */
+lib_bool x86_rb5c396_resume_output(const x86_rb5c396 *chip);
 /* Decode one enabled window. Unsupported means this window does not select
  * the address; socket population and overlapping-window policy belong to the
  * attached board. The returned span ends at a window or card-address wrap. */
