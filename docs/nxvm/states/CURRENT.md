@@ -1,3 +1,39 @@
+# M5 T583 S1 — Active: PC110 first-configuration inventory
+
+The x64 repository unit suite passed 712/712, and the product CMOS lifecycle
+tests passed for both display variants on both widths. A current x64 isolated
+DSTN product-factory probe with no saved CMOS reached the same ERROR screen
+as T580, then exited normally after its bounded no-input observation; both
+private media copies were unchanged. This is not an end-to-end Setup pass.
+
+The existing product CMOS lifecycle tests pass on both widths for both
+variants, but do not exercise guest Setup or DOS. The registered firmware
+POST receiver links TFT only. TFT supplies an embedded CMOS seed when no
+saved file exists; DSTN does not. The ledger distinguishes an absent file
+from independently empty CMOS and retains every complete Setup/restart/DOS
+row as open. Next, design a bounded real-product first-setup observation for
+both initial conditions using isolated media and actual guest input; do not
+reuse a TFT-generated CMOS as proof of independent DSTN setup.
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New — M5 T583 S1, following owner-closed T582. |
+| Admission And Approval | Owner directed completion of the first four queued PC110 tasks; this S begins the first-time configuration and restart receiver. |
+| Objective | Reconcile the real first-configuration and restart path with existing source, fixtures and prior evidence, then establish reproducible next-step diagnostics and a coverage ledger. |
+| Non-goals | No fabricated CMOS, proprietary firmware change, owner media mutation, Shared implementation change or full-product qualification claim. |
+| Reference Baseline | 5715cd392, T580 S87/S90 and T582 S40; derived DSTN and TFT remain distinct build-provided firmware variants. |
+| Candidate Proposal | [First configuration and restart](../proposals/m5-pc110-first-setup.md); [coverage ledger](../etc/evidence/t583-first-setup-ledger.md). |
+| Files And ABI Surface | Initially NXVM task records and read-only App/integration source; any implementation requires a subsequently bounded S. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding, UI and source policy. |
+| Verification | Review actual firmware/CMOS and integration ownership; run existing suitable bounded diagnostics with private inputs when available, preserve hashes and report actual coverage. |
+| Expected Markers | Independent empty CMOS, Setup input, persisted configuration, restart and DOS checkpoints distinguished for each firmware and host width. |
+| Asset Needs | Existing external firmware and private copies of approved media only; no modification of user INI, CMOS, disks or ROMs. |
+| Reporting Requirements | Report each ledger disposition, reusable tests, evidence limits, measured blockers and the next bounded repair or qualification scope. |
+| Stop Conditions | No source import, undocumented guest-state fabrication, destructive media access, UI claim from a headless probe or unsupported full-coverage claim. |
+| Exit Criteria | Complete the frozen first-configuration coverage inventory and record the actual next executable S with a concrete evidence basis. |
+| Original Owner Request | Complete the first four queued PC110 tasks, beginning with first-time configuration and restart. |
+| Similar-Issue Sweep | Compare both display variants and host widths, fresh/persisted CMOS, date/time, setup input and stop/reset/restart boundaries. |
+
 # M5 T582 — Stage closed by owner direction
 
 The owner accepts stage closure even though the original PC110 usability goal
