@@ -18,7 +18,11 @@ selector removed detailed timing and observation and shortened one x64 private
 PC110 menu-marker run, but changed guest time and returned an incomplete
 response frame. It is an experiment, not a qualified L1 model or an approved
 production precision downgrade. The existing Turbo and timing semantics are
-unchanged. See S39 evidence for the adjacent baseline and limits.
+unchanged. A second temporary 486 experiment retained existing bus cost, REP
+bookkeeping and generic branch observation, and reported a shorter menu marker
+than its subsequent baseline; its response frame and guest time differed. It
+still lacks complete metadata, cross-profile design, switching and device
+qualification. See S39 evidence for both comparisons and limits.
 
 ### External wait-window scan upper bound not adopted
 

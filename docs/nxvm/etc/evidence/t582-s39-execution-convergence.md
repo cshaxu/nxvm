@@ -61,6 +61,52 @@ guest log and intermediate frame SHA-256 respectively:
 `5BDF01AB585C9F8AC7C1FC1343783A0A161D40FF089ECB484E3E5EBE2C3FAF85`,
 `893558D4851CFD75F5B728AA4FA15A2A0367F6B3C2058043665A951D036288BD`.
 
+### Approximation with existing bus and repeat handling
+
+A later disposable 486-only selector retained the existing REP phase
+bookkeeping, generic formula-input/branch observation, event subtotal and
+existing 486 bus-cost calculation, using eight ticks only as its nominal
+instruction subtotal. It marked source timing unallocated so the existing
+verified-physical qualification cannot accept it. Other CPU profiles retained
+the original selector. This is a research probe, not an admitted machine-
+specific implementation: it lacks a distinct L1 origin and complete timing
+metadata, has not established coverage of unsupported forms or mode
+transitions, and is not an approved precision downgrade.
+
+At ten million retired PC110 instructions it recorded 17,238 ms x64 and
+18,723 ms x86, ending at 89,356,242 ticks and PC `000fea88`. The earlier
+production baseline was 16,942/22,493 ms at 79,964,294 ticks and PC
+`0003dbc5`. The guest states differ and these are nonadjacent single runs;
+the results do not establish a per-instruction speedup or equivalence.
+
+One x64 private-media product-path run reached the Personaware menu marker
+at sample 132 and the input frame-change marker after 8 seconds, exiting
+in 143.64 seconds. A subsequent baseline with the same probe and seed,
+linked against restored committed libraries, reported 181 and 11 seconds,
+exiting in 196.51 seconds. Both returned zero. Visual inspection found World
+Clock time fields in the candidate response capture; the baseline response
+capture had only one field drawn. Their different incomplete frames are not
+a same-completion comparison. Final RTC seconds were 27 and 21. The single
+candidate-first ordered pair is encouraging but does not qualify elapsed-time
+accuracy, complete interaction, x86 boot speed or RDP behavior.
+
+The speed setter is permitted whenever the Machine is not running, so a real
+mode design must specify the paused transition, pending retirement, REP and
+debug behavior as well as physical-qualification rejection. PC110 currently
+selects Turbo at construction and other NXVM profiles can select it through
+their product, so changing Turbo would be visible across those machines. No
+production source, API or executable was changed by this probe.
+
+Fixed-work, candidate summary, candidate guest log and response frame,
+baseline summary, baseline guest log and response frame SHA-256:
+`C959A6E0EAEF916F903905E731D836D2C12FBBFA8E5B02680850759587425484`,
+`1F5E9B9909BA7C6E444352C0CB1A4681EFB38E8734F69671084D637FCCD630C8`,
+`A161C954911946F796C144034C7E3E4ABD3C44DA6BD150F102C16E1D20F50FB1`,
+`6BD386B4488AAC61A67F984908DA1139294363CCD5BD66B74DD9B3D5E7F01DAC`,
+`58F7F055E4E1DA4AED2C169752174D0927ACB436D4146E606AF3E00CB9F98640`,
+`406F491E21DB1863BC361F151A59D2FA06736D74560F08227EB21601DC3CCD29`,
+`211326CF5E660A98D77246BDE710457BC192B7709F0F80E3A72557C0BD66AEC9`.
+
 ## Masked-span candidate and existing crossing defect
 
 A task-only candidate admitted a span within one aligned 16-byte block when
