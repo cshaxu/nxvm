@@ -1,5 +1,21 @@
 # T582 S39 — execution and timing convergence
 
+## Completed-observation copy ablation
+
+A task-only CPU build omitted the completed-instruction observation copy; this
+deliberately breaks the observation contract and is not a production design.
+At the private-media ten-million-instruction checkpoint, ordered baseline /
+candidate / candidate / baseline wall times were 16381 / 15874 / 16883 /
+17722 ms on x64 and 28092 / 26343 / 23075 / 24218 ms on x86. The respective
+thread CPU times were 16062.5 / 15796.875 / 16609.375 / 17109.375 ms and
+23375 / 23718.75 / 22046.875 / 23140.625 ms. Every run reported 79964294
+guest ticks and PC `0003dbc5`. These ordered samples are sensitive to host
+drift, do not establish complete guest-state equivalence, and do not measure
+full boot or native interaction. Even removing the entire copy does not show
+a large enough gain here to justify sacrificing Debug and observation data;
+no production source or artifact was changed. Log SHA-256:
+`872CC237ECB8226FD3B7E47F159F0FBB7C64B8D158E5753FC98E705A94D3AB21`.
+
 ## Timing-result initialization check
 
 The Intel timing selector initializes its local result using `lib_memory_set`.
