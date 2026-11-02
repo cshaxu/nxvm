@@ -37,6 +37,21 @@ void x86_nxvm_machine_runner_run(x86_nxvm_machine *session)
         if (session->executor_callback != LIB_NULL)
             session->executor_callback(session->executor_callback_context);
         if (!x86_nxvm_machine_executor_state_is_active(&control->state)) break;
+        if (session->construction.profile.output_pump != LIB_NULL) {
+            lib_status status = session->construction.profile.output_pump(
+                session->construction.profile.context);
+            if (status == LIB_STATUS_LIMIT_EXCEEDED &&
+                session->construction.profile.output_wait != LIB_NULL) {
+                status = session->construction.profile.output_wait(
+                    session->construction.profile.context);
+                if (status == LIB_STATUS_OK || status == LIB_STATUS_INVALID_STATE)
+                    continue;
+            }
+            if (status != LIB_STATUS_OK) {
+                x86_nxvm_machine_runner_fail(session);
+                continue;
+            }
+        }
         if (x86_nxvm_machine_executor_state_take_reset(&control->state)) {
             lib_status reset_status = x86_nxvm_machine_control_reset_at_boundary(control);
 

@@ -74,6 +74,9 @@ void x86_nxvm_board_before_internal_advance(void *owner,
         x86_core_machine_trace_record(board->core, X86_NXVM_BOARD_TRACE_PIT_ADVANCE,
             0u, (lib_u32)primary_ticks, 0u);
     }
+    if (board->profile_binding.advance != LIB_NULL)
+        board->profile_binding.advance(board->profile_binding.context,
+            source_ticks, due_tick);
     x86_nxvm_board_pic_refresh(board->shared_pic_master,
         board->shared_pic_slave);
     x86_core_machine_trace_record(board->core, X86_NXVM_BOARD_TRACE_PIC_REFRESH,

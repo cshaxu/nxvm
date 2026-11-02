@@ -1,20 +1,27 @@
 #include "x86-core/machine/machine_interface.h"
 #include "x86-nxvm/board-base/dma_bus_interface.h"
 
+static void capture_byte(void *owner, t_latch *value)
+{
+    *(lib_u8 *)owner = value->data.byte;
+}
+
 static lib_i32 check_bus(lib_u8 controllers, lib_bool page_ports_plain_scratch)
 {
     const x86_core_machine_executor_config config = {
         .memory_bytes = 2u * 1024u * 1024u,
         .cpu_profile = X86_CORE_CPU_PROFILE_8086
     };
-    const x86_nxvm_board_dma_channel_provider provider = {0};
+    const x86_nxvm_board_dma_channel_provider provider = {LIB_NULL, capture_byte, LIB_NULL};
     x86_core_machine *machine = LIB_NULL;
     x86_nxvm_board_dma_bus *bus = LIB_NULL;
     x86_nxvm_board_dma_request_binding request = {0};
     x86_nxvm_board_dma_request_binding duplicate = {0};
+    x86_nxvm_board_dma_request_binding secondary = {0};
     lib_u32 value = 0u;
     lib_i32 failed = 1;
     lib_u8 owner = 0u;
+    lib_u8 secondary_owner = 0u;
     if (x86_core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK ||
         x86_nxvm_board_dma_initialize(&bus, machine, 0u, LIB_FALSE) != LIB_STATUS_INVALID_ARGUMENT ||
         bus != LIB_NULL ||
@@ -22,6 +29,8 @@ static lib_i32 check_bus(lib_u8 controllers, lib_bool page_ports_plain_scratch)
             page_ports_plain_scratch) != LIB_STATUS_OK ||
         x86_nxvm_board_dma_bind_channel(bus, 2u, &provider, &owner, &request) != LIB_STATUS_OK ||
         x86_nxvm_board_dma_bind_channel(bus, 2u, &provider, &owner, &duplicate) != LIB_STATUS_INVALID_STATE ||
+        (controllers == 2u && x86_nxvm_board_dma_bind_channel(bus, 5u, &provider,
+            &secondary_owner, &secondary) != LIB_STATUS_OK) ||
         x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
         x86_core_machine_reset(machine) != LIB_STATUS_OK) goto done;
     if (x86_core_machine_bus_write(machine, 0x81u, 0x12u) != LIB_STATUS_OK ||
@@ -48,10 +57,40 @@ static lib_i32 check_bus(lib_u8 controllers, lib_bool page_ports_plain_scratch)
          x86_core_machine_bus_read(machine, 0x89u, &value) != LIB_STATUS_OK ||
          value != 0x34u)) goto done;
     if (page_ports_plain_scratch) {
+        const lib_u8 sample = 0x5au;
         for (lib_u16 port = 0x80u; port <= 0x8fu; ++port) {
             if (x86_core_machine_bus_write(machine, port, port) != LIB_STATUS_OK ||
                 x86_core_machine_bus_read(machine, port, &value) != LIB_STATUS_OK ||
                 value != port) goto done;
+        }
+        if (x86_core_machine_memory_write(machine, 0x12345u, &sample, 1u) != LIB_STATUS_OK ||
+            x86_core_machine_bus_write(machine, 0x0cu, 0u) != LIB_STATUS_OK ||
+            x86_core_machine_bus_write(machine, 0x04u, 0x45u) != LIB_STATUS_OK ||
+            x86_core_machine_bus_write(machine, 0x04u, 0x23u) != LIB_STATUS_OK ||
+            x86_core_machine_bus_write(machine, 0x05u, 0u) != LIB_STATUS_OK ||
+            x86_core_machine_bus_write(machine, 0x05u, 0u) != LIB_STATUS_OK ||
+            x86_core_machine_bus_write(machine, 0x81u, 1u) != LIB_STATUS_OK ||
+            x86_core_machine_bus_write(machine, 0x0bu, 0x4au) != LIB_STATUS_OK ||
+            x86_core_machine_bus_write(machine, 0x0au, 2u) != LIB_STATUS_OK) goto done;
+        x86_nxvm_board_dma_request_assert(bus, &request);
+        x86_nxvm_board_dma_advance_transaction(bus, machine, 16u);
+        if (owner != sample) goto done;
+        x86_nxvm_board_dma_request_deassert(bus, &request);
+        if (controllers == 2u) {
+            const lib_u8 word[] = {0x7bu, 0xa5u};
+            if (x86_core_machine_memory_write(machine, 0x22468u, word, sizeof(word)) != LIB_STATUS_OK ||
+                x86_core_machine_bus_write(machine, 0xd8u, 0u) != LIB_STATUS_OK ||
+                x86_core_machine_bus_write(machine, 0xc4u, 0x34u) != LIB_STATUS_OK ||
+                x86_core_machine_bus_write(machine, 0xc4u, 0x12u) != LIB_STATUS_OK ||
+                x86_core_machine_bus_write(machine, 0xc6u, 0u) != LIB_STATUS_OK ||
+                x86_core_machine_bus_write(machine, 0xc6u, 0u) != LIB_STATUS_OK ||
+                x86_core_machine_bus_write(machine, 0x8bu, 2u) != LIB_STATUS_OK ||
+                x86_core_machine_bus_write(machine, 0xd6u, 0x49u) != LIB_STATUS_OK ||
+                x86_core_machine_bus_write(machine, 0xd4u, 1u) != LIB_STATUS_OK) goto done;
+            x86_nxvm_board_dma_request_assert(bus, &secondary);
+            x86_nxvm_board_dma_advance_transaction(bus, machine, 16u);
+            if (secondary_owner != word[0]) goto done;
+            x86_nxvm_board_dma_request_deassert(bus, &secondary);
         }
     }
     x86_nxvm_board_dma_reset(bus);

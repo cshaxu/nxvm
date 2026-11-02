@@ -172,7 +172,12 @@ static lib_status dma_bus_cycle(void *owner, x86_dma_cycle kind,
     lib_bool memory_only = kind == X86_DMA_MEMORY_READ || kind == X86_DMA_MEMORY_WRITE;
     lib_bool word = context->word && !memory_only;
     lib_bool write = kind == X86_DMA_DEVICE_TO_MEMORY || kind == X86_DMA_MEMORY_WRITE;
-    lib_u8 page = dma->data.page[channel];
+    static const lib_u8 page_index[2][4] = {
+        {7u, 3u, 1u, 2u}, {15u, 11u, 9u, 10u}};
+    t_dma *primary = context->word ? dma->connect.peer : dma;
+    lib_u8 page = primary->connect.page_ports_plain_scratch ?
+        primary->data.page_scratch[page_index[context->word ? 1u : 0u][channel]] :
+        dma->data.page[channel];
     lib_u8 bytes = word ? 2u : 1u;
     lib_u16 value = memory_only && write ? *byte : 0u;
     lib_u32 physical;

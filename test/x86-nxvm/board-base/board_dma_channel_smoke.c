@@ -252,13 +252,14 @@ static lib_bool dma_construction_rollback(void)
     return failed;
 }
 
-static lib_i32 x86_nxvm_test_dma_first_service_matrix(void)
+static lib_i32 x86_nxvm_test_dma_first_service_matrix(lib_bool scratch_pages)
 {
     static const x86_nxvm_board_dma_channel_provider provider = {
         x86_nxvm_test_dma_phase_read, x86_nxvm_test_dma_phase_write,
         x86_nxvm_test_dma_phase_terminal
     };
     static const lib_u8 channels[] = {0u, 1u, 2u, 3u, 5u, 6u, 7u};
+    static const lib_u8 primary_page_ports[] = {0x87u, 0x83u, 0x81u, 0x82u};
     x86_nxvm_board_dma_bus *bus = LIB_NULL;
     x86_core_machine *machine = LIB_NULL;
 
@@ -272,7 +273,9 @@ static lib_i32 x86_nxvm_test_dma_first_service_matrix(void)
         failed = 1;
         goto done;
     }
-    if (test_dma_initialize(&bus, machine, 2u) != LIB_STATUS_OK) {
+    if (x86_nxvm_board_dma_initialize(&bus, machine, 2u, scratch_pages) != LIB_STATUS_OK ||
+        x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
+        x86_core_machine_reset(machine) != LIB_STATUS_OK) {
         failed = 1;
         goto done;
     }
@@ -297,7 +300,8 @@ static lib_i32 x86_nxvm_test_dma_first_service_matrix(void)
         lib_u16 count_port = (lib_u16)(address_port + (word ? 2u : 1u));
         lib_u16 clear_port = word ? 0xd8u : 0x0cu;
         lib_u16 status_port = word ? 0xd0u : 0x08u;
-        lib_u32 physical = word ? 0x2000u : 0x1000u;
+        lib_u32 physical = (word ? 0x2000u : 0x1000u) +
+            (scratch_pages ? 0x20000u : 0u);
         lib_u8 bytes[2] = {0x11u, 0x22u};
         lib_u8 phase;
         lib_i32 row_failed = 0;
@@ -308,10 +312,11 @@ static lib_i32 x86_nxvm_test_dma_first_service_matrix(void)
             bytes, sizeof(bytes)) != LIB_STATUS_OK;
         if (word) {
             x86_nxvm_test_dma_write_secondary_channel(machine, channel, 0x1000u,
-                0u, 0u, (lib_u8)(mode | transfer | channel));
+                0u, scratch_pages ? 2u : 0u, (lib_u8)(mode | transfer | channel));
         } else {
             x86_nxvm_test_dma_write_primary_channel(machine, channel, 0x1000u,
                 0u, (lib_u8)(mode | transfer | channel));
+            if (scratch_pages) test_dma_port_write(machine, primary_page_ports[channel], 2u);
             test_dma_port_write(machine, 0xd4u, 0u);
         }
         test_dma_port_write(machine, status_port,
@@ -398,7 +403,8 @@ lib_i32 main(void)
     lib_u8 channel;
     lib_u16 page_port;
     lib_u8 dma_status;
-    lib_i32 failed = x86_nxvm_test_dma_first_service_matrix() || dma_construction_rollback();
+    lib_i32 failed = x86_nxvm_test_dma_first_service_matrix(LIB_FALSE) ||
+        x86_nxvm_test_dma_first_service_matrix(LIB_TRUE) || dma_construction_rollback();
     if (test_dma_core_create(&machine) != LIB_STATUS_OK ||
         x86_nxvm_board_dma_bind_channel(bus, 2u,
             &provider, &fixture, &binding) != LIB_STATUS_INVALID_ARGUMENT) {

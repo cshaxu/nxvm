@@ -38,6 +38,15 @@ typedef struct x86_nxvm_machine_profile_binding {
      * It must report physical-operation failures through the existing Core
      * fault path, not retain the event or create another input queue. */
     lib_bool (*handle_input)(void *context, const kvm_input_event *event);
+    /* Optional output on the existing executor. Pump returns LIMIT_EXCEEDED
+     * only when a supplied wait can make space; wait may return INVALID_STATE
+     * when interrupted. Other failures end the run. Active is serialized with
+     * the executor; interrupt may run concurrently and must wake wait without
+     * advancing guest time. The profile owns output and its lifetime. */
+    lib_status (*output_pump)(void *context);
+    lib_status (*output_wait)(void *context);
+    lib_status (*output_active)(void *context, lib_bool enabled);
+    void (*output_interrupt)(void *context);
 } x86_nxvm_machine_profile_binding;
 
 /* Prepared values are copied into the sole Machine owner. Firmware/context

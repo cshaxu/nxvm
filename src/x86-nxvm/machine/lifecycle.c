@@ -93,13 +93,28 @@ static lib_bool x86_nxvm_machine_driver_run(void *context)
 }
 
 static void x86_nxvm_machine_driver_request_stop(void *context)
-{ x86_nxvm_machine_control_stop(&((x86_nxvm_machine *)context)->control); }
+{
+    x86_nxvm_machine *machine = context;
+    x86_nxvm_machine_control_stop(&machine->control);
+    if (machine->construction.profile.output_interrupt != LIB_NULL)
+        machine->construction.profile.output_interrupt(machine->construction.profile.context);
+}
 
 static void x86_nxvm_machine_driver_request_wake(void *context)
-{ (void)context; }
+{
+    x86_nxvm_machine *machine = context;
+    if (machine->construction.profile.output_interrupt != LIB_NULL)
+        machine->construction.profile.output_interrupt(machine->construction.profile.context);
+}
 
 static void x86_nxvm_machine_driver_set_heartbeat(void *context, lib_bool enabled)
-{ (void)context; (void)enabled; }
+{
+    x86_nxvm_machine *machine = context;
+    if (machine->construction.profile.output_active != LIB_NULL &&
+        machine->construction.profile.output_active(machine->construction.profile.context,
+            enabled) != LIB_STATUS_OK)
+        machine->runner_failed = LIB_TRUE;
+}
 
 static void x86_nxvm_machine_driver_set_executor_callback(void *context,
     emulator_machine_executor_callback callback, void *callback_context)

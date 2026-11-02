@@ -6,6 +6,7 @@
 #include "x86-nxvm/chips/pit825x/pit825x_interface.h"
 #include "x86-nxvm/board-at/kbc_interface.h"
 #include "x86-nxvm/board-base/pic_bus_interface.h"
+#include "x86-nxvm/board-base/dma_bus_interface.h"
 
 /* Existing serialized board reset boundaries, in execution order. */
 typedef enum x86_nxvm_board_reset_phase {
@@ -35,6 +36,9 @@ typedef struct x86_nxvm_board_profile_binding {
     lib_bool shutdown_resets;
     /* Forward the existing physical CPU output; the profile owns its decode. */
     void (*system_management_active)(void *context, lib_bool active);
+    /* Guest-time device work after current arbitration and before PIC refresh;
+     * next_deadline supplies the next observable due tick on this same axis. */
+    void (*advance)(void *context, lib_u64 source_ticks, lib_u64 due_tick);
 } x86_nxvm_board_profile_binding;
 
 /* Scoped construction inputs, not a runtime board getter. Handles are
@@ -49,6 +53,7 @@ typedef struct x86_nxvm_board_profile_services {
     /* Borrowed PIC endpoints; IRQ sources remain owned by the board. */
     x86_nxvm_board_pic_bus *pic_master;
     x86_nxvm_board_pic_bus *pic_slave;
+    x86_nxvm_board_dma_bus *dma;
 } x86_nxvm_board_profile_services;
 
 /* On failure leave out_binding empty and release the unpublished candidate.

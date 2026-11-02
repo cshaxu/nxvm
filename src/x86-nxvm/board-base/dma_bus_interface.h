@@ -29,7 +29,8 @@ typedef struct x86_nxvm_board_dma_channel_provider {
  * Failure publishes no bus. Reset preserves provider bindings and nonce.
  * page_ports_plain_scratch selects one frozen board personality for 80h--8Fh:
  * false keeps standard DMA page registers; true selects sixteen independent
- * zero-reset read/write bytes. */
+ * zero-reset read/write bytes, with the normal channel offsets also supplying
+ * their respective DMA page addresses. */
 lib_status x86_nxvm_board_dma_initialize(x86_nxvm_board_dma_bus **out_bus,
     x86_core_machine *machine, lib_u8 controller_count,
     lib_bool page_ports_plain_scratch);

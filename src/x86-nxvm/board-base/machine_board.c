@@ -825,7 +825,7 @@ lib_status x86_nxvm_board_construct_profile(x86_nxvm_board_state *board,
         board->core, board->shared_pit,
         board->auxiliary_pit_configured ? board->auxiliary_pit : LIB_NULL,
         x86_nxvm_board_at_speaker_output, board,
-        board->shared_pic_master, board->shared_pic_slave
+        board->shared_pic_master, board->shared_pic_slave, board->shared_dma
     };
     status = factory(&services, context, &binding);
     if (status != LIB_STATUS_OK) return status;
