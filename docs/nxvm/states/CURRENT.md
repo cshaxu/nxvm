@@ -1,3 +1,24 @@
+# M5 T585 S12 — Closed: PC110 PC Card I/O and ATA ownership audit
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T585 S12 after S11. |
+| Admission And Approval | Owner directed autonomous completion of the first four PC110 tasks and approved L1/L2 models when stronger sources are unavailable. |
+| Objective | Reconcile PC110 internal ATA wiring, Ricoh I/O windows, port ownership and current guest firmware behavior; select the smallest correct implementation path. |
+| Non-goals | No second ATA controller or guest-visible fake card, user media mutation, or physical-wiring claim without evidence. |
+| Reference Baseline | Current PC110 composition, Ricoh decode, real firmware boot evidence and authorized external PC110 references. |
+| Candidate Proposal | [Device and model qualification](../proposals/m5-pc110-device-model-qualification.md). |
+| Files And ABI Surface | Audit first; choose existing single bus and storage owners before any implementation. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding and source policy. |
+| Verification | Inspect actual code and source references; use bounded guest or unit probes where they resolve a specific question. |
+| Expected Markers | Distinguish actual direct ATA behavior, configured I/O window behavior, and physical-path uncertainty. |
+| Asset Needs | Read-only user firmware and disposable test media; preserve INI, ROM and disks. |
+| Reporting Requirements | Findings, source grades, necessary changes and retained limits. |
+| Stop Conditions | No duplicate port owner, hand-waved ATA routing, or unreviewed third-party code import. |
+| Exit Criteria | [S12 audit](../etc/evidence/t585-s12-pcic-io-audit.md) confirms the unused dynamic I/O decoder and current direct ATA ownership, records reference limits and defines the next Core/PC110 receiver work. No production code changed. |
+| Original Owner Request | Complete the first four PC110 queue tasks. |
+| Similar-Issue Sweep | Both sockets, I/O windows, decode enable, ATA access width, IRQ and ownership. |
+
 # M5 T585 S11 — Closed: PC110 power and wake reconciliation
 
 | Field | Required record |
