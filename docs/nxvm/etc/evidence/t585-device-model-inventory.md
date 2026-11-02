@@ -15,9 +15,10 @@ one route does not qualify a whole physical device.
 | Input | Keyboard, TrackPoint and distinct inking path are wired; T584 exercised guest calibration, CMOS persistence and keyboard navigation. | Posted key messages and Machine-queued pointer events do not prove physical capture, physical chords or RDP, retained for final qualification. |
 | Memory | `pc110_plan.c` explicitly selects 20 MiB and rejects other explicit sizes. | Additional configurations remain separately recorded in NXVM TODO; no unsupported RAM size is silently rounded. |
 
-The selected follow-up sequence is S2 PC Card controller and board design,
-S3 power/APM review and receiver, S4 audio and auxiliary review and receiver,
-S5 display/font and remaining-model reconciliation, and S6 complete device
+The selected follow-up sequence starts with S2 PC Card status/register
+semantics and bounds, S3 status-change interrupt routing, and S4 card windows
+and media. S5 then addresses power/APM, S6 audio and auxiliary devices,
+S7 display/font and remaining-model reconciliation, and S8 complete device
 coverage and qualification. Split a batch into further numeric S tasks if
 implementation or verification warrants it. These names are planning scopes,
 not assertions that one S can implement every feature. Original manual facts

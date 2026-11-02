@@ -1,3 +1,24 @@
+# M5 T585 S2 — Closed: PC Card controller status and bounds
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T585 S2 after S1 at ee94e19ba. |
+| Admission And Approval | Owner directed autonomous completion of the first four PC110 tasks, including L1/L2 modeling. |
+| Objective | Design and implement a bounded PC Card controller receiver on the existing chip and PC110 board paths, grounded in the Ricoh contract. |
+| Non-goals | No conflation of onboard ATA with PC Card storage, external source copying, second scheduler or owner-media writes. |
+| Reference Baseline | S1 inventory and T580 S58 empty-controller model. |
+| Candidate Proposal | [Device and model qualification](../proposals/m5-pc110-device-model-qualification.md). |
+| Files And ABI Surface | Ricoh chip, its tests and PC110 board integration as evidence warrants; assess any Shared interface and affected consumers before editing. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding and source policy. |
+| Verification | Chip and actual board/bus path tests on both widths, required repository unit gate, applicable build and release checks. |
+| Expected Markers | Explicit register/slot/reset behavior, implementation evidence and honest remaining window/IRQ/card boundaries. |
+| Asset Needs | Ricoh manual and existing local reference implementations; no physical card required for a bounded model. |
+| Reporting Requirements | Classify references and explain actual code changes and unverified physical behavior. |
+| Stop Conditions | Do not mutate owner media or represent stub behavior as complete card support. |
+| Exit Criteria | Reviewed Shared commit eeb281cb2, dual-width full unit and registered integration tests, per-profile checks, 14 release artifacts and [S2 evidence](../etc/evidence/t585-s2-pcic-status.md); IRQ and card windows continue in subsequent S tasks. |
+| Original Owner Request | Complete the first four PC110 queue tasks. |
+| Similar-Issue Sweep | Review both sockets, insertion and removal, reset, register read/write and interrupt ownership. |
+
 # M5 T585 S1 — Closed: PC110 device and model inventory
 
 | Field | Required record |

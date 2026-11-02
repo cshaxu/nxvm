@@ -10,3 +10,7 @@ qualify PC Card, power, audio or physical display hardware.
 
 The [S1 inventory](../etc/evidence/t585-device-model-inventory.md) records
 the present positive evidence, gaps and planned sequential receivers.
+
+S2 corrects card-detect status acknowledgement, shared global-register
+addressing and invalid-index bounds. Dual-width qualification and the
+remaining IRQ/window/card work are in the [S2 evidence](../etc/evidence/t585-s2-pcic-status.md).

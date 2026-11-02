@@ -8,6 +8,7 @@ int main(void)
     x86_core_machine *machine = LIB_NULL;
     x86_rb5c396 *controller = LIB_NULL;
     lib_u32 value = 0u;
+    const x86_rb5c396_slot_inputs present = {.card_present = LIB_TRUE};
     int result = 0;
 
     if (x86_core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK ||
@@ -32,6 +33,12 @@ int main(void)
             X86_RB5C396_DATA_PORT, 0x5au) != LIB_STATUS_OK ||
             x86_core_machine_bus_read(machine, X86_RB5C396_DATA_PORT, &value) !=
             LIB_STATUS_OK || value != 0x5au) result = 5;
+    else if (x86_rb5c396_set_slot_inputs(controller, 0u, &present) != LIB_STATUS_OK ||
+            x86_core_machine_bus_write(machine, X86_RB5C396_INDEX_PORT, 0x04u) !=
+            LIB_STATUS_OK || x86_core_machine_bus_read(machine,
+            X86_RB5C396_DATA_PORT, &value) != LIB_STATUS_OK || value != 0x08u ||
+            x86_core_machine_bus_read(machine, X86_RB5C396_DATA_PORT, &value) !=
+            LIB_STATUS_OK || value != 0u) result = 6;
     x86_rb5c396_destroy(controller);
     x86_core_machine_destroy(machine);
     return result;
