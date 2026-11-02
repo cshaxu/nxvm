@@ -1,4 +1,4 @@
-# M5 T583 S1 — Active: PC110 first-configuration inventory
+# M5 T583 S1 — Closed: PC110 first-configuration inventory
 
 The x64 repository unit suite passed 712/712, and the product CMOS lifecycle
 tests passed for both display variants on both widths. A current x64 isolated
@@ -30,7 +30,7 @@ reuse a TFT-generated CMOS as proof of independent DSTN setup.
 | Asset Needs | Existing external firmware and private copies of approved media only; no modification of user INI, CMOS, disks or ROMs. |
 | Reporting Requirements | Report each ledger disposition, reusable tests, evidence limits, measured blockers and the next bounded repair or qualification scope. |
 | Stop Conditions | No source import, undocumented guest-state fabrication, destructive media access, UI claim from a headless probe or unsupported full-coverage claim. |
-| Exit Criteria | Complete the frozen first-configuration coverage inventory and record the actual next executable S with a concrete evidence basis. |
+| Exit Criteria | Coverage inventory and next diagnostic batch reviewed at ea4bff842; x64 712/712 units, four dual-width product CMOS regressions and the bounded fresh-DSTN observation passed within their stated scope. All end-to-end setup rows remain open. |
 | Original Owner Request | Complete the first four queued PC110 tasks, beginning with first-time configuration and restart. |
 | Similar-Issue Sweep | Compare both display variants and host widths, fresh/persisted CMOS, date/time, setup input and stop/reset/restart boundaries. |
 
