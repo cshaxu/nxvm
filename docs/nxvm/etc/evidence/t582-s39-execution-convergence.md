@@ -1,5 +1,21 @@
 # T582 S39 — execution and timing convergence
 
+## Startup timing spread by opcode
+
+A task-only wrapper recorded the existing completed timing result by primary
+opcode at the x64 private-media ten-million-instruction checkpoint. The
+unchanged guest path reached 79964294 ticks and PC `0003dbc5` in 18757 ms;
+instrumentation affects host cost. It recorded 5,272,818 `AB` (STOS) results
+with individual costs from 5 to 12 ticks, 342,562 `E4` results from 9 to 14,
+and 188,848 `74` results from 1 to 7. The `0F` bucket combines distinct
+secondary opcodes and is not a single instruction category. These are early
+startup results from one host width, not complete boot or a timing-model
+qualification. They confirm previously observed STOS frequency and show that
+an opcode-only nominal table cannot reproduce even the observed per-instruction
+costs. Accurate cache, bus, branch, repeat and device behavior still requires
+its existing inputs. No product code or guest timing was changed. Log SHA-256:
+`803C6A1146E875E4EA3422DD7E162855AFDCF051BFA3AD8D9ABD9393999817F4`.
+
 ## Completed-observation copy ablation
 
 A task-only CPU build omitted the completed-instruction observation copy; this
