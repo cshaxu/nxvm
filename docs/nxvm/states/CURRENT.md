@@ -1,5 +1,12 @@
 # M5 T582 S39 — Active: execution and timing architecture convergence
 
+### External wait-window scan upper bound not adopted
+
+A task-only ablation of the existing wait-window search at the middle startup
+checkpoint gave mixed host-width results and cannot support a generic timing
+change. The normal ordered window search remains. See S39 evidence; PC110
+usability remains unresolved.
+
 ### I/O permission compilation experiment not adopted
 
 A task-only compiler hint changed the port-input stack frame and improved one

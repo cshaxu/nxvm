@@ -102,6 +102,8 @@ These are bounded improvements; none establishes real-time performance.
   [S39 attribution](t582-s39-execution-convergence.md#startup-middle-opcode-and-port-read-attribution).
 - I/O bitmap permission-helper compilation boundary:
   [S39 experiment](t582-s39-execution-convergence.md#io-permission-check-compilation-experiment).
+- External wait-window scan at the middle startup checkpoint:
+  [S39 upper bound](t582-s39-execution-convergence.md#external-wait-window-scan-middle-phase-upper-bound).
 - Forced-inline conditional-jump helper upper bound:
   [S39 comparison](t582-s39-execution-convergence.md#conditional-branch-compiler-upper-bound-probe).
 - Scheduler-only pacing-field suppression prototype:

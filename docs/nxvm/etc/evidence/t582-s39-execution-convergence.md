@@ -4616,6 +4616,27 @@ Disassembly, fixed-work, candidate system and baseline system log SHA-256:
 `1C43C38D1AAF716174248F999491E2EC4F09E3E4DE0752F6942FDA25E98055ED`,
 `B0B59B63F8C968677C20C12B7785C8FAB36B01024D936AC8EDC66771AF30F89A`.
 
+### External wait-window scan middle-phase upper bound
+
+The existing external-cycle commit searches the configured wait windows in
+order. PC110's current construction supplies no nonzero wait window, although
+its other timing configuration still binds the external-cycle provider. A
+task-only ablation returned zero instead of searching the windows, while
+retaining the existing CPU and Machine port calls. This is not a valid general
+implementation: other profiles configure windows and require their existing
+first-match and timing semantics.
+
+At the private-media 60-million-instruction checkpoint, sequential baseline/
+ablation elapsed times were 87,781/83,660 ms on x64 and 106,776/117,398 ms
+on x86; the last 30-million intervals were 41,185/39,264 and 50,315/53,454 ms.
+All runs reported 365,365,343 guest ticks and PC `00038887`. These single
+ordered pairs are sensitive to host drift and do not prove complete-state
+equivalence or end-to-end performance. The mixed direction, earlier
+early-start experiment and extra derived state needed for a correct general
+implementation do not justify adopting this shortcut. No production code,
+interface, test, owner media or released artifact changed. Log SHA-256:
+`EA01E4502F4B7F23EC76BB46935A98782FA213F9779298488E05C563D542E010`.
+
 
 ### Current prefix-dispatch reuse recheck
 
