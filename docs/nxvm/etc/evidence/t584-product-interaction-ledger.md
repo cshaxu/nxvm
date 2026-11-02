@@ -211,9 +211,8 @@ in-process restart and normal teardown for both widths and variants. The
 separate Machine path exercises all four inking calibration corners; it does
 not prove native capture. Lib's capture tests use native API substitutes and
 are not a physical-device or RDP test. The host inventory found no active RDP
-session. Physical Ctrl+Alt chords, actual host pointer capture, interactive RDP
-and calibration persistence with a deliberately writable private medium
-remain for final product qualification; the underlying T582 startup-speed
+session. Physical Ctrl+Alt chords, actual host pointer capture and interactive
+RDP remain for final product qualification; the underlying T582 startup-speed
 debt also remains open. The initial T583 DSTN x86 observer exit failure and
 T584 TFT observer failures remain recorded; the latter had a proven stale
 pause-notification flaw in the task-only observer, while the original T583
@@ -227,3 +226,41 @@ The x86 PC110 integration suite passed 9/9; its log SHA-256 is
 `da10f613fac07b03f39d16d8474266ccc98040c97a2c9e75dfddd654144a3928`.
 The calibration-persistence gap is being tested next using a private writable
 copy, without modifying owner media.
+
+## S7: retained calibration on a private disk copy
+
+The DSTN x64 Product-factory/Machine path repeated four-corner calibration
+with `DIRECT` access to two task-owned disk copies. The guest displayed the
+saved-calibration message and reached Personaware, then the probe exited zero.
+Both disk-copy hashes remained unchanged, while the guest-produced CMOS
+changed at configuration offsets 99, 104, 106, 108 and 110 as well as its RTC.
+The first saved CMOS SHA-256 was
+`1dd79a3582695cca7751ada008cba0f8aff3e930f63ff2bbd06451c3e3d5e49a`.
+An independent new Machine process loaded that CMOS, reached Personaware
+without any calibration input and exited 0; its retained configuration bytes
+matched the first save. First/restart log SHA-256 values are
+`3a10962668b09cd3cc8fdf24d6e386f0dd748ba6c2144f959182ae2b3d2fb6ba` and
+`51178a473c9a20cd1ebbc5874b3cd5de6c54b52b689024fc36b70777ee1bde27`.
+This establishes the guest/Machine persistence route for that case, not native
+mouse capture or physical/RDP input. Both original user media stayed untouched.
+
+The independent TFT x86 first process also performed the calibration and
+exited 0; its copied disk hashes remained unchanged and its CMOS configuration
+changed at the same five offsets. First-run log SHA-256 is
+`e1169d53dc9cc501f789f11a3b4c06d3244d521af2ce61db5aaa3d1a428d1285`.
+Its independent restart reached Personaware without calibration input and
+exited 0; the saved CMOS configuration remained unchanged. Restart log
+SHA-256 is
+`ce465adb7c6496785d3c03029279d266a0749c719ed350a23ae528883e46118f`.
+Both private disk hashes remained unchanged after restart. Independent DSTN
+x86 and TFT x64 cases likewise completed four-corner calibration, saved their
+guest-produced CMOS, and reached Personaware in new processes without further
+calibration input. Their first/restart logs have SHA-256 values respectively
+`76df17977d944e26f4afeb21d3ef0d23bdc2ce76c539119d76670d5c25b052b2`,
+`6d287790cae4998af4e9409f3df016317f69e7721e33434cf8697f8b08eb61d6`,
+`dd6c2cf204721bf9e15cced5e9d393129731401734798eac0aafc8809ef5ea34`, and
+`c012b776207f84c37450934023b8f099494156391446b143e748c1d6852a4942`.
+All four preserved saved CMOS configuration bytes across restart, exited 0,
+and retained both private disk hashes. This does not establish native pointer
+capture. The x64 complete repository unit suite passed 712/712; log SHA-256 is
+`80a07a6eb92050b41e7758e26adb8ee66676c8e109b7466e4817459dad10938e`.
