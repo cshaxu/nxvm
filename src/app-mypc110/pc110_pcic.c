@@ -152,7 +152,8 @@ lib_status mypc110_pcic_set_memory_card(mypc110_pcic *pcic, lib_u8 slot,
 {
     const x86_rb5c396_slot_inputs inputs = {
         .card_present = common != LIB_NULL, .ready = common != LIB_NULL,
-        .write_protected = readonly};
+        .write_protected = common != LIB_NULL && readonly, .battery_detect_1 = common != LIB_NULL,
+        .battery_detect_2 = common != LIB_NULL};
     lib_status status;
 
     if (pcic == LIB_NULL || slot >= X86_RB5C396_SLOT_COUNT ||

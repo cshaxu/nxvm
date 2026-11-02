@@ -29,6 +29,29 @@ static lib_status lower_query(void *owner, lib_u32 physical, lib_uptr bytes,
     return LIB_STATUS_OK;
 }
 
+static int status_pic_smoke(x86_core_machine *machine, mypc110_pcic *pcic,
+    x86_nxvm_board_pic_bus *master, x86_nxvm_board_pic_bus *slave)
+{
+    x86_rb5c396_slot_inputs input = {.card_present = LIB_TRUE,
+        .battery_detect_1 = LIB_TRUE, .battery_detect_2 = LIB_TRUE};
+    lib_u32 value = 0u;
+    int failed = x86_core_machine_bus_write(machine, 0x20u, 0x11u) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(machine, 0x21u, 0x08u) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(machine, 0x21u, 0x04u) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(machine, 0x21u, 0x01u) != LIB_STATUS_OK ||
+        !write_register(machine, 5u, 0x54u) ||
+        mypc110_pcic_set_slot_inputs(pcic, 0u, &input) != LIB_STATUS_OK ||
+        !write_register(machine, 4u, 0u) ||
+        x86_core_machine_bus_read(machine, X86_RB5C396_DATA_PORT, &value) != LIB_STATUS_OK || value != 8u;
+    input.ready = LIB_TRUE;
+    if (!failed) failed = mypc110_pcic_set_slot_inputs(pcic, 0u, &input) != LIB_STATUS_OK ||
+        !x86_nxvm_board_pic_irq_source_is_asserted(pcic->irq[0]) ||
+        x86_nxvm_board_pic_get_interrupt(master, slave) != 0x0du ||
+        x86_core_machine_bus_read(machine, X86_RB5C396_DATA_PORT, &value) != LIB_STATUS_OK || value != 4u ||
+        x86_nxvm_board_pic_irq_source_is_asserted(pcic->irq[0]);
+    return failed;
+}
+
 static int memory_card_smoke(x86_core_machine *machine, mypc110_pcic *pcic, lib_u8 *lower)
 {
     lib_storage_medium *common = LIB_NULL, *attribute = LIB_NULL, *second = LIB_NULL;
@@ -208,6 +231,7 @@ int main(void)
     mypc110_pcic_reset(&pcic);
     if (x86_nxvm_board_pic_irq_source_is_asserted(pcic.irq[0]) ||
         x86_nxvm_board_pic_irq_source_is_asserted(pcic.irq[1])) result = 11;
+    if (result == 0 && status_pic_smoke(machine, &pcic, master, slave)) result = 13;
     x86_nxvm_board_pic_finalize(master, slave);
     x86_rb5c396_destroy(controller);
     x86_core_machine_destroy(machine);

@@ -1,4 +1,25 @@
-# M5 T585 S8 — Active: Ricoh socket status-change completion
+# M5 T585 S9 — Active: PC Card I/O interrupt signals
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T585 S9 after S8. |
+| Admission And Approval | Owner directed autonomous completion of the first four PC110 tasks and approved sourced L1/L2 models. |
+| Objective | Reconcile documented I/O-card IREQ and STSCHG signals with the existing Ricoh slot and PC110 PIC ownership. |
+| Non-goals | No fabricated I/O device, ring-wake claim, new scheduler, second machine loop or owner-media mutation. |
+| Reference Baseline | Ricoh EA-028-9804, S3 PIC receiver, S7 I/O decode and S8 socket-status evidence. |
+| Candidate Proposal | [Device and model qualification](../proposals/m5-pc110-device-model-qualification.md). |
+| Files And ABI Surface | Existing Ricoh slot/interface and PC110 PIC adapter plus component and product tests as justified. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding and source policy. |
+| Verification | Both sockets, status and functional IRQ masks, independent/shared IRQ sources, acknowledgements, reset and dual-width release gates. |
+| Expected Markers | Guest PIC observes the selected documented signals with no spurious memory-card reinterpretation. |
+| Asset Needs | Task-owned signal fixtures; preserve all owner inputs. |
+| Reporting Requirements | Distinguish signal receivers from actual I/O card, I/O-window transport and RI_OUT wake. |
+| Stop Conditions | No fabricated physical-device behavior, duplicate interrupt owner or wrong IRQ route. |
+| Exit Criteria | Sourced signal contract and Core/PIC wiring verified on both widths with required release and evidence. |
+| Original Owner Request | Complete the first four PC110 queue tasks. |
+| Similar-Issue Sweep | Both sockets, type/mode switch, enable/mask, simultaneous status and functional interrupts, reset. |
+
+# M5 T585 S8 — Closed: Ricoh socket status-change completion
 
 | Field | Required record |
 | --- | --- |
@@ -15,7 +36,7 @@
 | Asset Needs | Task-owned fixtures; do not modify user firmware, configuration or media. |
 | Reporting Requirements | Distinguish documented pin semantics from untested physical cards and deferred I/O-card wake. |
 | Stop Conditions | No fabricated physical-device support, silent fault or second interrupt path. |
-| Exit Criteria | Sourced status contract and its actual PIC connection verified on both widths with required release and evidence. |
+| Exit Criteria | Shared 0c96c0b30 reviewed; actual Core/PIC status route and full dual-width unit/integration qualification are recorded in [S8 evidence](../etc/evidence/t585-s8-pcic-socket-status.md); PC110 product receiver delivered in the NXVM S8 commit. |
 | Original Owner Request | Complete the first four PC110 queue tasks. |
 | Similar-Issue Sweep | Both sockets, ready transitions, battery states, card type, status acknowledgement and reset. |
 
