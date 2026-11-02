@@ -1,4 +1,4 @@
-# M5 T583 S4 — Active: TFT initial CMOS paths on both host widths
+# M5 T583 S4 — Closed: TFT initial CMOS paths on both host widths
 
 Both host widths reached DOS from explicitly empty TFT CMOS after Setup, saved
 guest state, and reached DOS again in new processes without Setup input. For
@@ -23,7 +23,7 @@ the budget is not a failure or a pass. Native App/session behavior remains open.
 | Asset Needs | Existing TFT firmware and copied PC110 disks; never change user INI, CMOS, media or ROM. |
 | Reporting Requirements | Frame/input, CMOS/log/media hashes, both process exit statuses and unverified product/native boundaries. |
 | Stop Conditions | No assumed screenshot or blind input; distinguish explicit empty image from the absent-file embedded-seed default. |
-| Exit Criteria | Record empty-TFT setup/save/restart and absent-file default or their first evidence-backed failures on both widths; keep full App/native paths as open cases. |
+| Exit Criteria | Reviewed 49754c4bc: blank TFT Setup/DOS and saved-state restarts observed on both widths; seeded default Setup and saved-state restarts observed on both. Seeded x86 first-run DOS remained outside its observation budget and is retained for the real-product receiver, not passed or failed. Full App/native paths remain open. |
 | Original Owner Request | Complete the first four queued PC110 tasks. |
 | Similar-Issue Sweep | Compare both host widths, DSTN behavior, variant-specific CMOS ownership and restored RTC. |
 
