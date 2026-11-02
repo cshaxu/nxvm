@@ -17,10 +17,11 @@ one route does not qualify a whole physical device.
 
 The selected follow-up sequence starts with S2 PC Card status/register
 semantics and bounds, S3 status-change interrupt routing, S4 card memory-window
-decoding, S5 the Core/PC110 memory route and S6 card I/O/media and remaining
-status inputs. S7 addresses power/APM and the controller's INTR#/RI_OUT# wake
-routing, S8 audio and auxiliary devices, S9 display/font and remaining-model
-reconciliation, and S10 complete device coverage and qualification. Split a
+decoding, S5 the Core dynamic memory range, S6 the PC110 card-memory route,
+and S7 card I/O/media and remaining status inputs. S8 addresses power/APM and
+the controller's INTR#/RI_OUT# wake routing, S9 audio and auxiliary devices,
+S10 display/font and remaining-model reconciliation, and S11 complete device
+coverage and qualification. Split a
 batch into further numeric S tasks if
 implementation or verification warrants it. These names are planning scopes,
 not assertions that one S can implement every feature. Original manual facts

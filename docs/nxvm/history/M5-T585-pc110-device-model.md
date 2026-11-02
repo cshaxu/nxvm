@@ -23,3 +23,7 @@ status inputs, windows and media remain explicit subsequent work; see
 S4 adds the independent Ricoh memory-window decoder. Production Core routing,
 card media and the remaining timing bit are explicitly retained for the next
 receiver; see [S4 evidence](../etc/evidence/t585-s4-pcic-memory-decode.md).
+
+S5 adds a runtime-selectable range to one existing Core overlay and validates
+cache invalidation through actual 486 execution. The PC110 card backing and
+guest route remain S6; see [S5 evidence](../etc/evidence/t585-s5-core-device-range.md).

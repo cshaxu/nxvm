@@ -1,3 +1,24 @@
+# M5 T585 S5 — Closed: movable Core memory-device range
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T585 S5 after S4 at 07f34ecc1. |
+| Admission And Approval | Owner directed autonomous completion of the first four PC110 tasks and approved sourced L1/L2 models. |
+| Objective | Provide a bounded runtime-selectable range on the existing Core device route, including cache invalidation, for the PC Card receiver. |
+| Non-goals | No second memory bus, permanent all-RAM overlay, host-media mutation or physical timing claim. |
+| Reference Baseline | S4 decoder cf2782271; Core memory route and cache implementation; retained masked-span/fallback TODO. |
+| Candidate Proposal | [Device and model qualification](../proposals/m5-pc110-device-model-qualification.md); [S4 evidence](../etc/evidence/t585-s4-pcic-memory-decode.md). |
+| Files And ABI Surface | Existing X86 Core memory route interface and tests; PC110 media attachment follows in the next S. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding and source policy. |
+| Verification | Actual Core read/write across enabled, moved and disabled device ranges, cache invalidation, mapping boundaries and both widths; repository gates and 14 releases. |
+| Expected Markers | One existing provider changes range without affecting unrelated RAM, and cached old/new mappings are invalidated. |
+| Asset Needs | No external card needed for the Core range fixture; preserve owner configuration, disks and firmware. |
+| Reporting Requirements | Separate real Core-bus tests from product command/UI and physical card claims; disclose timing/overlap limits. |
+| Stop Conditions | No owner-media mutation, broad always-active overlay or silent provider-fallback errors. |
+| Exit Criteria | Reviewed Shared commit 175aff537, dual-width unit/integration qualification, 14 artifacts and [S5 evidence](../etc/evidence/t585-s5-core-device-range.md); PC110 card backing remains S6. |
+| Original Owner Request | Complete the first four PC110 queue tasks. |
+| Similar-Issue Sweep | Window changes, A20/masked spans, adjacent providers, partial reads/writes, overlap, reset/removal and cache reuse. |
+
 # M5 T585 S4 — Closed: PC Card memory-window decode
 
 | Field | Required record |
