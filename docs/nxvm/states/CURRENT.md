@@ -1,3 +1,24 @@
+# M5 T585 S1 — Closed: PC110 device and model inventory
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New M5 T585, S1. |
+| Admission And Approval | Owner directed completion of the first four PC110 queue tasks. |
+| Objective | Audit current PC110 device implementations, owner-path tests and evidence; enumerate real gaps and plan sequential repairs. |
+| Non-goals | No unsupported claim that boot alone qualifies hardware; no third-party source import or owner-media mutation. |
+| Reference Baseline | T584 closed at ee68511b2; T580 device evidence and current source. |
+| Candidate Proposal | [Device and model qualification](../proposals/m5-pc110-device-model-qualification.md). |
+| Files And ABI Surface | NXVM evidence and governance for S1; source changes require a subsequent scoped S. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding and source policy. |
+| Verification | Trace source and tests against device evidence; run required governance and unit qualification. |
+| Expected Markers | Device-by-device implementation, evidence, unresolved boundaries and repair sequence. |
+| Asset Needs | Existing external PC110 firmware and media; preserve originals. |
+| Reporting Requirements | Separate modeled behavior, actual execution, and unverified features; classify L1/L2/L3 honestly. |
+| Stop Conditions | Do not invent hardware behavior or modify owner media. |
+| Exit Criteria | Device inventory, scoped continuation, 712/712 x64 unit results and documentation gate recorded in [S1 evidence](../etc/evidence/t585-device-model-inventory.md). |
+| Original Owner Request | Complete the first four PC110 queue tasks. |
+| Similar-Issue Sweep | Inspect PCIC, power, audio, display, input, storage and firmware provenance. |
+
 # M5 T584 S7 — Closed: private-media inking calibration persistence
 
 Both variants and both host widths completed guest calibration, saved CMOS and
