@@ -1,3 +1,30 @@
+# M5 T583 S3 — Active: derived-DSTN x86 setup and restart
+
+The x86 isolated factory/Machine run reached ERROR, date confirmation and
+DOS, saved guest-produced CMOS through the existing App callback, and a new
+process reached the same DOS frame without setup input. The original disk
+copies were unchanged. Full x86 repository units passed 712/712. This does
+not qualify native App entry/session teardown, Window input or TFT.
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T583 S3 after S2 closure 70026cdcf. |
+| Admission And Approval | Owner requested completion of the four queued PC110 receivers and automatic sequential execution. |
+| Objective | Check the independently empty derived-DSTN first-setup, save and fresh-process DOS restart path on the x86 host build, against S2's x64 checkpoints. |
+| Non-goals | No fabricated configured CMOS, firmware mutation, owner-media writes, Shared changes or unverified desktop/whole-product claim. |
+| Reference Baseline | 70026cdcf; S2's x64 guest frame and save/restart evidence. |
+| Candidate Proposal | [T583 coverage ledger](../etc/evidence/t583-first-setup-ledger.md), DSTN x86 batch. |
+| Files And ABI Surface | Initially NXVM evidence and isolated task-owned probe; no production interface or source changes. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding, UI and source policy. |
+| Verification | Use x86 Product-factory/Machine, task-owned media, empty CMOS and identified guest frames before input; verify save and a second process without Setup input; run full repository unit suite. |
+| Expected Markers | ERROR and date pages, guest DOS screen, 128-byte guest-produced CMOS, and a fresh-process DOS screen without injected Setup keys. |
+| Asset Needs | Existing external firmware and private copies of both disks; preserve owner INI, CMOS, disks and ROMs. |
+| Reporting Requirements | Per-checkpoint frame/log hashes, process exit, input, RTC/CMOS evidence, media identity and native/product limits. |
+| Stop Conditions | No fabricated guest state, blind input, external media writes or treating probe evidence as native Window/App-session proof. |
+| Exit Criteria | Establish the x86 DSTN first-setup/save/restart boundary or its first reproducible failure; preserve TFT and full product routes as open. |
+| Original Owner Request | Complete the first four queued PC110 tasks. |
+| Similar-Issue Sweep | Compare x64 and x86 initial CMOS, Setup responses, saved state, date/time and DOS checkpoint. |
+
 # M5 T583 S2 — Closed: derived-DSTN Setup and persistence diagnosis
 
 An independently empty DSTN x64 guest accepted ERROR/date input, restarted

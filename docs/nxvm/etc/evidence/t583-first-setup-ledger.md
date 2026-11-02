@@ -18,6 +18,13 @@ containment, not success. Final qualification requires the applicable cells
 and regressions on both widths; later desktop interaction and broader device
 coverage remain in their own queued tasks.
 
+| Variant and host | Empty/seeded first Setup | Saved-state new-process DOS boot | Full App entry/session path |
+| --- | --- | --- | --- |
+| DSTN x64 | Guest ERROR, date confirmation and DOS observed by factory/Machine probe in S2; deliberate date edits remain open. | Guest-produced CMOS saved by App callback and loaded by new probe process; DOS observed in S2. | Open: exercise the real executable/session and lifecycle in a later batch. |
+| DSTN x86 | Guest ERROR, date confirmation and DOS observed by factory/Machine probe in S3; deliberate date edits remain open. | Guest-produced CMOS saved by App callback and loaded by new probe process; DOS observed in S3. | Open: real executable/session and lifecycle. |
+| TFT x64 | Open: distinguish absent-file seeded default from independently empty CMOS. | Open. | Open. |
+| TFT x86 | Open: distinguish absent-file seeded default from independently empty CMOS. | Open. | Open. |
+
 ## Initial source evidence
 
 T580 S90 observed derived DSTN with independently empty CMOS reaching the
@@ -131,3 +138,26 @@ Product-factory/Machine save-and-restart route; it does not establish the
 native application entry/session teardown, native Window input, other host
 width or TFT cases. Restart log SHA-256:
 `b9bb20105211027316867cc7b9f5238612d331a5e0a1658bde6e4ec420f3da87`.
+
+## S3: derived-DSTN x86 machine-path observation
+
+The x86 Product-factory/Machine probe is compiled against the current x86
+libraries and uses independently copied disks and an absent saved CMOS. It
+checked the same known ERROR, date and DOS frame hashes before delivering
+the next input or requesting shutdown. A saved-CMOS new-process run followed
+only after guest Setup and the existing configuration-save callback succeeded.
+The probe does not exercise native App entry or Window events.
+The fresh x86 run matched the x64 ERROR, date and DOS frame hashes, accepted
+two Enter make/break pairs, exited 0, and saved a 128-byte guest-produced
+DSTN CMOS with SHA-256
+`344bc634dee98f58818f696d1fa7743fd7d0c917e0f9b33d9a84d0a037681628`.
+Both copied media hashes remained unchanged. First-run log SHA-256:
+`47073221a637fc4e07ca5bdf5c68f7a888c186272a9473fd043cfaf87958477e`.
+A second x86 process loaded that CMOS and reached the identical DOS frame
+without Setup input. Initial RTC seconds matched the first run's final `20`;
+the second process exited 0 at seconds `39`. Both disk hashes stayed
+unchanged. Its log SHA-256 is
+`1629f7828beccabeffb7e923fac9972189499377d1cf06ea21ea3a4d5d95589b`.
+The complete x86 unit
+suite passed 712/712; log SHA-256
+`e3fab39ae57fe6b492182269e7b28a7d9ea1af2ca858a377b120055b843b16b0`.
