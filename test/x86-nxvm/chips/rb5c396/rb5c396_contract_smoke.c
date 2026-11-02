@@ -68,6 +68,75 @@ static lib_bool memory_windows(void)
     return !failed;
 }
 
+static lib_bool socket_status_changes(void)
+{
+    x86_rb5c396 *chip = LIB_NULL;
+    x86_rb5c396_slot_inputs input = {.card_present = LIB_TRUE,
+        .battery_detect_1 = LIB_TRUE, .battery_detect_2 = LIB_TRUE};
+    lib_u8 value, irq;
+    lib_bool failed = x86_rb5c396_create(&chip) != LIB_STATUS_OK;
+    if (failed) return LIB_FALSE;
+    for (lib_u8 slot = 0u; slot < X86_RB5C396_SLOT_COUNT; ++slot) {
+        const lib_u8 bank = (lib_u8)(slot << 6u);
+        input = (x86_rb5c396_slot_inputs){.card_present = LIB_TRUE,
+            .battery_detect_1 = LIB_TRUE, .battery_detect_2 = LIB_TRUE};
+        failed |= !write_register(chip, (lib_u8)(bank + 5u), 0x57u) ||
+            x86_rb5c396_set_slot_inputs(chip, slot, &input) != LIB_STATUS_OK ||
+            select_register(chip, (lib_u8)(bank + 4u)) != LIB_STATUS_OK ||
+            x86_rb5c396_read(chip, X86_RB5C396_DATA_PORT, &value) != LIB_STATUS_OK || value != 8u;
+        input.ready = LIB_TRUE;
+        failed |= x86_rb5c396_set_slot_inputs(chip, slot, &input) != LIB_STATUS_OK ||
+            x86_rb5c396_status_irq(chip, slot, &irq) != LIB_STATUS_OK || irq != 5u ||
+            x86_rb5c396_read(chip, X86_RB5C396_DATA_PORT, &value) != LIB_STATUS_OK || value != 4u ||
+            x86_rb5c396_status_irq(chip, slot, &irq) != LIB_STATUS_OK || irq != 0u;
+        input.battery_detect_2 = LIB_FALSE;
+        failed |= x86_rb5c396_set_slot_inputs(chip, slot, &input) != LIB_STATUS_OK ||
+            x86_rb5c396_status_irq(chip, slot, &irq) != LIB_STATUS_OK || irq != 5u ||
+            x86_rb5c396_read(chip, X86_RB5C396_DATA_PORT, &value) != LIB_STATUS_OK || value != 2u ||
+            x86_rb5c396_status_irq(chip, slot, &irq) != LIB_STATUS_OK || irq != 0u;
+        input.battery_detect_1 = LIB_FALSE;
+        failed |= x86_rb5c396_set_slot_inputs(chip, slot, &input) != LIB_STATUS_OK ||
+            x86_rb5c396_status_irq(chip, slot, &irq) != LIB_STATUS_OK || irq != 5u ||
+            x86_rb5c396_read(chip, X86_RB5C396_DATA_PORT, &value) != LIB_STATUS_OK || value != 1u ||
+            x86_rb5c396_status_irq(chip, slot, &irq) != LIB_STATUS_OK || irq != 0u;
+        input.battery_detect_1 = LIB_TRUE;
+        input.battery_detect_2 = LIB_TRUE;
+        failed |= x86_rb5c396_set_slot_inputs(chip, slot, &input) != LIB_STATUS_OK;
+        input.battery_detect_1 = LIB_FALSE;
+        failed |= x86_rb5c396_set_slot_inputs(chip, slot, &input) != LIB_STATUS_OK ||
+            x86_rb5c396_status_irq(chip, slot, &irq) != LIB_STATUS_OK || irq != 5u;
+        failed |= !write_register(chip, (lib_u8)(bank + 3u), 0x20u);
+        failed |= x86_rb5c396_status_irq(chip, slot, &irq) != LIB_STATUS_OK || irq != 0u;
+        input.ready = LIB_FALSE;
+        input.battery_detect_1 = LIB_TRUE;
+        input.battery_detect_2 = LIB_TRUE;
+        failed |= x86_rb5c396_set_slot_inputs(chip, slot, &input) != LIB_STATUS_OK;
+        input.ready = LIB_TRUE;
+        input.battery_detect_2 = LIB_FALSE;
+        failed |= x86_rb5c396_set_slot_inputs(chip, slot, &input) != LIB_STATUS_OK ||
+            select_register(chip, (lib_u8)(bank + 4u)) != LIB_STATUS_OK ||
+            x86_rb5c396_read(chip, X86_RB5C396_DATA_PORT, &value) != LIB_STATUS_OK || value != 0u ||
+            x86_rb5c396_status_irq(chip, slot, &irq) != LIB_STATUS_OK || irq != 0u;
+    }
+    x86_rb5c396_reset(chip);
+    input = (x86_rb5c396_slot_inputs){.card_present = LIB_TRUE,
+        .battery_detect_1 = LIB_TRUE, .battery_detect_2 = LIB_TRUE};
+    failed |= x86_rb5c396_set_slot_inputs(chip, 0u, &input) != LIB_STATUS_OK ||
+        !write_register(chip, 0x1eu, 4u);
+    input.ready = LIB_TRUE;
+    failed |= x86_rb5c396_set_slot_inputs(chip, 0u, &input) != LIB_STATUS_OK ||
+        select_register(chip, 4u) != LIB_STATUS_OK ||
+        x86_rb5c396_read(chip, X86_RB5C396_DATA_PORT, &value) != LIB_STATUS_OK || value != 4u ||
+        x86_rb5c396_read(chip, X86_RB5C396_DATA_PORT, &value) != LIB_STATUS_OK || value != 4u ||
+        x86_rb5c396_write(chip, X86_RB5C396_DATA_PORT, 4u) != LIB_STATUS_OK ||
+        x86_rb5c396_read(chip, X86_RB5C396_DATA_PORT, &value) != LIB_STATUS_OK || value != 0u;
+    x86_rb5c396_reset(chip);
+    failed |= select_register(chip, 4u) != LIB_STATUS_OK ||
+        x86_rb5c396_read(chip, X86_RB5C396_DATA_PORT, &value) != LIB_STATUS_OK || value != 0u;
+    x86_rb5c396_destroy(chip);
+    return !failed;
+}
+
 static lib_bool io_windows(void)
 {
     x86_rb5c396 *chip = LIB_NULL;
@@ -160,7 +229,7 @@ int main(void)
     /* Insertion latches independently per slot; the default read acknowledges. */
     failed |= select_register(chip, 0x04u) != LIB_STATUS_OK ||
         x86_rb5c396_read(chip, X86_RB5C396_DATA_PORT, &value) != LIB_STATUS_OK ||
-        value != 0x08u || x86_rb5c396_read(chip, X86_RB5C396_DATA_PORT, &value) !=
+        value != 0x0cu || x86_rb5c396_read(chip, X86_RB5C396_DATA_PORT, &value) !=
             LIB_STATUS_OK || value != 0u ||
         select_register(chip, 0x44u) != LIB_STATUS_OK ||
         x86_rb5c396_read(chip, X86_RB5C396_DATA_PORT, &value) != LIB_STATUS_OK ||
@@ -230,5 +299,5 @@ int main(void)
             LIB_STATUS_OK || x86_rb5c396_read(chip, X86_RB5C396_DATA_PORT, &value) !=
             LIB_STATUS_OK || value != 0x2cu;
     x86_rb5c396_destroy(chip);
-    return failed || !memory_windows() || !io_windows() ? 1 : 0;
+    return failed || !memory_windows() || !io_windows() || !socket_status_changes() ? 1 : 0;
 }

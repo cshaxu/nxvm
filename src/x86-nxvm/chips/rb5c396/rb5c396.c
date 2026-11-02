@@ -62,10 +62,22 @@ void x86_rb5c396_reset(x86_rb5c396 *chip)
 lib_status x86_rb5c396_set_slot_inputs(x86_rb5c396 *chip, lib_u8 slot,
     const x86_rb5c396_slot_inputs *inputs)
 {
+    const x86_rb5c396_slot_inputs *old;
     if (chip == LIB_NULL || inputs == LIB_NULL || slot >= X86_RB5C396_SLOT_COUNT)
         return LIB_STATUS_INVALID_ARGUMENT;
-    if (chip->inputs[slot].card_present != inputs->card_present)
+    old = &chip->inputs[slot];
+    if (old->card_present != inputs->card_present)
         chip->registers[slot][0x04u] |= 0x08u;
+    if ((chip->registers[slot][0x03u] & 0x20u) == 0u) {
+        if (!old->ready && inputs->ready) chip->registers[slot][0x04u] |= 0x04u;
+        if (old->card_present && inputs->card_present) {
+            if (inputs->battery_detect_1 && !inputs->battery_detect_2 &&
+                (!old->battery_detect_1 || old->battery_detect_2))
+                chip->registers[slot][0x04u] |= 0x02u;
+            if (old->battery_detect_1 && !inputs->battery_detect_1)
+                chip->registers[slot][0x04u] |= 0x01u;
+        }
+    }
     chip->inputs[slot] = *inputs;
     return LIB_STATUS_OK;
 }
@@ -88,6 +100,9 @@ lib_status x86_rb5c396_status_irq(const x86_rb5c396 *chip, lib_u8 slot,
         return LIB_STATUS_INVALID_ARGUMENT;
     *out_irq = 0u;
     pending = chip->registers[slot][0x04u] & chip->registers[slot][0x05u] & 0x0fu;
+    /* STSCHG/RI is not yet modeled; do not reinterpret a memory battery
+     * latch as an I/O-card status signal after a type change. */
+    if ((chip->registers[slot][0x03u] & 0x20u) != 0u) pending &= (lib_u8)~0x07u;
     if ((chip->registers[slot][0x16u] & 0x10u) != 0u)
         pending &= (lib_u8)~0x08u;
     if ((chip->registers[slot][0x03u] & 0x10u) != 0u || pending == 0u)
@@ -205,6 +220,8 @@ lib_status x86_rb5c396_read(x86_rb5c396 *chip, lib_u16 port,
         *out_value = chip->registers[0u][selected];
     else if (selected == 0x04u) {
         *out_value = chip->registers[slot][selected];
+        if ((chip->registers[slot][0x03u] & 0x20u) != 0u)
+            *out_value &= (lib_u8)~0x07u;
         if ((chip->registers[0u][0x1eu] & 0x04u) == 0u)
             chip->registers[slot][selected] = 0u;
     } else
