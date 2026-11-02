@@ -202,3 +202,28 @@ desktop; this task did not redirect the user's pointer or switch desktops.
 Physical chords, actual pointer capture and interactive RDP remain unverified.
 The x64 complete repository unit suite passed 712/712; log SHA-256 is
 `3066d360b5086aa7f9b36600e89d3dc73bec4f66845b8dc9a0eb3c4315eba7d1`.
+
+## S6: interaction reconciliation and qualification
+
+T584's current evidence covers native-message keyboard interaction,
+Personaware operation, both Console control policies, observed pause/resume,
+in-process restart and normal teardown for both widths and variants. The
+separate Machine path exercises all four inking calibration corners; it does
+not prove native capture. Lib's capture tests use native API substitutes and
+are not a physical-device or RDP test. The host inventory found no active RDP
+session. Physical Ctrl+Alt chords, actual host pointer capture, interactive RDP
+and calibration persistence with a deliberately writable private medium
+remain for final product qualification; the underlying T582 startup-speed
+debt also remains open. The initial T583 DSTN x86 observer exit failure and
+T584 TFT observer failures remain recorded; the latter had a proven stale
+pause-notification flaw in the task-only observer, while the original T583
+failure had no discriminating exit log.
+
+The complete x64 repository unit suite passed 712/712; its log SHA-256 is
+`7b43e25f47f98ba2d03d08ca9e65426dbd93d11263150c62594829564d45b39c`.
+The PC110 x64 firmware integration suite passed 9/9; log SHA-256 is
+`5738f5968e26b6e9e704a0bdeb6791899776bab3a1f2b78e64dbb03819715739`.
+The x86 PC110 integration suite passed 9/9; its log SHA-256 is
+`da10f613fac07b03f39d16d8474266ccc98040c97a2c9e75dfddd654144a3928`.
+The calibration-persistence gap is being tested next using a private writable
+copy, without modifying owner media.
