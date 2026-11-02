@@ -1,4 +1,4 @@
-# M5 T583 S5 — Active: real-product CMOS restore and teardown
+# M5 T583 S5 — Closed: real-product CMOS restore and teardown
 
 The current deployed EXEs were run in isolated hidden-console processes on
 both widths for both variants using guest-produced CMOS. Start/pause/stop/exit
@@ -22,7 +22,7 @@ qualify guest Setup/DOS or native Window input through the real executable.
 | Asset Needs | Existing guest-produced task CMOS and copied executables only; never change owner INI, CMOS, media or ROM. |
 | Reporting Requirements | Executable and CMOS identities, lifecycle output, exit status, per-variant persistence, remaining first-boot/native limits and next step. |
 | Stop Conditions | No synthetic configured CMOS, user-file mutation, guessed guest input, or claim that lifecycle-only tests prove a DOS boot. |
-| Exit Criteria | Actual App entry and save-on-exit path verified for both widths and variants, or its first reproducible defect recorded with a repair receiver. |
+| Exit Criteria | Reviewed 9a4c40fbd: real EXE lifecycle, Debug RTC mutation, normal teardown/save and other-variant byte isolation passed on both host widths for both variants. Real EXE guest Setup/DOS and native Window input remain open. |
 | Original Owner Request | Complete the first four queued PC110 tasks. |
 | Similar-Issue Sweep | Compare both display variants and host widths, file-missing behavior, matching CMOS isolation and start/stop/exit. |
 
