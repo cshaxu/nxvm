@@ -24,3 +24,8 @@ Shared masked-span/provider-decline memory-routing defect remains unresolved.
 These items and additional PC110 RAM models are retained in the NXVM debt
 ledger. Details, limitations, artifacts and links to the complete S39 evidence
 are in [S40 stage-closure evidence](../etc/evidence/t582-s40-stage-closure.md).
+
+S40's dual-width build and unit/focused integration transcript SHA-256 is
+`4DA33CF64C84BF616CE8D1E3F9CC318197EA35D7D5D62B677987BCE6AB55F7C4`;
+the NXVM documentation-gate transcript SHA-256 is
+`1CD7ECD8795DF79BE840C8A01E85B60E6D385A281717FDB25698E6E840A89836`.
