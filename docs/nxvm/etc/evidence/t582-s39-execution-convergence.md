@@ -1,5 +1,16 @@
 # T582 S39 — execution and timing convergence
 
+## Timing-result initialization check
+
+The Intel timing selector initializes its local result using `lib_memory_set`.
+The Types implementation is already a static inline wrapper over `memset`.
+A disposable source replacement using a zero-initialized compound literal
+produced identical optimized object disassembly on both x64 and x86. This
+eliminates neither a generated call nor work with these build settings, so no
+production change was adopted. Other compilers and options were not measured.
+The comparison log SHA-256 is
+`001AC4D880413506DBE41F81265E343ED7DE1CE4401EA8D184C5C23C73D91C17`.
+
 ## Owner-requested approximate timing upper bound
 
 The existing Turbo runner changes the instruction quantum and wall-clock
