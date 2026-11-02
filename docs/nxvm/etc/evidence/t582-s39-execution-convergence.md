@@ -180,6 +180,32 @@ baseline summary, baseline guest log and response frame SHA-256:
 `406F491E21DB1863BC361F151A59D2FA06736D74560F08227EB21601DC3CCD29`,
 `211326CF5E660A98D77246BDE710457BC192B7709F0F80E3A72557C0BD66AEC9`.
 
+### Cross-profile approximation boundary
+
+A disposable selector applied the existing compatibility recipe with the
+same nominal eight-tick base to Intel profiles; V30 deliberately retained its
+existing selector. In a two-million-instruction CPU-only NOP/JMP loop, x64
+baseline/candidate elapsed times were 617/440 ms for 8086, 537/489 ms for
+286, 782/482 ms for 386, and 951/564 ms for 486SX. Corresponding x86 times
+were 841/699, 867/663, 1151/804, and 1365/1003 ms. All cases reached the
+same PC without a reported fault. These single ordered pairs are synthetic,
+not complete Machine or end-to-end performance measurements.
+
+The same candidate changed guest ticks from 18 million to 16 million on 8086,
+11 million to 16 million on 286 and 386, and approximately 8 million to 16
+million on 486SX. One shared nominal value is therefore not a justified
+cross-profile policy. Existing CPU checks produced nine unchanged passes and
+two detailed-tick assertion failures on each host width. Three V30 checks
+passed each width with the original V30 path; this does not validate an L1
+V30 model. Any Turbo timing downgrade still requires owner approval, a
+profile-appropriate contract, switching and device validation, and cannot
+claim physical qualification from these observations.
+
+Profile, CPU-check and V30-check log SHA-256 respectively:
+`300D899CAD81902DE2D4AE38FA9F7E5639625B3D6A2A674C7570CE1744695670`,
+`23E66B6815DD7C58398D80AA38B934C9508A3FD44C28B845836CC4852785A453`,
+`0150DD03D2EBA90479BBF01895416D541CF1768E508923D70E07776093FAE296`.
+
 ## Masked-span candidate and existing crossing defect
 
 A task-only candidate admitted a span within one aligned 16-byte block when

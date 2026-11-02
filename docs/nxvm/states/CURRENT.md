@@ -25,7 +25,10 @@ still lacks complete metadata, cross-profile design, switching and device
 qualification. A scratch variant reused the existing compatibility recipe
 and reached the same fixed checkpoint, but its write to the detailed-mode
 configuration is not an acceptable production design. See S39 evidence for
-the comparisons, functional checks and limits.
+the comparisons, functional checks and limits. A cross-profile scratch probe
+also showed that one nominal value changes guest tick totals differently on
+8086, 286, 386 and 486; V30 retained its original timing path. It does not
+establish a safe general policy or full-system performance gain.
 
 ### External wait-window scan upper bound not adopted
 
