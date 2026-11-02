@@ -34,6 +34,9 @@ void x86_rb5c396_destroy(x86_rb5c396 *chip);
 void x86_rb5c396_reset(x86_rb5c396 *chip);
 lib_status x86_rb5c396_set_slot_inputs(x86_rb5c396 *chip, lib_u8 slot,
     const x86_rb5c396_slot_inputs *inputs);
+/* Zero means no selected ISA status-change interrupt for this socket. */
+lib_status x86_rb5c396_status_irq(const x86_rb5c396 *chip, lib_u8 slot,
+    lib_u8 *out_irq);
 lib_status x86_rb5c396_read(x86_rb5c396 *chip, lib_u16 port,
     lib_u8 *out_value);
 lib_status x86_rb5c396_write(x86_rb5c396 *chip, lib_u16 port,

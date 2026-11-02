@@ -70,6 +70,26 @@ lib_status x86_rb5c396_set_slot_inputs(x86_rb5c396 *chip, lib_u8 slot,
     return LIB_STATUS_OK;
 }
 
+lib_status x86_rb5c396_status_irq(const x86_rb5c396 *chip, lib_u8 slot,
+    lib_u8 *out_irq)
+{
+    lib_u8 irq;
+    lib_u8 pending;
+    if (chip == LIB_NULL || out_irq == LIB_NULL || slot >= X86_RB5C396_SLOT_COUNT)
+        return LIB_STATUS_INVALID_ARGUMENT;
+    *out_irq = 0u;
+    pending = chip->registers[slot][0x04u] & chip->registers[slot][0x05u] & 0x0fu;
+    if ((chip->registers[slot][0x16u] & 0x10u) != 0u)
+        pending &= (lib_u8)~0x08u;
+    if ((chip->registers[slot][0x03u] & 0x10u) != 0u || pending == 0u)
+        return LIB_STATUS_OK;
+    irq = chip->registers[slot][0x05u] >> 4u;
+    if (irq == 3u || irq == 4u || irq == 5u || irq == 7u || irq == 9u ||
+        irq == 10u || irq == 11u || irq == 12u || irq == 14u || irq == 15u)
+        *out_irq = irq;
+    return LIB_STATUS_OK;
+}
+
 lib_status x86_rb5c396_read(x86_rb5c396 *chip, lib_u16 port,
     lib_u8 *out_value)
 {
@@ -125,6 +145,10 @@ lib_status x86_rb5c396_write(x86_rb5c396 *chip, lib_u16 port,
     else if (selected == 0x04u) {
         if ((chip->registers[0u][0x1eu] & 0x04u) != 0u)
             chip->registers[slot][selected] &= (lib_u8)~value;
+    } else if (selected == 0x16u) {
+        if ((value & 0x20u) != 0u && (chip->registers[slot][0x05u] & 0x08u) != 0u)
+            chip->registers[slot][0x04u] |= 0x08u;
+        chip->registers[slot][selected] = value & (lib_u8)~0x20u;
     } else
         chip->registers[slot][selected] = value;
     return LIB_STATUS_OK;
