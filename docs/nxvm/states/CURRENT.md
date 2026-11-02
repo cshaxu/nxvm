@@ -1,3 +1,24 @@
+# M5 T585 S14 — Closed: PC110 onboard audio design audit
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T585 S14 after S13. |
+| Admission And Approval | Owner directed autonomous completion of the first four PC110 tasks and approved reference-derived L2 and bounded L1 models. |
+| Objective | Audit PC110 ES488/YM3812 onboard audio, available references and existing Core, machine and host-audio paths; prepare concrete bounded implementation increments. |
+| Non-goals | No fake audible-output claim, external ROM import or unsolicited changes to unrelated Apps. |
+| Reference Baseline | [Device inventory](../etc/evidence/t585-device-model-inventory.md), existing PC110 board plan, Lib audio, and authorized external references. |
+| Candidate Proposal | [Device and model qualification](../proposals/m5-pc110-device-model-qualification.md). |
+| Files And ABI Surface | Read-only investigation first; identify actual single owners and necessary existing interfaces. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding and source policy. |
+| Verification | Trace guest port, DMA and IRQ path to host PCM; distinguish verified behavior, L2 reference model and L1 estimates. |
+| Expected Markers | Explicit minimum viable guest-facing audio plan with source provenance and no second audio pipeline. |
+| Asset Needs | Read-only references and disposable test inputs; preserve owner configuration and media. |
+| Reporting Requirements | Hardware components, present gaps, smallest implementation batches, tests and external-evidence limits. |
+| Stop Conditions | No claim of audio based solely on host mute, register placeholders or fabricated sound samples. |
+| Exit Criteria | [S14 design](../etc/evidence/t585-s14-pc110-audio-design.md) records actual board devices, references, current DMA/PCM seams and a bounded sequential implementation plan without claiming sound output. |
+| Original Owner Request | Complete the first four PC110 queue tasks. |
+| Similar-Issue Sweep | DSP reset/version, command/read status, DMA/IRQ, mixer, FM and host PCM ownership. |
+
 # M5 T585 S13 — Closed: reconcile PC110 storage evidence
 
 | Field | Required record |
