@@ -2,6 +2,7 @@
 #include "app-mypc110/pc110_cmos.h"
 #include "app-mypc110/pc110_clock.h"
 #include "app-mypc110/pc110_es488.h"
+#include "app-mypc110/pc110_opl2.h"
 #include "app-mypc110/pc110_firmware_interface.h"
 #include "app-mypc110/pc110_font_interface.h"
 #include "app-mypc110/pc110_display_interface.h"
@@ -55,6 +56,11 @@ static lib_bool mypc110_test_es488(emulator_machine_driver *driver)
         lib_u8 value = steps[i].value;
         if (!mypc110_test_port(driver, steps[i].write, steps[i].port, &value) ||
             (!steps[i].write && value != steps[i].value)) return LIB_FALSE;
+    }
+    {
+        lib_u8 value = 0xffu;
+        if (!mypc110_test_port(driver, LIB_FALSE, 0x388u, &value) || value != 0u)
+            return LIB_FALSE;
     }
     return LIB_TRUE;
 }
@@ -113,6 +119,50 @@ done:
     x86_nxvm_board_pic_finalize(master, slave);
     x86_core_machine_destroy(core);
     return result;
+}
+
+static lib_bool mypc110_test_opl2(void)
+{
+    const x86_core_machine_executor_config config = {
+        .memory_bytes = 2u * 1024u * 1024u, .cpu_profile = X86_CORE_CPU_PROFILE_8086};
+    const lib_u8 loop[] = {0xebu, 0xfeu};
+    x86_core_machine *core = LIB_NULL;
+    x86_core_machine_run_result run;
+    mypc110_opl2 device = {0};
+    lib_u32 status = 0u;
+    lib_bool ok = LIB_FALSE;
+    if (x86_core_machine_neutral_create(&config, &core) != LIB_STATUS_OK ||
+        mypc110_opl2_install_routes(core, &device) != LIB_STATUS_OK ||
+        x86_core_machine_freeze_execution_providers(core) != LIB_STATUS_OK ||
+        x86_core_machine_reset(core) != LIB_STATUS_OK ||
+        x86_core_machine_memory_write(core, 0xffff0u, loop, sizeof(loop)) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(core, 0x388u, 2u) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(core, 0x389u, 0xffu) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(core, 0x388u, 4u) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(core, 0x389u, 1u) != LIB_STATUS_OK ||
+        x86_core_machine_bus_read(core, 0x388u, &status) != LIB_STATUS_OK || status != 0u ||
+        x86_core_machine_run(core, (x86_core_machine_run_budget){10000u, 0u}, &run) != LIB_STATUS_OK ||
+        x86_core_machine_bus_read(core, 0x388u, &status) != LIB_STATUS_OK || status != 0xc0u ||
+        x86_core_machine_bus_write(core, 0x389u, 0x80u) != LIB_STATUS_OK ||
+        x86_core_machine_bus_read(core, 0x388u, &status) != LIB_STATUS_OK || status != 0u)
+        goto done;
+    if (x86_core_machine_bus_write(core, 0x389u, 0u) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(core, 0x388u, 3u) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(core, 0x389u, 0xffu) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(core, 0x388u, 4u) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(core, 0x389u, 2u) != LIB_STATUS_OK ||
+        x86_core_machine_run(core, (x86_core_machine_run_budget){10000u, 0u}, &run) != LIB_STATUS_OK ||
+        x86_core_machine_bus_read(core, 0x388u, &status) != LIB_STATUS_OK || status != 0xa0u ||
+        x86_core_machine_bus_write(core, 0x389u, 0u) != LIB_STATUS_OK ||
+        x86_core_machine_bus_write(core, 0x389u, 0x41u) != LIB_STATUS_OK ||
+        x86_core_machine_run(core, (x86_core_machine_run_budget){10000u, 0u}, &run) != LIB_STATUS_OK ||
+        x86_core_machine_bus_read(core, 0x388u, &status) != LIB_STATUS_OK || status != 0u)
+        goto done;
+    mypc110_opl2_reset(&device);
+    ok = device.control == 0u && device.overflow == 0u;
+done:
+    x86_core_machine_destroy(core);
+    return ok;
 }
 
 static lib_bool mypc110_test_memory(emulator_machine_driver *driver,
@@ -481,7 +531,7 @@ int main(int argc, char **argv)
             LIB_STATUS_OK || driver.copy_frame(driver.context, &frame, &console,
                 &produced) != LIB_STATUS_OK || produced))
         failed = 5;
-    if (!failed && (!mypc110_test_es488(&driver) || !mypc110_test_es488_dma())) failed = 80;
+    if (!failed && (!mypc110_test_es488(&driver) || !mypc110_test_es488_dma() || !mypc110_test_opl2())) failed = 80;
     if (!failed) {
         const x86_debug_request cmos_reads[] = {
             {.operation = X86_DEBUG_WRITE_PORT, .port = 0x70u, .address = 0x0eu, .bytes = 1u},

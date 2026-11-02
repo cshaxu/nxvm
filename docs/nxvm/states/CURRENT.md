@@ -1,3 +1,24 @@
+# M5 T585 S17 — Closed: PC110 YM3812 register and timer path
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T585 S17 after S16. |
+| Admission And Approval | Owner directed autonomous completion of the first four PC110 tasks, including L1/L2 reference-based models. |
+| Objective | Connect the PC110 OPL2 register and timer interface on the existing Core time axis, with real guest-port tests. |
+| Non-goals | Timer detection alone is not FM synthesis or audible output; subsequent work must implement the actual sound path. |
+| Reference Baseline | [S14 audio design](../etc/evidence/t585-s14-pc110-audio-design.md), observed PC110 OPL2 388h and 86Box YM3812 behavior. |
+| Candidate Proposal | [Device and model qualification](../proposals/m5-pc110-device-model-qualification.md). |
+| Files And ABI Surface | PC110 App-local device and existing App tests; no Shared changes planned. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding and source policy. |
+| Verification | Actual port route, both timers, control/mask/reset, guest-time progression and device reset on both architectures. |
+| Expected Markers | OPL2 software detection observes distinct timer overflow and reset states. |
+| Asset Needs | Preserve owner media, firmware and configuration. |
+| Reporting Requirements | Distinguish reference-derived behavior from hardware measurements and expressly retain FM synthesis gap. |
+| Stop Conditions | No silent device claimed as working music and no second clock or audio pathway. |
+| Exit Criteria | [S17 evidence](../etc/evidence/t585-s17-opl2-timers.md) records the receiver, dual-width 20/20 PC110 tests and remaining FM synthesis work. |
+| Original Owner Request | Complete the first four PC110 queue tasks. |
+| Similar-Issue Sweep | Reset, timer reload, masking, control writes and existing audio routes. |
+
 # M5 T585 S16 — Closed: PC110 ES488 DMA playback path
 
 | Field | Required record |

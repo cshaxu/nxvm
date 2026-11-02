@@ -8,6 +8,7 @@
 #include "app-mypc110/pc110_ec_block_interface.h"
 #include "app-mypc110/pc110_ec_mailbox_interface.h"
 #include "app-mypc110/pc110_es488.h"
+#include "app-mypc110/pc110_opl2.h"
 #include "app-mypc110/pc110_firmware_interface.h"
 #include "app-mypc110/pc110_font_interface.h"
 #include "app-mypc110/pc110_inking_interface.h"
@@ -26,6 +27,7 @@ typedef struct mypc110_machine_plan {
     mypc110_ec_block ec_block;
     mypc110_ec_mailbox ec_mailbox;
     mypc110_es488 es488;
+    mypc110_opl2 opl2;
     mypc110_audio audio;
     mypc110_inking inking;
     x86_vl82c420 *configuration_chip;
@@ -280,6 +282,7 @@ static void mypc110_machine_profile_reset(void *opaque,
         mypc110_pcic_reset(&plan->pcic);
         mypc110_inking_reset(&plan->inking);
         mypc110_es488_reset(&plan->es488);
+        mypc110_opl2_reset(&plan->opl2);
     }
 }
 
@@ -380,6 +383,8 @@ static lib_status mypc110_machine_after_firmware(void *opaque, x86_core_machine 
         status = mypc110_lpt_install_routes(core, &plan->lpt);
     if (status == LIB_STATUS_OK)
         status = mypc110_es488_install_routes(core, &plan->es488);
+    if (status == LIB_STATUS_OK)
+        status = mypc110_opl2_install_routes(core, &plan->opl2);
     if (status == LIB_STATUS_OK)
         status = mypc110_display_install_routes(core, plan->display_controller);
     return status;
