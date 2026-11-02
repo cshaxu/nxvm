@@ -12,5 +12,7 @@ lib_status mypc110_machine_construction_create(const x86_nxvm_machine_config *co
 lib_status mypc110_machine_attach_product(void *context,
     x86_nxvm_machine_construction *construction);
 lib_status mypc110_machine_release_cards(mypc110_product_context *context);
+/* Called after executor shutdown; failure retains the stream for retry. */
+lib_status mypc110_machine_close_audio(mypc110_product_context *context);
 
 #endif

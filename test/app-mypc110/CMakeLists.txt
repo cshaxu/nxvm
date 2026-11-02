@@ -22,6 +22,19 @@ if(TARGET mypc110-selectable-firmware)
     set_tests_properties(mypc110.integration/firmware-variants PROPERTIES LABELS "integration;mypc110" TIMEOUT 30)
 endif()
 
+add_executable(mypc110-audio-smoke unit/audio_smoke.c
+    "${CMAKE_SOURCE_DIR}/src/app-mypc110/pc110_audio.c")
+target_include_directories(mypc110-audio-smoke PRIVATE "${CMAKE_SOURCE_DIR}/src")
+target_link_libraries(mypc110-audio-smoke PRIVATE types)
+if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(mypc110-audio-smoke PRIVATE -UNDEBUG -Wall -Wextra -Wpedantic -Werror)
+endif()
+if(TARGET build-unit-tests)
+    add_dependencies(build-unit-tests mypc110-audio-smoke)
+endif()
+add_test(NAME mypc110.unit/audio COMMAND mypc110-audio-smoke)
+set_tests_properties(mypc110.unit/audio PROPERTIES LABELS "unit;mypc110" TIMEOUT 30)
+
 add_executable(mypc110-vdisplay-smoke unit/vdisplay_smoke.c
     "${CMAKE_SOURCE_DIR}/src/app-mypc110/product_vdisplay.c")
 target_include_directories(mypc110-vdisplay-smoke PRIVATE "${CMAKE_SOURCE_DIR}/src")
@@ -153,6 +166,11 @@ if(TARGET mypc110-product)
     if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
         target_compile_options(mypc110-product-composition-smoke PRIVATE
             -UNDEBUG -Wall -Wextra -Wpedantic -Werror)
+        if(WIN32)
+            target_compile_definitions(mypc110-product-composition-smoke PRIVATE MYPC110_TEST_AUDIO_WRAP=1)
+            target_link_options(mypc110-product-composition-smoke PRIVATE
+                -Wl,--wrap=lib_audio_pcm_stream_create -Wl,--wrap=lib_audio_pcm_stream_enqueue)
+        endif()
     endif()
     if(TARGET build-integration-tests)
         add_dependencies(build-integration-tests mypc110-product-composition-smoke)

@@ -1,6 +1,7 @@
 #include "app-mypc110/pc110_plan_interface.h"
 #include "x86-nxvm/machine/preparation_interface.h"
 #include "app-mypc110/pc110_clock.h"
+#include "app-mypc110/pc110_audio.h"
 
 #include "app-mypc110/pc110_config_interface.h"
 #include "app-mypc110/pc110_display_interface.h"
@@ -25,6 +26,7 @@ typedef struct mypc110_machine_plan {
     mypc110_ec_block ec_block;
     mypc110_ec_mailbox ec_mailbox;
     mypc110_es488 es488;
+    mypc110_audio audio;
     mypc110_inking inking;
     x86_vl82c420 *configuration_chip;
     x86_f65535 *display_controller;
@@ -70,6 +72,11 @@ static lib_status mypc110_machine_before_reset(void *opaque, x86_nxvm_board_stat
     lib_status status;
 
     if (plan == LIB_NULL || board == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    if (plan->audio.stream != LIB_NULL) {
+        status = lib_audio_pcm_stream_clear(plan->audio.stream);
+        if (status != LIB_STATUS_OK) return status;
+    }
+    plan->audio.count = plan->audio.read = plan->audio.repeats = plan->audio.phase = 0u;
     if (plan->product == LIB_NULL) return LIB_STATUS_OK;
     status = mypc110_machine_apply_cards(plan);
     if (status != LIB_STATUS_OK) return status;
@@ -106,9 +113,12 @@ lib_status mypc110_machine_attach_product(void *context,
     x86_nxvm_machine_construction *construction)
 {
     mypc110_machine_plan *plan;
+    lib_status status;
     if (context == LIB_NULL || construction == LIB_NULL || construction->profile.context == LIB_NULL)
         return LIB_STATUS_INVALID_ARGUMENT;
     plan = construction->profile.context;
+    status = mypc110_audio_open(&plan->audio, &plan->es488);
+    if (status != LIB_STATUS_OK) return status;
     plan->product = context;
     plan->product->plan = plan;
     return LIB_STATUS_OK;
@@ -129,6 +139,14 @@ lib_status mypc110_machine_release_cards(mypc110_product_context *context)
         if (status != LIB_STATUS_OK) return status;
     }
     return LIB_STATUS_OK;
+}
+
+lib_status mypc110_machine_close_audio(mypc110_product_context *context)
+{
+    mypc110_machine_plan *plan;
+    if (context == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    plan = context->plan;
+    return plan != LIB_NULL ? mypc110_audio_close(&plan->audio) : LIB_STATUS_OK;
 }
 
 static const x86_nxvm_board_config mypc110_machine_configuration = {
@@ -274,6 +292,22 @@ static void mypc110_machine_profile_system_management_active(void *opaque,
         mypc110_firmware_system_management_active(&plan->firmware, active);
 }
 
+static lib_bool mypc110_machine_profile_next_deadline(void *opaque,
+    lib_u64 now, lib_u64 *out_tick)
+{
+    mypc110_machine_plan *plan = opaque;
+    (void)now;
+    return plan != LIB_NULL && mypc110_es488_next_deadline(&plan->es488, out_tick);
+}
+
+static void mypc110_machine_profile_advance(void *opaque,
+    lib_u64 source_ticks, lib_u64 due_tick)
+{
+    mypc110_machine_plan *plan = opaque;
+    (void)source_ticks;
+    if (plan != LIB_NULL) mypc110_es488_advance(&plan->es488, due_tick);
+}
+
 static lib_status mypc110_machine_profile_create(
     const x86_nxvm_board_profile_services *services, void *opaque,
     x86_nxvm_board_profile_binding *out_binding)
@@ -291,10 +325,15 @@ static lib_status mypc110_machine_profile_create(
     status = mypc110_pcic_initialize(&plan->pcic, plan->pcic_controller,
         services->pic_master, services->pic_slave);
     if (status != LIB_STATUS_OK) return status;
+    status = mypc110_es488_initialize(&plan->es488, services->core, services->dma,
+        services->pic_master, services->pic_slave);
+    if (status != LIB_STATUS_OK) return status;
     plan->pcic.firmware = &plan->firmware;
     plan->firmware.inking = &plan->inking;
     out_binding->context = plan;
     out_binding->reset = mypc110_machine_profile_reset;
+    out_binding->next_deadline = mypc110_machine_profile_next_deadline;
+    out_binding->advance = mypc110_machine_profile_advance;
     out_binding->system_management_active =
         mypc110_machine_profile_system_management_active;
     return LIB_STATUS_OK;
@@ -351,6 +390,7 @@ static void mypc110_machine_release(void *opaque)
     mypc110_machine_plan *plan = opaque;
 
     if (plan == LIB_NULL) return;
+    if (mypc110_audio_close(&plan->audio) != LIB_STATUS_OK) return;
     if (plan->product != LIB_NULL) plan->product->plan = LIB_NULL;
     x86_f65535_destroy(plan->display_controller);
     x86_rb5c396_destroy(plan->pcic_controller);
@@ -358,6 +398,18 @@ static void mypc110_machine_release(void *opaque)
     mypc110_firmware_destroy(&plan->firmware);
     lib_release(plan);
 }
+
+static lib_status mypc110_machine_output_pump(void *opaque)
+{ return mypc110_audio_pump(&((mypc110_machine_plan *)opaque)->audio); }
+
+static lib_status mypc110_machine_output_wait(void *opaque)
+{ return mypc110_audio_wait(&((mypc110_machine_plan *)opaque)->audio); }
+
+static lib_status mypc110_machine_output_active(void *opaque, lib_bool enabled)
+{ return mypc110_audio_active(&((mypc110_machine_plan *)opaque)->audio, enabled); }
+
+static void mypc110_machine_output_interrupt(void *opaque)
+{ mypc110_audio_interrupt(&((mypc110_machine_plan *)opaque)->audio); }
 
 static lib_bool mypc110_machine_handle_input(void *opaque, const kvm_input_event *event)
 {
@@ -412,6 +464,8 @@ lib_status mypc110_machine_construction_create(const x86_nxvm_machine_config *co
     }
     plan = lib_allocate_zero(1u, sizeof(*plan));
     if (plan == LIB_NULL) return LIB_STATUS_NO_MEMORY;
+    plan->audio.device = &plan->es488;
+    lib_atomic_i32_initialize(&plan->audio.interrupt_failure, LIB_STATUS_OK);
     plan->pen_x = 128;
     plan->pen_y = 64;
     profile = (x86_nxvm_machine_profile_binding) {
@@ -419,7 +473,11 @@ lib_status mypc110_machine_construction_create(const x86_nxvm_machine_config *co
         .after_firmware = mypc110_machine_after_firmware,
         .before_reset = mypc110_machine_before_reset,
         .release = mypc110_machine_release,
-        .handle_input = mypc110_machine_handle_input};
+        .handle_input = mypc110_machine_handle_input,
+        .output_pump = mypc110_machine_output_pump,
+        .output_wait = mypc110_machine_output_wait,
+        .output_active = mypc110_machine_output_active,
+        .output_interrupt = mypc110_machine_output_interrupt};
     status = mypc110_firmware_create(assets->bios[0u].data, assets->bios[0u].bytes,
         &plan->firmware);
     if (status == LIB_STATUS_OK)

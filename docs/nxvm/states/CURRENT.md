@@ -1,3 +1,24 @@
+# M5 T585 S16 — Closed: PC110 ES488 DMA playback path
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T585 S16 after S15. |
+| Admission And Approval | Owner directed autonomous completion of the first four PC110 tasks and approved reference-derived L2 and bounded L1 models, including X86 Core and X86-NXVM changes. |
+| Objective | Design and implement the guest-driven ES488 digital playback path using the existing DMA, IRQ, guest clock and PCM owners. |
+| Non-goals | No second executor, device clock or host audio subsystem; do not claim complete ES488 or YM3812 support. |
+| Reference Baseline | [S14 audio design](../etc/evidence/t585-s14-pc110-audio-design.md), [S15 identification](../etc/evidence/t585-s15-es488-identification.md), and [S16 investigation](../etc/evidence/t585-s16-es488-playback-work.md). |
+| Candidate Proposal | [Device and model qualification](../proposals/m5-pc110-device-model-qualification.md). |
+| Files And ABI Surface | PC110 App and necessary X86-NXVM board/machine seams and corresponding tests; no Lib/Emulator change anticipated. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding and source policy. |
+| Verification | Actual guest command, DMA memory-to-device transfer, timed sample delivery, IRQ and acknowledgement, pause/reset/teardown, dual-width product and applicable full cached tests. |
+| Expected Markers | A guest-programmed bounded PCM transfer reaches the existing host stream with explicit accepted-prefix handling and completion. |
+| Asset Needs | Disposable generated audio and test input; preserve owner media, firmware, CMOS and configuration. |
+| Reporting Requirements | Distinguish independently verified emulated data delivery from physical audible output and clearly label L1/L2 timing. |
+| Stop Conditions | Do not claim playback from register recognition or a silent stub; do not bypass DMA or manufacture a second clock. |
+| Exit Criteria | [S16 evidence](../etc/evidence/t585-s16-es488-playback-work.md) records the guest-to-DMA-to-Lib PCM path, both-width verification, asset delivery and explicit remaining model limits. |
+| Original Owner Request | Complete the first four PC110 queue tasks. |
+| Similar-Issue Sweep | Commands and parameters, DMA terminal count, IRQ acknowledgement, FIFO backpressure, reset, pause and cleanup. |
+
 # M5 T585 S15 — Closed: PC110 ES488 DSP identification
 
 | Field | Required record |

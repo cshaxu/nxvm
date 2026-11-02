@@ -1,5 +1,6 @@
 #include "app-mypc110/product_binding_interface.h"
 #include "app-mypc110/pc110_plan_interface.h"
+#include "app-mypc110/pc110_audio.h"
 #include "app-mypc110/firmware_variants.h"
 #include "lib/types/test.h"
 #include "lib/types/file.h"
@@ -8,6 +9,41 @@
 #include "x86-debug/product/protocol_interface.h"
 #include "x86-nxvm/product/factory_interface.h"
 #include "x86-nxvm/product/ini_interface.h"
+
+#if defined(MYPC110_TEST_AUDIO_WRAP)
+/* Observe the real Lib calls without changing its production interface. */
+static lib_atomic_i32 audio_endpoint;
+static lib_atomic_i32 audio_first_sample;
+static lib_atomic_i32 audio_second_sample;
+
+lib_status __real_lib_audio_pcm_stream_create(const lib_audio_pcm_stream_options *options,
+    lib_audio_pcm_stream **out_stream);
+lib_status __real_lib_audio_pcm_stream_enqueue(lib_audio_pcm_stream *stream,
+    const lib_i16 *samples, lib_u32 frame_count, lib_u32 *out_accepted);
+
+lib_status __wrap_lib_audio_pcm_stream_create(const lib_audio_pcm_stream_options *options,
+    lib_audio_pcm_stream **out_stream)
+{
+    lib_status status = __real_lib_audio_pcm_stream_create(options, out_stream);
+    lib_atomic_i32_store_explicit(&audio_endpoint,
+        status == LIB_STATUS_OK && *out_stream != LIB_NULL, LIB_MEMORY_ORDER_SEQ_CST);
+    return status;
+}
+
+lib_status __wrap_lib_audio_pcm_stream_enqueue(lib_audio_pcm_stream *stream,
+    const lib_i16 *samples, lib_u32 frame_count, lib_u32 *out_accepted)
+{
+    lib_status status = __real_lib_audio_pcm_stream_enqueue(stream, samples, frame_count,
+        out_accepted);
+    for (lib_u32 i = 0u; i < *out_accepted; ++i) {
+        if (samples[i] == -28160)
+            lib_atomic_i32_store_explicit(&audio_first_sample, 1, LIB_MEMORY_ORDER_SEQ_CST);
+        if (samples[i] == 25600)
+            lib_atomic_i32_store_explicit(&audio_second_sample, 1, LIB_MEMORY_ORDER_SEQ_CST);
+    }
+    return status;
+}
+#endif
 
 static void card_state(void *context, emulator_machine_state state, lib_u32 generation)
 {
@@ -38,6 +74,130 @@ static void card_register(emulator_machine *machine, const emulator_machine_debu
     card_debug(machine, lease, &request, &response);
 }
 
+static void audio_paused(void *context, emulator_machine_state state, lib_u32 generation)
+{
+    (void)generation;
+    if (state == EMULATOR_MACHINE_PAUSED || state == EMULATOR_MACHINE_ERROR)
+        (void)base_sync_event_signal(context);
+}
+
+static void audio_guest_transfer(emulator_machine *machine,
+    emulator_machine_debug_lease *lease, base_sync_event *event, lib_bool halt)
+{
+    static const lib_u16 ports[][2] = {
+        {0x20u, 0x11u}, {0x21u, 0x08u}, {0x21u, 0x04u}, {0x21u, 0x01u},
+        {0x0cu, 0u}, {0x02u, 0x00u}, {0x02u, 0x10u},
+        {0x03u, 0x01u}, {0x03u, 0x00u}, {0x83u, 1u}, {0x0bu, 0x49u},
+        {0x0au, 0x01u}, {0xd6u, 0xc0u}, {0xd4u, 0u},
+        {0x22cu, 0xd1u}, {0x22cu, 0x40u}, {0x22cu, 156u},
+        {0x22cu, 0x14u}, {0x22cu, 1u}, {0x22cu, 0u}};
+    x86_debug_request request = {.operation = X86_DEBUG_WRITE_LINEAR,
+        .address = 0x11000u, .bytes = 2u, .data = {0x12u, 0xe4u}};
+    x86_debug_response response = {0};
+    card_debug(machine, lease, &request, &response);
+    request = (x86_debug_request){.operation = X86_DEBUG_WRITE_LINEAR,
+        .address = 0x2000u, .bytes = 2u, .data = {0xebu, 0xfeu}};
+    if (halt) { request.data[0] = 0xf4u; request.data[1] = 0x90u; }
+    card_debug(machine, lease, &request, &response);
+    if (halt) {
+        request = (x86_debug_request){.operation = X86_DEBUG_WRITE_LINEAR,
+            .address = 0x34u, .bytes = 4u, .data = {0x00u, 0x21u, 0x00u, 0x00u}};
+        card_debug(machine, lease, &request, &response);
+    }
+    for (lib_size i = 0u; i < sizeof(ports) / sizeof(ports[0]); ++i) {
+        request = (x86_debug_request){.operation = X86_DEBUG_WRITE_PORT,
+            .port = ports[i][0], .address = ports[i][1], .bytes = 1u};
+        card_debug(machine, lease, &request, &response);
+    }
+    request = (x86_debug_request){.operation = X86_DEBUG_WRITE_PORT,
+        .port = 0x21u, .address = halt ? 0xdfu : 0xffu, .bytes = 1u};
+    card_debug(machine, lease, &request, &response);
+    request = (x86_debug_request){.operation = X86_DEBUG_WRITE_REGISTER,
+        .register_id = X86_DEBUG_CS, .address = 0u};
+    card_debug(machine, lease, &request, &response);
+    request.register_id = X86_DEBUG_EIP;
+    request.address = 0x2000u;
+    card_debug(machine, lease, &request, &response);
+    request.register_id = X86_DEBUG_EFLAGS;
+    request.address = halt ? 0x202u : 2u;
+    card_debug(machine, lease, &request, &response);
+    if (halt) {
+        request.register_id = X86_DEBUG_SS;
+        request.address = 0u;
+        card_debug(machine, lease, &request, &response);
+        request.register_id = X86_DEBUG_ESP;
+        request.address = 0x9000u;
+        card_debug(machine, lease, &request, &response);
+    }
+    if (!halt) {
+        request = (x86_debug_request){.operation = X86_DEBUG_SET_EXECUTION_PLAN,
+            .execution_kind = X86_DEBUG_EXECUTION_TRACE, .instruction_count = 5000u};
+        card_debug(machine, lease, &request, &response);
+    } else {
+        request = (x86_debug_request){.operation = X86_DEBUG_SET_EXECUTION_PLAN,
+            .execution_kind = X86_DEBUG_EXECUTION_BREAK_LINEAR, .address = 0x2100u};
+        card_debug(machine, lease, &request, &response);
+    }
+    emulator_machine_set_state_sink(machine, audio_paused, event);
+    lib_test_assert(base_sync_event_reset(event) == LIB_STATUS_OK);
+#if defined(MYPC110_TEST_AUDIO_WRAP)
+    lib_atomic_i32_store_explicit(&audio_first_sample, 0, LIB_MEMORY_ORDER_SEQ_CST);
+    lib_atomic_i32_store_explicit(&audio_second_sample, 0, LIB_MEMORY_ORDER_SEQ_CST);
+#endif
+    lib_test_assert(emulator_machine_resume(machine));
+    lib_test_assert(base_sync_event_wait(event, 30000u) == BASE_SYNC_WAIT_SIGNALED);
+    lib_test_assert(emulator_machine_state_get(machine) == EMULATOR_MACHINE_PAUSED);
+#if defined(MYPC110_TEST_AUDIO_WRAP)
+    if (lib_atomic_i32_load_explicit(&audio_endpoint, LIB_MEMORY_ORDER_SEQ_CST)) {
+        lib_test_assert(lib_atomic_i32_load_explicit(&audio_first_sample, LIB_MEMORY_ORDER_SEQ_CST));
+        lib_test_assert(lib_atomic_i32_load_explicit(&audio_second_sample, LIB_MEMORY_ORDER_SEQ_CST));
+        lib_c_printf("PC110:GUEST-DMA-PCM:OK\n");
+    } else lib_c_printf("PC110:GUEST-DMA-PCM:HOST-UNAVAILABLE\n");
+#endif
+    lib_test_assert(emulator_machine_debug_acquire(machine, lease) == LIB_STATUS_OK);
+    if (halt) {
+        request = (x86_debug_request){.operation = X86_DEBUG_READ_REGISTER,
+            .register_id = X86_DEBUG_EIP};
+        card_debug(machine, lease, &request, &response);
+        lib_test_assert(response.value == 0x2100u);
+    }
+    request = (x86_debug_request){.operation = X86_DEBUG_WRITE_PORT,
+        .port = 0x20u, .address = halt ? 0x0bu : 0x0au, .bytes = 1u};
+    card_debug(machine, lease, &request, &response);
+    request = (x86_debug_request){.operation = X86_DEBUG_READ_PORT, .port = 0x20u, .bytes = 1u};
+    card_debug(machine, lease, &request, &response);
+    lib_test_assert((response.value & 0x20u) != 0u);
+    request.port = 0x22eu;
+    card_debug(machine, lease, &request, &response);
+    if (halt) {
+        request = (x86_debug_request){.operation = X86_DEBUG_WRITE_PORT,
+            .port = 0x20u, .address = 0x20u, .bytes = 1u};
+        card_debug(machine, lease, &request, &response);
+    }
+    emulator_machine_set_state_sink(machine, card_state, event);
+}
+
+static void audio_native_delivery(void)
+{
+    mypc110_es488 device = {0};
+    mypc110_audio audio;
+    lib_audio_pcm_progress progress = {0};
+    device.samples[0] = 0x40u;
+    device.sample_periods[0] = 3300u;
+    device.sample_count = 1u;
+    lib_test_assert(mypc110_audio_open(&audio, &device) == LIB_STATUS_OK);
+    if (audio.stream != LIB_NULL) {
+        lib_test_assert(mypc110_audio_pump(&audio) == LIB_STATUS_OK);
+        lib_test_assert(lib_audio_pcm_stream_flush(audio.stream) == LIB_STATUS_OK);
+        lib_test_assert(lib_audio_pcm_stream_progress(audio.stream, &progress) == LIB_STATUS_OK);
+        lib_test_assert(progress.accepted_frames == 4u && progress.submitted_frames == 4u);
+        lib_c_printf("PC110:AUDIO-NATIVE-SUBMISSION:OK\n");
+    } else {
+        lib_c_printf("PC110:AUDIO-NATIVE-SUBMISSION:UNAVAILABLE\n");
+    }
+    lib_test_assert(mypc110_audio_close(&audio) == LIB_STATUS_OK);
+}
+
 int main(void)
 {
     lib_u8 document[] = "[machine]\n"
@@ -57,6 +217,7 @@ int main(void)
     lib_storage_medium *second = LIB_NULL;
     int failed = 0;
 
+    audio_native_delivery();
     lib_test_assert(lib_storage_file_writer_open("pc110-vdisplay-direct.img",
         LIB_STORAGE_FILE_WRITER_TRUNCATE, &writer) == LIB_STATUS_OK);
     for (lib_size i = 0u; i < 984u; ++i)
@@ -140,6 +301,8 @@ int main(void)
         lib_test_assert(emulator_machine_state_get(executor) == EMULATOR_MACHINE_PAUSED);
         lib_test_assert(product.cards.slot[0].active_common != LIB_NULL);
         lib_test_assert(emulator_machine_debug_acquire(executor, &lease) == LIB_STATUS_OK);
+        audio_guest_transfer(executor, &lease, paused, LIB_FALSE);
+        audio_guest_transfer(executor, &lease, paused, LIB_TRUE);
         card_register(executor, &lease, 0x10u, 0xc0u);
         card_register(executor, &lease, 0x11u, 0x80u);
         card_register(executor, &lease, 0x12u, 0xc0u);

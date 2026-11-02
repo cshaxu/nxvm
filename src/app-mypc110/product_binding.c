@@ -122,7 +122,8 @@ static lib_status mypc110_save_configuration(void *context, x86_nxvm_machine *ma
         if (status != LIB_STATUS_OK) return status;
         display->dirty[index] = LIB_FALSE;
     }
-    status = mypc110_machine_release_cards(product);
+    status = mypc110_machine_close_audio(product);
+    if (status == LIB_STATUS_OK) status = mypc110_machine_release_cards(product);
     if (status == LIB_STATUS_OK) status = mypc110_product_cards_close_pending(&product->cards);
     return status;
 }

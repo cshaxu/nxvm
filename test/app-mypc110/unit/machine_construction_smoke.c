@@ -1,6 +1,7 @@
 #include "app-mypc110/pc110_plan_interface.h"
 #include "app-mypc110/pc110_cmos.h"
 #include "app-mypc110/pc110_clock.h"
+#include "app-mypc110/pc110_es488.h"
 #include "app-mypc110/pc110_firmware_interface.h"
 #include "app-mypc110/pc110_font_interface.h"
 #include "app-mypc110/pc110_display_interface.h"
@@ -56,6 +57,62 @@ static lib_bool mypc110_test_es488(emulator_machine_driver *driver)
             (!steps[i].write && value != steps[i].value)) return LIB_FALSE;
     }
     return LIB_TRUE;
+}
+
+static lib_bool mypc110_test_es488_dma(void)
+{
+    const x86_core_machine_executor_config config = {
+        .memory_bytes = 2u * 1024u * 1024u,
+        .cpu_profile = X86_CORE_CPU_PROFILE_8086};
+    const lib_u8 bytes[] = {0x12u, 0xe4u};
+    static const lib_u16 program[][2] = {
+        {0x0cu, 0u}, {0x02u, 0x00u}, {0x02u, 0x10u},
+        {0x03u, 0x01u}, {0x03u, 0x00u}, {0x83u, 1u},
+        {0x0bu, 0x49u}, {0x0au, 0x01u}, {0xd6u, 0xc0u}, {0xd4u, 0u},
+        {0x22cu, 0xd1u}, {0x22cu, 0x40u}, {0x22cu, 156u},
+        {0x22cu, 0x14u}, {0x22cu, 1u}, {0x22cu, 0u}};
+    x86_core_machine *core = LIB_NULL;
+    x86_nxvm_board_dma_bus *dma = LIB_NULL;
+    x86_nxvm_board_pic_bus *master = LIB_NULL, *slave = LIB_NULL;
+    mypc110_es488 device = {0};
+    lib_bool result = LIB_FALSE;
+    lib_u32 value = 0u;
+    if (x86_core_machine_neutral_create(&config, &core) != LIB_STATUS_OK ||
+        x86_nxvm_board_dma_initialize(&dma, core, 2u, LIB_TRUE) != LIB_STATUS_OK ||
+        x86_nxvm_board_pic_initialize(&master, &slave, core,
+            X86_NXVM_BOARD_PIC_TOPOLOGY_CASCADED) != LIB_STATUS_OK ||
+        mypc110_es488_initialize(&device, core, dma, master, slave) != LIB_STATUS_OK ||
+        mypc110_es488_install_routes(core, &device) != LIB_STATUS_OK ||
+        x86_core_machine_freeze_execution_providers(core) != LIB_STATUS_OK ||
+        x86_core_machine_reset(core) != LIB_STATUS_OK ||
+        x86_core_machine_memory_write(core, 0x11000u, bytes, sizeof(bytes)) != LIB_STATUS_OK)
+        goto done;
+    for (lib_size i = 0u; i < sizeof(program) / sizeof(program[0]); ++i)
+        if (x86_core_machine_bus_write(core, program[i][0], program[i][1]) != LIB_STATUS_OK)
+            goto done;
+    mypc110_es488_advance(&device, device.next_tick);
+    x86_nxvm_board_dma_advance_transaction(dma, core, 16u);
+    if (x86_core_machine_bus_write(core, 0x22cu, 0xd0u) != LIB_STATUS_OK)
+        goto done;
+    mypc110_es488_advance(&device, device.next_tick);
+    if (x86_nxvm_board_dma_has_pending_request(dma) || device.sample_count != 1u ||
+        x86_core_machine_bus_write(core, 0x22cu, 0xd3u) != LIB_STATUS_OK) goto done;
+    device.next_tick = 1u; /* A paused deadline is not a resume-time backlog. */
+    if (x86_core_machine_bus_write(core, 0x22cu, 0xd4u) != LIB_STATUS_OK) goto done;
+    if (device.next_tick != device.period_ticks) goto done;
+    mypc110_es488_advance(&device, device.next_tick);
+    x86_nxvm_board_dma_advance_transaction(dma, core, 16u);
+    if (device.sample_count != 2u || device.samples[0] != bytes[0] ||
+        device.samples[1] != 0x80u || device.playing ||
+        !x86_nxvm_board_pic_irq_source_is_asserted(device.irq) ||
+        x86_core_machine_bus_read(core, 0x22eu, &value) != LIB_STATUS_OK ||
+        x86_nxvm_board_pic_irq_source_is_asserted(device.irq)) goto done;
+    result = LIB_TRUE;
+done:
+    x86_nxvm_board_dma_finalize(dma);
+    x86_nxvm_board_pic_finalize(master, slave);
+    x86_core_machine_destroy(core);
+    return result;
 }
 
 static lib_bool mypc110_test_memory(emulator_machine_driver *driver,
@@ -424,7 +481,7 @@ int main(int argc, char **argv)
             LIB_STATUS_OK || driver.copy_frame(driver.context, &frame, &console,
                 &produced) != LIB_STATUS_OK || produced))
         failed = 5;
-    if (!failed && !mypc110_test_es488(&driver)) failed = 80;
+    if (!failed && (!mypc110_test_es488(&driver) || !mypc110_test_es488_dma())) failed = 80;
     if (!failed) {
         const x86_debug_request cmos_reads[] = {
             {.operation = X86_DEBUG_WRITE_PORT, .port = 0x70u, .address = 0x0eu, .bytes = 1u},
