@@ -1,4 +1,4 @@
-# M5 T583 S2 — Active: derived-DSTN Setup and persistence diagnosis
+# M5 T583 S2 — Closed: derived-DSTN Setup and persistence diagnosis
 
 An independently empty DSTN x64 guest accepted ERROR/date input, restarted
 POST and reached PC DOS. A second fresh run repeated that route, then invoked
@@ -23,7 +23,7 @@ The x64 repository unit suite passed 712/712; see the ledger for hashes.
 | Asset Needs | Existing external firmware and task-owned copies of configured disks only; preserve owner files. |
 | Reporting Requirements | Record screenshots/frame hashes, inputs, guest response, process status, observed boundaries, verification and exact next S. |
 | Stop Conditions | No guest state fabrication, direct writes to user files, speculative key injection or claim of native Window/RDP verification from the probe. |
-| Exit Criteria | Establish a reproducible first actual setup/persistence boundary and evidence-led next step; do not claim all first-setup variants qualified. |
+| Exit Criteria | Reviewed eb2e331d7: fresh DSTN x64 Setup reaches DOS, its guest-produced CMOS is saved by the existing callback, and a new process reaches DOS without Setup input. Product entry/teardown, native interaction, x86 and TFT remain open. |
 | Original Owner Request | Complete queued PC110 tasks including independent first setup and restart. |
 | Similar-Issue Sweep | Retain TFT seeded and genuinely empty CMOS, x86, reset/start and separate process restart as open ledger cases. |
 
