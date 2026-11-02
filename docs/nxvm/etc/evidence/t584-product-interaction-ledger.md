@@ -133,3 +133,46 @@ full run `af001d8d2bfe2a6200b697906c07207fcbe3684c5bfd69afe45ebecc3be86a9f`,
 focused rerun `6b5888e01f30fe7e1c94ca2d7d372a36e148a71ca2fe23796851b55b6ff3dfa2`,
 and full passing rerun
 `72deab73b113dff2f0c7ffdb939724db116cbb1e4e6e010176f251b1436245e8`.
+
+## S4 initial Console observation
+
+Four isolated real-product cases were started with `display=console`, using
+both `console_control` values, host widths and firmware variants. The
+task-owned observer captured one native Window frame and one Console
+snapshot per case, then stopped advancing. The product and observer remained
+alive; all four task-owned process pairs were explicitly terminated after the
+stalled observer was detected. These interrupted cases are not passes and do
+not establish whether the Window, Console or observer caused the stall. The
+first interpretation was premature. A separate observer without that snapshot
+continued looping while the guest consumed CPU, and later captured DOS graphics.
+In the current repeats, direct enumeration of all four task-owned desktops
+found no KVM Window during their early text phase after the initial frame;
+the presentation plan permits Console text without a Window. The original
+four cases were therefore terminated before the longer graphic handoff could
+be observed. This is a test-observation error, not proof of a product hang.
+No product or Shared code has been changed.
+
+The subsequent real-product matrix used `display=console`: DSTN x64 and TFT
+x86 with `console_control=0`, DSTN x86 and TFT x64 with `console_control=1`.
+Each reached the graphical Window and Personaware World Clock, responded to
+native keyboard messages, paused/resumed, returned to the launcher and exited
+normally. Both source-disk copies retained their input hashes in every case.
+The observed `console_control=0` graphical Console status contained the Window
+message and five hotkey entries; its captured buffer SHA-256 is
+`9da60f18911f08a9ec62a6a8e2cadc69fe7d13b27fcb73d17db31c14f9614fc4`.
+
+The first two `console_control=0` pause/resume observers required the cooked
+Console to retain `Machine resumed.` after the switch back to the raw status
+buffer; neither saw that text and both observations failed. That check was
+not sufficient to establish a product failure. Independent repeats observed
+the actual `MyPC110 (Running)` Window title after resume, subsequent guest
+keyboard response and normal process exit. Their DSTN x64 and TFT x86 log
+SHA-256 values are
+`a5813c69451f4221870b4db7ee555ac3dfe65fa883c9f87f265f403da1581846` and
+`bf9b70a9b46e6aceb6d41b8bdbdbbee3060051b25e94c14e8b5f8f63654300e9`.
+For `console_control=1`, DSTN x86 and TFT x64 logs are respectively
+`2b909502b7f20be238933572f604473e28ca5a99001c3b8ab81609675b07d973` and
+`b6b70b6143d607b8666cbce4cbcb87b1cc9d6db1a3d08400427bbe1b5fd5f4d3`.
+These are isolated desktop/native-message results, not manual or RDP proof.
+The full x86 repository unit suite passed 712/712; its log SHA-256 is
+`77a279fe3cc315f44c0ddfd1412822154bdbe09ef6043e40bd1afac78ba242f1`.
