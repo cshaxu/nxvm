@@ -21,9 +21,32 @@ coverage remain in their own queued tasks.
 | Variant and host | Empty/seeded first Setup | Saved-state new-process DOS boot | Full App entry/session path |
 | --- | --- | --- | --- |
 | DSTN x64 | Guest ERROR, date confirmation and DOS observed by factory/Machine probe in S2 and actual EXE in S6; deliberate date edit and retention verified in S7. | Guest-produced CMOS saved and loaded by a new actual EXE process; DOS observed in S6 and S7. | Real App entry, native window-message Setup input, normal Session teardown and restart observed on an isolated desktop; interactive RDP remains open. |
-| DSTN x86 | Guest ERROR, date confirmation and DOS observed by the actual EXE in S6; deliberate date edits remain open. | Guest-produced CMOS saved and loaded by a new actual EXE process; DOS observed in S6. | Real App entry, native window-message Setup input, normal Session teardown and restart observed on an isolated desktop; interactive RDP remains open. |
+| DSTN x86 | Guest ERROR, Setup and DOS observed by the actual EXE in S6; deliberate date/time edit and retention verified in S9. | Guest-produced CMOS saved and loaded by a new actual EXE process; DOS observed in S6 and S9. | Real App entry, native window-message Setup input, normal Session teardown and restart observed on an isolated desktop; interactive RDP remains open. |
 | TFT x64 | Independently empty and absent-file seeded CMOS reached Setup/DOS in the actual EXE. Deliberate date/time edits and cross-process retention passed in S7. | Guest-produced empty/seeded CMOS loaded by new actual EXE processes; DOS observed in S6–S7. | Real App entry, native window-message Setup input, normal Session teardown and restart observed on an isolated desktop; interactive RDP remains open. |
-| TFT x86 | Independently empty and absent-file seeded CMOS reached Setup/DOS in the actual EXE. Deliberate date edits remain open. | Guest-produced empty/seeded CMOS saved and loaded by new actual EXE processes; DOS observed in S6–S7. | Real App entry, native window-message Setup input, normal Session teardown and restart observed on an isolated desktop; interactive RDP remains open. |
+| TFT x86 | Independently empty and absent-file seeded CMOS reached Setup/DOS in the actual EXE. Deliberate date/time edit and retention verified in S9. | Guest-produced empty/seeded CMOS saved and loaded by new actual EXE processes; DOS observed in S6–S9. | Real App entry, native window-message Setup input, normal Session teardown and restart observed on an isolated desktop; interactive RDP remains open. |
+
+## S9: x86 edited date/time
+
+Both actual x86 EXEs displayed the firmware date/time screen, accepted native
+input changing it to `1995-01-01 12:00` and then proceeded to a new POST frame.
+The DSTN and TFT native BMP hashes for those edited screens are respectively
+`64158f39f4b6613d7349954ac5d36cdd3a17dee33144923f5c7c46f5e4853738` and
+`51f9646c8bf776faa6eb2c3a0e54c767b53ac89b9a541a7b583ebbec5f7486e7`.
+Both processes paused and exited normally. Their independently saved 128-byte
+CMOS images contain year `95h` and hour `12h`. First-run log SHA-256 values are
+DSTN `e7b5bc00ed91bcb64fc736640ddd7dc48e304900e89c477f2883889d01a4be8a`
+and TFT `44644cd28b5b6cdc9eede00d45911fadda0074e7740443c1ae82b13c28ec259c`.
+Independent new processes reached DOS without Setup input, paused and exited
+normally. Their saved CMOS images still contain year `95h` and hour `12h`.
+Restart log SHA-256 values are DSTN
+`e4e5b55828ef7da828c843923b7f27165bacddb93f55837643a7072b51433fad`
+and TFT `0a2192f881ac2cbe7ca0d2938dfa72830c90708f4d93c511f546fa2219c6c4e1`.
+The x64 complete repository unit suite passed 712/712; log SHA-256 is
+`2d247c725a388a175b86266c5267339b1f308ee6d897cac43fa610472e219a9a`.
+The PC110 x64 external-firmware integration suite passed 9/9; its log SHA-256
+is `1dbd16820973445493dcba2a327b31658911534340ef837db8407e470197f4de`.
+The corresponding x86 suite passed 9/9; its log SHA-256 is
+`2e231f8154237438aee04879cb028a5d8f0cf7e91ff0dc1ae97d2f02aabfd3e5`.
 
 ## S8: in-process stop/start and reset/resume
 
