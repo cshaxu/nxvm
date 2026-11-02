@@ -1,4 +1,30 @@
-# M5 T584 S5 — Active: product keyboard and host-input boundary
+# M5 T584 S6 — Active: interaction qualification reconciliation
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T584 S6 after S5 guest keyboard evidence. |
+| Admission And Approval | Owner requested automatic completion of the first four PC110 receivers. |
+| Objective | Reconcile product interaction evidence, existing host capture tests, outstanding physical/RDP boundaries and required PC110 integration suites. |
+| Non-goals | No user-desktop switch, physical pointer clipping, fabricated RDP evidence or unreviewed Shared modification. |
+| Reference Baseline | a30e4237f and the T584 interaction ledger. |
+| Candidate Proposal | [Product interaction](../proposals/m5-pc110-product-interaction.md); [interaction ledger](../etc/evidence/t584-product-interaction-ledger.md). |
+| Files And ABI Surface | NXVM evidence/governance initially; no public API or production source change. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding, UI and source policy. |
+| Verification | Review retained source/test evidence, run complete repository units and PC110 external-firmware integrations on both host widths, and run documentation gate. |
+| Expected Markers | Explicit per-boundary results, valid test exit codes and retained unavailable host conditions. |
+| Asset Needs | Existing EXEs and owner-managed firmware; preserve owner media and configuration. |
+| Reporting Requirements | Do not equate injected Machine/native messages or mocks with physical/RDP input; record any failed result. |
+| Stop Conditions | No foreground desktop change or unsupported completion claim. |
+| Exit Criteria | Reviewed interaction coverage and all applicable qualification gates, with unavailable human-input boundaries explicitly retained. |
+| Original Owner Request | Complete the first four PC110 queue tasks. |
+| Similar-Issue Sweep | Compare Console/Window, both widths and display variants, guest input and host capture. |
+
+# M5 T584 S5 — Closed: product keyboard and host-input boundary
+
+Actual DSTN x64 and TFT x86 products navigated into Personaware Calculator
+using extended Down and evaluated `1 + 2 = 3` through native key messages.
+The full x64 unit suite passed 712/712. Physical hotkeys, mouse capture and
+interactive RDP were not claimed from posted messages or mocked tests.
 
 | Field | Required record |
 | --- | --- |
@@ -15,7 +41,7 @@
 | Asset Needs | Existing EXEs and private media/configuration only. |
 | Reporting Requirements | Separate native keyboard-message, mocked host capture and unavailable physical/RDP evidence. |
 | Stop Conditions | No desktop switching, global user-pointer clipping or unreviewed Shared change. |
-| Exit Criteria | Reviewed scoped evidence or a precise reproducible gap and its owner. |
+| Exit Criteria | Reviewed a30e4237f: actual guest navigation/calculation, existing hotkey/capture coverage and explicit physical-input limits. |
 | Original Owner Request | Complete the first four PC110 queue tasks. |
 | Similar-Issue Sweep | Compare PC110 input, generic Product hotkeys and Window capture ownership. |
 
