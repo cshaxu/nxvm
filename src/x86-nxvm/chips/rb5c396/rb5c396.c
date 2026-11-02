@@ -7,7 +7,7 @@ static lib_bool x86_rb5c396_selected_slot(const x86_rb5c396 *chip,
     if ((chip->index & 0x80u) != 0u) return LIB_FALSE;
     *out_slot = (chip->index >> 6u) & 1u;
     *out_register = chip->index & 0x3fu;
-    return LIB_TRUE;
+    return *out_register < X86_RB5C396_REGISTER_COUNT;
 }
 
 static lib_u8 x86_rb5c396_interface_status(const x86_rb5c396 *chip,
@@ -64,6 +64,8 @@ lib_status x86_rb5c396_set_slot_inputs(x86_rb5c396 *chip, lib_u8 slot,
 {
     if (chip == LIB_NULL || inputs == LIB_NULL || slot >= X86_RB5C396_SLOT_COUNT)
         return LIB_STATUS_INVALID_ARGUMENT;
+    if (chip->inputs[slot].card_present != inputs->card_present)
+        chip->registers[slot][0x04u] |= 0x08u;
     chip->inputs[slot] = *inputs;
     return LIB_STATUS_OK;
 }
@@ -90,7 +92,13 @@ lib_status x86_rb5c396_read(x86_rb5c396 *chip, lib_u16 port,
         *out_value = x86_rb5c396_interface_status(chip, slot);
     else if (selected == X86_RB5C396_CHIP_IDENTIFICATION_REGISTER)
         *out_value = X86_RB5C396_CHIP_IDENTIFICATION_VALUE;
-    else
+    else if (selected == 0x1eu)
+        *out_value = chip->registers[0u][selected];
+    else if (selected == 0x04u) {
+        *out_value = chip->registers[slot][selected];
+        if ((chip->registers[0u][0x1eu] & 0x04u) == 0u)
+            chip->registers[slot][selected] = 0u;
+    } else
         *out_value = chip->registers[slot][selected];
     return LIB_STATUS_OK;
 }
@@ -112,6 +120,12 @@ lib_status x86_rb5c396_write(x86_rb5c396 *chip, lib_u16 port,
         selected == X86_RB5C396_INTERFACE_STATUS_REGISTER ||
         selected == X86_RB5C396_CHIP_IDENTIFICATION_REGISTER)
         return LIB_STATUS_OK;
-    chip->registers[slot][selected] = value;
+    if (selected == 0x1eu)
+        chip->registers[0u][selected] = value;
+    else if (selected == 0x04u) {
+        if ((chip->registers[0u][0x1eu] & 0x04u) != 0u)
+            chip->registers[slot][selected] &= (lib_u8)~value;
+    } else
+        chip->registers[slot][selected] = value;
     return LIB_STATUS_OK;
 }

@@ -11,6 +11,7 @@ int main(void)
     x86_rb5c396 *chip = LIB_NULL;
     const x86_rb5c396_slot_inputs present = {
         .card_present = LIB_TRUE, .ready = LIB_TRUE};
+    const x86_rb5c396_slot_inputs absent = {0};
     lib_u8 value = 0u;
     lib_bool failed = LIB_FALSE;
 
@@ -32,6 +33,13 @@ int main(void)
         select_register(chip, 0x80u) != LIB_STATUS_OK ||
         x86_rb5c396_read(chip, X86_RB5C396_DATA_PORT, &value) != LIB_STATUS_OK ||
         value != 0xffu;
+    failed |= select_register(chip, 0x3fu) != LIB_STATUS_OK ||
+        x86_rb5c396_read(chip, X86_RB5C396_DATA_PORT, &value) != LIB_STATUS_OK ||
+        value != 0xffu || x86_rb5c396_write(chip, X86_RB5C396_DATA_PORT, 0x55u) !=
+            LIB_STATUS_OK || select_register(chip, 0x7cu) != LIB_STATUS_OK ||
+        x86_rb5c396_read(chip, X86_RB5C396_DATA_PORT, &value) != LIB_STATUS_OK ||
+        value != 0xffu || x86_rb5c396_write(chip, X86_RB5C396_DATA_PORT, 0x55u) !=
+            LIB_STATUS_OK;
     failed |= select_register(chip, X86_RB5C396_INTERFACE_STATUS_REGISTER) != LIB_STATUS_OK ||
         x86_rb5c396_read(chip, X86_RB5C396_DATA_PORT, &value) != LIB_STATUS_OK ||
         value != 0u || x86_rb5c396_set_slot_inputs(chip, 0u, &present) != LIB_STATUS_OK ||
@@ -43,6 +51,27 @@ int main(void)
         select_register(chip, X86_RB5C396_INTERFACE_STATUS_REGISTER) != LIB_STATUS_OK ||
         x86_rb5c396_read(chip, X86_RB5C396_DATA_PORT, &value) != LIB_STATUS_OK ||
         value != 0x6cu;
+    /* Insertion latches independently per slot; the default read acknowledges. */
+    failed |= select_register(chip, 0x04u) != LIB_STATUS_OK ||
+        x86_rb5c396_read(chip, X86_RB5C396_DATA_PORT, &value) != LIB_STATUS_OK ||
+        value != 0x08u || x86_rb5c396_read(chip, X86_RB5C396_DATA_PORT, &value) !=
+            LIB_STATUS_OK || value != 0u ||
+        select_register(chip, 0x44u) != LIB_STATUS_OK ||
+        x86_rb5c396_read(chip, X86_RB5C396_DATA_PORT, &value) != LIB_STATUS_OK ||
+        value != 0u;
+    /* Global control aliases across sockets; explicit acknowledge writes one. */
+    failed |= select_register(chip, 0x5eu) != LIB_STATUS_OK ||
+        x86_rb5c396_write(chip, X86_RB5C396_DATA_PORT, 0x04u) != LIB_STATUS_OK ||
+        select_register(chip, 0x1eu) != LIB_STATUS_OK ||
+        x86_rb5c396_read(chip, X86_RB5C396_DATA_PORT, &value) != LIB_STATUS_OK ||
+        value != 0x04u || x86_rb5c396_set_slot_inputs(chip, 0u, &absent) !=
+            LIB_STATUS_OK || select_register(chip, 0x04u) != LIB_STATUS_OK ||
+        x86_rb5c396_read(chip, X86_RB5C396_DATA_PORT, &value) != LIB_STATUS_OK ||
+        value != 0x08u || x86_rb5c396_read(chip, X86_RB5C396_DATA_PORT, &value) !=
+            LIB_STATUS_OK || value != 0x08u ||
+        x86_rb5c396_write(chip, X86_RB5C396_DATA_PORT, 0x08u) != LIB_STATUS_OK ||
+        x86_rb5c396_read(chip, X86_RB5C396_DATA_PORT, &value) != LIB_STATUS_OK ||
+        value != 0u || x86_rb5c396_set_slot_inputs(chip, 0u, &present) != LIB_STATUS_OK;
     failed |= select_register(chip, 0x18u) != LIB_STATUS_OK ||
         x86_rb5c396_write(chip, X86_RB5C396_DATA_PORT, 0x5au) != LIB_STATUS_OK ||
         x86_rb5c396_read(chip, X86_RB5C396_DATA_PORT, &value) != LIB_STATUS_OK ||
