@@ -16,11 +16,12 @@ one route does not qualify a whole physical device.
 | Memory | `pc110_plan.c` explicitly selects 20 MiB and rejects other explicit sizes. | Additional configurations remain separately recorded in NXVM TODO; no unsupported RAM size is silently rounded. |
 
 The selected follow-up sequence starts with S2 PC Card status/register
-semantics and bounds, S3 status-change interrupt routing, and S4 card windows
-and media, including remaining card-status inputs. S5 then addresses power/APM
-and the controller's INTR#/RI_OUT# wake routing, S6 audio and auxiliary devices,
-S7 display/font and remaining-model reconciliation, and S8 complete device
-coverage and qualification. Split a batch into further numeric S tasks if
+semantics and bounds, S3 status-change interrupt routing, S4 card memory-window
+decoding, S5 the Core/PC110 memory route and S6 card I/O/media and remaining
+status inputs. S7 addresses power/APM and the controller's INTR#/RI_OUT# wake
+routing, S8 audio and auxiliary devices, S9 display/font and remaining-model
+reconciliation, and S10 complete device coverage and qualification. Split a
+batch into further numeric S tasks if
 implementation or verification warrants it. These names are planning scopes,
 not assertions that one S can implement every feature. Original manual facts
 alone are L3; reference-derived models are L2; unsupported estimates are L1.

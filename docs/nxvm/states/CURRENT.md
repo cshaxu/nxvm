@@ -1,3 +1,24 @@
+# M5 T585 S4 — Closed: PC Card memory-window decode
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T585 S4 after S3 at c5ba1d0ad. |
+| Admission And Approval | Owner directed autonomous completion of the first four PC110 tasks and approved sourced L1/L2 models. |
+| Objective | Implement and test Ricoh PC Card memory-window decoding before its Core memory-path receiver. |
+| Non-goals | No second memory bus, host media mutation, fabricated physical timing or conflation with onboard ATA. |
+| Reference Baseline | S1 inventory, S2/S3 controller work, Ricoh EA-028-9804 and current Core memory routes. |
+| Candidate Proposal | [Device and model qualification](../proposals/m5-pc110-device-model-qualification.md). |
+| Files And ABI Surface | Ricoh chip contract and its tests; subsequent S owns Core and PC110 production memory routes. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding and source policy. |
+| Verification | Slot/window enable, 4 KiB boundaries, signed offsets, attribute/common selection, write protection and reset on both widths; complete applicable repository gates and release. |
+| Expected Markers | Explicit translated card addresses and failure/decline semantics; Core production routing remains a separate receiver. |
+| Asset Needs | Ricoh manual and task-owned test card; preserve external firmware, INI and media. |
+| Reporting Requirements | Separate bounded memory-card behavior from future I/O, IRQ/wake, card lifecycle and physical claims. |
+| Stop Conditions | No owner-media mutation, overlapping second bus or silently unsupported provider fallback. |
+| Exit Criteria | Reviewed Shared commit cf2782271, dual-width unit and integration qualification, 14 product artifacts and [S4 evidence](../etc/evidence/t585-s4-pcic-memory-decode.md); Core route and card media remain the next receiver. |
+| Original Owner Request | Complete the first four PC110 queue tasks. |
+| Similar-Issue Sweep | Both slots and all windows, overlap, reset/removal, ROM/RAM fallback, read/write boundaries and access widths. |
+
 # M5 T585 S3 — Closed: PC Card ISA status-change interrupts
 
 | Field | Required record |

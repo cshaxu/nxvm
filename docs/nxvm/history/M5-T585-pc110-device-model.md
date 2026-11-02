@@ -19,3 +19,7 @@ S3 connects the modeled card-detect ISA status IRQ through PC110's existing
 PIC and tests two sockets, acknowledgement and reset. INTR#/wake, other card
 status inputs, windows and media remain explicit subsequent work; see
 [S3 evidence](../etc/evidence/t585-s3-pcic-irq.md).
+
+S4 adds the independent Ricoh memory-window decoder. Production Core routing,
+card media and the remaining timing bit are explicitly retained for the next
+receiver; see [S4 evidence](../etc/evidence/t585-s4-pcic-memory-decode.md).
