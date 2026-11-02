@@ -1,5 +1,34 @@
 # T582 S39 — execution and timing convergence
 
+## Local string-form handoff experiments
+
+A scratch 486 timing model passed the already classified string form through
+local arguments to the existing operand and decode calculations. It did not
+change the timing formulas or add global state, but initially omitted the
+independent helper entry points used by tests. Baseline / candidate /
+candidate / baseline fixed-checkpoint times were 17560 / 15133 / 14145 /
+16198 ms x64 and 19943 / 23107 / 20448 / 22096 ms x86. All reported ten
+million instructions, 79964294 ticks and PC `0003dbc5`. These samples favor
+the candidate on x64 and differ in direction on x86; they are not a complete
+state comparison or full-boot proof.
+
+Restoring the existing helper entries as scratch forwarding functions allowed
+ten existing timing, fault, cache, debug and CPU tests to pass per width.
+One baseline/candidate fixed-work pair for this fuller variant took
+16764/20456 ms x64 and 21649/20481 ms x86. The x64 candidate's source-cost
+function grew from 0x350 to 0x8f0 bytes in the sampled Release object; helper
+inlining and layout changed, but this alone does not prove the cause of the
+timing difference. The paired runs are subject to host drift and do not
+establish a reproducible regression or complete-state equivalence. Preserving
+the actual tests and their semantics while removing duplicate classification
+needs a simpler design and real-guest qualification; neither scratch variant
+is accepted as production. No production source or artifact changed.
+
+Unwrapped comparison, focused-test and wrapped comparison logs SHA-256:
+`1F477A99AC7C6CA7AE8F6A323D4E5A66EC662ACF8E7413F9F3B3D3EB35725425`,
+`0E93E298B4E5FF0610F15E99BB6E0CB034C2B962B69346FF91D1DDB41B7D02D1`,
+`D619746981663878B8668DB5827BCA686328C43E1B51BB9175AD5EA8B8F28268`.
+
 ## Repeated 486 string-form classification
 
 A task-only x64 counter recorded calls to the existing string-form classifier
