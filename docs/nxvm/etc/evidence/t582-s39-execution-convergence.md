@@ -97,6 +97,79 @@ selects Turbo at construction and other NXVM profiles can select it through
 their product, so changing Turbo would be visible across those machines. No
 production source, API or executable was changed by this probe.
 
+For a bounded functional check, eleven existing CPU test objects were linked
+against the temporary selector on each width. Nine passed unmodified on each
+width, including the Debug, MOVS, CMPS, port-I/O, software-interrupt, context,
+TLB, far-transfer and execution-bus tests. Fault-event and cache tests failed
+on their existing detailed nominal-tick assertions: the printed cases report
+8 where the exact-timing fixture expects 5. A separate scratch copy changed
+only four such expected 5-tick values to 8; both tests then passed on both
+widths. This is not a pass of the unchanged tests, a license to weaken them,
+or proof of complete architectural equivalence. The fault fixture's 486 REP
+comparison diagnostic reports initial flags `8d5`, last flags `44`, and
+fault image `8d5`; the test explicitly expects the initial flags for 486,
+so that line does not demonstrate a flag regression.
+
+In the candidate-first boot pair, coarse 20-million-retirement windows of the
+original run varied from about 7.1 to 3.0 guest ticks per instruction; the
+temporary constant-eight selector plus existing bus accounting ranged from
+about 9.0 to 8.0. The two runs execute different guest paths, and neither
+ratio proves a physical frequency or a universal calibration. This does show
+why an arbitrary constant can change guest time and the duration of polling;
+the shorter menu marker is not purely host execution savings.
+
+The Session submits speed commands outside the CPU owner. A future design
+must transfer the selected policy at an existing executor boundary, not write
+CPU state from the monitor thread. In particular the executor can be parked
+inside its pause callback while serving Debug requests; applying a mode only on
+initial runner entry would leave a paused speed change or debug step stale.
+Pending retirement must complete with the timing already selected for it.
+This ownership analysis is a design constraint, not a proposed second worker
+or a demonstrated safe implementation.
+
+Unmodified functional-probe and scratch-adjusted-probe log SHA-256:
+`23E66B6815DD7C58398D80AA38B934C9508A3FD44C28B845836CC4852785A453`,
+`CF780159E123C92F542EFB34E3698211448661698874C7A91E5C29DC640D510A`.
+
+### Existing compatibility recipe as an L1 design candidate
+
+The Core already owns `x86_core_cpu_compatibility_instruction_cost`: it
+combines configured base, prefix, taken-branch, selected memory, I/O and REP
+surcharges and marks the source timing unallocated. Its existing origin is
+`COMPATIBILITY`, and physical retirement qualification rejects unallocated
+source timing. Reusing this owner is a more direct candidate than introducing
+another general-purpose instruction timing formula. It is not a complete L1
+policy: the recipe's opcode and REP coverage is intentionally limited, V30
+has distinct prefix/emulation semantics, and per-profile approximate values
+and acceptable device behavior are not established.
+
+A disposable 486-only probe replaced the previous literal nominal subtotal
+with the existing compatibility function, setting its private configuration's
+base to eight in the probe. It still used the existing 486 bus calculation,
+REP recording and generic observation. At the ten-million-instruction PC110
+checkpoint it recorded 14,163 ms x64 and 19,001 ms x86, both at 89,356,242
+ticks and PC `000fea88`, matching the earlier guarded probe's checkpoint.
+The runs were not adjacent and are not complete-state or performance proof.
+The same eleven functional test objects per width produced nine unmodified
+passes and the same two exact-tick failures; scratch copies with only the
+four 5-to-8 expected tick changes passed those two on both widths. No
+production test assertion was changed.
+
+The scratch write to `context->instruction_timing.base_ticks` is not a safe
+production design: it would also alter the existing detailed mode's fallback
+configuration. A real design must preserve that configuration, supply the
+approximate recipe without duplicating its implementation, and transfer the
+mode at the existing executor boundary, including paused Debug steps and
+pending retirement. It must also define the L1 observation contract and
+qualify all affected profiles and devices. No production mode, interface or
+artifact was changed. The 486-only prototype and arbitrary value eight do not
+authorize a PC110-only policy or establish a physical timing claim.
+
+Compatibility fixed-work, unmodified-test and adjusted-scratch-test logs:
+`08FCCB9900179A2EBB0910A07FA22ADD2C18C63CB680FE1DD2D29DFE3C1042E2`,
+`23E66B6815DD7C58398D80AA38B934C9508A3FD44C28B845836CC4852785A453`,
+`CF780159E123C92F542EFB34E3698211448661698874C7A91E5C29DC640D510A`.
+
 Fixed-work, candidate summary, candidate guest log and response frame,
 baseline summary, baseline guest log and response frame SHA-256:
 `C959A6E0EAEF916F903905E731D836D2C12FBBFA8E5B02680850759587425484`,

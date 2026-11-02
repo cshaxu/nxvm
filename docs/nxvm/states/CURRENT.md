@@ -22,7 +22,10 @@ unchanged. A second temporary 486 experiment retained existing bus cost, REP
 bookkeeping and generic branch observation, and reported a shorter menu marker
 than its subsequent baseline; its response frame and guest time differed. It
 still lacks complete metadata, cross-profile design, switching and device
-qualification. See S39 evidence for both comparisons and limits.
+qualification. A scratch variant reused the existing compatibility recipe
+and reached the same fixed checkpoint, but its write to the detailed-mode
+configuration is not an acceptable production design. See S39 evidence for
+the comparisons, functional checks and limits.
 
 ### External wait-window scan upper bound not adopted
 
