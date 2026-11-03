@@ -1,3 +1,24 @@
+# M5 T585 S19 — Closed: PC110 ES488 continuous playback
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T585 S19 after S18. |
+| Admission And Approval | Owner directed autonomous completion of the first four PC110 tasks and permits L1/L2 models. |
+| Objective | Implement Sound Blaster 2 compatible 8-bit auto-initialized DMA output, block interrupts and graceful exit on the existing PC110 ES488 path. |
+| Non-goals | No claim of complete ES488, other formats, capture, physical timing, or FM completeness. |
+| Reference Baseline | [S16 playback](../etc/evidence/t585-s16-es488-playback-work.md), [S18 mixing](../etc/evidence/t585-s18-fm-mixing-design.md), and 86Box Sound Blaster 2 behavioral reference. |
+| Candidate Proposal | [Device and model qualification](../proposals/m5-pc110-device-model-qualification.md). |
+| Files And ABI Surface | PC110 App and corresponding existing tests; no Shared change planned. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding and source policy. |
+| Verification | Actual guest-programmed DMA across multiple blocks, interrupt acknowledgement, graceful exit, pause/resume, reset and bounded output, both widths. |
+| Expected Markers | Consecutive blocks produce ordered PCM and independent completion interrupts; exit stops at the next block boundary. |
+| Asset Needs | Disposable test inputs; preserve owner media, firmware and configuration. |
+| Reporting Requirements | Label L2 reference behavior and retain unimplemented ESS commands explicitly. |
+| Stop Conditions | No second DMA controller, clock, host audio stream or false full-device claim. |
+| Exit Criteria | [S19 evidence](../etc/evidence/t585-s19-es488-auto-init.md) records the real DMA receiver, dual-width PC110 suites 20/20 and deployed artifacts. Native audio endpoint was unavailable, so physical audio delivery remains unverified. |
+| Original Owner Request | Complete the first four PC110 queue tasks. |
+| Similar-Issue Sweep | Block lengths, DMA terminal count, IRQ rearming, speaker status and reset. |
+
 # M5 T585 S18 — Closed: PC110 FM output architecture
 
 | Field | Required record |

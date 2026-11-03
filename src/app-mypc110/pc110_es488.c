@@ -30,6 +30,7 @@ void mypc110_es488_reset(mypc110_es488 *device)
     device->irq = irq;
     device->reset_epoch = reset_epoch;
     device->period_ticks = MYPC110_CPU_CLOCK_HZ / 10000u;
+    device->automatic_block_samples = 1u;
 }
 
 static void mypc110_es488_dma_write(void *owner, t_latch *value)
@@ -52,9 +53,11 @@ static void mypc110_es488_dma_write(void *owner, t_latch *value)
     device->requested = LIB_FALSE;
     x86_nxvm_board_dma_request_deassert(device->dma, &device->dma_binding);
     if (--device->remaining == 0u) {
-        device->playing = LIB_FALSE;
         x86_nxvm_board_pic_irq_source_assert(device->irq);
-    } else device->next_tick += device->period_ticks;
+        if (device->automatic) device->remaining = device->automatic_block_samples;
+        else device->playing = LIB_FALSE;
+    }
+    if (device->playing) device->next_tick += device->period_ticks;
 }
 
 lib_status mypc110_es488_initialize(mypc110_es488 *device,
@@ -116,6 +119,24 @@ static lib_status mypc110_es488_read(void *owner, lib_u16 port,
     }
 }
 
+static lib_status mypc110_es488_begin(mypc110_es488 *device,
+    lib_u32 samples, lib_bool automatic)
+{
+    lib_u64 now = 0u;
+    lib_status status = x86_core_machine_get_callback_ticks(device->core, &now);
+    if (status != LIB_STATUS_OK) return status;
+    if (device->requested) {
+        x86_nxvm_board_dma_request_deassert(device->dma, &device->dma_binding);
+        device->requested = LIB_FALSE;
+    }
+    device->remaining = samples;
+    device->next_tick = now + device->period_ticks;
+    device->playing = LIB_TRUE;
+    device->paused = LIB_FALSE;
+    device->automatic = automatic;
+    return LIB_STATUS_OK;
+}
+
 static lib_status mypc110_es488_write(void *owner, lib_u16 port,
     lib_u8 access_bytes, lib_u32 value)
 {
@@ -142,22 +163,28 @@ static lib_status mypc110_es488_write(void *owner, lib_u16 port,
             if (device->command == 0x40u) {
                 device->period_ticks = (MYPC110_CPU_CLOCK_HZ / 1000000u) *
                     (256u - device->parameters[0]);
-            } else {
-                lib_u64 now = 0u;
-                lib_status status = x86_core_machine_get_callback_ticks(device->core, &now);
-                if (status != LIB_STATUS_OK) return status;
-                device->remaining = 1u + device->parameters[1] +
+            } else if (device->command == 0x48u) {
+                device->automatic_block_samples = 1u + device->parameters[1] +
                     ((lib_u32)device->parameters[0] << 8u);
-                device->next_tick = now + device->period_ticks;
-                device->playing = LIB_TRUE;
-                device->paused = LIB_FALSE;
+            } else {
+                return mypc110_es488_begin(device, 1u + device->parameters[1] +
+                    ((lib_u32)device->parameters[0] << 8u), LIB_FALSE);
             }
         }
         return LIB_STATUS_OK;
     }
-    if (value == 0x40u || value == 0x14u) {
+    if (value == 0x40u || value == 0x14u || value == 0x48u) {
         device->command = (lib_u8)value;
         device->parameter_count = value == 0x40u ? 1u : 2u;
+        return LIB_STATUS_OK;
+    }
+    if (value == 0x1cu)
+        return mypc110_es488_begin(device, device->automatic_block_samples, LIB_TRUE);
+    if (value == 0xdau) { device->automatic = LIB_FALSE; return LIB_STATUS_OK; }
+    if (value == 0xd8u) {
+        device->response[0] = device->speaker ? 0xffu : 0u;
+        device->response_count = 1u;
+        device->response_index = 0u;
         return LIB_STATUS_OK;
     }
     if (value == 0xd1u || value == 0xd3u) {

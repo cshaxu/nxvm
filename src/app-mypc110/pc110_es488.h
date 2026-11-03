@@ -20,6 +20,7 @@ typedef struct mypc110_es488 {
     lib_u64 next_tick;
     lib_u32 period_ticks;
     lib_u32 remaining;
+    lib_u32 automatic_block_samples;
     lib_u16 sample_read;
     lib_u16 sample_count;
     lib_u8 samples[MYPC110_ES488_SAMPLE_CAPACITY];
@@ -29,6 +30,7 @@ typedef struct mypc110_es488 {
     lib_u8 parameter_count;
     lib_u8 parameters[2];
     lib_bool playing;
+    lib_bool automatic;
     lib_bool requested;
     lib_bool paused;
     lib_bool speaker;

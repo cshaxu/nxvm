@@ -41,7 +41,7 @@ lib_status __wrap_lib_audio_pcm_stream_enqueue(lib_audio_pcm_stream *stream,
         if (samples[i] != 0 && samples[i] > -2000 && samples[i] < 2000)
             lib_atomic_i32_store_explicit(&audio_nonzero, 1, LIB_MEMORY_ORDER_SEQ_CST);
         if (samples[i] > 3000 && samples[i] < 16000)
-            lib_atomic_i32_store_explicit(&audio_mixed, 1, LIB_MEMORY_ORDER_SEQ_CST);
+            (void)lib_atomic_i32_fetch_add_explicit(&audio_mixed, 1, LIB_MEMORY_ORDER_SEQ_CST);
         if (samples[i] == -28160)
             lib_atomic_i32_store_explicit(&audio_first_sample, 1, LIB_MEMORY_ORDER_SEQ_CST);
         if (samples[i] == 25600)
@@ -197,9 +197,9 @@ static void audio_guest_fm(emulator_machine *machine,
         {0xa0u, 0x98u}, {0xb0u, 0x31u}};
     static const lib_u16 dma_ports[][2] = {
         {0x0cu, 0u}, {0x02u, 0x00u}, {0x02u, 0x10u},
-        {0x03u, 0x01u}, {0x03u, 0x00u}, {0x83u, 1u}, {0x0bu, 0x49u},
+        {0x03u, 0x01u}, {0x03u, 0x00u}, {0x83u, 1u}, {0x0bu, 0x59u},
         {0x0au, 0x01u}, {0xd6u, 0xc0u}, {0xd4u, 0u}, {0x21u, 0xffu}};
-    static const lib_u8 dsp[] = {0xd1u, 0x40u, 156u, 0x14u, 1u, 0u};
+    static const lib_u8 dsp[] = {0xd1u, 0x40u, 156u, 0x48u, 1u, 0u, 0x1cu};
     lib_u8 program[160] = {0xbau, 0x2cu, 0x02u};
     lib_size size = 3u;
     x86_debug_response response = {0};
@@ -221,6 +221,11 @@ static void audio_guest_fm(emulator_machine *machine,
         program[size++] = 0xb0u; program[size++] = patch[i][1];
         program[size++] = 0xeeu; program[size++] = 0x4au;
     }
+    /* Allow multiple auto-init blocks while FM plays, then finish this block. */
+    program[size++] = 0xb9u; program[size++] = 0x00u; program[size++] = 0x10u;
+    program[size++] = 0xe2u; program[size++] = 0xfeu;
+    program[size++] = 0xbau; program[size++] = 0x2cu; program[size++] = 0x02u;
+    program[size++] = 0xb0u; program[size++] = 0xdau; program[size++] = 0xeeu;
     program[size++] = 0xebu; program[size++] = 0xfeu;
     for (lib_size offset = 0u; offset < size; offset += X86_DEBUG_BYTES) {
         const lib_size remaining = size - offset;
@@ -252,7 +257,7 @@ static void audio_guest_fm(emulator_machine *machine,
 #if defined(MYPC110_TEST_AUDIO_WRAP)
     if (lib_atomic_i32_load_explicit(&audio_endpoint, LIB_MEMORY_ORDER_SEQ_CST)) {
         lib_test_assert(lib_atomic_i32_load_explicit(&audio_nonzero, LIB_MEMORY_ORDER_SEQ_CST));
-        lib_test_assert(lib_atomic_i32_load_explicit(&audio_mixed, LIB_MEMORY_ORDER_SEQ_CST));
+        lib_test_assert(lib_atomic_i32_load_explicit(&audio_mixed, LIB_MEMORY_ORDER_SEQ_CST) >= 16);
         lib_c_printf("PC110:GUEST-FM-PCM:OK\n");
     } else lib_c_printf("PC110:GUEST-FM-PCM:HOST-UNAVAILABLE\n");
 #endif

@@ -47,6 +47,9 @@ static lib_bool mypc110_test_es488(emulator_machine_driver *driver)
         {LIB_FALSE, 0x22eu, 0x80u}, {LIB_FALSE, 0x22au, 0x01u},
         {LIB_FALSE, 0x22eu, 0x00u}, {LIB_TRUE, 0x22cu, 0xe7u},
         {LIB_FALSE, 0x22au, 0x48u}, {LIB_FALSE, 0x22au, 0x82u},
+        {LIB_TRUE, 0x22cu, 0xd8u}, {LIB_FALSE, 0x22au, 0u},
+        {LIB_TRUE, 0x22cu, 0xd1u}, {LIB_TRUE, 0x22cu, 0xd8u},
+        {LIB_FALSE, 0x22au, 0xffu}, {LIB_TRUE, 0x22cu, 0xd3u},
         {LIB_TRUE, 0x22cu, 0xffu}, {LIB_FALSE, 0x22eu, 0x00u},
         {LIB_TRUE, 0x22cu, 0xe1u}, {LIB_TRUE, 0x226u, 0x01u},
         {LIB_FALSE, 0x22eu, 0x00u}, {LIB_TRUE, 0x226u, 0x00u},
@@ -113,6 +116,34 @@ static lib_bool mypc110_test_es488_dma(void)
         !x86_nxvm_board_pic_irq_source_is_asserted(device.irq) ||
         x86_core_machine_bus_read(core, 0x22eu, &value) != LIB_STATUS_OK ||
         x86_nxvm_board_pic_irq_source_is_asserted(device.irq)) goto done;
+    {
+        static const lib_u16 automatic[][2] = {
+            {0x0cu, 0u}, {0x02u, 0x00u}, {0x02u, 0x10u},
+            {0x03u, 0x01u}, {0x03u, 0x00u}, {0x83u, 1u},
+            {0x0bu, 0x59u}, {0x0au, 0x01u}, {0xd6u, 0xc0u}, {0xd4u, 0u},
+            {0x22cu, 0xd1u}, {0x22cu, 0x40u}, {0x22cu, 156u},
+            {0x22cu, 0x48u}, {0x22cu, 1u}, {0x22cu, 0u}, {0x22cu, 0x1cu}};
+        x86_nxvm_board_dma_reset(dma);
+        mypc110_es488_reset(&device);
+        for (lib_size i = 0u; i < sizeof(automatic) / sizeof(automatic[0]); ++i)
+            if (x86_core_machine_bus_write(core, automatic[i][0], automatic[i][1]) !=
+                LIB_STATUS_OK) goto done;
+        for (lib_u8 i = 0u; i < 6u; ++i) {
+            mypc110_es488_advance(&device, device.next_tick);
+            x86_nxvm_board_dma_advance_transaction(dma, core, 16u);
+            if (device.sample_count != i + 1u || device.samples[i] != bytes[i % 2u])
+                goto done;
+            if (i == 4u && x86_core_machine_bus_write(core, 0x22cu, 0xdau) != LIB_STATUS_OK)
+                goto done;
+            if ((i & 1u) != 0u) {
+                if (!x86_nxvm_board_pic_irq_source_is_asserted(device.irq) ||
+                    (i < 5u && (!device.playing || device.remaining != 2u)) ||
+                    (i == 5u && device.playing) ||
+                    x86_core_machine_bus_read(core, 0x22eu, &value) != LIB_STATUS_OK ||
+                    x86_nxvm_board_pic_irq_source_is_asserted(device.irq)) goto done;
+            }
+        }
+    }
     result = LIB_TRUE;
 done:
     x86_nxvm_board_dma_finalize(dma);
