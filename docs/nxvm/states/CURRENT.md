@@ -1,4 +1,25 @@
-# M5 T586 S2 — Active: PC110 current-product restart matrix
+# M5 T586 S3 — Active: PC110 final qualification review
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T586 S3 after S2. |
+| Admission And Approval | Owner directed autonomous completion of the first four PC110 tasks. |
+| Objective | Audit all T586 requirements, current artifacts, task evidence, environment exceptions and remaining product limitations before final delivery. |
+| Non-goals | Do not represent unavailable physical input, RDP, native audio or unimplemented peripheral fidelity as passed. |
+| Reference Baseline | [T586 qualification ledger](../etc/evidence/t586-product-qualification-ledger.md), [T585 device ledger](../etc/evidence/t585-s23-device-coverage.md), and current artifact/test records. |
+| Candidate Proposal | [Final product qualification](../proposals/m5-pc110-final-qualification.md). |
+| Files And ABI Surface | NXVM governance and evidence; no production changes planned without a demonstrated defect. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding and source policy. |
+| Verification | Review test outcomes and hashes, artifact identity, documentation, actual diff and working-tree status. |
+| Expected Markers | Every final-product requirement has a direct observation, explicit environment limitation or named follow-on owner. |
+| Asset Needs | Preserve user configuration, firmware, CMOS and disks; clean only task-owned reviewed scratch. |
+| Reporting Requirements | Summarize exact test results, failures, limitations, commits and final task status. |
+| Stop Conditions | No claim that RDP, physical input, audio audibility or full hardware fidelity was tested. |
+| Exit Criteria | Evidence-backed final audit and clean, committed work; owner acceptance remains explicit where the proposal requires it. |
+| Original Owner Request | Complete the first four PC110 queue tasks. |
+| Similar-Issue Sweep | Both architectures, both firmware variants, restart paths, audio and external-device boundaries. |
+
+# M5 T586 S2 — Closed: PC110 current-product restart matrix
 
 | Field | Required record |
 | --- | --- |
@@ -15,7 +36,7 @@
 | Asset Needs | Test-owned media and CMOS copies; preserve user assets and configuration. |
 | Reporting Requirements | Record actual observer results, budgets, timing and environmental limits. |
 | Stop Conditions | Do not count a stale frame, changed screenshot alone or timeout as success. |
-| Exit Criteria | Four-cell current-artifact result, evidence and clean task state, or a precisely diagnosed and addressed defect. |
+| Exit Criteria | [T586 ledger](../etc/evidence/t586-product-qualification-ledger.md) records all four current-artifact stop/start and reset/resume cells, unchanged private media and normal exits. The first attempt's stale-pause observer defect and correction remain documented. |
 | Original Owner Request | Complete the first four PC110 queue tasks. |
 | Similar-Issue Sweep | Stop/start, reset/resume, both firmware variants and both host widths. |
 

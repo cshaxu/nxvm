@@ -10,8 +10,8 @@ the DSTN firmware is derived, not a verified factory-original image.
 | --- | --- | --- |
 | Build and artifact identity | T585 S21 built all 14 EXEs and verified PE width; PC110 deployed files matched both builds. | Recheck current paired PC110 artifacts and unchanged production after S22; S1. |
 | Firmware cold and resume handoff | T585 S21 final integrations reached real firmware cold and resume handoff on both widths. | S22 extended the existing TFT cold test with actual BIOS APM; both widths pass. Both derived DSTN probes also exercised that APM route. |
-| First Setup, CMOS, DOS, stop/start and reset/resume | T583 exercised both variants and widths with private media and guest-created CMOS. | Those observations predate S21 COM1; current actual-product checks must not be inferred solely from firmware handoff. |
-| Personaware and guest input | T584 reached World Clock and exercised input and pause/resume on both variants and widths. Four-corner calibration used the Machine path. | Repeat actual current-product DOS-to-Personaware and lifecycle on the four matrix cells using disposable copies and isolated desktops; retain distinction between posted native messages and physical input. |
+| First Setup, CMOS, DOS, stop/start and reset/resume | T583 exercised both variants and widths with private media and guest-created CMOS. | S2 repeated both restart paths on all four current-product cells, with a fresh POST and DOS screen after each. First-Setup and CMOS creation remain the earlier T583 observations. |
+| Personaware and guest input | T584 reached World Clock and exercised input and pause/resume on both variants and widths. Four-corner calibration used the Machine path. | S1 repeated current-product DOS-to-Personaware and pause/resume on all four cells with isolated desktops and disposable copies. Posted native messages are not physical input. |
 | PC Card, audio, serial and power | [T585 device ledger](t585-s23-device-coverage.md) names real receivers and tests. | Keep its explicit limits: no external I/O card/host serial, dynamic battery model, full ES488/OPL2 synthesis or panel fidelity claim. |
 | Native Window/Console and input | T584 tested native Window and both Console control policies with an isolated desktop. | Current posted-message checks are not a real host mouse-capture, physical chord or interactive RDP pass. Record any unavailable checks explicitly. |
 | Complete repository tests | Final-source S21 units passed 714/714 on both widths; registered integrations 47/48 each. The remaining failure was default native MIDI creation on the isolated desktop, under the owner's device-availability exception. | S22 changed only the existing TFT cold-boot integration, passed it on both widths, and ran the other variant through a separate diagnostic. No claim that unavailable MIDI or PCM endpoints passed. |
@@ -75,3 +75,28 @@ DSTN x64 observer/driver logs are respectively
 TFT x64 observer/driver logs are respectively
 `9fd4396badf7773070570bc185a517c05681de747fc89114120bd09770121c86` and
 `d518ad3d56d86e672c63afa68bab10a29adf299719a079fbb093a2e6dbac67f3`.
+
+## S2 corrected current-product restart matrix
+
+After correcting the observer's stale-pause check, each current EXE ran with
+both display variants and private copies of the existing DOS disks and CMOS.
+For each `stop`/`start` and `reset`/`resume`, the driver required the explicit
+new POST frame `94c5272ffead1ebf7b989d7e8fb0bcce5019dbe8ae55be0819dfdc9b4308a515`
+and then the DOS calibration frame
+`07987e8e9b2aedabd72e0caf5bd24cf618a55a11f716a4e0ada076bd5d40acf3`.
+All four drivers completed 5/5, all observers exited zero, and both private
+source-disk hashes were unchanged. The test used posted native messages on
+isolated desktops, not physical keyboard input or RDP.
+
+| Variant | Width | DOS after stop/start | DOS after reset/resume | Driver log SHA-256 | Observer log SHA-256 |
+| --- | --- | --- | --- | --- | --- |
+| Derived DSTN | x64 | 343.047 s | 519.563 s | `a12e6c153686955f3f9447a559e4a136cfdb2bee069235eb8a171920501d6018` | `c4bdc63a272539d0b6dd5b85fa6844a761315edf45924e3377a1c8f4a70984c9` |
+| TFT | x64 | 353.469 s | 529.860 s | `eabb26db403988acdb4963dbebd3899ed9c8a46f19fd184dddab13c9ddce0715` | `954c2d9b1321147cd89a1e7703efc3bf81ea1e389337f3fe8623bcf287905482` |
+| Derived DSTN | x86 | 439.547 s | 656.406 s | `562f3112d1dc2018a5c719eeda6a0004f256e3428ece812cdd4fde6752d628cb` | `2a95f1950cd4ed84e199079d93660c30f961b2b5af68f643748c7af12596b21c` |
+| TFT | x86 | 445.250 s | 667.312 s | `cd26f05bdae8ec8679e6dec7c59299796add68edcb3097ab704957624a7dbd68` | `21525d9d3d8265783a77f92480d975e3abb687a3a7ea6af55156e5a192b3216d` |
+
+Times are from observer start with two concurrent instances; they are not
+performance guarantees. The retry aggregate log SHA-256 was
+`6f279620c9d06b7c521338e04feaa0025cb7f023e6442023cb345f8da1d52c95`.
+The first observer failures above remain part of the record and were not
+counted as passes.
