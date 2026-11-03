@@ -4,8 +4,8 @@ The first three selected tasks are closed: [T583 first-time setup and
 restart](../../history/M5-T583-pc110-first-setup.md), [T584 product
 interaction](../../history/M5-T584-pc110-product-interaction.md), and
 [T585 device and model qualification](../../history/M5-T585-pc110-device-model.md).
-T586 S1–S3 have completed their recorded work; the final qualification
-proposal requires owner acceptance before closing T586.
+T586 S1–S3 have completed their recorded work. The owner accepted the
+delivery and directed T586 closure on 2026-11-02.
 
 ## Current product and evidence
 

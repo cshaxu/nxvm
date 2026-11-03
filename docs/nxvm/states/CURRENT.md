@@ -1,3 +1,9 @@
+# NXVM current task status
+
+| Task | Status |
+| --- | --- |
+| T586 | Closed after owner acceptance. [Final qualification history](../history/M5-T586-pc110-final-qualification.md) records results and retained limitations. No new T is admitted. |
+
 # M5 T586 S3 — Closed: PC110 final qualification review
 
 | Field | Required record |
@@ -7,7 +13,7 @@
 | Objective | Audit all T586 requirements, current artifacts, task evidence, environment exceptions and remaining product limitations before final delivery. |
 | Non-goals | Do not represent unavailable physical input, RDP, native audio or unimplemented peripheral fidelity as passed. |
 | Reference Baseline | [T586 qualification ledger](../etc/evidence/t586-product-qualification-ledger.md), [T585 device ledger](../etc/evidence/t585-s23-device-coverage.md), and current artifact/test records. |
-| Candidate Proposal | [Final product qualification](../proposals/m5-pc110-final-qualification.md). |
+| Candidate Proposal | [Final product qualification](../history/M5-T586-pc110-final-qualification-proposal.md). |
 | Files And ABI Surface | NXVM governance and evidence; no production changes planned without a demonstrated defect. |
 | Applicable Rules | NXVM guide, execution, documentation, architecture, coding and source policy. |
 | Verification | Review test outcomes and hashes, artifact identity, documentation, actual diff and working-tree status. |
@@ -15,7 +21,7 @@
 | Asset Needs | Preserve user configuration, firmware, CMOS and disks; clean only task-owned reviewed scratch. |
 | Reporting Requirements | Summarize exact test results, failures, limitations, commits and final task status. |
 | Stop Conditions | No claim that RDP, physical input, audio audibility or full hardware fidelity was tested. |
-| Exit Criteria | Evidence-backed final audit is recorded in the [S3 review](../etc/evidence/t586-s3-final-review.md). T586 awaits owner acceptance as required by its proposal; unavailable physical/RDP/audio checks are not represented as passed. |
+| Exit Criteria | Evidence-backed final audit is recorded in the [S3 review](../etc/evidence/t586-s3-final-review.md); the owner accepted T586. Unavailable physical/RDP/audio checks are not represented as passed. |
 | Original Owner Request | Complete the first four PC110 queue tasks. |
 | Similar-Issue Sweep | Both architectures, both firmware variants, restart paths, audio and external-device boundaries. |
 
@@ -28,7 +34,7 @@
 | Objective | Verify the current PC110 products reach DOS after stop/start and reset/resume on both widths and display variants. |
 | Non-goals | Do not equate monitor pause with guest suspend or posted messages with physical input. |
 | Reference Baseline | [T586 ledger](../etc/evidence/t586-product-qualification-ledger.md) and [T583 restart evidence](../etc/evidence/t583-first-setup-ledger.md). |
-| Candidate Proposal | [Final product qualification](../proposals/m5-pc110-final-qualification.md). |
+| Candidate Proposal | [Final product qualification](../history/M5-T586-pc110-final-qualification-proposal.md). |
 | Files And ABI Surface | NXVM evidence and task-owned observer; no production change planned without a demonstrated defect. |
 | Applicable Rules | NXVM guide, execution, documentation, architecture, coding and source policy. |
 | Verification | Four real EXE/variant cells with private media, verified changed frame and new DOS frame after each restart, and normal teardown. |
@@ -48,8 +54,8 @@
 | Admission And Approval | Owner directed completion of the first four PC110 queue tasks and autonomous S progression. |
 | Objective | Reconcile final product qualification requirements and current evidence, then execute the required current-artifact and guest checks. |
 | Non-goals | Do not describe derived firmware, unconnected peripherals, physical input or RDP as verified hardware behavior. |
-| Reference Baseline | [Final qualification proposal](../proposals/m5-pc110-final-qualification.md), [T583](../etc/evidence/t583-first-setup-ledger.md), [T584](../etc/evidence/t584-product-interaction-ledger.md), and [T585 coverage](../etc/evidence/t585-s23-device-coverage.md). |
-| Candidate Proposal | [Final product qualification](../proposals/m5-pc110-final-qualification.md). |
+| Reference Baseline | [Final qualification proposal](../history/M5-T586-pc110-final-qualification-proposal.md), [T583](../etc/evidence/t583-first-setup-ledger.md), [T584](../etc/evidence/t584-product-interaction-ledger.md), and [T585 coverage](../etc/evidence/t585-s23-device-coverage.md). |
+| Candidate Proposal | [Final product qualification](../history/M5-T586-pc110-final-qualification-proposal.md). |
 | Files And ABI Surface | NXVM task records and existing PC110 test/diagnostic receivers; source changes only if evidence establishes a defect. |
 | Applicable Rules | NXVM guide, execution, documentation, architecture, coding and source policy. |
 | Verification | Current paired EXEs, both firmware variants and widths, actual guest/product paths, appropriate cached suites, and explicit unavailable desktop or physical checks. |

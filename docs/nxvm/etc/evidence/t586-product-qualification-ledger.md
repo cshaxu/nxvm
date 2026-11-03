@@ -1,7 +1,7 @@
 # M5 T586 — PC110 current-product qualification ledger
 
 This ledger consumes the owner request to finish the first four PC110 tasks
-and the [final qualification proposal](../proposals/m5-pc110-final-qualification.md).
+and the [final qualification proposal](../../history/M5-T586-pc110-final-qualification-proposal.md).
 It does not equate an L1/L2 device model with physical PC110 fidelity.
 The current product is one selectable DSTN/TFT build in each host width;
 the DSTN firmware is derived, not a verified factory-original image.
