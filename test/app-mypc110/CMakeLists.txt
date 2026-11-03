@@ -23,10 +23,12 @@ if(TARGET mypc110-selectable-firmware)
 endif()
 
 add_executable(mypc110-audio-smoke unit/audio_smoke.c
-    "${CMAKE_SOURCE_DIR}/src/app-mypc110/pc110_audio.c")
+    "${CMAKE_SOURCE_DIR}/src/app-mypc110/pc110_audio.c"
+    "${CMAKE_SOURCE_DIR}/src/app-mypc110/pc110_opl2_synthesis.c")
 target_include_directories(mypc110-audio-smoke PRIVATE "${CMAKE_SOURCE_DIR}/src")
 target_link_libraries(mypc110-audio-smoke PRIVATE types)
 if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+    target_link_libraries(mypc110-audio-smoke PRIVATE m)
     target_compile_options(mypc110-audio-smoke PRIVATE -UNDEBUG -Wall -Wextra -Wpedantic -Werror)
 endif()
 if(TARGET build-unit-tests)

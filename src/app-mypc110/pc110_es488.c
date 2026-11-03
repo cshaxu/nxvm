@@ -6,6 +6,7 @@
 #define MYPC110_ES488_DATA_PORT 0x022au
 #define MYPC110_ES488_COMMAND_PORT 0x022cu
 #define MYPC110_ES488_STATUS_PORT 0x022eu
+#define MYPC110_ES488_TIME_FAULT 0x41554400u
 
 void mypc110_es488_reset(mypc110_es488 *device)
 {
@@ -39,6 +40,13 @@ static void mypc110_es488_dma_write(void *owner, t_latch *value)
     const lib_u16 index = (device->sample_read + device->sample_count) %
         MYPC110_ES488_SAMPLE_CAPACITY;
     device->samples[index] = device->speaker ? value->data.byte : 0x80u;
+    const lib_status status = x86_core_machine_get_callback_ticks(device->core,
+        &device->sample_ticks[index]);
+    if (status != LIB_STATUS_OK) {
+        (void)x86_core_machine_report_fault(device->core,
+            MYPC110_ES488_TIME_FAULT | (lib_u32)status);
+        return;
+    }
     device->sample_periods[index] = (lib_u16)device->period_ticks;
     ++device->sample_count;
     device->requested = LIB_FALSE;
@@ -136,7 +144,7 @@ static lib_status mypc110_es488_write(void *owner, lib_u16 port,
                     (256u - device->parameters[0]);
             } else {
                 lib_u64 now = 0u;
-                lib_status status = x86_core_machine_get_elapsed_ticks(device->core, &now);
+                lib_status status = x86_core_machine_get_callback_ticks(device->core, &now);
                 if (status != LIB_STATUS_OK) return status;
                 device->remaining = 1u + device->parameters[1] +
                     ((lib_u32)device->parameters[0] << 8u);
@@ -167,7 +175,7 @@ static lib_status mypc110_es488_write(void *owner, lib_u16 port,
     if (value == 0xd4u) {
         if (device->playing && device->paused) {
             lib_u64 now = 0u;
-            lib_status status = x86_core_machine_get_elapsed_ticks(device->core, &now);
+            lib_status status = x86_core_machine_get_callback_ticks(device->core, &now);
             if (status != LIB_STATUS_OK) return status;
             device->next_tick = now + device->period_ticks;
         }

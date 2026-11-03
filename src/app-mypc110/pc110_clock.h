@@ -2,6 +2,7 @@
 #define MYPC110_CLOCK_H
 
 #define MYPC110_CPU_CLOCK_HZ 33000000u
+#define MYPC110_AUDIO_SAMPLE_RATE 48000u
 #define MYPC110_PIT_INPUT_HZ 1193182u
 #define MYPC110_RTC_INPUT_HZ 32768u
 /* L2 nominal vertical-sync cadence on the existing Core clock. */

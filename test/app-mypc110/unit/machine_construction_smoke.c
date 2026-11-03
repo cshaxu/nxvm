@@ -158,6 +158,43 @@ static lib_bool mypc110_test_opl2(void)
         x86_core_machine_run(core, (x86_core_machine_run_budget){10000u, 0u}, &run) != LIB_STATUS_OK ||
         x86_core_machine_bus_read(core, 0x388u, &status) != LIB_STATUS_OK || status != 0u)
         goto done;
+    {
+        static const lib_u8 patch[][2] = {
+            {0x20u, 1u}, {0x23u, 1u}, {0x40u, 0u}, {0x43u, 0u},
+            {0x60u, 0xf0u}, {0x63u, 0xf0u}, {0x80u, 0x0fu}, {0x83u, 0x0fu},
+            {0xa0u, 0x98u}, {0xb0u, 0x31u}};
+        lib_i16 samples[512];
+        lib_bool nonzero = LIB_FALSE;
+        for (lib_size i = 0u; i < sizeof(patch) / sizeof(patch[0]); ++i)
+            if (x86_core_machine_bus_write(core, 0x388u, patch[i][0]) != LIB_STATUS_OK ||
+                x86_core_machine_bus_write(core, 0x389u, patch[i][1]) != LIB_STATUS_OK)
+                goto done;
+        mypc110_opl2_render(&device, samples, 512u);
+        for (lib_size i = 0u; i < 512u; ++i)
+            if (samples[i] != 0) nonzero = LIB_TRUE;
+        {
+            mypc110_opl2 low = device, high = device;
+            lib_i16 low_samples[4096], high_samples[4096];
+            lib_u32 low_crossings = 0u, high_crossings = 0u;
+            low.registers[0xa0u] = 0xccu;
+            low.registers[0xb0u] &= 0xfcu;
+            low.registers[0xc0u] = high.registers[0xc0u] = 1u;
+            low.registers[0x40u] = high.registers[0x40u] = 63u;
+            mypc110_opl2_render(&low, low_samples, 4096u);
+            mypc110_opl2_render(&high, high_samples, 4096u);
+            for (lib_size i = 1u; i < 4096u; ++i) {
+                if (low_samples[i - 1u] < 0 && low_samples[i] >= 0) ++low_crossings;
+                if (high_samples[i - 1u] < 0 && high_samples[i] >= 0) ++high_crossings;
+            }
+            if (low_crossings < 5u || high_crossings < low_crossings * 17u / 10u ||
+                high_crossings > low_crossings * 23u / 10u) goto done;
+        }
+        if (!nonzero || x86_core_machine_bus_write(core, 0x388u, 0xb0u) != LIB_STATUS_OK ||
+            x86_core_machine_bus_write(core, 0x389u, 0x11u) != LIB_STATUS_OK)
+            goto done;
+        for (lib_u8 i = 0u; i < 20u; ++i) mypc110_opl2_render(&device, samples, 512u);
+        if (device.envelope[0][0] != 0u || device.envelope[0][1] != 0u) goto done;
+    }
     mypc110_opl2_reset(&device);
     ok = device.control == 0u && device.overflow == 0u;
 done:

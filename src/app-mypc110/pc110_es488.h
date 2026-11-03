@@ -23,6 +23,7 @@ typedef struct mypc110_es488 {
     lib_u16 sample_read;
     lib_u16 sample_count;
     lib_u8 samples[MYPC110_ES488_SAMPLE_CAPACITY];
+    lib_u64 sample_ticks[MYPC110_ES488_SAMPLE_CAPACITY];
     lib_u16 sample_periods[MYPC110_ES488_SAMPLE_CAPACITY];
     lib_u8 command;
     lib_u8 parameter_count;

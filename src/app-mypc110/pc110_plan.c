@@ -78,7 +78,9 @@ static lib_status mypc110_machine_before_reset(void *opaque, x86_nxvm_board_stat
         status = lib_audio_pcm_stream_clear(plan->audio.stream);
         if (status != LIB_STATUS_OK) return status;
     }
-    plan->audio.count = plan->audio.read = plan->audio.repeats = plan->audio.phase = 0u;
+    plan->audio.count = plan->audio.read = plan->audio.tick_phase = 0u;
+    plan->audio.clock_valid = LIB_FALSE;
+    plan->audio.pcm_until = 0u;
     if (plan->product == LIB_NULL) return LIB_STATUS_OK;
     status = mypc110_machine_apply_cards(plan);
     if (status != LIB_STATUS_OK) return status;
@@ -119,8 +121,10 @@ lib_status mypc110_machine_attach_product(void *context,
     if (context == LIB_NULL || construction == LIB_NULL || construction->profile.context == LIB_NULL)
         return LIB_STATUS_INVALID_ARGUMENT;
     plan = construction->profile.context;
-    status = mypc110_audio_open(&plan->audio, &plan->es488);
+    status = mypc110_audio_open(&plan->audio, &plan->es488, &plan->opl2);
     if (status != LIB_STATUS_OK) return status;
+    construction->profile.output_tick_budget = plan->audio.stream != LIB_NULL ?
+        MYPC110_CPU_CLOCK_HZ / 50u : 0u;
     plan->product = context;
     plan->product->plan = plan;
     return LIB_STATUS_OK;
@@ -299,8 +303,17 @@ static lib_bool mypc110_machine_profile_next_deadline(void *opaque,
     lib_u64 now, lib_u64 *out_tick)
 {
     mypc110_machine_plan *plan = opaque;
-    (void)now;
-    return plan != LIB_NULL && mypc110_es488_next_deadline(&plan->es488, out_tick);
+    lib_bool valid;
+    lib_u64 audio_tick;
+    if (plan == LIB_NULL || out_tick == LIB_NULL) return LIB_FALSE;
+    valid = mypc110_es488_next_deadline(&plan->es488, out_tick);
+    /* Bound HLT progress so the one executor can drain a finite mixer. */
+    if (mypc110_audio_needs_deadline(&plan->audio, now) &&
+        now <= LIB_UINT64_MAX - MYPC110_CPU_CLOCK_HZ / 50u) {
+        audio_tick = now + MYPC110_CPU_CLOCK_HZ / 50u;
+        if (!valid || audio_tick < *out_tick) { *out_tick = audio_tick; valid = LIB_TRUE; }
+    }
+    return valid;
 }
 
 static void mypc110_machine_profile_advance(void *opaque,
@@ -404,8 +417,16 @@ static void mypc110_machine_release(void *opaque)
     lib_release(plan);
 }
 
+static lib_status mypc110_machine_audio_before_write(void *opaque, lib_u64 tick)
+{ return mypc110_audio_advance(opaque, tick); }
+
 static lib_status mypc110_machine_output_pump(void *opaque)
-{ return mypc110_audio_pump(&((mypc110_machine_plan *)opaque)->audio); }
+{
+    mypc110_machine_plan *plan = opaque;
+    lib_u64 tick = 0u;
+    lib_status status = x86_core_machine_get_elapsed_ticks(plan->core, &tick);
+    return status == LIB_STATUS_OK ? mypc110_audio_pump(&plan->audio, tick) : status;
+}
 
 static lib_status mypc110_machine_output_wait(void *opaque)
 { return mypc110_audio_wait(&((mypc110_machine_plan *)opaque)->audio); }
@@ -470,6 +491,9 @@ lib_status mypc110_machine_construction_create(const x86_nxvm_machine_config *co
     plan = lib_allocate_zero(1u, sizeof(*plan));
     if (plan == LIB_NULL) return LIB_STATUS_NO_MEMORY;
     plan->audio.device = &plan->es488;
+    plan->audio.opl2 = &plan->opl2;
+    plan->opl2.output_context = &plan->audio;
+    plan->opl2.before_write = mypc110_machine_audio_before_write;
     lib_atomic_i32_initialize(&plan->audio.interrupt_failure, LIB_STATUS_OK);
     plan->pen_x = 128;
     plan->pen_y = 64;
