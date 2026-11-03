@@ -265,6 +265,60 @@ static void audio_guest_fm(emulator_machine *machine,
     emulator_machine_set_state_sink(machine, card_state, event);
 }
 
+static void uart_guest_loopback(emulator_machine *machine,
+    emulator_machine_debug_lease *lease, base_sync_event *event)
+{
+    static const lib_u8 program[] = {
+        0xbau, 0xfbu, 0x03u, 0xb0u, 0x80u, 0xeeu,
+        0xbau, 0xf8u, 0x03u, 0xb0u, 0x01u, 0xeeu,
+        0x42u, 0x30u, 0xc0u, 0xeeu,
+        0xbau, 0xfbu, 0x03u, 0xb0u, 0x03u, 0xeeu,
+        0x42u, 0xb0u, 0x18u, 0xeeu,
+        0xbau, 0xf9u, 0x03u, 0xb0u, 0x01u, 0xeeu,
+        0x4au, 0xb0u, 0x5au, 0xeeu, 0xebu, 0xfeu};
+    x86_debug_response response = {0};
+    x86_debug_request request;
+    for (lib_size offset = 0u; offset < sizeof(program); offset += X86_DEBUG_BYTES) {
+        const lib_size remaining = sizeof(program) - offset;
+        const lib_u8 count = (lib_u8)(remaining < X86_DEBUG_BYTES ? remaining : X86_DEBUG_BYTES);
+        request = (x86_debug_request){.operation = X86_DEBUG_WRITE_LINEAR,
+            .address = 0x2300u + (lib_u32)offset, .bytes = count};
+        lib_memory_copy(request.data, &program[offset], count);
+        card_debug(machine, lease, &request, &response);
+    }
+    request = (x86_debug_request){.operation = X86_DEBUG_WRITE_REGISTER,
+        .register_id = X86_DEBUG_CS, .address = 0u};
+    card_debug(machine, lease, &request, &response);
+    request.register_id = X86_DEBUG_EIP; request.address = 0x2300u;
+    card_debug(machine, lease, &request, &response);
+    request.register_id = X86_DEBUG_EFLAGS; request.address = 2u;
+    card_debug(machine, lease, &request, &response);
+    request = (x86_debug_request){.operation = X86_DEBUG_SET_EXECUTION_PLAN,
+        .execution_kind = X86_DEBUG_EXECUTION_TRACE, .instruction_count = 20000u};
+    card_debug(machine, lease, &request, &response);
+    emulator_machine_set_state_sink(machine, audio_paused, event);
+    lib_test_assert(base_sync_event_reset(event) == LIB_STATUS_OK);
+    lib_test_assert(emulator_machine_resume(machine));
+    lib_test_assert(base_sync_event_wait(event, 30000u) == BASE_SYNC_WAIT_SIGNALED);
+    lib_test_assert(emulator_machine_debug_acquire(machine, lease) == LIB_STATUS_OK);
+    request = (x86_debug_request){.operation = X86_DEBUG_READ_PORT, .port = 0x3fau, .bytes = 1u};
+    card_debug(machine, lease, &request, &response);
+    lib_test_assert((response.value & 0x0fu) == 4u);
+    request = (x86_debug_request){.operation = X86_DEBUG_WRITE_PORT,
+        .port = 0x20u, .address = 0x0au, .bytes = 1u};
+    card_debug(machine, lease, &request, &response);
+    request.operation = X86_DEBUG_READ_PORT;
+    card_debug(machine, lease, &request, &response);
+    lib_test_assert((response.value & 0x10u) != 0u);
+    request.port = 0x3f8u;
+    card_debug(machine, lease, &request, &response);
+    lib_test_assert(response.value == 0x5au);
+    request.port = 0x3fau;
+    card_debug(machine, lease, &request, &response);
+    lib_test_assert((response.value & 0x0fu) == 1u);
+    emulator_machine_set_state_sink(machine, card_state, event);
+}
+
 static void audio_native_delivery(void)
 {
     mypc110_es488 device = {0};
@@ -393,6 +447,7 @@ int main(void)
         audio_guest_transfer(executor, &lease, paused, LIB_FALSE);
         audio_guest_transfer(executor, &lease, paused, LIB_TRUE);
         audio_guest_fm(executor, &lease, paused);
+        uart_guest_loopback(executor, &lease, paused);
         card_register(executor, &lease, 0x10u, 0xc0u);
         card_register(executor, &lease, 0x11u, 0x80u);
         card_register(executor, &lease, 0x12u, 0xc0u);

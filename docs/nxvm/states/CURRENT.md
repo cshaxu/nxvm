@@ -1,4 +1,4 @@
-# M5 T585 S21 — Active: PC110 COM1 UART receiver
+# M5 T585 S21 — Closed: PC110 COM1 UART receiver
 
 | Field | Required record |
 | --- | --- |
@@ -15,7 +15,7 @@
 | Asset Needs | Preserve owner configuration, CMOS, firmware and media. |
 | Reporting Requirements | Separate UART guest behavior from absent external serial transport and mark timing model. |
 | Stop Conditions | No second bus, host polling thread or PC110 special case in a reusable UART. |
-| Exit Criteria | Source-reviewed implementation, meaningful existing-path tests, required builds, full applicable tests and checked deployment. |
+| Exit Criteria | [S21 evidence](../etc/evidence/t585-s21-uart-design.md) records the UART model, real guest/PIC path, 714/714 dual-width units, profile tests and checked artifacts. Native MIDI creation failed on the isolated desktop on both widths and is explicitly retained under the owner-approved device-availability exception. Host serial, infrared and modem transport remain outside this receiver. |
 | Original Owner Request | Complete the first four PC110 queue tasks. |
 | Similar-Issue Sweep | Reset and IIR/LSR acknowledgement, DLAB, FIFO enable/clear and existing port ownership. |
 

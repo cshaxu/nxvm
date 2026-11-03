@@ -68,6 +68,23 @@ static lib_bool mypc110_test_es488(emulator_machine_driver *driver)
     return LIB_TRUE;
 }
 
+static lib_bool mypc110_test_uart_route(emulator_machine_driver *driver)
+{
+    static const struct { lib_bool write; lib_u16 port; lib_u8 value; } steps[] = {
+        {LIB_FALSE, 0x3fdu, 0x60u}, {LIB_TRUE, 0x3fau, 0x01u},
+        {LIB_FALSE, 0x3fau, 0xc1u}, {LIB_TRUE, 0x3fbu, 0x80u},
+        {LIB_TRUE, 0x3f8u, 0x0cu}, {LIB_TRUE, 0x3f9u, 0u},
+        {LIB_FALSE, 0x3f8u, 0x0cu}, {LIB_TRUE, 0x3fbu, 0x03u},
+        {LIB_TRUE, 0x3ffu, 0x5au}, {LIB_FALSE, 0x3ffu, 0x5au}
+    };
+    for (lib_size i = 0u; i < sizeof(steps) / sizeof(steps[0]); ++i) {
+        lib_u8 value = steps[i].value;
+        if (!mypc110_test_port(driver, steps[i].write, steps[i].port, &value) ||
+            (!steps[i].write && value != steps[i].value)) return LIB_FALSE;
+    }
+    return LIB_TRUE;
+}
+
 static lib_bool mypc110_test_es488_dma(void)
 {
     const x86_core_machine_executor_config config = {
@@ -599,7 +616,8 @@ int main(int argc, char **argv)
             LIB_STATUS_OK || driver.copy_frame(driver.context, &frame, &console,
                 &produced) != LIB_STATUS_OK || produced))
         failed = 5;
-    if (!failed && (!mypc110_test_es488(&driver) || !mypc110_test_es488_dma() || !mypc110_test_opl2())) failed = 80;
+    if (!failed && (!mypc110_test_es488(&driver) || !mypc110_test_es488_dma() ||
+        !mypc110_test_opl2() || !mypc110_test_uart_route(&driver))) failed = 80;
     if (!failed) {
         const x86_debug_request cmos_reads[] = {
             {.operation = X86_DEBUG_WRITE_PORT, .port = 0x70u, .address = 0x0eu, .bytes = 1u},

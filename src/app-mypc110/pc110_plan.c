@@ -14,6 +14,7 @@
 #include "app-mypc110/pc110_inking_interface.h"
 #include "app-mypc110/pc110_lpt_interface.h"
 #include "app-mypc110/pc110_pcic_interface.h"
+#include "app-mypc110/pc110_uart.h"
 #include "x86-nxvm/board-base/machine_board_interface.h"
 #include "x86-nxvm/machine/media/media_interface.h"
 
@@ -30,6 +31,7 @@ typedef struct mypc110_machine_plan {
     mypc110_opl2 opl2;
     mypc110_audio audio;
     mypc110_inking inking;
+    mypc110_uart uart;
     x86_vl82c420 *configuration_chip;
     x86_f65535 *display_controller;
     x86_core_machine *core;
@@ -287,6 +289,7 @@ static void mypc110_machine_profile_reset(void *opaque,
         mypc110_inking_reset(&plan->inking);
         mypc110_es488_reset(&plan->es488);
         mypc110_opl2_reset(&plan->opl2);
+        mypc110_uart_reset(&plan->uart);
     }
 }
 
@@ -304,9 +307,15 @@ static lib_bool mypc110_machine_profile_next_deadline(void *opaque,
 {
     mypc110_machine_plan *plan = opaque;
     lib_bool valid;
-    lib_u64 audio_tick;
+    lib_u64 audio_tick, uart_ticks;
     if (plan == LIB_NULL || out_tick == LIB_NULL) return LIB_FALSE;
     valid = mypc110_es488_next_deadline(&plan->es488, out_tick);
+    if (x86_uart16550_next_event(plan->uart.chip, &uart_ticks) &&
+        uart_ticks <= LIB_UINT64_MAX - now &&
+        (!valid || now + uart_ticks < *out_tick)) {
+        *out_tick = now + uart_ticks;
+        valid = LIB_TRUE;
+    }
     /* Bound HLT progress so the one executor can drain a finite mixer. */
     if (mypc110_audio_needs_deadline(&plan->audio, now) &&
         now <= LIB_UINT64_MAX - MYPC110_CPU_CLOCK_HZ / 50u) {
@@ -320,8 +329,12 @@ static void mypc110_machine_profile_advance(void *opaque,
     lib_u64 source_ticks, lib_u64 due_tick)
 {
     mypc110_machine_plan *plan = opaque;
-    (void)source_ticks;
-    if (plan != LIB_NULL) mypc110_es488_advance(&plan->es488, due_tick);
+    if (plan != LIB_NULL) {
+        lib_u64 uart_ticks;
+        mypc110_es488_advance(&plan->es488, due_tick);
+        if (x86_uart16550_next_event(plan->uart.chip, &uart_ticks))
+            mypc110_uart_advance(&plan->uart, source_ticks);
+    }
 }
 
 static lib_status mypc110_machine_profile_create(
@@ -343,6 +356,8 @@ static lib_status mypc110_machine_profile_create(
     if (status != LIB_STATUS_OK) return status;
     status = mypc110_es488_initialize(&plan->es488, services->core, services->dma,
         services->pic_master, services->pic_slave);
+    if (status != LIB_STATUS_OK) return status;
+    status = mypc110_uart_bind_irq(&plan->uart, services->pic_master, services->pic_slave);
     if (status != LIB_STATUS_OK) return status;
     plan->pcic.firmware = &plan->firmware;
     plan->firmware.inking = &plan->inking;
@@ -399,6 +414,8 @@ static lib_status mypc110_machine_after_firmware(void *opaque, x86_core_machine 
     if (status == LIB_STATUS_OK)
         status = mypc110_opl2_install_routes(core, &plan->opl2);
     if (status == LIB_STATUS_OK)
+        status = mypc110_uart_install_routes(core, &plan->uart);
+    if (status == LIB_STATUS_OK)
         status = mypc110_display_install_routes(core, plan->display_controller);
     return status;
 }
@@ -410,6 +427,7 @@ static void mypc110_machine_release(void *opaque)
     if (plan == LIB_NULL) return;
     if (mypc110_audio_close(&plan->audio) != LIB_STATUS_OK) return;
     if (plan->product != LIB_NULL) plan->product->plan = LIB_NULL;
+    mypc110_uart_destroy(&plan->uart);
     x86_f65535_destroy(plan->display_controller);
     x86_rb5c396_destroy(plan->pcic_controller);
     x86_vl82c420_destroy(plan->configuration_chip);
@@ -516,6 +534,7 @@ lib_status mypc110_machine_construction_create(const x86_nxvm_machine_config *co
         status = mypc110_config_initialize_cold_image(plan->configuration_chip);
     if (status == LIB_STATUS_OK) status = x86_f65535_create(&plan->display_controller);
     if (status == LIB_STATUS_OK) status = x86_rb5c396_create(&plan->pcic_controller);
+    if (status == LIB_STATUS_OK) status = mypc110_uart_create(&plan->uart);
     candidate = (x86_nxvm_machine_construction) {
         .core_config = mypc110_machine_configuration,
         .topology = mypc110_machine_topology,
