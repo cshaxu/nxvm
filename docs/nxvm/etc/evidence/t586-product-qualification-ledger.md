@@ -8,7 +8,7 @@ the DSTN firmware is derived, not a verified factory-original image.
 
 | Requirement | Earlier evidence | Current disposition and next receiver |
 | --- | --- | --- |
-| Build and artifact identity | T585 S21 built all 14 EXEs and verified PE width; PC110 deployed files matched both builds. | Recheck current paired PC110 artifacts and unchanged production after S22; S1. |
+| Build and artifact identity | T585 S21 built all 14 EXEs and verified PE width; PC110 deployed files matched both builds. | S1 and S3 verified the current paired PC110 artifacts and unchanged production after S22. |
 | Firmware cold and resume handoff | T585 S21 final integrations reached real firmware cold and resume handoff on both widths. | S22 extended the existing TFT cold test with actual BIOS APM; both widths pass. Both derived DSTN probes also exercised that APM route. |
 | First Setup, CMOS, DOS, stop/start and reset/resume | T583 exercised both variants and widths with private media and guest-created CMOS. | S2 repeated both restart paths on all four current-product cells, with a fresh POST and DOS screen after each. First-Setup and CMOS creation remain the earlier T583 observations. |
 | Personaware and guest input | T584 reached World Clock and exercised input and pause/resume on both variants and widths. Four-corner calibration used the Machine path. | S1 repeated current-product DOS-to-Personaware and pause/resume on all four cells with isolated desktops and disposable copies. Posted native messages are not physical input. |

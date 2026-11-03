@@ -1,4 +1,4 @@
-# M5 T586 S3 — Active: PC110 final qualification review
+# M5 T586 S3 — Closed: PC110 final qualification review
 
 | Field | Required record |
 | --- | --- |
@@ -15,7 +15,7 @@
 | Asset Needs | Preserve user configuration, firmware, CMOS and disks; clean only task-owned reviewed scratch. |
 | Reporting Requirements | Summarize exact test results, failures, limitations, commits and final task status. |
 | Stop Conditions | No claim that RDP, physical input, audio audibility or full hardware fidelity was tested. |
-| Exit Criteria | Evidence-backed final audit and clean, committed work; owner acceptance remains explicit where the proposal requires it. |
+| Exit Criteria | Evidence-backed final audit is recorded in the [S3 review](../etc/evidence/t586-s3-final-review.md). T586 awaits owner acceptance as required by its proposal; unavailable physical/RDP/audio checks are not represented as passed. |
 | Original Owner Request | Complete the first four PC110 queue tasks. |
 | Similar-Issue Sweep | Both architectures, both firmware variants, restart paths, audio and external-device boundaries. |
 

@@ -98,7 +98,7 @@ is closed as T584 with unavailable physical/RDP checks retained for final qualif
 [MyPC110: remaining device and model qualification](../history/M5-T585-pc110-device-model.md)
 is closed as T585 with its explicit device-model limits retained.
 
-1. [MyPC110: final product qualification](../proposals/m5-pc110-final-qualification.md) — admitted as M5 T586.
+1. [MyPC110: final product qualification](../proposals/m5-pc110-final-qualification.md) — M5 T586, S3 review complete; awaiting owner acceptance.
 2. [MyNeoGeo: Metal Slug 2](../proposals/myneogeo-metal-slug2.md)
 3. [CPU differential tools and specification tests](../proposals/m5-differential-and-unit-evidence.md)
 4. [Retained-machine DOS and Windows qualification](../proposals/m5-retained-guest-qualification.md)
