@@ -95,3 +95,13 @@ hashes below capture the reviewed files.
 | assets/myraidenii/myraidenii_0_0_0007_x86.exe | `7ee0475d785632b4d65b9e7cc99b2e4db427fa9690756f8952ec437000db186c` |
 | assets/mynes/mynes_0_0_0044_x64.exe | `b499cd2583ecddd1ae01eed882e21d49d20187558e2138858e5a27117cf74fc8` |
 | assets/mynes/mynes_0_0_0044_x86.exe | `718617af2fbf6d49c36ae3bb10043dc3b2383e35440e7a371e503b8bd4b4ea16` |
+
+Before removing task-local scratch, the log SHA-256 digests were:
+
+| Run | SHA-256 |
+| --- | --- |
+| x64 final-source unit, first attempt | `9947e361dd7ed9b40260a366ea8d5ec6006aa3aba8ec060b5ddbe9ff62e229f1` |
+| x64 final-source unit, four-way repeat | `ebc402672ef1bdf6a8ad122194f356d172d7b8dc003b92af5b43390f429b498f` |
+| x86 final-source unit | `619782891f6df436ccc9c42ac466eab3a58cdf4c3496284a43b4008b2390e817` |
+| x64 final-source integration | `8f9ddecda81f370843b45f7ba9708f7470fa557e4967596e7e3136f461b85950` |
+| x86 final-source integration | `d798439a44732f11419e3034baeee8cee6194813daaf2410484ab23b116dea61` |

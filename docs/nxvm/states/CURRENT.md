@@ -1,3 +1,24 @@
+# M5 T585 S22 — Active: PC110 guest power status
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T585 S22 after S21. |
+| Admission And Approval | Owner directed autonomous completion of the first four PC110 tasks and permits L1/L2 models. |
+| Objective | Trace the selected firmware's guest APM power-status path and correct any demonstrated missing receiver using the existing chipset and EC owners. |
+| Non-goals | No host-pause-as-guest-suspend shortcut, invented physical battery telemetry, second clock or BIOS interception. |
+| Reference Baseline | [S20 power review](../etc/evidence/t585-s20-peripheral-reconciliation.md), [T580 S71 firmware power checkpoint](../etc/evidence/t580-s71-postsetup-power.md), and Open-Source-PC110 Pluto live observations. |
+| Candidate Proposal | [Device and model qualification](../proposals/m5-pc110-device-model-qualification.md). |
+| Files And ABI Surface | Begin with PC110 App and existing test paths; Shared changes only if a concrete receiver requires them. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding and source policy. |
+| Verification | Exercise the actual guest firmware path on both widths with disposable state; identify current status and source level before deciding a change. |
+| Expected Markers | An explicit, reproducible guest APM result rather than assumptions from static EC register values. |
+| Asset Needs | Preserve owner ROM, INI, CMOS and disks; test only with disposable copies. |
+| Reporting Requirements | Separate fixed L1 AC/battery estimates from physical telemetry and firmware behavior. |
+| Stop Conditions | No fake real-device or physical-timing claim. |
+| Exit Criteria | Guest trace and justified implementation or a documented precise model boundary, applicable verification and artifact publication. |
+| Original Owner Request | Complete the first four PC110 queue tasks. |
+| Similar-Issue Sweep | APM status, AC indicators, EC mailbox reply, guest suspend/wake and reset. |
+
 # M5 T585 S21 — Closed: PC110 COM1 UART receiver
 
 | Field | Required record |
