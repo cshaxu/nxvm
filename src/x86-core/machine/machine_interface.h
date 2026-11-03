@@ -223,6 +223,11 @@ lib_status x86_core_machine_get_memory_bytes(
     const x86_core_machine *machine, lib_size *out_memory_bytes);
 lib_status x86_core_machine_get_elapsed_ticks(
     const x86_core_machine *machine, lib_u64 *out_elapsed_ticks);
+/* Only for synchronous device callbacks on Core's owning executor (or while
+ * stopped/paused). Unlike the external snapshot above, this may be called
+ * during execution; it must never be called concurrently from another thread. */
+lib_status x86_core_machine_get_callback_ticks(
+    const x86_core_machine *machine, lib_u64 *out_elapsed_ticks);
 lib_status x86_core_machine_capture_time_observation(const x86_core_machine *machine,
     x86_core_machine_time_observation *out_observation);
 /* Core selects and advances to its next valid guest-observable deadline.

@@ -10,6 +10,7 @@
 #define TIMING_WINDOW_BYTES 16u
 
 typedef struct timing_port_state {
+    x86_core_machine *machine;
     lib_u32 reads;
     lib_u32 writes;
 } timing_port_state;
@@ -36,6 +37,14 @@ static lib_status timing_port_write(void *owner, lib_u16 port,
     (void)access_bytes;
     if (state == LIB_NULL || port != 0x00e0u || value > 0xffu) {
         return LIB_STATUS_INVALID_ARGUMENT;
+    }
+    if (state->machine != LIB_NULL &&
+        state->machine->lifecycle == X86_CORE_MACHINE_RUNNING) {
+        lib_u64 tick = 0u;
+        if (x86_core_machine_get_callback_ticks(state->machine, &tick) != LIB_STATUS_OK ||
+            tick != state->machine->elapsed_ticks ||
+            x86_core_machine_get_elapsed_ticks(state->machine, &tick) != LIB_STATUS_INVALID_STATE)
+            return LIB_STATUS_INTERNAL_ERROR;
     }
     ++state->writes;
     return LIB_STATUS_OK;
@@ -79,6 +88,7 @@ static lib_i32 timing_prepare(x86_core_machine **out_machine,
         x86_core_machine_destroy(machine);
         return 0;
     }
+    port_state->machine = machine;
     *out_machine = machine;
     return 1;
 }
@@ -105,7 +115,7 @@ static lib_i32 timing_run(x86_core_machine *machine, const lib_u8 *program,
 static lib_i32 timing_case(const lib_u8 *program, lib_size program_bytes,
     lib_u64 instructions, lib_u64 expected_ticks)
 {
-    timing_port_state port_state = { 0u, 0u };
+    timing_port_state port_state = {0};
     x86_core_machine *machine = LIB_NULL;
     lib_u64 ticks = 0u;
     lib_i32 failed = !timing_prepare(&machine, &port_state);
@@ -121,7 +131,7 @@ static lib_i32 timing_case(const lib_u8 *program, lib_size program_bytes,
 static lib_i32 timing_test_quantum_and_reset(void)
 {
     static const lib_u8 program[] = { 0x90u, 0x26u, 0x90u, 0xa0u, 0x00u, 0x00u };
-    timing_port_state port_state = { 0u, 0u };
+    timing_port_state port_state = {0};
     x86_core_machine_run_budget one = { 1u, 0u };
     x86_core_machine_run_budget all = { 3u, 0u };
     x86_core_machine_run_result result;
@@ -170,7 +180,7 @@ static lib_i32 timing_test_fault(void)
     };
     lib_u64 prepared_ticks = 0u;
     x86_core_cpu_diagnostic diagnostic = {0};
-    timing_port_state port_state = { 0u, 0u };
+    timing_port_state port_state = {0};
     x86_core_machine_run_budget budget = { 1u, 0u };
     x86_core_machine_run_result result;
     x86_core_machine *machine = LIB_NULL;
@@ -205,7 +215,7 @@ done:
 static lib_i32 timing_test_stop(void)
 {
     static const lib_u8 nop[] = { 0x90u };
-    timing_port_state port_state = { 0u, 0u };
+    timing_port_state port_state = {0};
     x86_core_machine_run_budget budget = { 1u, 0u };
     x86_core_machine_run_result result;
     x86_core_machine *machine = LIB_NULL;
@@ -324,7 +334,7 @@ static lib_i32 timing_test_physical_contract(void)
         .retirement_time_contract = X86_CORE_MACHINE_RETIREMENT_TIME_PHYSICAL,
         .retirement_qualification = &qualification
     };
-    timing_port_state port_state = { 0u, 0u };
+    timing_port_state port_state = {0};
     x86_core_machine_run_budget budget = { 1u, 0u };
     x86_core_machine_run_result result;
     x86_core_machine *machine = LIB_NULL;

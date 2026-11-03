@@ -71,12 +71,13 @@ void x86_nxvm_machine_runner_run(x86_nxvm_machine *session)
             X86_NXVM_MACHINE_RUNNER_QUANTUM_INSTRUCTIONS;
         budget.instructions = x86_nxvm_machine_debug_limit_instruction_budget(
             &session->debug, budget.instructions);
-        /* Turbo remains bounded by instructions so control and presentation
-         * stay responsive, but it must not impose a second tick throttle.
-         * Core still advances every retired instruction and every device
-         * deadline on its one guest-time axis. */
+        /* Turbo has no pacing throttle. A profile may bound a quantum to
+         * service finite output, without adding a second guest clock. */
         budget.ticks = session->speed == X86_NXVM_MACHINE_SPEED_TURBO ? 0u :
             X86_NXVM_MACHINE_RUNNER_QUANTUM_INSTRUCTIONS;
+        if (session->construction.profile.output_tick_budget != 0u &&
+            (budget.ticks == 0u || budget.ticks > session->construction.profile.output_tick_budget))
+            budget.ticks = session->construction.profile.output_tick_budget;
         {
             lib_status run_status = x86_core_machine_run(session->x86_core_machine,
                 budget, &result);

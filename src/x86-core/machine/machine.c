@@ -259,6 +259,15 @@ lib_status x86_core_machine_get_elapsed_ticks(
     return LIB_STATUS_OK;
 }
 
+lib_status x86_core_machine_get_callback_ticks(
+    const x86_core_machine *machine, lib_u64 *out_elapsed_ticks)
+{
+    if (machine == LIB_NULL || out_elapsed_ticks == LIB_NULL ||
+        machine->lifecycle == X86_CORE_MACHINE_INITIALIZED) return LIB_STATUS_INVALID_STATE;
+    *out_elapsed_ticks = machine->elapsed_ticks;
+    return LIB_STATUS_OK;
+}
+
 lib_status x86_core_machine_capture_time_observation(const x86_core_machine *machine,
     x86_core_machine_time_observation *out_observation)
 {

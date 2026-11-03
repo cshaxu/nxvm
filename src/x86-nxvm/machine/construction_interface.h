@@ -47,6 +47,8 @@ typedef struct x86_nxvm_machine_profile_binding {
     lib_status (*output_wait)(void *context);
     lib_status (*output_active)(void *context, lib_bool enabled);
     void (*output_interrupt)(void *context);
+    /* Optional per-quantum guest-time bound for a finite output buffer. */
+    lib_u64 output_tick_budget;
 } x86_nxvm_machine_profile_binding;
 
 /* Prepared values are copied into the sole Machine owner. Firmware/context

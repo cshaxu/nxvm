@@ -415,6 +415,58 @@ static void check_transaction(lib_status configure_status,
     lib_test_assert(probe.detach_count == 1u);
 }
 
+typedef struct output_budget_probe {
+    emulator_machine_driver *driver;
+    x86_core_machine *core;
+    lib_u64 ticks;
+    lib_u32 calls;
+} output_budget_probe;
+
+static lib_status configure_loop_firmware(void *context,
+    x86_core_machine_firmware_context *firmware_context)
+{
+    static const lib_u8 code[16] = {0xebu, 0xfeu};
+    (void)context;
+    return x86_core_machine_firmware_register_immutable_rom(firmware_context,
+        0xffff0u, code, sizeof(code));
+}
+
+static void output_budget_turn(void *context)
+{
+    output_budget_probe *probe = context;
+    if (++probe->calls == 2u) {
+        lib_test_assert(x86_core_machine_get_elapsed_ticks(probe->core, &probe->ticks) ==
+            LIB_STATUS_OK);
+        probe->driver->request_stop(probe->driver->context);
+    }
+}
+
+static lib_u64 check_output_budget(lib_u64 limit)
+{
+    static const x86_core_machine_firmware_provider loop_firmware = {
+        configure_loop_firmware, reset_firmware, LIB_NULL};
+    construction_probe probe = {0};
+    x86_nxvm_machine_construction construction = prepare(&probe);
+    const x86_nxvm_machine_config runtime = {0};
+    x86_nxvm_machine *machine = LIB_NULL;
+    emulator_machine_driver driver = {0};
+    output_budget_probe output = {0};
+
+    construction.firmware_provider = &loop_firmware;
+    construction.profile.output_tick_budget = limit;
+    lib_test_assert(x86_nxvm_machine_create(&runtime, &construction, &machine) == LIB_STATUS_OK);
+    lib_test_assert(x86_nxvm_machine_describe_emulator_driver(machine, &driver) == LIB_STATUS_OK);
+    lib_test_assert(driver.reset(driver.context));
+    lib_test_assert(x86_nxvm_machine_set_speed(machine, X86_NXVM_MACHINE_SPEED_TURBO) == LIB_STATUS_OK);
+    output.driver = &driver;
+    output.core = machine->x86_core_machine;
+    driver.set_executor_callback(driver.context, output_budget_turn, &output);
+    lib_test_assert(driver.run(driver.context));
+    lib_test_assert(output.calls == 2u && output.ticks != 0u);
+    x86_nxvm_machine_destroy(machine);
+    return output.ticks;
+}
+
 lib_i32 main(void)
 {
     construction_probe probe = {0};
@@ -436,6 +488,8 @@ lib_i32 main(void)
     check_fixed_disk_slot_contract();
     check_no_floppy_media_contract();
     check_cmos_seed_decode_contract();
+    lib_test_assert(check_output_budget(2048u) <= 2048u);
+    lib_test_assert(check_output_budget(0u) > 2048u);
     probe = (construction_probe) {0};
     construction = prepare(&probe);
     const x86_nxvm_machine_config missing_media = {
