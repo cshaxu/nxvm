@@ -1,4 +1,4 @@
-# M5 T585 S22 — Active: PC110 guest power status
+# M5 T585 S22 — Closed: PC110 guest power status
 
 | Field | Required record |
 | --- | --- |
@@ -15,7 +15,7 @@
 | Asset Needs | Preserve owner ROM, INI, CMOS and disks; test only with disposable copies. |
 | Reporting Requirements | Separate fixed L1 AC/battery estimates from physical telemetry and firmware behavior. |
 | Stop Conditions | No fake real-device or physical-timing claim. |
-| Exit Criteria | Guest trace and justified implementation or a documented precise model boundary, applicable verification and artifact publication. |
+| Exit Criteria | [S22 evidence](../etc/evidence/t585-s22-apm-status.md) records actual BIOS APM calls on both firmware variants and widths, and the existing cold-boot test now checks that path without adding another boot. Dynamic battery/AC behavior remains explicitly unmodeled; production and EXEs did not change. |
 | Original Owner Request | Complete the first four PC110 queue tasks. |
 | Similar-Issue Sweep | APM status, AC indicators, EC mailbox reply, guest suspend/wake and reset. |
 

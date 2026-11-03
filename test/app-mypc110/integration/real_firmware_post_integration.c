@@ -556,6 +556,74 @@ static void mypc110_post_diagnostic_observe_boot(void *context,
     }
 }
 
+/* Exercise the initialized firmware's APM entry through guest INT 15h. The
+ * temporary program and results live only in this disposable machine. */
+static lib_status mypc110_post_check_apm(x86_nxvm_machine *machine)
+{
+    static const lib_u8 program[] = {
+        0xb8u, 0x00u, 0x53u, 0x31u, 0xdbu, 0xcdu, 0x15u,
+        0x9cu, 0x8fu, 0x06u, 0x00u, 0x21u, 0xa3u, 0x02u, 0x21u,
+        0x89u, 0x1eu, 0x04u, 0x21u, 0x89u, 0x0eu, 0x06u, 0x21u,
+        0xb8u, 0x01u, 0x53u, 0x31u, 0xdbu, 0xcdu, 0x15u,
+        0x9cu, 0x8fu, 0x06u, 0x08u, 0x21u, 0xa3u, 0x0au, 0x21u,
+        0xb8u, 0x0au, 0x53u, 0xbbu, 0x01u, 0x00u, 0xcdu, 0x15u,
+        0x9cu, 0x8fu, 0x06u, 0x0cu, 0x21u, 0xa3u, 0x0eu, 0x21u,
+        0x89u, 0x1eu, 0x10u, 0x21u, 0x89u, 0x0eu, 0x12u, 0x21u,
+        0x89u, 0x16u, 0x14u, 0x21u, 0xebu, 0xfeu};
+    x86_core_machine *core = machine->x86_core_machine;
+    x86_core_machine_run_result result = {0};
+    x86_core_cpu_debug_cpu_snapshot snapshot = {0};
+    const x86_core_cpu_debug_register_patch entry = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_DS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_SS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ESP) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EFLAGS),
+        .values = {[X86_CORE_CPU_DEBUG_CS] = 0u, [X86_CORE_CPU_DEBUG_DS] = 0u,
+            [X86_CORE_CPU_DEBUG_SS] = 0u, [X86_CORE_CPU_DEBUG_EIP] = 0x2000u,
+            [X86_CORE_CPU_DEBUG_ESP] = 0x1f00u, [X86_CORE_CPU_DEBUG_EFLAGS] = 2u}};
+    lib_u8 values[22] = {0};
+    lib_u64 executed = 0u;
+    lib_status status = x86_core_machine_debug_step(core, &result);
+    if (status == LIB_STATUS_OK)
+        status = x86_core_machine_debug_clear_watchpoint(core, X86_CORE_CPU_DEBUG_WATCH_EXECUTE);
+    if (status == LIB_STATUS_OK)
+        status = x86_core_machine_memory_write(core, 0x2000u, program, sizeof(program));
+    if (status == LIB_STATUS_OK)
+        status = x86_core_machine_memory_write(core, 0x2100u, values, sizeof(values));
+    if (status == LIB_STATUS_OK)
+        status = x86_core_machine_debug_set_watchpoint(core, X86_CORE_CPU_DEBUG_WATCH_EXECUTE,
+            0x2000u + sizeof(program) - 2u);
+    if (status == LIB_STATUS_OK) status = x86_core_machine_debug_patch_registers(core, &entry);
+    while (status == LIB_STATUS_OK && executed < 5000000u) {
+        lib_bool advanced = LIB_FALSE;
+        status = x86_core_machine_debug_continue(core,
+            (x86_core_machine_run_budget){65536u, 0u}, &result);
+        executed += result.executed;
+        if (status != LIB_STATUS_OK || result.reason == X86_CORE_MACHINE_STOP_PAUSED) break;
+        if (result.reason == X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
+            status = x86_nxvm_machine_waiting_advance(machine, &result, &advanced);
+            if (status != LIB_STATUS_OK || !advanced) break;
+        } else if (result.reason != X86_CORE_MACHINE_STOP_BUDGET) break;
+    }
+    if (status == LIB_STATUS_OK)
+        status = x86_core_machine_debug_capture_cpu_snapshot(core,
+            X86_CORE_CPU_SNAPSHOT_CURRENT, &snapshot);
+    if (status == LIB_STATUS_OK)
+        status = x86_core_machine_memory_read(core, 0x2100u, values, sizeof(values));
+    if (status == LIB_STATUS_OK && (result.reason != X86_CORE_MACHINE_STOP_PAUSED ||
+        snapshot.cs.selector != 0u || snapshot.eip != 0x2000u + sizeof(program) - 2u ||
+        (values[0] & 1u) != 0u || values[2] != 0u || values[3] != 1u ||
+        values[4] != 0x4du || values[5] != 0x50u ||
+        (values[8] & 1u) != 0u || (values[12] & 1u) != 0u ||
+        values[17] != 1u || values[16] != 0xffu || values[18] != 0xffu))
+        status = LIB_STATUS_INVALID_STATE;
+    lib_c_printf("PC110:APM:status=%d instructions=%llu ac=%02x battery=%02x charge=%02x\n",
+        status, (unsigned long long)executed, values[17], values[16], values[18]);
+    return status;
+}
+
 int main(int argc, char **argv)
 {
     const lib_bool cmos_restore_checkpoint = argc == 3 && argv != LIB_NULL &&
@@ -886,6 +954,7 @@ int main(int argc, char **argv)
                 retired.instruction_linear == 0xf52bdu &&
                 retired.instruction_byte_count >= 2u &&
                 retired.instruction_bytes[0u] == 0xcdu && retired.instruction_bytes[1u] == 0x19u;
+            if (boot_handoff) status = mypc110_post_check_apm(machine);
             break;
         }
         if (cmos_origin_checkpoint && post_reset_trace.cmos_trace_completed) {
