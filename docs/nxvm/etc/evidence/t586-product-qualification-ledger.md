@@ -53,3 +53,25 @@ The aggregate observer log hash was
 Durations reflect two concurrent instances and are observations, not a
 performance guarantee. This matrix uses posted native messages; it does not
 establish physical keyboard, raw mouse capture, RDP or audible output.
+
+## S2 first restart attempt: observer defect
+
+Both x64 variants reached DOS after `stop`/`start`, and each displayed the
+known new POST frame before the second DOS frame. The observer then timed out
+waiting for the reset completion; neither attempt is a reset pass. Its second
+pause snapshot exposes the cause of an invalid observation: its chosen last
+`Machine paused.` was earlier in the Console buffer than the second
+`Machine started.`. The task-only observer had checked against a later
+`Machine resumed.` but not a later `Machine started.`. It therefore sent the
+next command without confirming a fresh pause. This is a confirmed observer
+defect; the timeout alone does not establish whether product reset is faulty.
+The retry must require a pause newer than both start and resume notifications.
+
+The first-run aggregate log SHA-256 is
+`acf00024560e487040d60cf51c858f3360040ba89e402e27ad3643f12c389b73`;
+DSTN x64 observer/driver logs are respectively
+`3bc1ecdcbea817d1a5c78c94631f65801989a7aeBCD6e75d0732d6174eca3c27` and
+`a15c314e7b692d682a9e883df3801a038a37c04b428e1d43b6c4823fcf6d5ab8`;
+TFT x64 observer/driver logs are respectively
+`9fd4396badf7773070570bc185a517c05681de747fc89114120bd09770121c86` and
+`d518ad3d56d86e672c63afa68bab10a29adf299719a079fbb093a2e6dbac67f3`.
