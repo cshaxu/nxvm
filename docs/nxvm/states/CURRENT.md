@@ -1,3 +1,45 @@
+# M5 T586 S1 — Active: PC110 final qualification inventory
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New — M5 T586 S1, fourth owner-selected PC110 task. |
+| Admission And Approval | Owner directed completion of the first four PC110 queue tasks and autonomous S progression. |
+| Objective | Reconcile final product qualification requirements and current evidence, then execute the required current-artifact and guest checks. |
+| Non-goals | Do not describe derived firmware, unconnected peripherals, physical input or RDP as verified hardware behavior. |
+| Reference Baseline | [Final qualification proposal](../proposals/m5-pc110-final-qualification.md), [T583](../etc/evidence/t583-first-setup-ledger.md), [T584](../etc/evidence/t584-product-interaction-ledger.md), and [T585 coverage](../etc/evidence/t585-s23-device-coverage.md). |
+| Candidate Proposal | [Final product qualification](../proposals/m5-pc110-final-qualification.md). |
+| Files And ABI Surface | NXVM task records and existing PC110 test/diagnostic receivers; source changes only if evidence establishes a defect. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding and source policy. |
+| Verification | Current paired EXEs, both firmware variants and widths, actual guest/product paths, appropriate cached suites, and explicit unavailable desktop or physical checks. |
+| Expected Markers | A finite requirement-by-requirement ledger with current-source evidence and no inferred passes. |
+| Asset Needs | Only disposable media and CMOS copies; preserve owner assets and configuration. |
+| Reporting Requirements | Distinguish real guest execution, injected/native messages, user interaction and native device availability. |
+| Stop Conditions | No firmware interception or claims of complete fidelity based only on an early boot checkpoint. |
+| Exit Criteria | Current-state qualification ledger, ordered follow-up checks and actual test evidence. |
+| Original Owner Request | Complete the first four PC110 queue tasks. |
+| Similar-Issue Sweep | Startup, firmware selection, DOS/Personaware, restart, input, presentation, power and device limits. |
+
+# M5 T585 S23 — Closed: PC110 device qualification reconciliation
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T585 S23 after S22. |
+| Admission And Approval | Owner directed autonomous completion of the first four PC110 tasks and permits bounded L1/L2 models. |
+| Objective | Reconcile the complete T585 device/model inventory against the current source and real-path evidence; record each remaining limitation and its owner. |
+| Non-goals | Do not infer physical fidelity, external peripheral transport or an interactive RDP pass from unit tests. |
+| Reference Baseline | [S1 inventory](../etc/evidence/t585-device-model-inventory.md), S2–S22 evidence, [T580 ledger](../etc/evidence/t580-s1-pc110-qualification-ledger.md), and current code. |
+| Candidate Proposal | [Device and model qualification](../proposals/m5-pc110-device-model-qualification.md). |
+| Files And ABI Surface | NXVM evidence, queue and current task records; no production change planned without a demonstrated defect. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding and source policy. |
+| Verification | Check actual receiving code, focused and real-firmware evidence, released artifacts and residual limitations. |
+| Expected Markers | A current, requirement-by-requirement ledger separating implemented functionality from deferred fidelity and absent external receivers. |
+| Asset Needs | Preserve owner ROM, INI, CMOS and media. |
+| Reporting Requirements | Do not describe documented model gaps as complete hardware emulation. |
+| Stop Conditions | No claim of full qualification until the remaining T586 product checks are completed. |
+| Exit Criteria | [S23 coverage](../etc/evidence/t585-s23-device-coverage.md) maps current receivers and evidence; remaining peripheral work is explicitly recorded in [TODO](TODO.md), and final product qualification moves to T586. Documentation and actual-diff checks were performed. |
+| Original Owner Request | Complete the first four PC110 queue tasks. |
+| Similar-Issue Sweep | PC Card, storage, power, audio, serial, display, input and firmware provenance. |
+
 # M5 T585 S22 — Closed: PC110 guest power status
 
 | Field | Required record |

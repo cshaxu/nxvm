@@ -95,12 +95,14 @@ is closed as T583. The remaining candidates retain their requested order:
 [MyPC110: desktop and interactive product qualification](../history/M5-T584-pc110-product-interaction.md)
 is closed as T584 with unavailable physical/RDP checks retained for final qualification.
 
-1. [MyPC110: remaining device and model qualification](../proposals/m5-pc110-device-model-qualification.md) — admitted as M5 T585; S1 inventories current implementation and evidence.
-2. [MyPC110: final product qualification](../proposals/m5-pc110-final-qualification.md)
-3. [MyNeoGeo: Metal Slug 2](../proposals/myneogeo-metal-slug2.md)
-4. [CPU differential tools and specification tests](../proposals/m5-differential-and-unit-evidence.md)
-5. [Retained-machine DOS and Windows qualification](../proposals/m5-retained-guest-qualification.md)
-6. [x87 coprocessor execution](../proposals/m5-x87-coprocessor-execution.md)
+[MyPC110: remaining device and model qualification](../history/M5-T585-pc110-device-model.md)
+is closed as T585 with its explicit device-model limits retained.
+
+1. [MyPC110: final product qualification](../proposals/m5-pc110-final-qualification.md) — admitted as M5 T586.
+2. [MyNeoGeo: Metal Slug 2](../proposals/myneogeo-metal-slug2.md)
+3. [CPU differential tools and specification tests](../proposals/m5-differential-and-unit-evidence.md)
+4. [Retained-machine DOS and Windows qualification](../proposals/m5-retained-guest-qualification.md)
+5. [x87 coprocessor execution](../proposals/m5-x87-coprocessor-execution.md)
 
 The former PC App test adapter candidate was transferred into T564 S13 by
 owner direction; its [proposal](../proposals/m5-pc-app-test-encapsulation.md)

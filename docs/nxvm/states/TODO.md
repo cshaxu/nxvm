@@ -5,6 +5,16 @@ The public-component entries were transferred to the open
 [T564 S6--S13 plan](../proposals/m5-softpc-rgb-frame-import.md) by owner
 direction; transfer is not a repair or a claim of implementation.
 
+- [ ] **MyPC110 peripheral extensions and fidelity (`TODO(Medium)`).** The
+  current bounded device qualification retains external PC Card I/O-card
+  transport, UART host serial/IR/modem connection, dynamic AC/battery/lid
+  modeling, complete ES488/OPL2 synthesis, and physical panel fidelity as
+  distinct future receivers. Keep the current single guest clock and actual
+  component ownership; do not infer them from a memory card, UART loopback or
+  fixed AC status. Admit a focused receiver when a concrete guest or external
+  endpoint and verification corpus exist; until then software using those
+  absent features can fail or produce approximate output. See
+  [S23 coverage](../etc/evidence/t585-s23-device-coverage.md).
 - [ ] **MyPC110 additional RAM configurations (`TODO(Medium)`).** The present
   PC110 plan implements 20 MiB and rejects other explicit sizes. Audit possible
   additional RAM sizes and their chipset, CMOS and open-bus mapping before
