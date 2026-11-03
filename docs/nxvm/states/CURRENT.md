@@ -1,4 +1,25 @@
-# M5 T586 S1 — Active: PC110 final qualification inventory
+# M5 T586 S2 — Active: PC110 current-product restart matrix
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T586 S2 after S1. |
+| Admission And Approval | Owner directed autonomous completion of the first four PC110 tasks and permits task-local test planning. |
+| Objective | Verify the current PC110 products reach DOS after stop/start and reset/resume on both widths and display variants. |
+| Non-goals | Do not equate monitor pause with guest suspend or posted messages with physical input. |
+| Reference Baseline | [T586 ledger](../etc/evidence/t586-product-qualification-ledger.md) and [T583 restart evidence](../etc/evidence/t583-first-setup-ledger.md). |
+| Candidate Proposal | [Final product qualification](../proposals/m5-pc110-final-qualification.md). |
+| Files And ABI Surface | NXVM evidence and task-owned observer; no production change planned without a demonstrated defect. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding and source policy. |
+| Verification | Four real EXE/variant cells with private media, verified changed frame and new DOS frame after each restart, and normal teardown. |
+| Expected Markers | Both restart commands complete and each reaches the guest DOS checkpoint. |
+| Asset Needs | Test-owned media and CMOS copies; preserve user assets and configuration. |
+| Reporting Requirements | Record actual observer results, budgets, timing and environmental limits. |
+| Stop Conditions | Do not count a stale frame, changed screenshot alone or timeout as success. |
+| Exit Criteria | Four-cell current-artifact result, evidence and clean task state, or a precisely diagnosed and addressed defect. |
+| Original Owner Request | Complete the first four PC110 queue tasks. |
+| Similar-Issue Sweep | Stop/start, reset/resume, both firmware variants and both host widths. |
+
+# M5 T586 S1 — Closed: PC110 final qualification inventory
 
 | Field | Required record |
 | --- | --- |
@@ -15,7 +36,7 @@
 | Asset Needs | Only disposable media and CMOS copies; preserve owner assets and configuration. |
 | Reporting Requirements | Distinguish real guest execution, injected/native messages, user interaction and native device availability. |
 | Stop Conditions | No firmware interception or claims of complete fidelity based only on an early boot checkpoint. |
-| Exit Criteria | Current-state qualification ledger, ordered follow-up checks and actual test evidence. |
+| Exit Criteria | [T586 ledger](../etc/evidence/t586-product-qualification-ledger.md) records the current artifacts and all four real-product DOS/Personaware/pause/resume checks; S2 owns the remaining current-artifact restart matrix. |
 | Original Owner Request | Complete the first four PC110 queue tasks. |
 | Similar-Issue Sweep | Startup, firmware selection, DOS/Personaware, restart, input, presentation, power and device limits. |
 
