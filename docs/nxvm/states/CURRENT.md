@@ -1,3 +1,45 @@
+# M5 T585 S21 — Active: PC110 COM1 UART receiver
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T585 S21 after S20. |
+| Admission And Approval | Owner directed autonomous completion of PC110 tasks; X86-NXVM changes and L1/L2 models are authorized. |
+| Objective | Implement the evidenced FIFO-capable COM1 UART and wire the PC110 board at 3F8h and IRQ4. |
+| Non-goals | Do not claim host serial, infrared, modem, or physical baud fidelity without a real receiver and evidence. |
+| Reference Baseline | [S20 receiver review](../etc/evidence/t585-s20-peripheral-reconciliation.md) and the referenced PC110 live dump. |
+| Candidate Proposal | [Device and model qualification](../proposals/m5-pc110-device-model-qualification.md). |
+| Files And ABI Surface | Reusable X86-NXVM UART chip, PC110 wiring, corresponding source and tests; update applicable manifests. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding and source policy. |
+| Verification | Real CPU/port and PIC routes, reset, FIFO, divisor, loopback and interrupt behavior on x64/x86; applicable full cached suites and all affected releases. |
+| Expected Markers | Guest observes FIFO-enabled COM1 and independently verified interrupt/loopback behavior. |
+| Asset Needs | Preserve owner configuration, CMOS, firmware and media. |
+| Reporting Requirements | Separate UART guest behavior from absent external serial transport and mark timing model. |
+| Stop Conditions | No second bus, host polling thread or PC110 special case in a reusable UART. |
+| Exit Criteria | Source-reviewed implementation, meaningful existing-path tests, required builds, full applicable tests and checked deployment. |
+| Original Owner Request | Complete the first four PC110 queue tasks. |
+| Similar-Issue Sweep | Reset and IIR/LSR acknowledgement, DLAB, FIFO enable/clear and existing port ownership. |
+
+# M5 T585 S20 — Closed: PC110 power and peripheral reconciliation
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T585 S20 after S19. |
+| Admission And Approval | Owner directed autonomous completion of the first four PC110 queue tasks and permits L1/L2 models. |
+| Objective | Reconcile implemented guest power, display and auxiliary paths with current code, firmware-path tests and available references; identify and fix concrete remaining product gaps in appropriately sized batches. |
+| Non-goals | Do not equate host pause with guest suspend, claim physical timing or invent a peripheral merely to close the ledger. |
+| Reference Baseline | [Device inventory](../etc/evidence/t585-device-model-inventory.md), [PC Card wake](../etc/evidence/t585-s11-pcic-wake.md), and [power checkpoint](../etc/evidence/t580-s71-postsetup-power.md). |
+| Candidate Proposal | [Device and model qualification](../proposals/m5-pc110-device-model-qualification.md). |
+| Files And ABI Surface | PC110 App and existing tests; Shared only where a demonstrated receiver requires it. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding and source policy. |
+| Verification | Compare actual receiver and existing tests to available references; verify any changes on both widths and preserve owner data. |
+| Expected Markers | A current receiver ledger distinguishing tested behavior, actual missing behavior and bounded model limitations. |
+| Asset Needs | Preserve owner firmware, INI, CMOS and media; use disposable test inputs. |
+| Reporting Requirements | Identify L1/L2 sources and unexecuted physical or interactive checks. |
+| Stop Conditions | No speculative device framework, second guest clock, or false claim of complete hardware fidelity. |
+| Exit Criteria | [S20 receiver ledger](../etc/evidence/t585-s20-peripheral-reconciliation.md) records current routes, evidence and missing COM1; S21 owns its implementation. This was a source audit, not a dynamic qualification. |
+| Original Owner Request | Complete the first four PC110 queue tasks. |
+| Similar-Issue Sweep | Guest suspend/wake, power status, serial/IR/modem/dock, display/font and external-card receiver. |
+
 # M5 T585 S19 — Closed: PC110 ES488 continuous playback
 
 | Field | Required record |
