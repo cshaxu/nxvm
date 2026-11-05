@@ -39,6 +39,10 @@ and third-party notices belong in `THIRD_PARTY_NOTICES.md` and product `etc/`.
 
 ## Governance Check
 
+Repository text uses LF in both Git's index and the working tree. The
+`repository.line-endings` test checks tracked and non-ignored untracked files;
+Git-recognized binary files are exempt. Generated build trees are not sources.
+
 Run the lightweight structural check for each affected product:
 
 ```powershell

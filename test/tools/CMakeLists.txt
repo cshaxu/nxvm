@@ -1,3 +1,8 @@
+add_test(NAME repository.line-endings
+    COMMAND "${CMAKE_COMMAND}" -DREPOSITORY_ROOT=${CMAKE_SOURCE_DIR}
+        -P "${CMAKE_CURRENT_SOURCE_DIR}/verify_line_endings.cmake")
+set_tests_properties(repository.line-endings PROPERTIES LABELS "unit;repository" TIMEOUT 60)
+
 if(POWERSHELL_EXECUTABLE)
     add_test(NAME repository.build-cleanup
         COMMAND "${POWERSHELL_EXECUTABLE}" -NoProfile -ExecutionPolicy Bypass
