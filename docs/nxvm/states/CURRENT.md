@@ -1,5 +1,17 @@
 # NXVM current task status
 
+## M5 Td S184 — Closed: repository text line endings
+
+Owner authorized repository-wide LF normalization, removal of obsolete Git
+attributes, and a regression check. Git identified 182 tracked working files
+with CRLF or mixed endings; their normalized contents already matched the LF
+index. The task changed only their working-tree line endings, not product
+contents or binary data. The repository CTest checks index and working-tree
+endings for tracked and non-ignored untracked files; temporary Git fixtures
+proved LF/binary acceptance and CRLF/mixed rejection. Both existing x86/x64
+build trees register the check. All three product documentation governance
+checks pass. Generated and ignored files are outside the repository check.
+
 | Task | Status |
 | --- | --- |
 | T586 | Closed after owner acceptance. [Final qualification history](../history/M5-T586-pc110-final-qualification.md) records results and retained limitations. No new T is admitted. |
