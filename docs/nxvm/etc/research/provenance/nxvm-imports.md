@@ -223,3 +223,14 @@ the Shared source/test corpus.
   composition and real long-name tests. Other vocabulary/gate changes are
   derived locally. [Correction evidence](../../evidence/t562-s3-correction.md)
   records the exact scope, receiver tests, counts and limits.
+
+## T587 S1 — Minimal Break Identity Import
+
+- Source: NTVDM64 project-owned MIT commit
+  `70e829d880cf897a340af6791c1343b9238748af`; owner approved selective import.
+- Source `src/lib-nxvm/{base/input_interface.h,base/win32/input.c,types/win32/input.h}`
+  maps to the same paths under `src/lib/`. Four lines add Break identity,
+  native VK_CANCEL mapping and its Types alias; existing include paths stay.
+- No older Window implementation, App code, media or firmware is imported.
+  Receiving tests extend existing fixtures locally rather than copying App tests.
+- See [T587 history](../../../history/M5-T587-break-input.md) for verification.
