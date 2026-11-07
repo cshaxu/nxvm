@@ -256,6 +256,26 @@ lib_i32 main(void)
             set1.count != 2u || set1.bytes[1u] != 0xc8u) return 1;
     }
 
+    /* Win32 Break retains its E0 46 physical identity through KVM. */
+    {
+        const lib_u8 make[] = {0xe0u, 0x7eu};
+        const lib_u8 release[] = {0xe0u, 0xf0u, 0x7eu};
+        kvm_input_event event = {.type = KVM_EVENT_KEY,
+            .data.key = {.key = BASE_KEY_BREAK, .scan_code = 0x46u,
+                .flags = BASE_KEY_FLAG_EXTENDED, .pressed = LIB_TRUE}};
+        if (!vm_keyboard_native_set2_expect(BASE_KEY_BREAK, 0x46u,
+                BASE_KEY_FLAG_EXTENDED, LIB_TRUE, make, sizeof(make)) ||
+            !vm_keyboard_native_set2_expect(BASE_KEY_BREAK, 0x46u,
+                BASE_KEY_FLAG_EXTENDED, LIB_FALSE, release, sizeof(release))) return 1;
+        if (x86_nxvm_machine_keyboard_map_kvm_event_for_scan_set(&event,
+                X86_NXVM_BOARD_KEYBOARD_SCAN_SET_1, &set1) != LIB_STATUS_OK ||
+            set1.count != 2u || set1.bytes[0] != 0xe0u || set1.bytes[1] != 0x46u) return 1;
+        event.data.key.pressed = LIB_FALSE;
+        if (x86_nxvm_machine_keyboard_map_kvm_event_for_scan_set(&event,
+                X86_NXVM_BOARD_KEYBOARD_SCAN_SET_1, &set1) != LIB_STATUS_OK ||
+            set1.count != 2u || set1.bytes[0] != 0xe0u || set1.bytes[1] != 0xc6u) return 1;
+    }
+
     if (!vm_keyboard_native_set2_expect('A', 0x1eu, 0u, LIB_TRUE, a_make, sizeof(a_make)) ||
         !vm_keyboard_native_set2_expect('A', 0x1eu, 0u, LIB_FALSE, a_break, sizeof(a_break)) ||
         !vm_keyboard_native_set2_expect(BASE_KEY_UP, 0x48u, BASE_KEY_FLAG_EXTENDED, LIB_TRUE, up_make,

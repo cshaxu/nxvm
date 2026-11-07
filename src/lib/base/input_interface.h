@@ -46,6 +46,7 @@ enum {
     BASE_KEY_LEFT_WINDOWS = 0x0003000bu,
     BASE_KEY_RIGHT_WINDOWS = 0x0003000cu,
     BASE_KEY_MENU = 0x0003000du,
+    BASE_KEY_BREAK = 0x0003000eu,
     BASE_KEY_KEYPAD_0 = 0x00040000u,
     BASE_KEY_KEYPAD_1,
     BASE_KEY_KEYPAD_2,
@@ -88,6 +89,7 @@ enum {
 /* Copied neutral input. Physical identity is the PC set-1 make code without
  * its break bit; EXTENDED denotes the E0 prefix. Zero means unavailable.
  * Pause uses make code 0x45 without E0 and BASE_KEY_PAUSE (no E1 byte stream);
+ * Break retains BASE_KEY_BREAK separately from Pause.
  * Print Screen uses 0x37 with E0. Modifiers retain left/right physical codes.
  * modifiers uses BASE_KEY_MODIFIER_* bits. A logical key and scalar are
  * alternatives: scalar is a complete Unicode
