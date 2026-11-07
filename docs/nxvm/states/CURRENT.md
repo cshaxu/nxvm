@@ -1,29 +1,10 @@
-# M5 T587 S1 — Delivered, awaiting acceptance: neutral Break input import
+# M5 T587 — Open; S1 closed after owner acceptance
 
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New: M5 T587 S1, following owner-closed T586. |
-| Admission And Approval | Owner requested minimal Break import, PC wiring tests, compilation and push on 2026-11-06. |
-| Objective | Preserve Break identity through the existing neutral input and PC keyboard paths. |
-| Non-goals | No wholesale Lib import, Window changes, new input path or product-version advance. |
-| Reference Baseline | NXVM b1fd613e1; NTVDM64 70e829d880cf897a340af6791c1343b9238748af. |
-| Candidate Proposal | [Break import](../history/M5-T587-break-input-proposal.md). |
-| Files And ABI Surface | Three Lib source headers/implementation, existing Lib and X86-NXVM tests and manifests. Add a key constant, no layout or function change. All seven Apps receive rebuilt artifacts. |
-| Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding, NXVM layout/design and source policy. |
-| Verification | Existing x86/x64 cached builds; full unit and integration suites; profile-specific integration; manifest, dependency, LF and documentation gates; 14 PE artifacts and hashes. |
-| Expected Markers | HOST-KEY-TO-NATIVE-SCAN-SETS:OK and native decoder exit zero; exact suite outcomes recorded. |
-| Asset Needs | Retain current receiver versions, INI and media. Publish seven dual-width pairs. Use existing .ninja and .ccache only. |
-| Reporting Requirements | Production/test line counts, source provenance, exact results, artifact hashes and commits; disclose unavailable physical/native tests. |
-| Stop Conditions | No widening production changes without a demonstrated defect; never count unavailable desktop hardware as passed. |
-| Exit Criteria | Minimal import reviewed, tests and releases verified, evidence complete, commits pushed; await owner acceptance. |
-| Original Owner Request | Import NTVDM64 Break with minimal changes, verify PC wiring and necessary tests, build/test/commit/push. |
-| Similar-Issue Sweep | Pause versus Break; make/break and extended identity through shared decoder and PC scan sets; retain newer Window behavior. |
-
-Delivery: Shared source `6bc8e71d7`; [S1 history](../history/M5-T587-break-input.md)
-records both 715/715 unit suites, both 48/48 registered integration suites,
-selected-profile results, all fourteen artifact hashes and actual diff review.
-Physical Break/RDP input has not been manually verified. T587 remains open
-pending owner acceptance. No subsequent S is admitted.
+The owner accepted and authorized closure of S1 on 2026-11-06.
+The Break import and all fourteen receiving artifacts were delivered through
+`7794e25f9`; [S1 history](../history/M5-T587-break-input.md) records source,
+verification, artifact hashes and the archived packet. No S is active.
+T587 remains open; no subsequent task is admitted.
 
 # NXVM current task status
 

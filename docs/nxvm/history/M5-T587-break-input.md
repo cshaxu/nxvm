@@ -1,7 +1,7 @@
 # M5 T587 — Break input support
 
-Status: S1 delivered for owner acceptance; T587 remains open.
-[Proposal](M5-T587-break-input-proposal.md) and CURRENT define the bounded import.
+Status: S1 closed after owner acceptance on 2026-11-06; T587 remains open.
+[Proposal](M5-T587-break-input-proposal.md) records the bounded import.
 
 Source revision: `6bc8e71d7` (Shared P1).
 
@@ -81,3 +81,34 @@ The PC deploy hooks and current INI-identity integrations verify receiving paths
 | assets/mynes/mynes_0_0_0044_x86.exe | `bd76f447efd072ca3879c74e4b4dd833fe51ee45b9ff3c416055c7890178bf3b` |
 | assets/myraidenii/myraidenii_0_0_0007_x64.exe | `27c0ce9704282e217ea9cbbb1173b4e1545fd53c365dcbece136cfedab02cc8f` |
 | assets/myraidenii/myraidenii_0_0_0007_x86.exe | `d3942c0a063ec6a5c368c48002f8d08e6a050432927f99b63b7bc76e1f197a95` |
+
+## Owner acceptance and closure
+
+The owner approved S1 closure and commit/push after delivery `7794e25f9`.
+Closure review matched all fourteen deployed hashes to this record and checked
+the delivery commits and scope. The prior automated qualification remains
+valid; this documentation-only closure does not rebuild unchanged executables
+or repeat runtime tests. Physical/RDP limitations above remain unchanged.
+Documentation governance, LF and diff checks validate the closure update.
+T587 stays open with no active S.
+
+## Archived S1 admission packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New: M5 T587 S1, following owner-closed T586. |
+| Admission And Approval | Owner requested minimal Break import, PC wiring tests, compilation and push on 2026-11-06. |
+| Objective | Preserve Break identity through the existing neutral input and PC keyboard paths. |
+| Non-goals | No wholesale Lib import, Window changes, new input path or product-version advance. |
+| Reference Baseline | NXVM b1fd613e1; NTVDM64 70e829d880cf897a340af6791c1343b9238748af. |
+| Candidate Proposal | [Break import](M5-T587-break-input-proposal.md). |
+| Files And ABI Surface | Three Lib source headers/implementation, existing Lib and X86-NXVM tests and manifests. Add a key constant, no layout or function change. All seven Apps receive rebuilt artifacts. |
+| Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding, NXVM layout/design and source policy. |
+| Verification | Existing x86/x64 cached builds; full unit and integration suites; profile-specific integration; manifest, dependency, LF and documentation gates; 14 PE artifacts and hashes. |
+| Expected Markers | HOST-KEY-TO-NATIVE-SCAN-SETS:OK and native decoder exit zero; exact suite outcomes recorded. |
+| Asset Needs | Retain current receiver versions, INI and media. Publish seven dual-width pairs. Use existing .ninja and .ccache only. |
+| Reporting Requirements | Production/test line counts, source provenance, exact results, artifact hashes and commits; disclose unavailable physical/native tests. |
+| Stop Conditions | No widening production changes without a demonstrated defect; never count unavailable desktop hardware as passed. |
+| Exit Criteria | Minimal import reviewed, tests and releases verified, evidence complete, commits pushed; await owner acceptance. |
+| Original Owner Request | Import NTVDM64 Break with minimal changes, verify PC wiring and necessary tests, build/test/commit/push. |
+| Similar-Issue Sweep | Pause versus Break; make/break and extended identity through shared decoder and PC scan sets; retain newer Window behavior. |

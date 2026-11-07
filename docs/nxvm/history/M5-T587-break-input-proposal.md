@@ -12,5 +12,5 @@ No new input queue, state, function, platform path or layout is planned.
 Exit requires dual-width cached builds, unit and integration results, all
 fourteen current-version release artifacts, actual diff review and delivery.
 Physical input and unavailable native endpoints remain explicitly unverified.
-The owner accepts before closure. See CURRENT for the complete active packet
-and the companion history for results.
+S1 was accepted and closed by the owner on 2026-11-06. The companion history
+retains the admission packet and results; CURRENT records T587 with no active S.
