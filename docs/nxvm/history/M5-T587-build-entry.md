@@ -132,3 +132,31 @@ Delivery commits: Shared tooling 799dde021, MyNES registration b8204b19c,
 MyRaidenII declaration/artifacts f5610c439; the following NXVM P records
 this evidence and the eight changed PC EXEs. Final source includes these
 commits and the unchanged receiving App baselines.
+
+## Owner acceptance and closure
+
+On 2026-11-11 the owner accepted S2 and explicitly approved closure.
+Delivery through 544e51f5c satisfies the admitted build/publication request.
+S2 is closed; T587 remains open with no active S. This closure changes only
+documentation, so no new compilation, runtime test or artifact is required.
+
+### Archived admission packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation: M5 T587 S2 after accepted S1. |
+| Admission And Approval | Owner requested a double-click tools/build.cmd product menu, both widths and publication, with no PowerShell in the build chain; reference SoftPC approach (2026-11-11). |
+| Objective | One selectable CMD entry with cached Ninja/GCC dual-width publication for all seven products. |
+| Non-goals | No emulator behavior, version, INI/media change or replacement of independent governance/test tools. |
+| Reference Baseline | 09ebe521e; inspected SoftPC tools/build.cmd as workflow reference only. |
+| Candidate Proposal | [S2 build entry](M5-T587-build-entry.md). |
+| Files And ABI Surface | Shared tools, root CMake and repository tests; MyNES/MyRaidenII publication declarations; NXVM records and receiving EXEs only if bytes change. No public C API. |
+| Applicable Rules | Execution, Documentation, Architecture, Coding; NXVM/MyNES/MyRaidenII design and layout. |
+| Verification | Real CMD menu and noninteractive calls; seven products x86/x64, incremental reuse, errors and absent output recreation; inspect target commands for PowerShell; existing unit suites and documentation/LF checks. |
+| Expected Markers | Successful publication and nonzero failures, existing version and PE architecture for all fourteen outputs. |
+| Asset Needs | Existing BYOB paths and stable .ninja/.ccache trees; never overwrite INI or media. |
+| Reporting Requirements | Audit findings, actual diff, command usage, test and release evidence; owner acceptance before closure. |
+| Stop Conditions | Do not hide missing tools/assets or stale outputs as success. |
+| Exit Criteria | Menu and direct invocation verified; dual-width products published; checks, review, commits and push completed. |
+| Original Owner Request | Select an App by double-clicking tools/build.cmd and build/publish 32/64-bit without PowerShell, similarly to SoftPC. |
+| Similar-Issue Sweep | All seven products, version naming, no-op publication, tool lookup, caller cwd and failure propagation. |
