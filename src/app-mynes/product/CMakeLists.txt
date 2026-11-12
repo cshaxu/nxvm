@@ -44,3 +44,6 @@ if(WIN32)
             ${mynes_artifact_directory}/${mynes_artifact_name}
         VERBATIM)
 endif()
+
+repository_publish_product(mynes mynes-0-0-0044
+    "$<TARGET_FILE_BASE_NAME:mynes-0-0-0044>_${PROJECT_ARTIFACT_ARCHITECTURE}.exe")
