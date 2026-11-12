@@ -105,6 +105,7 @@ is closed as T586 after owner acceptance; retained limitations remain recorded.
 2. [CPU differential tools and specification tests](../proposals/m5-differential-and-unit-evidence.md)
 3. [Retained-machine DOS and Windows qualification](../proposals/m5-retained-guest-qualification.md)
 4. [x87 coprocessor execution](../proposals/m5-x87-coprocessor-execution.md)
+5. [HP OmniBook 300/425/430 emulator and three System ROM cards](../proposals/m5-omnibook-emulator.md)
 
 The former PC App test adapter candidate was transferred into T564 S13 by
 owner direction; its [proposal](../proposals/m5-pc-app-test-encapsulation.md)

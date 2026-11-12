@@ -15,6 +15,13 @@ verification, artifact hashes and the archived packet. S2 is closed as recorded 
 
 # NXVM current task status
 
+## M5 Td S185 — Completed: OmniBook queue registration
+
+The owner requested this candidate on 2026-11-11. It is appended at queue
+position 5 with its [proposal](../proposals/m5-omnibook-emulator.md).
+[Registration record](../history/M5-Td-S185-omnibook-queue.md) retains the packet
+and scope review. No implementation task is admitted.
+
 ## M5 Td S184 — Closed: repository text line endings
 
 Owner authorized repository-wide LF normalization, removal of obsolete Git
