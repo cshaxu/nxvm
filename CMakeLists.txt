@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.23)
 
 include(cmake/BuildEnvironment.cmake)
+include(cmake/PublishProducts.cmake)
 
 # The root owns only the toolchain contract and neutral shared corpora.
 # Products select their own CMake graph below; no product cache setting is a
@@ -78,4 +79,14 @@ endif()
 if(REPOSITORY_BUILD_MYRAIDENII)
     add_subdirectory(src/app-myraidenii)
     add_subdirectory(test/app-myraidenii)
+endif()
+
+if(REPOSITORY_BUILD_NXVM)
+    get_filename_component(pc_filename "${PROJECT_CURRENT_VM_RUNTIME_PATH}" NAME)
+    repository_publish_product(${NXVM_PRODUCT_ARTIFACT_NAME}
+        ${PROJECT_CURRENT_VM_ARTIFACT_TARGET} "${pc_filename}")
+    if(TARGET mypc110)
+        get_target_property(pc110_filename mypc110 MYPC110_ARTIFACT_NAME)
+        repository_publish_product(mypc110 mypc110 "${pc110_filename}")
+    endif()
 endif()

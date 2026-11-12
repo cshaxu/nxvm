@@ -15,3 +15,13 @@ if(POWERSHELL_EXECUTABLE)
             -Architecture "${PROJECT_ARTIFACT_ARCHITECTURE}")
     set_tests_properties(repository.build-environment PROPERTIES LABELS "unit;repository" TIMEOUT 180)
 endif()
+
+if(WIN32)
+    add_test(NAME repository.product-publication
+        COMMAND "${CMAKE_COMMAND}" -DREPOSITORY_ROOT=${CMAKE_SOURCE_DIR}
+            -DTEST_WORK_DIR=${CMAKE_CURRENT_BINARY_DIR}
+            -DINPUT=$<TARGET_FILE:lib-test-base-win32-keyboard_decode>
+            -P "${CMAKE_CURRENT_SOURCE_DIR}/publish_product.cmake")
+    set_tests_properties(repository.product-publication PROPERTIES
+        LABELS "unit;repository" TIMEOUT 60)
+endif()

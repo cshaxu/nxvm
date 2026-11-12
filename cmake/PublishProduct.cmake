@@ -1,0 +1,8 @@
+if(NOT EXISTS "${INPUT}" OR IS_DIRECTORY "${INPUT}")
+    message(FATAL_ERROR "Publication requires the built executable")
+endif()
+get_filename_component(output_directory "${OUTPUT}" DIRECTORY)
+file(MAKE_DIRECTORY "${output_directory}")
+file(COPY_FILE "${INPUT}" "${OUTPUT}" ONLY_IF_DIFFERENT)
+file(SHA256 "${OUTPUT}" digest)
+message(STATUS "Published ${OUTPUT} SHA256=${digest}")
