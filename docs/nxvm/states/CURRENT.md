@@ -1,10 +1,30 @@
-# M5 T587 — Open; S1 closed after owner acceptance
+# M5 T587 S2 — Delivered: CMD build and publication; awaiting acceptance
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation: M5 T587 S2 after accepted S1. |
+| Admission And Approval | Owner requested a double-click tools/build.cmd product menu, both widths and publication, with no PowerShell in the build chain; reference SoftPC approach (2026-11-11). |
+| Objective | One selectable CMD entry with cached Ninja/GCC dual-width publication for all seven products. |
+| Non-goals | No emulator behavior, version, INI/media change or replacement of independent governance/test tools. |
+| Reference Baseline | 09ebe521e; inspected SoftPC tools/build.cmd as workflow reference only. |
+| Candidate Proposal | [S2 build entry](../history/M5-T587-build-entry.md). |
+| Files And ABI Surface | Shared tools, root CMake and repository tests; MyNES/MyRaidenII publication declarations; NXVM records and receiving EXEs only if bytes change. No public C API. |
+| Applicable Rules | Execution, Documentation, Architecture, Coding; NXVM/MyNES/MyRaidenII design and layout. |
+| Verification | Real CMD menu and noninteractive calls; seven products x86/x64, incremental reuse, errors and absent output recreation; inspect target commands for PowerShell; existing unit suites and documentation/LF checks. |
+| Expected Markers | Successful publication and nonzero failures, existing version and PE architecture for all fourteen outputs. |
+| Asset Needs | Existing BYOB paths and stable .ninja/.ccache trees; never overwrite INI or media. |
+| Reporting Requirements | Audit findings, actual diff, command usage, test and release evidence; owner acceptance before closure. |
+| Stop Conditions | Do not hide missing tools/assets or stale outputs as success. |
+| Exit Criteria | Menu and direct invocation verified; dual-width products published; checks, review, commits and push completed. |
+| Original Owner Request | Select an App by double-clicking tools/build.cmd and build/publish 32/64-bit without PowerShell, similarly to SoftPC. |
+| Similar-Issue Sweep | All seven products, version naming, no-op publication, tool lookup, caller cwd and failure propagation. |
+
+# M5 T587 S1 — Closed after owner acceptance
 
 The owner accepted and authorized closure of S1 on 2026-11-06.
 The Break import and all fourteen receiving artifacts were delivered through
 `7794e25f9`; [S1 history](../history/M5-T587-break-input.md) records source,
-verification, artifact hashes and the archived packet. No S is active.
-T587 remains open; no subsequent task is admitted.
+verification, artifact hashes and the archived packet. S2 is admitted above.
 
 # NXVM current task status
 
