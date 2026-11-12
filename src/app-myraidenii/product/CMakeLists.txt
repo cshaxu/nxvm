@@ -13,6 +13,10 @@ set_target_properties(myraidenii-0-0-0007 PROPERTIES OUTPUT_NAME myraidenii_0_0_
 target_link_libraries(myraidenii-0-0-0007 PRIVATE myraidenii-product)
 if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(myraidenii-0-0-0007 PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_link_options(myraidenii-0-0-0007 PRIVATE "$<$<CONFIG:Release>:-Wl,--strip-debug>")
 elseif(MSVC)
     target_compile_options(myraidenii-0-0-0007 PRIVATE /W4 /WX)
 endif()
+
+repository_publish_product(myraidenii myraidenii-0-0-0007
+    "$<TARGET_FILE_BASE_NAME:myraidenii-0-0-0007>_${PROJECT_ARTIFACT_ARCHITECTURE}.exe")
