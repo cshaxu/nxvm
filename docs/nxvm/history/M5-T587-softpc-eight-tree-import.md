@@ -28,7 +28,7 @@ are already byte-identical. Planned delta including manifests: 11 files,
 ## Verification and delivery
 
 All admitted build, publication, test and actual-diff checks are complete.
-S3 is delivered pending owner acceptance; T587 remains open.
+The owner accepted and authorized S3 closure on 2026-11-15; T587 remains open.
 
 ## Actual-change review
 
@@ -144,5 +144,36 @@ archived here and in the verification index; task scratch is removed using the
 repository cleanup tool, retaining both stable Ninja trees and ccache.
 Shared import is committed as 485f2091b; MyNES receivers as 845f1b188;
 MyRaidenII receivers as 544e30426. The final NXVM P4 commit owns the ten
-PC receivers and this completed qualification record. Owner acceptance
-is still required; neither S3 nor T587 is silently closed.
+PC receivers and this completed qualification record (3ae29d626).
+
+## Owner acceptance and closure
+
+The owner explicitly approved S3 closure on 2026-11-15 and requested waiting
+for further instructions. Coordinator review reconciled the actual P1-P4 changes,
+qualification evidence, publication and clean delivery against the original
+request. All S3 exits are satisfied. This closure changes documentation only;
+existing tested binaries remain current and no rebuild is required. T587 stays
+open with no active S. No additional work is admitted.
+
+## Archived S3 delivery packet
+
+# M5 T587 S3 — Delivered: awaiting owner acceptance
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation: M5 T587 S3 after owner-accepted S2; next unused S confirmed against Git. |
+| Admission And Approval | Owner approves byte-exact import, cached full build, fourteen-EXE publication, full tests, commits and push (2026-11-15); explicitly accepts Built on refresh and its single-object cache exception. |
+| Objective | Import the audited SoftPC eight trees and qualify all seven dual-width consumers. |
+| Non-goals | No App behavior/version, INI, media, external firmware, X86 Core/NXVM source changes or edits to SoftPC. |
+| Reference Baseline | NXVM 36643e553; SoftPC dfe955eb885e66c5549b6cd7823bb262af83ab69 committed blobs. |
+| Candidate Proposal | [S3 bounded import and evidence](../history/M5-T587-softpc-eight-tree-import.md). |
+| Files And ABI Surface | Shared src/test Lib, Emulator, X86 Debug and X86 IBMPC; all fourteen NXVM/MyNES/MyRaidenII receiving EXEs; NXVM records. No public API/layout change. |
+| Applicable Rules | Execution, Documentation, Architecture, Coding, NXVM guide/design/layout/source policy; preserve inward dependencies, exact upstream contents and product-scoped commits. |
+| Verification | Eight-tree blob equality and manifests; cached x86/x64 full builds, all unit/integration tests, fourteen PE widths/hashes/deployment identities, documentation and LF/diff gates; actual-diff self-review. |
+| Expected Markers | Zero build failures, explicit per-suite results, byte-exact eight trees, fourteen current outputs and no unrelated working-tree changes. |
+| Asset Needs | Existing BYOB and stable .ninja/.ccache; preserve all owner INI/media. Task scratch build/t587-s3 owned by this S, 2 GiB log budget, 15-minute no-progress review and 4-hour batch review; archive summaries/hashes then clean after processes exit. |
+| Reporting Requirements | Changed paths/line counts, fixed source, tests and failures, artifact hashes, cache exception, commits, native versus synthetic validation and remaining limitations. |
+| Stop Conditions | Do not relax assertions, silently omit a receiver, modify upstream or claim unavailable desktop validation; investigate actual failures within scope. |
+| Exit Criteria | Eight trees match the pinned source; fourteen artifacts are published; 1,528 full-suite cases, 130 profile checks and four MyRaidenII checks pass. Actual-diff review is complete; delivery is recorded in the scoped M5 T587 S3 P1-P4 commits. Owner acceptance is required before closure. |
+| Original Owner Request | Admit a new S, import unchanged, then cached full build, publication, tests, commit and push. |
+| Similar-Issue Sweep | Console metadata setter and both restoration/frame paths; all Built on consumers, dependency target parsing, serial test registration and manifest coverage. |

@@ -1,31 +1,16 @@
-# M5 T587 S3 — Delivered: awaiting owner acceptance
+# M5 T587 — Open; no active S
 
-| Field | Required record |
+| Task | Status |
 | --- | --- |
-| Identifier Mode | Continuation: M5 T587 S3 after owner-accepted S2; next unused S confirmed against Git. |
-| Admission And Approval | Owner approves byte-exact import, cached full build, fourteen-EXE publication, full tests, commits and push (2026-11-15); explicitly accepts Built on refresh and its single-object cache exception. |
-| Objective | Import the audited SoftPC eight trees and qualify all seven dual-width consumers. |
-| Non-goals | No App behavior/version, INI, media, external firmware, X86 Core/NXVM source changes or edits to SoftPC. |
-| Reference Baseline | NXVM 36643e553; SoftPC dfe955eb885e66c5549b6cd7823bb262af83ab69 committed blobs. |
-| Candidate Proposal | [S3 bounded import and evidence](../history/M5-T587-softpc-eight-tree-import.md). |
-| Files And ABI Surface | Shared src/test Lib, Emulator, X86 Debug and X86 IBMPC; all fourteen NXVM/MyNES/MyRaidenII receiving EXEs; NXVM records. No public API/layout change. |
-| Applicable Rules | Execution, Documentation, Architecture, Coding, NXVM guide/design/layout/source policy; preserve inward dependencies, exact upstream contents and product-scoped commits. |
-| Verification | Eight-tree blob equality and manifests; cached x86/x64 full builds, all unit/integration tests, fourteen PE widths/hashes/deployment identities, documentation and LF/diff gates; actual-diff self-review. |
-| Expected Markers | Zero build failures, explicit per-suite results, byte-exact eight trees, fourteen current outputs and no unrelated working-tree changes. |
-| Asset Needs | Existing BYOB and stable .ninja/.ccache; preserve all owner INI/media. Task scratch build/t587-s3 owned by this S, 2 GiB log budget, 15-minute no-progress review and 4-hour batch review; archive summaries/hashes then clean after processes exit. |
-| Reporting Requirements | Changed paths/line counts, fixed source, tests and failures, artifact hashes, cache exception, commits, native versus synthetic validation and remaining limitations. |
-| Stop Conditions | Do not relax assertions, silently omit a receiver, modify upstream or claim unavailable desktop validation; investigate actual failures within scope. |
-| Exit Criteria | Eight trees match the pinned source; fourteen artifacts are published; 1,528 full-suite cases, 130 profile checks and four MyRaidenII checks pass. Actual-diff review is complete; delivery is recorded in the scoped M5 T587 S3 P1-P4 commits. Owner acceptance is required before closure. |
-| Original Owner Request | Admit a new S, import unchanged, then cached full build, publication, tests, commit and push. |
-| Similar-Issue Sweep | Console metadata setter and both restoration/frame paths; all Built on consumers, dependency target parsing, serial test registration and manifest coverage. |
+| T587 S3 | Accepted and closed by the owner on 2026-11-15. Delivery through 3ae29d626 includes the exact SoftPC import, fourteen published EXEs and full dual-width qualification. [S3 history](../history/M5-T587-softpc-eight-tree-import.md) retains evidence and the archived packet. Awaiting the next owner instruction; no new task is admitted. |
 
-# M5 T587 — Open; S2 closed after owner acceptance
+# M5 T587 S2 — Closed after owner acceptance
 
 The owner accepted S2 and authorized closure on 2026-11-11.
 The selectable CMD build/publication entry and receiving artifacts were
 delivered through 544e51f5c; [S2 history](../history/M5-T587-build-entry.md)
 records verification, artifact hashes and the archived packet.
-T587 remains open; S3 is admitted above. S2 remains accepted and closed.
+T587 remains open; S1-S3 are accepted and closed. No next S is admitted.
 
 # M5 T587 S1 — Closed after owner acceptance
 
