@@ -289,7 +289,7 @@ int main(void)
         lib_test_assert(palette_metadata_received);
         lib_test_assert(cursor_positions==1u && native_cursor.X==71 && native_cursor.Y==47);
         lib_test_assert(palette_metadata_window.Left==0 && palette_metadata_window.Top==0 &&
-            palette_metadata_window.Right==19 && palette_metadata_window.Bottom==9);
+            palette_metadata_window.Right==20 && palette_metadata_window.Bottom==10);
         lib_test_assert(buffer_size.X==120 && buffer_size.Y==60);
         lib_test_assert(viewport.Left==0 && viewport.Top==0 &&
             viewport.Right==119 && viewport.Bottom==29);
@@ -303,7 +303,7 @@ int main(void)
         lib_test_assert(palette_metadata_received);
         lib_test_assert(cursor_positions==1u && native_cursor.X==71 && native_cursor.Y==47);
         lib_test_assert(palette_metadata_window.Left==0 && palette_metadata_window.Top==0 &&
-            palette_metadata_window.Right==19 && palette_metadata_window.Bottom==9);
+            palette_metadata_window.Right==20 && palette_metadata_window.Bottom==10);
         lib_test_assert(buffer_size.X==120 && buffer_size.Y==60);
         lib_test_assert(viewport.Left==0 && viewport.Top==0 &&
             viewport.Right==79 && viewport.Bottom==24);
@@ -317,18 +317,8 @@ int main(void)
         palette_resize_size=(lib_win32_coord){120,29};
         resize_attempts=0u;
         native_cursor=(lib_win32_coord){0,0}; cursor_positions=0u;
-        lib_test_assert(console_broker_apply_display(b.output,&saved,LIB_TRUE)==LIB_STATUS_OK);
-        lib_test_assert(resize_attempts==1u && buffer_size.X==120 && buffer_size.Y==60);
-        lib_test_assert(cursor_positions==1u && native_cursor.X==71 && native_cursor.Y==47);
-
-        buffer_size = (lib_win32_coord){20,10};
-        viewport = (lib_win32_small_rect){0,0,19,9};
-        ignore_resize=LIB_TRUE;
-        resize_attempts=0u;
-        native_cursor=(lib_win32_coord){0,0}; cursor_positions=0u;
         lib_test_assert(console_broker_apply_display(b.output,&saved,LIB_TRUE)==LIB_STATUS_IO_ERROR);
-        lib_test_assert(resize_attempts==1u && cursor_positions==0u);
-        ignore_resize=LIB_FALSE;
+        lib_test_assert(resize_attempts==0u && cursor_positions==0u);
         palette_resize_after_set=LIB_FALSE;
 
         buffer_size = (lib_win32_coord){20,10};
@@ -383,14 +373,14 @@ int main(void)
     fail_viewport_set=LIB_FALSE;
     lib_test_assert(console_broker_backend_write_text_frame_bound(&b,b.console,1,&f)==LIB_STATUS_OK);
     lib_test_assert(b.previous_palette[0]==2 && palette_sets==4);
-    /* Palette metadata can silently shrink backing geometry. Display restore
-     * re-establishes its saved 80x30 surface before frame preparation. */
+    /* Palette changes invalidate old cells; the existing frame preparation
+     * establishes capacity for the complete new frame. */
     palette_resize_after_set=LIB_TRUE;
     palette_resize_size=(lib_win32_coord){80,24};
     f.palette[0]=3;
     lib_u32 before_palette_resize=writes;
     lib_test_assert(console_broker_backend_write_text_frame_bound(&b,b.console,1,&f)==LIB_STATUS_OK);
-    lib_test_assert(buffer_size.X==80 && buffer_size.Y==30);
+    lib_test_assert(buffer_size.X==80 && buffer_size.Y==25);
     lib_test_assert(writes==before_palette_resize+1u);
     lib_test_assert(captured_region.Bottom==24);
     palette_resize_after_set=LIB_FALSE;

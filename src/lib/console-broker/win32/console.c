@@ -96,22 +96,18 @@ static lib_status console_broker_apply_display(lib_win32_handle output,
         !console_broker_fit_viewport(&temporary, &source->srWindow,
             display.dwSize, current.dwMaximumWindowSize)) return LIB_STATUS_IO_ERROR;
     display.srWindow = temporary;
+    /* This metadata setter takes exclusive right/bottom endpoints. */
+    ++display.srWindow.Right;
+    ++display.srWindow.Bottom;
     /* This optional extended metadata operation is the only palette-specific
      * capability boundary. A caller may retain text output when it is absent. */
     if (!lib_win32_set_console_screen_buffer_info_ex(output, &display))
         return LIB_STATUS_UNSUPPORTED;
-    /* A Console host may report metadata success while retaining a smaller
-     * backing buffer. The saved buffer is part of this surface's state, not a
-     * viewport preference, so restore and verify it before cursor or viewport
-     * placement. The temporary viewport above already makes this resize legal. */
-    if (!lib_win32_get_console_screen_buffer_info(output, &current))
+    /* A handoff cannot recover discarded cells by regrowing its buffer. */
+    if (restore_cursor &&
+        (!lib_win32_get_console_screen_buffer_info(output, &current) ||
+         current.dwSize.X != source->dwSize.X || current.dwSize.Y != source->dwSize.Y))
         return LIB_STATUS_IO_ERROR;
-    if (current.dwSize.X != source->dwSize.X || current.dwSize.Y != source->dwSize.Y) {
-        if (!lib_win32_set_console_screen_buffer_size(output, source->dwSize) ||
-            !lib_win32_get_console_screen_buffer_info(output, &current) ||
-            current.dwSize.X != source->dwSize.X || current.dwSize.Y != source->dwSize.Y)
-            return LIB_STATUS_IO_ERROR;
-    }
     /* The extended metadata setter does not establish the cooked reader's
      * echo cursor on every Console host. Restore the saved surface cursor
      * explicitly before restoring its viewport: moving it can scroll that

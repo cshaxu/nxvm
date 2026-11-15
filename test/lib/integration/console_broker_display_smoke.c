@@ -399,6 +399,7 @@ int main(void)
     lib_console_text_frame frame = {.stride=80u, .capacity=80u*50u,
         .text=text, .foreground=foreground, .background=background, .underline=underline};
     display_snapshot before, after, raw_display;
+    lib_win32_console_screen_buffer_info surface;
     lib_win32_dword written;
     lib_win32_coord origin = {0, 0};
     lib_win32_console_cursor_info cursor = {25, LIB_WIN32_TRUE};
@@ -427,12 +428,15 @@ int main(void)
         prepare_output_surface(size, &viewport);
     }
     lib_test_assert(console_broker_create(&broker, cooked, CONSOLE_BROKER_COOKED_LINES) == 0);
-    lib_test_assert(lib_win32_fill_console_output_character_w(broker->backend->output, L' ', 80 * 25, origin, &written));
-    lib_test_assert(written == 80 * 25);
+    lib_test_assert(lib_win32_get_console_screen_buffer_info(broker->backend->output, &surface));
+    lib_win32_dword count = (lib_win32_dword)surface.dwSize.X * surface.dwSize.Y;
+    lib_test_assert(lib_win32_fill_console_output_character_w(broker->backend->output, L' ', count, origin, &written));
+    lib_test_assert(written == count);
     lib_test_assert(lib_win32_set_console_cursor_position(broker->backend->output, origin));
     lib_test_assert(lib_win32_set_console_cursor_info(broker->backend->output, &cursor));
     {
-        lib_win32_coord marker = {100, 28};
+        lib_win32_coord marker = {surface.dwSize.X - 12, surface.dwSize.Y - 2};
+        lib_test_assert(marker.X >= 0 && marker.Y >= 0);
         lib_test_assert(lib_win32_write_console_output_character_a(broker->backend->output, "wide history", 12, marker, &written));
         lib_test_assert(written == 12);
     }
@@ -454,7 +458,9 @@ int main(void)
         lib_test_assert(broker->current == cooked && !broker->broken);
     }
     frame.columns = 80; frame.rows = 25; frame.font_height = 16;
-    frame.cursor_row = 23; frame.cursor_column = 7;
+    if (before.columns < 80) frame.columns = (lib_u32)before.columns;
+    if (before.rows < 25) frame.rows = (lib_u32)before.rows;
+    frame.cursor_row = frame.rows - 2u; frame.cursor_column = 7;
     frame.cursor_bottom = 15; /* intentionally hidden */
     for (lib_u32 i=0; i<80u*25u; ++i) frame.text[i]='#';
     for (lib_u32 i = 0; i < 80 * 25; ++i) {
@@ -489,7 +495,7 @@ int main(void)
     {
         lib_i16 row = before.info.dwCursorPosition.Y - after.info.srWindow.Top;
 
-        for (lib_i16 x = 2; x < 80; ++x)
+        for (lib_i16 x = 2; x < after.columns; ++x)
             lib_test_assert(after.cells[row * after.columns + x].Char.UnicodeChar == ' ');
     }
     /* Same-mode binding does not clear text, move the cursor or switch screens. */

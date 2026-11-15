@@ -224,7 +224,7 @@ set_tests_properties(lib.test-boundaries-selftest lib.test-types-boundary-selfte
 # This self-test intentionally configures several isolated negative layout
 # fixtures. It is a Lib-owned validation and may exceed the ordinary unit
 # timeout on a cold compiler cache, so keep its contract with the suite.
-set_tests_properties(lib.types-layout-selftest PROPERTIES TIMEOUT 180)
+set_tests_properties(lib.types-layout-selftest PROPERTIES TIMEOUT 180 RUN_SERIAL TRUE)
 shared_verify_test_registration(lib)
 
 # One suite-owned build entry for importing products.  CTest registration and
