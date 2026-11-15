@@ -1,0 +1,435 @@
+{
+  "source": "dfe955eb885e66c5549b6cd7823bb262af83ab69",
+  "receiving_baseline": "36643e553",
+  "shared_files": 296,
+  "suite_results": [
+    {
+      "suite": "integration-x64",
+      "tests": 48,
+      "failures": 0,
+      "skipped": 0,
+      "seconds": 229.0
+    },
+    {
+      "suite": "integration-x86",
+      "tests": 48,
+      "failures": 0,
+      "skipped": 0,
+      "seconds": 300.0
+    },
+    {
+      "suite": "my5160-x64",
+      "tests": 20,
+      "failures": 0,
+      "skipped": 0,
+      "seconds": 32.0
+    },
+    {
+      "suite": "my5160-x86",
+      "tests": 20,
+      "failures": 0,
+      "skipped": 0,
+      "seconds": 30.0
+    },
+    {
+      "suite": "my5170-x64",
+      "tests": 22,
+      "failures": 0,
+      "skipped": 0,
+      "seconds": 42.0
+    },
+    {
+      "suite": "my5170-x86",
+      "tests": 22,
+      "failures": 0,
+      "skipped": 0,
+      "seconds": 49.0
+    },
+    {
+      "suite": "mydeskpro386-x64",
+      "tests": 23,
+      "failures": 0,
+      "skipped": 0,
+      "seconds": 129.0
+    },
+    {
+      "suite": "mydeskpro386-x86",
+      "tests": 23,
+      "failures": 0,
+      "skipped": 0,
+      "seconds": 171.0
+    },
+    {
+      "suite": "unit-x64",
+      "tests": 716,
+      "failures": 0,
+      "skipped": 0,
+      "seconds": 481.0
+    },
+    {
+      "suite": "unit-x86",
+      "tests": 716,
+      "failures": 0,
+      "skipped": 0,
+      "seconds": 294.0
+    }
+  ],
+  "build_and_suite_commands": [
+    {
+      "name": "configure-x86",
+      "exit": 0,
+      "seconds": 10.97
+    },
+    {
+      "name": "build-x86",
+      "exit": 0,
+      "seconds": 15.78
+    },
+    {
+      "name": "unit-x86",
+      "exit": 0,
+      "seconds": 295.82
+    },
+    {
+      "name": "integration-x86",
+      "exit": 0,
+      "seconds": 300.77
+    },
+    {
+      "name": "configure-x64",
+      "exit": 0,
+      "seconds": 13.84
+    },
+    {
+      "name": "build-x64",
+      "exit": 0,
+      "seconds": 37.4
+    },
+    {
+      "name": "unit-x64",
+      "exit": 0,
+      "seconds": 482.96
+    },
+    {
+      "name": "integration-x64",
+      "exit": 0,
+      "seconds": 229.93
+    }
+  ],
+  "profile_commands": [
+    {
+      "name": "my5160-x86-configure",
+      "exit": 0,
+      "seconds": 15.7
+    },
+    {
+      "name": "my5160-x86-build",
+      "exit": 0,
+      "seconds": 22.18
+    },
+    {
+      "name": "my5160-x86-tests",
+      "exit": 0,
+      "seconds": 30.26
+    },
+    {
+      "name": "my5170-x86-configure",
+      "exit": 0,
+      "seconds": 9.49
+    },
+    {
+      "name": "my5170-x86-build",
+      "exit": 0,
+      "seconds": 21.17
+    },
+    {
+      "name": "my5170-x86-tests",
+      "exit": 0,
+      "seconds": 49.33
+    },
+    {
+      "name": "mydeskpro386-x86-configure",
+      "exit": 0,
+      "seconds": 10.71
+    },
+    {
+      "name": "mydeskpro386-x86-build",
+      "exit": 0,
+      "seconds": 14.42
+    },
+    {
+      "name": "mydeskpro386-x86-tests",
+      "exit": 0,
+      "seconds": 172.22
+    },
+    {
+      "name": "x86-restore-configure",
+      "exit": 0,
+      "seconds": 25.73
+    },
+    {
+      "name": "my5160-x64-configure",
+      "exit": 0,
+      "seconds": 15.85
+    },
+    {
+      "name": "my5160-x64-build",
+      "exit": 0,
+      "seconds": 39.78
+    },
+    {
+      "name": "my5160-x64-tests",
+      "exit": 0,
+      "seconds": 32.69
+    },
+    {
+      "name": "my5170-x64-configure",
+      "exit": 0,
+      "seconds": 11.83
+    },
+    {
+      "name": "my5170-x64-build",
+      "exit": 0,
+      "seconds": 22.59
+    },
+    {
+      "name": "my5170-x64-tests",
+      "exit": 0,
+      "seconds": 43.36
+    },
+    {
+      "name": "mydeskpro386-x64-configure",
+      "exit": 0,
+      "seconds": 31.28
+    },
+    {
+      "name": "mydeskpro386-x64-build",
+      "exit": 0,
+      "seconds": 31.24
+    },
+    {
+      "name": "mydeskpro386-x64-tests",
+      "exit": 0,
+      "seconds": 130.04
+    },
+    {
+      "name": "x64-restore-configure",
+      "exit": 0,
+      "seconds": 11.79
+    }
+  ],
+  "myraidenii_checks": [
+    {
+      "name": "raiden-publish-x86",
+      "exit": 0,
+      "seconds": 0.61
+    },
+    {
+      "name": "raiden-startup-x86",
+      "exit": 0,
+      "seconds": 6.56
+    },
+    {
+      "name": "raiden-console-x86",
+      "exit": 0,
+      "seconds": 4.38
+    },
+    {
+      "name": "raiden-publish-x64",
+      "exit": 0,
+      "seconds": 0.6
+    },
+    {
+      "name": "raiden-startup-x64",
+      "exit": 0,
+      "seconds": 6.14
+    },
+    {
+      "name": "raiden-console-x64",
+      "exit": 0,
+      "seconds": 4.11
+    }
+  ],
+  "cache_delta": {
+    "cacheable_calls": 304,
+    "hits": 292,
+    "misses": 12,
+    "errors": 0
+  },
+  "artifacts": [
+    {
+      "path": "assets/my5160/my5160_0_5_0582_x64.exe",
+      "arch": "x64",
+      "bytes": 1505173,
+      "sha256": "0b6a079d6480810e37dcc7a7c672a00dfca519235979bf6c166460f9936c318c"
+    },
+    {
+      "path": "assets/my5160/my5160_0_5_0582_x86.exe",
+      "arch": "x86",
+      "bytes": 1644604,
+      "sha256": "6722eac8ddaf849ac5e5040f3fadaf02de8b62eef5bee194662e1a1b68df1cac"
+    },
+    {
+      "path": "assets/my5170/my5170_0_5_0582_x64.exe",
+      "arch": "x64",
+      "bytes": 1517747,
+      "sha256": "804b42fc0004544c8935a093cebb8ff70e06b6a64105092dac199a98940bf3f9"
+    },
+    {
+      "path": "assets/my5170/my5170_0_5_0582_x86.exe",
+      "arch": "x86",
+      "bytes": 1657461,
+      "sha256": "2c8002e16e0dacdc3996fbbac9a61db567ae2975df3fd1593f5c0110ebe3b687"
+    },
+    {
+      "path": "assets/mydeskpro386/mydeskpro386_0_5_0582_x64.exe",
+      "arch": "x64",
+      "bytes": 1504409,
+      "sha256": "5a2764ff554e15113c095e856606c9d940113faa8b4b9ede63e6a21944c6b5ac"
+    },
+    {
+      "path": "assets/mydeskpro386/mydeskpro386_0_5_0582_x86.exe",
+      "arch": "x86",
+      "bytes": 1644690,
+      "sha256": "29221b9d824dbe51e758cba08373a2e05cfa128f6bf06da7aef092846d85546f"
+    },
+    {
+      "path": "assets/mynes/mynes_0_0_0044_x64.exe",
+      "arch": "x64",
+      "bytes": 271886,
+      "sha256": "8f052d4a26240e1cf9652198579a4e8e9401883f87ed8e45008c172df27aa538"
+    },
+    {
+      "path": "assets/mynes/mynes_0_0_0044_x86.exe",
+      "arch": "x86",
+      "bytes": 271374,
+      "sha256": "15b14c20176b2954e7535254f01eee9e22c97b0f1ff9bf0d75c159d01e9d5575"
+    },
+    {
+      "path": "assets/mypc110/mypc110_x64.exe",
+      "arch": "x64",
+      "bytes": 3090232,
+      "sha256": "27f7298408f111f7d292d7ae305f2d284b62bd0c9379d8954420016cef3bc037"
+    },
+    {
+      "path": "assets/mypc110/mypc110_x86.exe",
+      "arch": "x86",
+      "bytes": 3235632,
+      "sha256": "c9e84dc2d6d62b5212c23b4713e6054691467b2c4ad0dc26d984fb37ef5b4adc"
+    },
+    {
+      "path": "assets/myraidenii/myraidenii_0_0_0007_x64.exe",
+      "arch": "x64",
+      "bytes": 902971,
+      "sha256": "8dc703979b21a0175cff14c1b937102fcac04571ac3d61ffa52ed33e467e1ff7"
+    },
+    {
+      "path": "assets/myraidenii/myraidenii_0_0_0007_x86.exe",
+      "arch": "x86",
+      "bytes": 978220,
+      "sha256": "a9c684287a46a7f8e4aaea18d974bd94eb562484a197b17483bfdaec03a6cc79"
+    },
+    {
+      "path": "assets/nxvm/nxvm_0_5_0582_x64.exe",
+      "arch": "x64",
+      "bytes": 1516893,
+      "sha256": "2f6ac360e3f6050624c5ede6bded8bfc1460122896bb8b59b0f00d5bc570e847"
+    },
+    {
+      "path": "assets/nxvm/nxvm_0_5_0582_x86.exe",
+      "arch": "x86",
+      "bytes": 1656759,
+      "sha256": "1f57a05cd709ad45beb6e4ee97d959c809e5bca614b2ef772a6b202c031892f2"
+    }
+  ],
+  "evidence_sha256": {
+    "build-x64.log": "50c3c9d1f76378aac673921b2618a0d56c49bc06b9f842b53fd38a38153a1f86",
+    "build-x86.log": "2860d9b26f80c75ba8c6743c343da6b484e902ac3aea7ee6d136e029b5589c35",
+    "cache-after.txt": "2b2ef72e99d10478519af71b0a510bd973ea32b442db4206a90ac9309c6030bd",
+    "cache-before.txt": "2d9f5ec1aca7750403e74fb03b66630a8e6b328066c86feace0bfe9f1f65803b",
+    "configure-x64.log": "5007cf2e263e9087035dabe299e6f1eb139920e26a093d9deb70ccbbd57fb13a",
+    "configure-x86.log": "f610f04b7f36442202173bd310f4f760afdc003a5da8b5a05939cfe1e5675942",
+    "emulator-corpus.log": "e7b5b6a982fc0c9d0da989d737a7ff6014f494027458246fc682eaef07bfae58",
+    "import-audit.json": "5f9c87fe517e9ffd53e611f4fa845d7899abdfb36d55c6927c2841c934b343a1",
+    "integration-x64.log": "73b5576bce200949a1be3a0694d556d82a965bda0c50c9d465125bbf1b69c089",
+    "integration-x64.xml": "f856cf20942217b3e47905ae52a9b5620a1ffb205be4c443da79c7e87a8d8966",
+    "integration-x86.log": "17391c3739186dbb35433b7516c2e13ef659fdd7d9b027aa8e21141ebb899777",
+    "integration-x86.xml": "ce1e5bdb4acb7e9bd7c47a47472944ab650fb8f4d591f1a6b421d3b24a42c55e",
+    "lib-dag-corrected.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "lib-dag.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "lib-manifest.log": "70dfc70da9bfb0eab74915f50f419589718aaeb9e6872387a55a99936601ab30",
+    "lib-naming-corrected.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "lib-naming.log": "9ad985fcb54bceb746b99614f4f7317994b4b4116b99534702350c52aa890565",
+    "lib-types.log": "3ee58f102feec0f7b2ce5b8d40507104286a15f1f52475c859881970c077a81a",
+    "my5160-x64-build.log": "ebb5e848f25afd98fc7f9ec44272ec97aa55315ad98b2de21750315b35f6f7f1",
+    "my5160-x64-configure.log": "8ba3a76d37254b8fb498fe3d52787d1e7f52cea75f533261246e3b840093b137",
+    "my5160-x64-tests.log": "62362886003a44b6e565dfaf04d72f7f3d95ad818efd77f6eaab9f7d0b6feb7e",
+    "my5160-x64.xml": "793d5726f89f31cea39d7ccae0c74d9a434acb0934307934d5e7df671867962b",
+    "my5160-x86-build.log": "ec3e30360b390a6bb9dc33d40a5840af1570b83d2d8be77805c32fcbe3ab0ec8",
+    "my5160-x86-configure.log": "67973d590ebf32055080bf5c7ca8e486aeaa2ef9922280def30ef5c3f599b5f8",
+    "my5160-x86-tests.log": "836f494aa7ff5b1bfeb791bd5bef8abed94c9b1aeea0e79d50150bcee947869c",
+    "my5160-x86.xml": "a9d2022d37e579d23b1188c58c6b4640153d588279d1991a693a8db213eb5ca5",
+    "my5170-x64-build.log": "7390351b1fdb64dfa18d7b89cfc470cf43c20baa63d2818fe568d6c1512161a8",
+    "my5170-x64-configure.log": "fe6ad3aeed1cb89578c386fa6f227f1340f105fa17f9fc4772421f348037870c",
+    "my5170-x64-tests.log": "a9b7469ded6719ecd522fa8c7500c7f0386c2535fb6943ad8c641f04ef857928",
+    "my5170-x64.xml": "b4fe9e957b49d03c5b41678e5427f08074e032a9df686633b709beef46e449eb",
+    "my5170-x86-build.log": "b1cb052659b5d9381a1323e2f2e13e07f2a8be9df00a554f2be56c17faea318b",
+    "my5170-x86-configure.log": "4079b15f2d6759ecafb8392cf8b0d0d217aef576d6729af3a7bd238c02347342",
+    "my5170-x86-tests.log": "decd1d4645bf486ac9a530139385d18cfa3baef0c6bb7fbbc614a5fe0d1b550a",
+    "my5170-x86.xml": "85e06ae36d2d5548c79bf78ec0cae8e6634936c6bcb24e2a3cfb7f58c1893d26",
+    "mydeskpro386-x64-build.log": "a6d865a50e9b15d0d7acfd5f9cbe2d86c36ff8f0c1e80f23876f44d8255a42f5",
+    "mydeskpro386-x64-configure.log": "18075aeeac1376bdd69fad7e03a0d4f2b53a8fe6280f82c02594b2105a0aebc9",
+    "mydeskpro386-x64-tests.log": "db8a74f133a965bf9ed3862dc1d5cd188ca3e04a14d8e694da4aee06acc42910",
+    "mydeskpro386-x64.xml": "ab1c75e0fdb62858f8b3a8f69d46e884edc1dbcdb508f02b4ca67ca8106b2948",
+    "mydeskpro386-x86-build.log": "8e8cbb9b31d0bf951b6103d061f9b5e434344aa33f4d80a9b21b8023bdc890d4",
+    "mydeskpro386-x86-configure.log": "d11dd20afd602e5d48593e3b8018e29a203b2642d664dafc03c8b68d07e0ee4c",
+    "mydeskpro386-x86-tests.log": "9795f42be303b932f2c725d45224a0b549001af0399421b0ed7cc01ce42a846f",
+    "mydeskpro386-x86.xml": "ed19bf04862a30feade63632d68bb2a868eb51c2aaa791cb05cfe5ab9c0e8d57",
+    "mynes-docs.log": "7ed6101c6380a2da1a3d7d29772ce7838e478137213185dcc539d97dc1b53563",
+    "myraidenii-docs.log": "320a1c7a396b60d57afd5d0cc6e0d1a51f861a8a537f038c9ce570a4d06d17fb",
+    "nxvm-docs.log": "1cd7ecd8795df79be840c8a01e85b60e6d385a281717fdb25698e6e840a89836",
+    "publish.log": "9472c5ed5c71f46ea686a9bd70a7cf9fad5abc94ce1124cd29079082e3bb0700",
+    "raiden-console-x64.log": "cfb32958610899ce0ecdceb463bdaad56c39a58cc620c8dd47e8ef08f488b9b5",
+    "raiden-console-x86.log": "cfb32958610899ce0ecdceb463bdaad56c39a58cc620c8dd47e8ef08f488b9b5",
+    "raiden-publish-x64.log": "8df33408980307882ae737b08c59f13a6d28c1b6c77a49cca657f736fe8bb88c",
+    "raiden-publish-x86.log": "6e5c7de813551215692e07b5f03d78e1aecd6baa47ea5df3171bbebc59ccb371",
+    "raiden-startup-x64.log": "93c227871443ea25173ae18d2563fbe0290888adfdc61f19e413c0c12d3564d0",
+    "raiden-startup-x86.log": "93c227871443ea25173ae18d2563fbe0290888adfdc61f19e413c0c12d3564d0",
+    "unit-x64.log": "85fed6bbd0f5af1612d32d1410b3db68ce2b26d748bfde7073d786df6fc2adae",
+    "unit-x64.xml": "6a9606767d39dfed29766cad5ae9d5ed5710ae41ec4e49bcc8f0daba3b733296",
+    "unit-x86.log": "63e229ed868fb0e4f060f1a19fbf75f961b72669920366d05145dee61fd169a5",
+    "unit-x86.xml": "63dd794b50b7bbd1dc2bd71ff1112dc927c01ffaee84266604de702e7726a7af",
+    "x64-restore-configure.log": "ac3c6f3ab03866a96aac0220bef44ca494a1131311f95da094d608210fe1d0d9",
+    "x86-debug-corpus.log": "fe4653d6976a60b2c1599bc927dafc7488a3ad9603e18efa47b747d3c84d4d9e",
+    "x86-ibmpc-corpus.log": "929075abc6733948229ffd4349b588738c1539d8e614e6490ca2a3cbba3c1ce3",
+    "x86-restore-configure.log": "09717102690259243d6adf9df1e0ec807095be664783aedf5dd283d0c095df69",
+    "final-lf.log": "e682316a729f84d1ed5749bd8f1dab985b7d511ee7f96c95cb599b7c63142baa",
+    "final-mynes-docs.log": "7ed6101c6380a2da1a3d7d29772ce7838e478137213185dcc539d97dc1b53563",
+    "final-myraidenii-docs.log": "320a1c7a396b60d57afd5d0cc6e0d1a51f861a8a537f038c9ce570a4d06d17fb",
+    "final-nxvm-docs.log": "1cd7ecd8795df79be840c8a01e85b60e6d385a281717fdb25698e6e840a89836"
+  },
+  "final_gates": [
+    {
+      "name": "lf",
+      "exit": 0
+    },
+    {
+      "name": "nxvm-docs",
+      "exit": 0
+    },
+    {
+      "name": "mynes-docs",
+      "exit": 0
+    },
+    {
+      "name": "myraidenii-docs",
+      "exit": 0
+    }
+  ],
+  "cleanup": {
+    "task_directory": "build/t587-s3",
+    "files": 83,
+    "bytes": 2403928,
+    "stable_cache_preserved": true
+  }
+}

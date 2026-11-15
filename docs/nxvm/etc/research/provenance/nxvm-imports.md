@@ -234,3 +234,16 @@ the Shared source/test corpus.
 - No older Window implementation, App code, media or firmware is imported.
   Receiving tests extend existing fixtures locally rather than copying App tests.
 - See [T587 history](../../../history/M5-T587-break-input.md) for verification.
+
+## T587 S3 - Byte-exact SoftPC Eight-tree Refresh
+
+- Source: project-owned MIT SoftPC commit
+  `dfe955eb885e66c5549b6cd7823bb262af83ab69`, owner-approved on 2026-11-15.
+- Same-path source and destination: `src/{lib,emulator,x86-debug,x86-ibmpc}`
+  and `test/{lib,emulator,x86-debug,x86-ibmpc}`; all 296 files are copied or
+  retained byte-identically, including eight manifests and existing notices.
+- No SoftPC App/Compat, proprietary implementation, firmware or media import;
+  no new independent license notice. X86 Core/NXVM packages are unchanged.
+- Console restoration, build timestamp refresh and test scheduling retain the
+  upstream implementation. [S3 evidence](../../../history/M5-T587-softpc-eight-tree-import.md)
+  records receiving qualification and publication.

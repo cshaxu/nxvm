@@ -1315,3 +1315,5 @@ another principal document.
 | `architecture/specification-driven-simulation-admission.md` | Documentation owner | Td S114 reusable three-level, per-hardware-task admission ledger: document-primary implementation first, reproducible mature-emulator reference contract second, and explicit deterministic maintained boundary last. Retain while M5 hardware candidates are active; merge or supersede only through a later approved M5 closure/governance task. |
 
 - [T582 S1 initial performance audit](evidence/t582-s1-performance-audit.md): current-profile measurements and open hotspot investigation.
+
+- [T587 S3 import verification](evidence/t587-s3-import-verification.json): pinned eight-tree import, full dual-width suites, fourteen artifacts and log hashes.
