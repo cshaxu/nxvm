@@ -31,7 +31,8 @@ static inline lib_status mypc110_product_card_close_pair(lib_storage_medium **co
 void mypc110_product_cards_initialize(mypc110_product_cards *cards);
 lib_bool mypc110_product_card_submit(mypc110_product_cards *cards,
     emulator_machine *machine, emulator_session_machine_state state,
-    const char *line, emulator_session_command_result *out);
+    const char *name, const emulator_product_monitor_arguments *arguments,
+    emulator_session_command_result *out);
 /* Called only after the machine is stopped or before it was published. */
 lib_status mypc110_product_cards_close_pending(mypc110_product_cards *cards);
 

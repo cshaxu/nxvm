@@ -62,15 +62,16 @@ lib_status mypc110_product_initialize(mypc110_product_context *context)
 }
 
 static lib_bool mypc110_product_submit(void *context, emulator_machine *machine,
-    emulator_session_machine_state state, const char *line, emulator_session_command_result *out)
+    emulator_session_machine_state state, const char *name,
+    const emulator_product_monitor_arguments *arguments, emulator_session_command_result *out)
 {
     mypc110_product_context *product = context;
     mypc110_vdisplay *display;
     if (product == LIB_NULL) return LIB_FALSE;
     display = &product->display;
-    if (mypc110_product_card_submit(&product->cards, machine, state, line, out)) return LIB_TRUE;
-    if (mypc110_vdisplay_submit(display, machine, state, line, out)) return LIB_TRUE;
-    return display->standard.submit(display->standard.context, machine, state, line, out);
+    if (mypc110_product_card_submit(&product->cards, machine, state, name, arguments, out)) return LIB_TRUE;
+    if (mypc110_vdisplay_submit(display, machine, state, name, arguments, out)) return LIB_TRUE;
+    return display->standard.submit(display->standard.context, machine, state, name, arguments, out);
 }
 
 static lib_status mypc110_product_configure_extensions(void *context,
@@ -88,9 +89,9 @@ static lib_status mypc110_product_configure_extensions(void *context,
     for (lib_size index = 0u; index < display->standard.help.count; ++index)
         display->help[index] = display->standard.help.rows[index];
     display->help[display->standard.help.count] = (emulator_product_help_row){
-        "vdisplay=dstn|tft", "select display while stopped"};
+        "vdisplay <dstn|tft>", "select display while stopped"};
     display->help[display->standard.help.count + 1u] = (emulator_product_help_row){
-        "pccard insert <a|b> <mode> <common>|<attribute>", "schedule a memory card while stopped"};
+        "pccard insert <a|b> <mode> <common> <attribute>", "schedule a memory card while stopped"};
     display->help[display->standard.help.count + 2u] = (emulator_product_help_row){
         "pccard eject <a|b>", "schedule card removal while stopped"};
     *out = (x86_ibmpc_product_command_extensions){.context = product,

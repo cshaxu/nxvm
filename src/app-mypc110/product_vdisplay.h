@@ -24,7 +24,7 @@ typedef struct mypc110_vdisplay {
 
 void mypc110_vdisplay_initialize(mypc110_vdisplay *display);
 lib_bool mypc110_vdisplay_submit(void *context, emulator_machine *machine,
-    emulator_session_machine_state state, const char *line,
+    emulator_session_machine_state state, const char *name, const emulator_product_monitor_arguments *arguments,
     emulator_session_command_result *out);
 
 #endif

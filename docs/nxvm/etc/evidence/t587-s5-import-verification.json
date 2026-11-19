@@ -1,0 +1,947 @@
+{
+  "source": "4cd56d018abd5328f0578dbfe0b7524f4bcfcce4",
+  "receiving_baseline": "7a61c56d8",
+  "shared_files": 296,
+  "full_commands": [
+    {
+      "name": "configure-x86",
+      "command": [
+        "cmake",
+        "-S",
+        "<repo>",
+        "-B",
+        "<repo>\\build\\.ninja\\gcc-x86-release",
+        "-DREPOSITORY_BUILD_NXVM=ON",
+        "-DREPOSITORY_BUILD_MYNES=ON",
+        "-DREPOSITORY_BUILD_MYRAIDENII=ON",
+        "-DNXVM_PRODUCT_PROFILE=default-pc-at-80386-1440k-hdd",
+        "-DREPOSITORY_USE_CCACHE=ON"
+      ],
+      "exit": 0,
+      "seconds": 21.47
+    },
+    {
+      "name": "full-build-x86",
+      "command": [
+        "cmake",
+        "--build",
+        "<repo>\\build\\.ninja\\gcc-x86-release",
+        "--parallel",
+        "8"
+      ],
+      "exit": 0,
+      "seconds": 398.85
+    },
+    {
+      "name": "unit-x86",
+      "command": [
+        "ctest",
+        "--test-dir",
+        "<repo>\\build\\.ninja\\gcc-x86-release",
+        "-L",
+        "^unit$",
+        "--parallel",
+        "4",
+        "--output-on-failure",
+        "--output-junit",
+        "<repo>\\build\\t587-s5\\unit-x86.xml"
+      ],
+      "exit": 0,
+      "seconds": 362.07
+    },
+    {
+      "name": "integration-x86",
+      "command": [
+        "ctest",
+        "--test-dir",
+        "<repo>\\build\\.ninja\\gcc-x86-release",
+        "-L",
+        "^integration$",
+        "--parallel",
+        "1",
+        "--output-on-failure",
+        "--output-junit",
+        "<repo>\\build\\t587-s5\\integration-x86.xml"
+      ],
+      "exit": 0,
+      "seconds": 296.09
+    },
+    {
+      "name": "configure-x64",
+      "command": [
+        "cmake",
+        "-S",
+        "<repo>",
+        "-B",
+        "<repo>\\build\\.ninja\\gcc-x64-release",
+        "-DREPOSITORY_BUILD_NXVM=ON",
+        "-DREPOSITORY_BUILD_MYNES=ON",
+        "-DREPOSITORY_BUILD_MYRAIDENII=ON",
+        "-DNXVM_PRODUCT_PROFILE=default-pc-at-80386-1440k-hdd",
+        "-DREPOSITORY_USE_CCACHE=ON"
+      ],
+      "exit": 0,
+      "seconds": 11.94
+    },
+    {
+      "name": "full-build-x64",
+      "command": [
+        "cmake",
+        "--build",
+        "<repo>\\build\\.ninja\\gcc-x64-release",
+        "--parallel",
+        "8"
+      ],
+      "exit": 0,
+      "seconds": 294.99
+    },
+    {
+      "name": "unit-x64",
+      "command": [
+        "ctest",
+        "--test-dir",
+        "<repo>\\build\\.ninja\\gcc-x64-release",
+        "-L",
+        "^unit$",
+        "--parallel",
+        "4",
+        "--output-on-failure",
+        "--output-junit",
+        "<repo>\\build\\t587-s5\\unit-x64.xml"
+      ],
+      "exit": 0,
+      "seconds": 434.99
+    },
+    {
+      "name": "integration-x64",
+      "command": [
+        "ctest",
+        "--test-dir",
+        "<repo>\\build\\.ninja\\gcc-x64-release",
+        "-L",
+        "^integration$",
+        "--parallel",
+        "1",
+        "--output-on-failure",
+        "--output-junit",
+        "<repo>\\build\\t587-s5\\integration-x64.xml"
+      ],
+      "exit": 0,
+      "seconds": 238.35
+    }
+  ],
+  "profiles_commands": [
+    {
+      "name": "configure-my5160-x86",
+      "command": [
+        "cmake",
+        "-S",
+        "<repo>",
+        "-B",
+        "<repo>\\build\\.ninja\\gcc-x86-release",
+        "-DNXVM_PRODUCT_PROFILE=ibm-5160-model-268-360k"
+      ],
+      "exit": 0,
+      "seconds": 10.15
+    },
+    {
+      "name": "build-my5160-x86",
+      "command": [
+        "cmake",
+        "--build",
+        "<repo>\\build\\.ninja\\gcc-x86-release",
+        "--parallel",
+        "8"
+      ],
+      "exit": 0,
+      "seconds": 32.01
+    },
+    {
+      "name": "my5160-x86",
+      "command": [
+        "ctest",
+        "--test-dir",
+        "<repo>\\build\\.ninja\\gcc-x86-release",
+        "-R",
+        "^(integration\\.pc\\-product\\-ini\\-identity\\-smoke|integration\\.vm\\-profile\\-floppy\\-boot\\-matrix\\.ibm\\-5160\\-model\\-268\\-360k\\.ini|integration\\.session\\-ini\\-status\\-smoke|emulator\\.product/monitor|x86\\-ibmpc\\.product/debug_result|x86\\-ibmpc\\.product/command|x86\\-nxvm\\.product/machine|x86\\-nxvm\\.product/ini|x86\\-nxvm\\.product/factory|x86\\-nxvm\\.product/startup|mypc110\\.integration/product\\-composition|mynes\\.app\\.config\\-smoke|mynes\\.app\\.command\\-smoke|mynes\\.app\\.composition\\-smoke|mynes\\.app\\.battery\\-failure\\-smoke|mynes\\.integration\\.app\\-snapshot\\-commands\\-smoke|mynes\\.integration\\.app\\-debug\\-commands\\-smoke|mynes\\.integration\\.app\\-media\\-commands\\-smoke|mynes\\.integration\\.native\\-window\\-smoke|mynes\\.integration\\.native\\-console\\-smoke)$",
+        "--parallel",
+        "1",
+        "--output-on-failure",
+        "--output-junit",
+        "<repo>\\build\\t587-s5\\my5160-x86.xml"
+      ],
+      "exit": 0,
+      "seconds": 42.12
+    },
+    {
+      "name": "configure-my5170-x86",
+      "command": [
+        "cmake",
+        "-S",
+        "<repo>",
+        "-B",
+        "<repo>\\build\\.ninja\\gcc-x86-release",
+        "-DNXVM_PRODUCT_PROFILE=ibm-5170-model-339-1200k"
+      ],
+      "exit": 0,
+      "seconds": 11.51
+    },
+    {
+      "name": "build-my5170-x86",
+      "command": [
+        "cmake",
+        "--build",
+        "<repo>\\build\\.ninja\\gcc-x86-release",
+        "--parallel",
+        "8"
+      ],
+      "exit": 0,
+      "seconds": 29.51
+    },
+    {
+      "name": "my5170-x86",
+      "command": [
+        "ctest",
+        "--test-dir",
+        "<repo>\\build\\.ninja\\gcc-x86-release",
+        "-R",
+        "^(integration\\.pc\\-product\\-ini\\-identity\\-smoke|integration\\.my5170\\-console\\-lifecycle\\-smoke|integration\\.vm\\-ini\\-cmos\\-seed\\-smoke|integration\\.session\\-ini\\-status\\-smoke|integration\\.vm\\-profile\\-floppy\\-boot\\-matrix\\.ibm\\-5170\\-model\\-339\\-1200k\\.ini|emulator\\.product/monitor|x86\\-ibmpc\\.product/debug_result|x86\\-ibmpc\\.product/command|x86\\-nxvm\\.product/machine|x86\\-nxvm\\.product/ini|x86\\-nxvm\\.product/factory|x86\\-nxvm\\.product/startup|mypc110\\.integration/product\\-composition|mynes\\.app\\.config\\-smoke|mynes\\.app\\.command\\-smoke|mynes\\.app\\.composition\\-smoke|mynes\\.app\\.battery\\-failure\\-smoke|mynes\\.integration\\.app\\-snapshot\\-commands\\-smoke|mynes\\.integration\\.app\\-debug\\-commands\\-smoke|mynes\\.integration\\.app\\-media\\-commands\\-smoke|mynes\\.integration\\.native\\-window\\-smoke|mynes\\.integration\\.native\\-console\\-smoke)$",
+        "--parallel",
+        "1",
+        "--output-on-failure",
+        "--output-junit",
+        "<repo>\\build\\t587-s5\\my5170-x86.xml"
+      ],
+      "exit": 0,
+      "seconds": 62.91
+    },
+    {
+      "name": "configure-mydeskpro386-x86",
+      "command": [
+        "cmake",
+        "-S",
+        "<repo>",
+        "-B",
+        "<repo>\\build\\.ninja\\gcc-x86-release",
+        "-DNXVM_PRODUCT_PROFILE=compaq-deskpro-386-model-40-1200k"
+      ],
+      "exit": 0,
+      "seconds": 11.46
+    },
+    {
+      "name": "build-mydeskpro386-x86",
+      "command": [
+        "cmake",
+        "--build",
+        "<repo>\\build\\.ninja\\gcc-x86-release",
+        "--parallel",
+        "8"
+      ],
+      "exit": 0,
+      "seconds": 25.28
+    },
+    {
+      "name": "mydeskpro386-x86",
+      "command": [
+        "ctest",
+        "--test-dir",
+        "<repo>\\build\\.ninja\\gcc-x86-release",
+        "-R",
+        "^(integration\\.pc\\-product\\-ini\\-identity\\-smoke|integration\\.vm\\-model40\\-console\\-ini\\-smoke|integration\\.vm\\-model40\\-frame\\-start\\-smoke|integration\\.vm\\-ini\\-cmos\\-seed\\-smoke|integration\\.session\\-ini\\-status\\-smoke|integration\\.vm\\-profile\\-floppy\\-boot\\-matrix\\.compaq\\-deskpro\\-386\\-model\\-40\\-1200k\\.ini|emulator\\.product/monitor|x86\\-ibmpc\\.product/debug_result|x86\\-ibmpc\\.product/command|x86\\-nxvm\\.product/machine|x86\\-nxvm\\.product/ini|x86\\-nxvm\\.product/factory|x86\\-nxvm\\.product/startup|mypc110\\.integration/product\\-composition|mynes\\.app\\.config\\-smoke|mynes\\.app\\.command\\-smoke|mynes\\.app\\.composition\\-smoke|mynes\\.app\\.battery\\-failure\\-smoke|mynes\\.integration\\.app\\-snapshot\\-commands\\-smoke|mynes\\.integration\\.app\\-debug\\-commands\\-smoke|mynes\\.integration\\.app\\-media\\-commands\\-smoke|mynes\\.integration\\.native\\-window\\-smoke|mynes\\.integration\\.native\\-console\\-smoke)$",
+        "--parallel",
+        "1",
+        "--output-on-failure",
+        "--output-junit",
+        "<repo>\\build\\t587-s5\\mydeskpro386-x86.xml"
+      ],
+      "exit": 0,
+      "seconds": 174.21
+    },
+    {
+      "name": "restore-x86",
+      "command": [
+        "cmake",
+        "-S",
+        "<repo>",
+        "-B",
+        "<repo>\\build\\.ninja\\gcc-x86-release",
+        "-DNXVM_PRODUCT_PROFILE=default-pc-at-80386-1440k-hdd"
+      ],
+      "exit": 0,
+      "seconds": 8.4
+    },
+    {
+      "name": "configure-my5160-x64",
+      "command": [
+        "cmake",
+        "-S",
+        "<repo>",
+        "-B",
+        "<repo>\\build\\.ninja\\gcc-x64-release",
+        "-DNXVM_PRODUCT_PROFILE=ibm-5160-model-268-360k"
+      ],
+      "exit": 0,
+      "seconds": 10.43
+    },
+    {
+      "name": "build-my5160-x64",
+      "command": [
+        "cmake",
+        "--build",
+        "<repo>\\build\\.ninja\\gcc-x64-release",
+        "--parallel",
+        "8"
+      ],
+      "exit": 0,
+      "seconds": 22.92
+    },
+    {
+      "name": "my5160-x64",
+      "command": [
+        "ctest",
+        "--test-dir",
+        "<repo>\\build\\.ninja\\gcc-x64-release",
+        "-R",
+        "^(integration\\.pc\\-product\\-ini\\-identity\\-smoke|integration\\.vm\\-profile\\-floppy\\-boot\\-matrix\\.ibm\\-5160\\-model\\-268\\-360k\\.ini|integration\\.session\\-ini\\-status\\-smoke|emulator\\.product/monitor|x86\\-ibmpc\\.product/debug_result|x86\\-ibmpc\\.product/command|x86\\-nxvm\\.product/machine|x86\\-nxvm\\.product/ini|x86\\-nxvm\\.product/factory|x86\\-nxvm\\.product/startup|mypc110\\.integration/product\\-composition|mynes\\.app\\.config\\-smoke|mynes\\.app\\.command\\-smoke|mynes\\.app\\.composition\\-smoke|mynes\\.app\\.battery\\-failure\\-smoke|mynes\\.integration\\.app\\-snapshot\\-commands\\-smoke|mynes\\.integration\\.app\\-debug\\-commands\\-smoke|mynes\\.integration\\.app\\-media\\-commands\\-smoke|mynes\\.integration\\.native\\-window\\-smoke|mynes\\.integration\\.native\\-console\\-smoke)$",
+        "--parallel",
+        "1",
+        "--output-on-failure",
+        "--output-junit",
+        "<repo>\\build\\t587-s5\\my5160-x64.xml"
+      ],
+      "exit": 0,
+      "seconds": 30.46
+    },
+    {
+      "name": "configure-my5170-x64",
+      "command": [
+        "cmake",
+        "-S",
+        "<repo>",
+        "-B",
+        "<repo>\\build\\.ninja\\gcc-x64-release",
+        "-DNXVM_PRODUCT_PROFILE=ibm-5170-model-339-1200k"
+      ],
+      "exit": 0,
+      "seconds": 8.19
+    },
+    {
+      "name": "build-my5170-x64",
+      "command": [
+        "cmake",
+        "--build",
+        "<repo>\\build\\.ninja\\gcc-x64-release",
+        "--parallel",
+        "8"
+      ],
+      "exit": 0,
+      "seconds": 19.87
+    },
+    {
+      "name": "my5170-x64",
+      "command": [
+        "ctest",
+        "--test-dir",
+        "<repo>\\build\\.ninja\\gcc-x64-release",
+        "-R",
+        "^(integration\\.pc\\-product\\-ini\\-identity\\-smoke|integration\\.my5170\\-console\\-lifecycle\\-smoke|integration\\.vm\\-ini\\-cmos\\-seed\\-smoke|integration\\.session\\-ini\\-status\\-smoke|integration\\.vm\\-profile\\-floppy\\-boot\\-matrix\\.ibm\\-5170\\-model\\-339\\-1200k\\.ini|emulator\\.product/monitor|x86\\-ibmpc\\.product/debug_result|x86\\-ibmpc\\.product/command|x86\\-nxvm\\.product/machine|x86\\-nxvm\\.product/ini|x86\\-nxvm\\.product/factory|x86\\-nxvm\\.product/startup|mypc110\\.integration/product\\-composition|mynes\\.app\\.config\\-smoke|mynes\\.app\\.command\\-smoke|mynes\\.app\\.composition\\-smoke|mynes\\.app\\.battery\\-failure\\-smoke|mynes\\.integration\\.app\\-snapshot\\-commands\\-smoke|mynes\\.integration\\.app\\-debug\\-commands\\-smoke|mynes\\.integration\\.app\\-media\\-commands\\-smoke|mynes\\.integration\\.native\\-window\\-smoke|mynes\\.integration\\.native\\-console\\-smoke)$",
+        "--parallel",
+        "1",
+        "--output-on-failure",
+        "--output-junit",
+        "<repo>\\build\\t587-s5\\my5170-x64.xml"
+      ],
+      "exit": 0,
+      "seconds": 41.33
+    },
+    {
+      "name": "configure-mydeskpro386-x64",
+      "command": [
+        "cmake",
+        "-S",
+        "<repo>",
+        "-B",
+        "<repo>\\build\\.ninja\\gcc-x64-release",
+        "-DNXVM_PRODUCT_PROFILE=compaq-deskpro-386-model-40-1200k"
+      ],
+      "exit": 0,
+      "seconds": 9.77
+    },
+    {
+      "name": "build-mydeskpro386-x64",
+      "command": [
+        "cmake",
+        "--build",
+        "<repo>\\build\\.ninja\\gcc-x64-release",
+        "--parallel",
+        "8"
+      ],
+      "exit": 0,
+      "seconds": 19.17
+    },
+    {
+      "name": "mydeskpro386-x64",
+      "command": [
+        "ctest",
+        "--test-dir",
+        "<repo>\\build\\.ninja\\gcc-x64-release",
+        "-R",
+        "^(integration\\.pc\\-product\\-ini\\-identity\\-smoke|integration\\.vm\\-model40\\-console\\-ini\\-smoke|integration\\.vm\\-model40\\-frame\\-start\\-smoke|integration\\.vm\\-ini\\-cmos\\-seed\\-smoke|integration\\.session\\-ini\\-status\\-smoke|integration\\.vm\\-profile\\-floppy\\-boot\\-matrix\\.compaq\\-deskpro\\-386\\-model\\-40\\-1200k\\.ini|emulator\\.product/monitor|x86\\-ibmpc\\.product/debug_result|x86\\-ibmpc\\.product/command|x86\\-nxvm\\.product/machine|x86\\-nxvm\\.product/ini|x86\\-nxvm\\.product/factory|x86\\-nxvm\\.product/startup|mypc110\\.integration/product\\-composition|mynes\\.app\\.config\\-smoke|mynes\\.app\\.command\\-smoke|mynes\\.app\\.composition\\-smoke|mynes\\.app\\.battery\\-failure\\-smoke|mynes\\.integration\\.app\\-snapshot\\-commands\\-smoke|mynes\\.integration\\.app\\-debug\\-commands\\-smoke|mynes\\.integration\\.app\\-media\\-commands\\-smoke|mynes\\.integration\\.native\\-window\\-smoke|mynes\\.integration\\.native\\-console\\-smoke)$",
+        "--parallel",
+        "1",
+        "--output-on-failure",
+        "--output-junit",
+        "<repo>\\build\\t587-s5\\mydeskpro386-x64.xml"
+      ],
+      "exit": 0,
+      "seconds": 123.26
+    },
+    {
+      "name": "restore-x64",
+      "command": [
+        "cmake",
+        "-S",
+        "<repo>",
+        "-B",
+        "<repo>\\build\\.ninja\\gcc-x64-release",
+        "-DNXVM_PRODUCT_PROFILE=default-pc-at-80386-1440k-hdd"
+      ],
+      "exit": 0,
+      "seconds": 11.43
+    }
+  ],
+  "receiver_commands": [
+    {
+      "name": "publish-raiden-x86",
+      "command": [
+        "cmake",
+        "-DINPUT=<repo>\\build\\.ninja\\gcc-x86-release\\src\\app-myraidenii\\product\\myraidenii_0_0_0007.exe",
+        "-DOUTPUT=<repo>\\assets\\myraidenii\\myraidenii_0_0_0007_x86.exe",
+        "-P",
+        "cmake/PublishProduct.cmake"
+      ],
+      "exit": 0,
+      "seconds": 1.15
+    },
+    {
+      "name": "raiden-startup-x86",
+      "command": [
+        "powershell",
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "tools/myraidenii/Invoke-SelectedSetStartupProbe.ps1",
+        "-Inventory",
+        "docs/myraidenii/etc/evidence/t1-s1-rom-inventory.json",
+        "-Archive",
+        "<owner-rom-archive>",
+        "-Probe",
+        "<repo>\\build\\.ninja\\gcc-x86-release\\test\\app-myraidenii\\integration\\myraidenii-selected-set-startup-probe.exe",
+        "-TemporaryRoot",
+        "<repo>\\build\\t587-s5\\raiden-probe-x86"
+      ],
+      "exit": 0,
+      "seconds": 8.08
+    },
+    {
+      "name": "raiden-product-x86",
+      "command": [
+        "powershell",
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "tools/myraidenii/Invoke-SelectedSetStartupProbe.ps1",
+        "-Inventory",
+        "docs/myraidenii/etc/evidence/t1-s1-rom-inventory.json",
+        "-Archive",
+        "<owner-rom-archive>",
+        "-Product",
+        "<repo>\\assets\\myraidenii\\myraidenii_0_0_0007_x86.exe",
+        "-ProductSmoke",
+        "<repo>\\build\\.ninja\\gcc-x86-release\\test\\app-myraidenii\\integration\\myraidenii-selected-set-product-console-smoke.exe",
+        "-TemporaryRoot",
+        "<repo>\\build\\t587-s5\\raiden-product-x86"
+      ],
+      "exit": 0,
+      "seconds": 4.39
+    },
+    {
+      "name": "publish-raiden-x64",
+      "command": [
+        "cmake",
+        "-DINPUT=<repo>\\build\\.ninja\\gcc-x64-release\\src\\app-myraidenii\\product\\myraidenii_0_0_0007.exe",
+        "-DOUTPUT=<repo>\\assets\\myraidenii\\myraidenii_0_0_0007_x64.exe",
+        "-P",
+        "cmake/PublishProduct.cmake"
+      ],
+      "exit": 0,
+      "seconds": 0.6
+    },
+    {
+      "name": "raiden-startup-x64",
+      "command": [
+        "powershell",
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "tools/myraidenii/Invoke-SelectedSetStartupProbe.ps1",
+        "-Inventory",
+        "docs/myraidenii/etc/evidence/t1-s1-rom-inventory.json",
+        "-Archive",
+        "<owner-rom-archive>",
+        "-Probe",
+        "<repo>\\build\\.ninja\\gcc-x64-release\\test\\app-myraidenii\\integration\\myraidenii-selected-set-startup-probe.exe",
+        "-TemporaryRoot",
+        "<repo>\\build\\t587-s5\\raiden-probe-x64"
+      ],
+      "exit": 0,
+      "seconds": 6.18
+    },
+    {
+      "name": "raiden-product-x64",
+      "command": [
+        "powershell",
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "tools/myraidenii/Invoke-SelectedSetStartupProbe.ps1",
+        "-Inventory",
+        "docs/myraidenii/etc/evidence/t1-s1-rom-inventory.json",
+        "-Archive",
+        "<owner-rom-archive>",
+        "-Product",
+        "<repo>\\assets\\myraidenii\\myraidenii_0_0_0007_x64.exe",
+        "-ProductSmoke",
+        "<repo>\\build\\.ninja\\gcc-x64-release\\test\\app-myraidenii\\integration\\myraidenii-selected-set-product-console-smoke.exe",
+        "-TemporaryRoot",
+        "<repo>\\build\\t587-s5\\raiden-product-x64"
+      ],
+      "exit": 0,
+      "seconds": 4.34
+    }
+  ],
+  "publication": {
+    "exit": 0,
+    "seconds": 463.34292006492615
+  },
+  "static": {
+    "source": "4cd56d018abd5328f0578dbfe0b7524f4bcfcce4",
+    "exact_files": 296,
+    "manifests": [
+      {
+        "root": "src/lib",
+        "exit": 0,
+        "output": "-- library manifest verified: <repo>/src/lib\n"
+      },
+      {
+        "root": "src/emulator",
+        "exit": 0,
+        "output": "-- emulator manifest verified: <repo>/src/emulator\n"
+      },
+      {
+        "root": "src/x86-debug",
+        "exit": 0,
+        "output": "-- x86-debug manifest verified: <repo>/src/x86-debug\n"
+      },
+      {
+        "root": "src/x86-ibmpc",
+        "exit": 0,
+        "output": "-- x86-ibmpc manifest verified: <repo>/src/x86-ibmpc\n"
+      },
+      {
+        "root": "test/lib",
+        "exit": 0,
+        "output": "-- test manifest verified: <repo>/test/lib\n"
+      },
+      {
+        "root": "test/emulator",
+        "exit": 0,
+        "output": "-- test manifest verified: <repo>/test/emulator\n"
+      },
+      {
+        "root": "test/x86-debug",
+        "exit": 0,
+        "output": "-- test manifest verified: <repo>/test/x86-debug\n"
+      },
+      {
+        "root": "test/x86-ibmpc",
+        "exit": 0,
+        "output": "-- test manifest verified: <repo>/test/x86-ibmpc\n"
+      },
+      {
+        "root": "src/x86-nxvm",
+        "exit": 0,
+        "output": "-- x86-nxvm manifest verified: <repo>/src/x86-nxvm\n"
+      },
+      {
+        "root": "test/x86-nxvm",
+        "exit": 0,
+        "output": "-- test manifest verified: <repo>/test/x86-nxvm\n"
+      }
+    ]
+  },
+  "suites": [
+    {
+      "suite": "integration-x64",
+      "tests": 48,
+      "failures": 0,
+      "skipped": 0,
+      "seconds": 238.0
+    },
+    {
+      "suite": "integration-x86",
+      "tests": 48,
+      "failures": 0,
+      "skipped": 0,
+      "seconds": 295.0
+    },
+    {
+      "suite": "my5160-x64",
+      "tests": 20,
+      "failures": 0,
+      "skipped": 0,
+      "seconds": 30.0
+    },
+    {
+      "suite": "my5160-x86",
+      "tests": 20,
+      "failures": 0,
+      "skipped": 0,
+      "seconds": 41.0
+    },
+    {
+      "suite": "my5170-x64",
+      "tests": 22,
+      "failures": 0,
+      "skipped": 0,
+      "seconds": 41.0
+    },
+    {
+      "suite": "my5170-x86",
+      "tests": 22,
+      "failures": 0,
+      "skipped": 0,
+      "seconds": 62.0
+    },
+    {
+      "suite": "mydeskpro386-x64",
+      "tests": 23,
+      "failures": 0,
+      "skipped": 0,
+      "seconds": 123.0
+    },
+    {
+      "suite": "mydeskpro386-x86",
+      "tests": 23,
+      "failures": 0,
+      "skipped": 0,
+      "seconds": 173.0
+    },
+    {
+      "suite": "unit-x64",
+      "tests": 716,
+      "failures": 0,
+      "skipped": 0,
+      "seconds": 434.0
+    },
+    {
+      "suite": "unit-x86",
+      "tests": 716,
+      "failures": 0,
+      "skipped": 0,
+      "seconds": 360.0
+    }
+  ],
+  "protected_files_unchanged": 29,
+  "artifacts": [
+    {
+      "path": "assets/my5160/my5160_0_5_0582_x64.exe",
+      "arch": "x64",
+      "bytes": 1505965,
+      "sha256": "edbcfdd033b7188a59fb701fe9d8702366cd64e8eeb6ec5ce8c9cd3ba614f520",
+      "build_date_strings": [
+        "Nov 18 2026"
+      ]
+    },
+    {
+      "path": "assets/my5160/my5160_0_5_0582_x86.exe",
+      "arch": "x86",
+      "bytes": 1646417,
+      "sha256": "8608c222fd1ec44feae41fd1f9a1986a09fa170d5853cb8aa72233c4d70eecbd",
+      "build_date_strings": [
+        "Nov 18 2026"
+      ]
+    },
+    {
+      "path": "assets/my5170/my5170_0_5_0582_x64.exe",
+      "arch": "x64",
+      "bytes": 1519051,
+      "sha256": "cd8f83a1245095e72c5cd46a6454fa305ea445469938f327005f339da8596cf5",
+      "build_date_strings": [
+        "Nov 18 2026"
+      ]
+    },
+    {
+      "path": "assets/my5170/my5170_0_5_0582_x86.exe",
+      "arch": "x86",
+      "bytes": 1659274,
+      "sha256": "1b08a3745e80813c4d78f08a1b9c2964d68f723a7921904339bedfa8359ba68a",
+      "build_date_strings": [
+        "Nov 18 2026"
+      ]
+    },
+    {
+      "path": "assets/mydeskpro386/mydeskpro386_0_5_0582_x64.exe",
+      "arch": "x64",
+      "bytes": 1505713,
+      "sha256": "0135b1d73246c67e3e10bba5fba99bd0c708ff575799a7043d33bdeb1b439297",
+      "build_date_strings": [
+        "Nov 18 2026"
+      ]
+    },
+    {
+      "path": "assets/mydeskpro386/mydeskpro386_0_5_0582_x86.exe",
+      "arch": "x86",
+      "bytes": 1646503,
+      "sha256": "a4feae21f17e68e4639380618ff77438e1c790483e29172a99d8c7af88e514d2",
+      "build_date_strings": [
+        "Nov 18 2026"
+      ]
+    },
+    {
+      "path": "assets/mynes/mynes_0_0_0044_x64.exe",
+      "arch": "x64",
+      "bytes": 271886,
+      "sha256": "e616252863805adfcd0a5751d8f82b24aa93c57d8fefac10acf569c50ff97bf6",
+      "build_date_strings": [
+        "Nov 18 2026"
+      ]
+    },
+    {
+      "path": "assets/mynes/mynes_0_0_0044_x86.exe",
+      "arch": "x86",
+      "bytes": 271374,
+      "sha256": "a7525a76f8787ff1154a2b8915a9326a759be3ca6827f2b1fa4fd69b9bd7d4fe",
+      "build_date_strings": [
+        "Nov 18 2026"
+      ]
+    },
+    {
+      "path": "assets/mypc110/mypc110_x64.exe",
+      "arch": "x64",
+      "bytes": 3090000,
+      "sha256": "e9e6520b849f5bdc66d6c00bca13f1c023a27b1ce85636e0ecb3051e3e0c2587",
+      "build_date_strings": [
+        "Nov 18 2026"
+      ]
+    },
+    {
+      "path": "assets/mypc110/mypc110_x86.exe",
+      "arch": "x86",
+      "bytes": 3236421,
+      "sha256": "8d28f3409ee4593cf7effb923a0660c9b432f4ee9062945e3120d582009d8787",
+      "build_date_strings": [
+        "Nov 18 2026"
+      ]
+    },
+    {
+      "path": "assets/myraidenii/myraidenii_0_0_0007_x64.exe",
+      "arch": "x64",
+      "bytes": 903330,
+      "sha256": "dce2f6d9b08c16b858bd4b35eca74fceda2fd760c71cdf57df7db3e900d2590f",
+      "build_date_strings": [
+        "Nov 18 2026"
+      ]
+    },
+    {
+      "path": "assets/myraidenii/myraidenii_0_0_0007_x86.exe",
+      "arch": "x86",
+      "bytes": 978577,
+      "sha256": "b2fa185688783988ac819df63e3f2781dadc2e28db819bb29ec6bae2b9a0fd84",
+      "build_date_strings": [
+        "Nov 18 2026"
+      ]
+    },
+    {
+      "path": "assets/nxvm/nxvm_0_5_0582_x64.exe",
+      "arch": "x64",
+      "bytes": 1517685,
+      "sha256": "dd6116bbcd3b054d2c2ec04d08aae2c39a88f30b0be984ac3e85c1bc2d339d55",
+      "build_date_strings": [
+        "Nov 18 2026"
+      ]
+    },
+    {
+      "path": "assets/nxvm/nxvm_0_5_0582_x86.exe",
+      "arch": "x86",
+      "bytes": 1658572,
+      "sha256": "aa6c21840996710f0520a84b256f0fe4971c474a832a6ee447c0327534d53b9c",
+      "build_date_strings": [
+        "Nov 18 2026"
+      ]
+    }
+  ],
+  "source_test_diff": {
+    "src/app-mynes": {
+      "added": 25,
+      "deleted": 36,
+      "files": 1,
+      "net": -11
+    },
+    "src/app-mypc110": {
+      "added": 32,
+      "deleted": 67,
+      "files": 5,
+      "net": -35
+    },
+    "src/emulator": {
+      "added": 68,
+      "deleted": 45,
+      "files": 4,
+      "net": 23
+    },
+    "src/x86-debug": {
+      "added": 16,
+      "deleted": 4,
+      "files": 3,
+      "net": 12
+    },
+    "src/x86-ibmpc": {
+      "added": 16,
+      "deleted": 10,
+      "files": 4,
+      "net": 6
+    },
+    "src/x86-nxvm": {
+      "added": 33,
+      "deleted": 63,
+      "files": 2,
+      "net": -30
+    },
+    "test/app-mynes": {
+      "added": 5,
+      "deleted": 5,
+      "files": 1,
+      "net": 0
+    },
+    "test/app-mypc110": {
+      "added": 65,
+      "deleted": 34,
+      "files": 3,
+      "net": 31
+    },
+    "test/emulator": {
+      "added": 55,
+      "deleted": 19,
+      "files": 2,
+      "net": 36
+    },
+    "test/x86-debug": {
+      "added": 9,
+      "deleted": 4,
+      "files": 2,
+      "net": 5
+    },
+    "test/x86-ibmpc": {
+      "added": 15,
+      "deleted": 11,
+      "files": 2,
+      "net": 4
+    },
+    "test/x86-nxvm": {
+      "added": 15,
+      "deleted": 2,
+      "files": 2,
+      "net": 13
+    }
+  },
+  "evidence_sha256": {
+    "build-my5160-x64.log": "32a34ec4a38e885136c988ac5087f864fce72e3df6070664f2e483fe823a4cd3",
+    "build-my5160-x86.log": "d5e9003e94fe1384ab580779a0a3f3f8e2a3f193a87b65573b99f965ce003a5a",
+    "build-my5170-x64.log": "132c5b5a5f1d993a2401e9f81caba645ff7ae2e223a255f936189b8ec4845bc9",
+    "build-my5170-x86.log": "e0b92141106bfd0997d1fdd8defa6ac90392acb5d67dad772f607ecf20cf9f63",
+    "build-mydeskpro386-x64.log": "556d351b3f4dffab5142821f506c03652ec9666c04c044900debb8bf0e39a341",
+    "build-mydeskpro386-x86.log": "4c9d2849162c7dbfea713c8476261d4414f3eda6f363344e9ce560b806252df8",
+    "configure-my5160-x64.log": "8590523c6ae09a99035cde89d48f6728dd9cb5de9e52e15b68e6cc7bd5b5b65a",
+    "configure-my5160-x86.log": "76e2fe68dae3cca8ef4b7e8330ec4349f3a8a9d08704776039ddf23a03ffa037",
+    "configure-my5170-x64.log": "b3d4895345ff32558345982caa115a2ba82ee387ddd3588adabe09732e52280b",
+    "configure-my5170-x86.log": "b88dfa4d989ada981497aec194c805f16c4758061a89f30cee4743b31484065c",
+    "configure-mydeskpro386-x64.log": "b8c8efc11cfede7f483e3cfd52139511c0c1897fdd140009b2784d5965b76393",
+    "configure-mydeskpro386-x86.log": "0762dd38d45bd36cc06bf7c604b5f7a882ad1e3e3f2e63ba66fc3ed1d4887ffd",
+    "configure-x64.log": "8c45035a71e1ec984385625059a208eb6dbc1c80e52bb3e0358928a3a171e9ec",
+    "configure-x86.log": "cfc1f49a11dedf4326c1ac45759f7f1852d856ea5ea2a5a8cdbf5772c068a9e6",
+    "full-build-x64.log": "f96cb443a01e7239d0a199640f0715863503fd30968f26e264aa55010e963e84",
+    "full-build-x86.log": "62f13898721ab5f8b52b5e0b3be24326617456b37568fba2c87cf72aeca07094",
+    "integration-x64.log": "a4f716de079b6fa806deb81cdd7c0bc509315c7277378d0e4e92d03bb9e4ef5c",
+    "integration-x64.xml": "c1f4758060316eb035237b72d107bf74de8aaf20888e69d3b18d571e5ba0750a",
+    "integration-x86.log": "d08f1dcbd22fba4bc793fade718fe711f566f11aee684be9d0543f7685681203",
+    "integration-x86.xml": "339df3ec1449eb10990c18560ddf07a33849dc63dc588520e86b3a8938795b07",
+    "my5160-x64.log": "9c1ca3253067b7f06082911220389679d3a33741a98591b600296624c43f4feb",
+    "my5160-x64.xml": "a5f8eca0520356b6ac839015c8d8daa5d0d59e2caf80e9614de4bf92c9df1f8b",
+    "my5160-x86.log": "920651b0be660f35e97c211a76a2face8cd379c8e93098fda6c571fe4348efa0",
+    "my5160-x86.xml": "5b6760d86d3da5e7298a622abcbb335ca81b7a81ebbb39724e433ae1d1ed326b",
+    "my5170-x64.log": "e4de59400ee2cd164e2c37f41b311fd2934cdf832200e44f89d990207a16fd76",
+    "my5170-x64.xml": "338b1fbf23f0ca020ceee10a759ced46b25d4247130af89eb4741952e94cb061",
+    "my5170-x86.log": "e95ecb22b1e4d471e341d55ecc30502d73897e23c52457b4e80387d87e537577",
+    "my5170-x86.xml": "b265a262e4fa04e6bc8770006d7107a9055af91e0d92bd1c1d617e8da8418eb9",
+    "mydeskpro386-x64.log": "819d97a240cf858fc5c90f2797cfdc2856a3f544ecac56db9671252266d12bbc",
+    "mydeskpro386-x64.xml": "db762d6e3609b5676a2c4bfb8474a6ee1492569590322858a23059f9c28ea48e",
+    "mydeskpro386-x86.log": "c48a58e5931b62afe1c9d4a7a1988b733b5e497e88107c0151d730f982df5e63",
+    "mydeskpro386-x86.xml": "27590d4a8c1f26e56af7381d22a387e43a1fe0e8dcf86ebcc7142f566aaaf478",
+    "publish-raiden-x64.log": "2ab76f1c127e4a65aa2b2c6fa45890d74eb1dff6351200eda31c295aa0680295",
+    "publish-raiden-x86.log": "bd4688e03541eb9a0298d440ce8ccce967d9435862b3b2088646b7de2292f869",
+    "publish.log": "29d55553e43a528a1a63f39e454d52ceb0b221fbb4ee32eb433926ff0f8a7c4e",
+    "raiden-product-x64.log": "cfb32958610899ce0ecdceb463bdaad56c39a58cc620c8dd47e8ef08f488b9b5",
+    "raiden-product-x86.log": "cfb32958610899ce0ecdceb463bdaad56c39a58cc620c8dd47e8ef08f488b9b5",
+    "raiden-startup-x64.log": "93c227871443ea25173ae18d2563fbe0290888adfdc61f19e413c0c12d3564d0",
+    "raiden-startup-x86.log": "93c227871443ea25173ae18d2563fbe0290888adfdc61f19e413c0c12d3564d0",
+    "restore-x64.log": "e31c7e1db262696ec79ff23b8cbd84d771274e0cf2a01fb1db9572a17d26b072",
+    "restore-x86.log": "080c0a33b53183c3300438127b319eadd1a66f9f7670956a2cf1a72b5829e366",
+    "unit-x64.log": "602459778eea6468905853a8801b80dee4cf36e0deeabac5adbd30832a1523a3",
+    "unit-x64.xml": "b432afbf79e713c530ee7f1a2b883fa296784378992556ce36934c326f7be36a",
+    "unit-x86.log": "8d96a7829e81bb49ba4c45079c1add53a60c90d17a04e7434a9d48ab4b990be7",
+    "unit-x86.xml": "15cbe92991a30d20022297915c9d55427a463a53dfe0d9ccea65cfbb232c2abf",
+    "final-lf.log": "e682316a729f84d1ed5749bd8f1dab985b7d511ee7f96c95cb599b7c63142baa",
+    "final-mynes-docs.log": "7ed6101c6380a2da1a3d7d29772ce7838e478137213185dcc539d97dc1b53563",
+    "final-myraidenii-docs.log": "320a1c7a396b60d57afd5d0cc6e0d1a51f861a8a537f038c9ce570a4d06d17fb",
+    "final-nxvm-docs.log": "1cd7ecd8795df79be840c8a01e85b60e6d385a281717fdb25698e6e840a89836"
+  },
+  "validation_limits": [
+    "Automated native Window/Console paths included; no manual desktop/RDP acceptance.",
+    "MyRaidenII selected-set startup and lifecycle checks are not gameplay qualification.",
+    "Exact source comparison is against the pinned committed SoftPC revision, not later working changes."
+  ],
+  "final_gates": [
+    {
+      "name": "lf",
+      "exit": 0
+    },
+    {
+      "name": "nxvm-docs",
+      "exit": 0
+    },
+    {
+      "name": "mynes-docs",
+      "exit": 0
+    },
+    {
+      "name": "myraidenii-docs",
+      "exit": 0
+    }
+  ],
+  "exact_final": {
+    "revision": "4cd56d018abd5328f0578dbfe0b7524f4bcfcce4",
+    "files": 296,
+    "different": 0
+  },
+  "cleanup": {
+    "task_directory": "build/t587-s5",
+    "files": 76,
+    "bytes": 2375010,
+    "stable_caches_preserved": true
+  }
+}

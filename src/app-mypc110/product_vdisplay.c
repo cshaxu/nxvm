@@ -8,31 +8,24 @@ void mypc110_vdisplay_initialize(mypc110_vdisplay *display)
 }
 
 lib_bool mypc110_vdisplay_submit(void *context, emulator_machine *machine,
-    emulator_session_machine_state state, const char *line,
+    emulator_session_machine_state state, const char *name, const emulator_product_monitor_arguments *arguments,
     emulator_session_command_result *out)
 {
     mypc110_vdisplay *display = context;
-    const char *end;
-    lib_size length;
     mypc110_display_variant selected;
 
-    if (display == LIB_NULL || line == LIB_NULL || out == LIB_NULL) return LIB_FALSE;
-    while (*line == ' ' || *line == '\t') ++line;
-    end = line + lib_text_length(line);
-    while (end > line && (end[-1] == ' ' || end[-1] == '\t')) --end;
-    length = (lib_size)(end - line);
-    if (length < 8u || lib_memory_compare(line, "vdisplay", 8u) != 0 ||
-        (length > 8u && line[8] != '=' && line[8] != ' ' && line[8] != '\t'))
+    if (display == LIB_NULL || name == LIB_NULL || arguments == LIB_NULL || out == LIB_NULL)
         return LIB_FALSE;
+    if (lib_text_compare(name, "vdisplay") != 0) return LIB_FALSE;
     *out = (emulator_session_command_result){0};
     out->arm_prompt = LIB_TRUE;
-    if (length == 13u && lib_memory_compare(line, "vdisplay=dstn", length) == 0)
+    if (arguments->count == 1u && lib_text_compare(arguments->values[0], "dstn") == 0)
         selected = MYPC110_DISPLAY_DSTN;
-    else if (length == 12u && lib_memory_compare(line, "vdisplay=tft", length) == 0)
+    else if (arguments->count == 1u && lib_text_compare(arguments->values[0], "tft") == 0)
         selected = MYPC110_DISPLAY_TFT;
     else {
         (void)lib_c_snprintf(out->text, sizeof(out->text),
-            "Usage: vdisplay=dstn|tft\r\n");
+            "Usage: vdisplay <dstn|tft>\r\n");
         return LIB_TRUE;
     }
     if (machine == LIB_NULL || state != EMULATOR_SESSION_MACHINE_STOPPED ||

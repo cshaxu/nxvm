@@ -25,7 +25,7 @@ static lib_bool run_variant(const char *executable, const char *directory,
     const char *selected_markers[32];
     if (count + 1u > 32u) return LIB_FALSE;
     selected_commands[0] = lib_text_compare(variant, "tft") == 0 ?
-        "vdisplay=tft\r" : "vdisplay=dstn\r";
+        "vdisplay tft\r" : "vdisplay dstn\r";
     selected_markers[0] = lib_text_compare(variant, "tft") == 0 ?
         "Display: tft (next start)." : "Display: dstn (next start).";
     for (lib_size index = 0u; index < count; ++index) {
@@ -55,16 +55,16 @@ int main(int argc, char **argv)
     static const char *const read_rtc_markers[] = {
         "Machine reset and paused.", "-", "-", "00000026", "> ", ""};
     static const char *const switch_commands[] = {
-        "vdisplay=tft\r", "reset\r", "stop\r", "vdisplay=dstn\r",
-        "reset\r", "stop\r", "vdisplay=tft\r", "reset\r", "exit\r"};
+        "vdisplay tft\r", "reset\r", "stop\r", "vdisplay dstn\r",
+        "reset\r", "stop\r", "vdisplay tft\r", "reset\r", "exit\r"};
     static const char *const switch_markers[] = {
         "Display: tft (next start).", "Machine reset and paused.", "Machine stopped.",
         "Display: dstn (next start).", "Machine reset and paused.", "Machine stopped.",
         "Display: tft (next start).", "Machine reset and paused.", ""};
     static const char *const isolation_commands[] = {
         "reset\r", "debug\r", "o 70 3b\r", "o 71 5a\r", "q\r", "stop\r",
-        "vdisplay=tft\r", "reset\r", "debug\r", "o 70 3b\r", "o 71 a5\r", "q\r", "stop\r",
-        "vdisplay=dstn\r", "reset\r", "debug\r", "o 70 3b\r", "i 71\r", "q\r", "exit\r"};
+        "vdisplay tft\r", "reset\r", "debug\r", "o 70 3b\r", "o 71 a5\r", "q\r", "stop\r",
+        "vdisplay dstn\r", "reset\r", "debug\r", "o 70 3b\r", "i 71\r", "q\r", "exit\r"};
     static const char *const isolation_markers[] = {
         "Machine reset and paused.", "-", "-", "-", "> ", "Machine stopped.",
         "Display: tft (next start).", "Machine reset and paused.", "-", "-", "-", "> ",

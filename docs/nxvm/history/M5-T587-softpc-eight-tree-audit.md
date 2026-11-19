@@ -135,3 +135,31 @@ No new P source/artifact requirement is created by this read-only audit.
 Necessary inventory and checks are recorded here; owned scratch is removed
 with the existing cleanup tool after the audit process exits. S4 remains open
 for owner review; T587 is not closed and import is not admitted.
+
+## Owner disposition
+
+On 2026-11-18 the owner accepted the audit and explicitly approved unified
+PC110 token syntax and the next import S. S4 is closed.
+
+## Archived S4 packet
+
+# M5 T587 S4 - Audit delivered: awaiting owner review
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation: S4 after accepted S3; reconciled with Git at 377a11722. |
+| Admission And Approval | Owner requested a new S on 2026-11-18 to review latest SoftPC shared packages and decide unchanged-import eligibility. |
+| Objective | Audit the committed eight-tree delta, package rules and receiving call sites; provide an evidence-backed import decision. |
+| Non-goals | No import, production/test edits, binary refresh or sibling-repository writes. |
+| Reference Baseline | NXVM 377a11722; SoftPC 4cd56d018abd5328f0578dbfe0b7524f4bcfcce4; prior import dfe955eb885e66c5549b6cd7823bb262af83ab69. SoftPC worktree initially clean. |
+| Candidate Proposal | [S4 audit record](../history/M5-T587-softpc-eight-tree-audit.md). |
+| Files And ABI Surface | Read src/test Lib, Emulator, X86 Debug and X86 IBMPC plus necessary receiving callbacks; write only NXVM status/history. |
+| Applicable Rules | Execution, Documentation, Coding and Architecture rules, NXVM guide/layout/architecture/source policy; coding-governance and architecture-governance skills. |
+| Verification | Exact committed-file comparison, all changed lines, manifests, package dependency/types checks, callback lifetime and syntax audit, receiving migration inventory. Distinguish static review from runtime qualification. |
+| Expected Markers | Per-tree differences, concrete findings and import/migration decision; no unsupported full-runtime claim. |
+| Asset Needs | No firmware/media or EXE generation. Any scratch belongs to build/t587-s4; 256 MiB, ten-minute no-progress review; archive findings and remove owned scratch after completion. |
+| Reporting Requirements | Findings with paths, diff counts, unchanged trees, API effects, tests reviewed/run and remaining qualification. |
+| Stop Conditions | Do not modify Shared or SoftPC, mask ABI incompatibility, or claim a tested receiving product without execution. |
+| Exit Criteria | All changed files reviewed and eight-tree integrity checked; decision and required receiving work documented; all 21 static checks pass, 296 upstream files inventoried, governance checked. Eligible for exact import WITH receiving migration; no runtime qualification claimed. Owner acceptance before closure. |
+| Original Owner Request | Admit a new S and review latest SoftPC public eight components against code quality rules to decide unchanged import. |
+| Similar-Issue Sweep | Fixed/extension token routing, DEBUG filename parsing and all local callback users; no unrelated refactor. |

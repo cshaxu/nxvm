@@ -31,13 +31,13 @@ build-fixed root, never an embedded fallback, INI key or second YAML loader.
 
 ## PC110
 
-PC110 starts with DSTN selected. `vdisplay=dstn` and `vdisplay=tft` select
+PC110 starts with DSTN selected. `vdisplay dstn` and `vdisplay tft` select
 the next cold start firmware only while stopped. Selection is not persisted
 in INI; each variant retains its own CMOS file. Both variants are embedded
 in each of the two host-architecture EXEs.
 
 The stopped monitor accepts `pccard insert <a|b> <readonly|overlay|direct>
-<common-image>|<attribute-image>` and `pccard eject <a|b>`. These schedule
+<common-image> <attribute-image>` and `pccard eject <a|b>`. These schedule
 memory-card changes at the next start/reset; the two images are explicit.
 Only the common image can be modified on disk; attribute writes use a temporary
 overlay in writable modes. Card selections are not persisted.

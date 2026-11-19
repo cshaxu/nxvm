@@ -1,23 +1,27 @@
-# M5 T587 S4 - Audit delivered: awaiting owner review
+# M5 T587 S5 - Delivered: awaiting owner acceptance
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation: S4 after accepted S3; reconciled with Git at 377a11722. |
-| Admission And Approval | Owner requested a new S on 2026-11-18 to review latest SoftPC shared packages and decide unchanged-import eligibility. |
-| Objective | Audit the committed eight-tree delta, package rules and receiving call sites; provide an evidence-backed import decision. |
-| Non-goals | No import, production/test edits, binary refresh or sibling-repository writes. |
-| Reference Baseline | NXVM 377a11722; SoftPC 4cd56d018abd5328f0578dbfe0b7524f4bcfcce4; prior import dfe955eb885e66c5549b6cd7823bb262af83ab69. SoftPC worktree initially clean. |
-| Candidate Proposal | [S4 audit record](../history/M5-T587-softpc-eight-tree-audit.md). |
-| Files And ABI Surface | Read src/test Lib, Emulator, X86 Debug and X86 IBMPC plus necessary receiving callbacks; write only NXVM status/history. |
-| Applicable Rules | Execution, Documentation, Coding and Architecture rules, NXVM guide/layout/architecture/source policy; coding-governance and architecture-governance skills. |
-| Verification | Exact committed-file comparison, all changed lines, manifests, package dependency/types checks, callback lifetime and syntax audit, receiving migration inventory. Distinguish static review from runtime qualification. |
-| Expected Markers | Per-tree differences, concrete findings and import/migration decision; no unsupported full-runtime claim. |
-| Asset Needs | No firmware/media or EXE generation. Any scratch belongs to build/t587-s4; 256 MiB, ten-minute no-progress review; archive findings and remove owned scratch after completion. |
-| Reporting Requirements | Findings with paths, diff counts, unchanged trees, API effects, tests reviewed/run and remaining qualification. |
-| Stop Conditions | Do not modify Shared or SoftPC, mask ABI incompatibility, or claim a tested receiving product without execution. |
-| Exit Criteria | All changed files reviewed and eight-tree integrity checked; decision and required receiving work documented; all 21 static checks pass, 296 upstream files inventoried, governance checked. Eligible for exact import WITH receiving migration; no runtime qualification claimed. Owner acceptance before closure. |
-| Original Owner Request | Admit a new S and review latest SoftPC public eight components against code quality rules to decide unchanged import. |
-| Similar-Issue Sweep | Fixed/extension token routing, DEBUG filename parsing and all local callback users; no unrelated refactor. |
+| Identifier Mode | Continuation: T587 S5 after owner-accepted S4 at 7a61c56d8. |
+| Admission And Approval | Owner approved exact SoftPC import and unified PC110 syntax on 2026-11-18; cached full build/publication/testing and scoped commit/push follow the standing delivery rules. |
+| Objective | Import committed eight trees unchanged, migrate receiving callbacks, and publish/qualify all fourteen EXEs. |
+| Non-goals | No changes to SoftPC, Lib forks, legacy callback/grammar compatibility, firmware, INI or user media; no gameplay claim. |
+| Reference Baseline | NXVM 7a61c56d8; SoftPC 4cd56d018abd5328f0578dbfe0b7524f4bcfcce4, clean at admission. |
+| Candidate Proposal | [S5 plan and evidence](../history/M5-T587-token-import.md). |
+| Files And ABI Surface | Shared eight-tree import; X86 NXVM Product, PC110 and MyNES command consumers/tests; fourteen receiving EXEs; affected product UX/help and task records. Existing callback signatures migrate without aliases. |
+| Applicable Rules | Execution/Documentation/Architecture/Coding rules; NXVM architecture/layout/UI/source policy; MyNES guide and source/layout rules for its explicitly approved consumer migration. |
+| Verification | Exact upstream bytes and manifests; callback lifetime/syntax tests; cached x86/x64 full build, all unit/integration suites and selected-profile/receiver checks; fourteen deployment hashes/PE widths; docs/LF/diff review. |
+| Expected Markers | No mismatched callbacks or duplicate lexer; all required tests pass; fourteen current outputs; upstream trees exact. |
+| Asset Needs | Existing owner BYOB only; preserve INI/media. Scratch build/t587-s5, 2 GiB budget, 15-minute no-progress review; archive evidence then clean after jobs exit. Stable .ninja/.ccache retained. |
+| Reporting Requirements | Actual per-owner diff, removed paths, verification/failures, artifact hashes and commits; distinguish native automated and manual testing. |
+| Stop Conditions | Do not weaken tests, overwrite unrelated changes, alter upstream or claim skipped verification. |
+| Exit Criteria | Receiving paths migrated; eight trees exact; 1,528 baseline cases, 130 profile cases and four selected-ROM checks pass; fourteen outputs published with hashes; scoped P1-P4 delivery and final gates recorded in S5 evidence. Await owner acceptance; T587 stays open. |
+| Original Owner Request | Admit new S, import current SoftPC eight packages unchanged; adopt ordinary token syntax for PC110. |
+| Similar-Issue Sweep | All fixed/extension callback declarations, direct test invocations, path copying and help/command fixtures; Debug grammars remain independent. |
+
+| Task | Status |
+| --- | --- |
+| T587 S4 | Accepted and closed 2026-11-18. [Audit and archived packet](../history/M5-T587-softpc-eight-tree-audit.md). |
 
 # M5 T587 - S3 accepted baseline
 
@@ -31,7 +35,7 @@ The owner accepted S2 and authorized closure on 2026-11-11.
 The selectable CMD build/publication entry and receiving artifacts were
 delivered through 544e51f5c; [S2 history](../history/M5-T587-build-entry.md)
 records verification, artifact hashes and the archived packet.
-T587 remains open; S1-S3 are accepted and closed. S4 is active above.
+T587 remains open; S1-S3 are accepted and closed. S5 delivery is recorded above.
 
 # M5 T587 S1 — Closed after owner acceptance
 

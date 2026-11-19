@@ -1,3 +1,4 @@
+#include "x86-ibmpc/product/command_provider_interface.h"
 #include "app-mypc110/product_binding_interface.h"
 #include "app-mypc110/pc110_plan_interface.h"
 #include "app-mypc110/pc110_audio.h"
@@ -411,13 +412,15 @@ int main(void)
         emulator_machine_debug_lease lease = {0};
         emulator_session_command_result result = {0};
         x86_ibmpc_product_command_extensions extensions = {0};
+        x86_ibmpc_product_command_context command = {0};
+        emulator_session_command_provider provider;
         base_sync_event *paused = LIB_NULL;
         x86_debug_request read = {.operation = X86_DEBUG_READ_LINEAR,
             .address = 0xc0000u, .bytes = 1u};
         x86_debug_response response = {0};
         const lib_u8 card_data[] = {0x6du};
 
-        lib_test_assert(lib_storage_file_writer_open("pc110-card-common.img",
+        lib_test_assert(lib_storage_file_writer_open("pc110 card common.img",
             LIB_STORAGE_FILE_WRITER_TRUNCATE, &writer) == LIB_STATUS_OK);
         lib_test_assert(lib_storage_file_writer_write(writer, card_data, sizeof(card_data)) == LIB_STATUS_OK);
         lib_test_assert(lib_storage_file_writer_write(writer, zeroes, sizeof(zeroes)) == LIB_STATUS_OK);
@@ -426,7 +429,7 @@ int main(void)
             LIB_STORAGE_FILE_WRITER_TRUNCATE, &writer) == LIB_STATUS_OK);
         lib_test_assert(lib_storage_file_writer_write(writer, zeroes, sizeof(zeroes)) == LIB_STATUS_OK);
         lib_test_assert(lib_storage_file_writer_close(writer) == LIB_STATUS_OK);
-        lib_test_assert(lib_storage_file_writer_open("pc110-card-attribute.img",
+        lib_test_assert(lib_storage_file_writer_open("pc110 card attribute.img",
             LIB_STORAGE_FILE_WRITER_TRUNCATE, &writer) == LIB_STATUS_OK);
         lib_test_assert(lib_storage_file_writer_write(writer, zeroes, sizeof(zeroes)) == LIB_STATUS_OK);
         lib_test_assert(lib_storage_file_writer_close(writer) == LIB_STATUS_OK);
@@ -434,11 +437,27 @@ int main(void)
         lib_test_assert(emulator_machine_create(&executor, &machine.composition.driver) == LIB_STATUS_OK);
         lib_test_assert(machine.composition.bind(machine.composition.machine, executor) == LIB_STATUS_OK);
         lib_test_assert(binding.configure_extensions(binding.context, &machine, &extensions) == LIB_STATUS_OK);
+        lib_test_assert(x86_ibmpc_product_command_provider_initialize(&command, executor,
+            EMULATOR_SESSION_DISPLAY_CONSOLE, &extensions, &provider) == LIB_STATUS_OK);
         emulator_machine_set_state_sink(executor, card_state, paused);
-        lib_test_assert(extensions.submit(extensions.context, executor,
+        provider.submit_line(provider.context,
             EMULATOR_SESSION_MACHINE_STOPPED,
-            "pccard insert a overlay pc110-card-common.img|pc110-card-attribute.img", &result));
+            "pccard insert a overlay \"pc110 card common.img\" \"pc110 card attribute.img\"", &result);
         lib_test_assert(product.cards.slot[0].pending_common != LIB_NULL);
+        {
+            lib_storage_medium *pending = product.cards.slot[0].pending_common;
+            provider.submit_line(provider.context, EMULATOR_SESSION_MACHINE_STOPPED,
+                "pccard insert a overlay old.img|old.attr", &result);
+            lib_test_assert(lib_text_find_substring(result.text, "Usage:") != LIB_NULL &&
+                product.cards.slot[0].pending_common == pending);
+        }
+        provider.submit_line(provider.context, EMULATOR_SESSION_MACHINE_STOPPED,
+            "vdisplay tft", &result);
+        lib_test_assert(lib_text_compare(result.text, "Display: tft (next start).\r\n") == 0);
+        provider.submit_line(provider.context, EMULATOR_SESSION_MACHINE_STOPPED,
+            "vdisplay=tft", &result);
+        lib_test_assert(lib_text_find_substring(result.text, "Unknown command.") != LIB_NULL);
+
         lib_test_assert(emulator_machine_reset(executor));
         lib_test_assert(base_sync_event_wait(paused, 30000u) == BASE_SYNC_WAIT_SIGNALED);
         lib_test_assert(emulator_machine_state_get(executor) == EMULATOR_MACHINE_PAUSED);
@@ -465,36 +484,36 @@ int main(void)
             card_debug(executor, &lease, &read, &response);
             lib_test_assert(response.data[0] == 0x35u);
         }
-        lib_test_assert(extensions.submit(extensions.context, executor,
-            EMULATOR_SESSION_MACHINE_PAUSED, "pccard eject a", &result));
+        provider.submit_line(provider.context,
+            EMULATOR_SESSION_MACHINE_PAUSED, "pccard eject a", &result);
         lib_test_assert(product.cards.slot[0].pending_common == LIB_NULL);
         lib_test_assert(emulator_machine_stop(executor));
         lib_test_assert(base_sync_event_wait(paused, 30000u) == BASE_SYNC_WAIT_SIGNALED);
         lib_test_assert(emulator_machine_state_get(executor) == EMULATOR_MACHINE_STOPPED);
-        lib_test_assert(extensions.submit(extensions.context, executor,
+        provider.submit_line(provider.context,
             EMULATOR_SESSION_MACHINE_STOPPED,
-            "pccard insert b readonly missing-card.img|pc110-card-attribute.img", &result));
+            "pccard insert b readonly missing-card.img \"pc110 card attribute.img\"", &result);
         lib_test_assert(product.cards.slot[1].pending_common == LIB_NULL);
         lib_test_assert(product.cards.slot[0].active_common != LIB_NULL);
-        lib_test_assert(extensions.submit(extensions.context, executor,
+        provider.submit_line(provider.context,
             EMULATOR_SESSION_MACHINE_STOPPED,
-            "pccard insert b direct pc110-card-direct.img|pc110-card-attribute.img", &result));
+            "pccard insert b direct pc110-card-direct.img \"pc110 card attribute.img\"", &result);
         lib_test_assert(product.cards.slot[1].pending_common != LIB_NULL);
         {
             lib_storage_medium *pending = product.cards.slot[1].pending_common;
-            lib_test_assert(extensions.submit(extensions.context, executor,
+            provider.submit_line(provider.context,
                 EMULATOR_SESSION_MACHINE_STOPPED,
-                "pccard insert b overlay pc110-card-common.img|missing-attribute.img", &result));
+                "pccard insert b overlay \"pc110 card common.img\" missing-attribute.img", &result);
             lib_test_assert(product.cards.slot[1].pending_common == pending);
         }
-        lib_test_assert(extensions.submit(extensions.context, executor,
+        provider.submit_line(provider.context,
             EMULATOR_SESSION_MACHINE_STOPPED,
-            "pccard insert b readonly pc110-card-common.img|pc110-card-attribute.img", &result));
+            "pccard insert b readonly \"pc110 card common.img\" \"pc110 card attribute.img\"", &result);
         lib_test_assert(lib_storage_medium_open("pc110-card-direct.img",
             LIB_STORAGE_MEDIUM_DIRECT, &second) == LIB_STATUS_OK);
         lib_test_assert(lib_storage_medium_destroy(&second) == LIB_STATUS_OK);
-        lib_test_assert(extensions.submit(extensions.context, executor,
-            EMULATOR_SESSION_MACHINE_STOPPED, "pccard eject a", &result));
+        provider.submit_line(provider.context,
+            EMULATOR_SESSION_MACHINE_STOPPED, "pccard eject a", &result);
         lib_test_assert(emulator_machine_reset(executor));
         lib_test_assert(base_sync_event_wait(paused, 30000u) == BASE_SYNC_WAIT_SIGNALED);
         lib_test_assert(emulator_machine_state_get(executor) == EMULATOR_MACHINE_PAUSED);
@@ -511,11 +530,12 @@ int main(void)
         card_debug(executor, &lease, &read, &response);
         lib_test_assert(response.data[0] == card_data[0]);
         lib_test_assert(emulator_machine_shutdown(executor) == LIB_STATUS_OK);
+        x86_ibmpc_product_command_dispose(&command);
         lib_test_assert(machine.composition.bind(machine.composition.machine, LIB_NULL) == LIB_STATUS_OK);
         lib_test_assert(mypc110_machine_release_cards(&product) == LIB_STATUS_OK);
         lib_test_assert(emulator_machine_destroy(executor) == LIB_STATUS_OK);
         base_sync_event_destroy(paused);
-        lib_test_assert(lib_storage_medium_open("pc110-card-attribute.img",
+        lib_test_assert(lib_storage_medium_open("pc110 card attribute.img",
             LIB_STORAGE_MEDIUM_READONLY, &second) == LIB_STATUS_OK);
         {
             lib_u8 original = 0xffu;
@@ -523,8 +543,8 @@ int main(void)
             lib_test_assert(original == 0u);
         }
         lib_test_assert(lib_storage_medium_destroy(&second) == LIB_STATUS_OK);
-        lib_test_assert(lib_c_remove("pc110-card-common.img") == 0);
-        lib_test_assert(lib_c_remove("pc110-card-attribute.img") == 0);
+        lib_test_assert(lib_c_remove("pc110 card common.img") == 0);
+        lib_test_assert(lib_c_remove("pc110 card attribute.img") == 0);
         lib_test_assert(lib_c_remove("pc110-card-direct.img") == 0);
     }
     lib_test_assert(mypc110_machine_release_cards(&product) == LIB_STATUS_OK);

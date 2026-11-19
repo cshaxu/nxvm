@@ -247,3 +247,15 @@ the Shared source/test corpus.
 - Console restoration, build timestamp refresh and test scheduling retain the
   upstream implementation. [S3 evidence](../../../history/M5-T587-softpc-eight-tree-import.md)
   records receiving qualification and publication.
+
+## T587 S5 - Byte-exact SoftPC Token-contract Refresh
+
+- Source: project-owned MIT SoftPC commit
+  `4cd56d018abd5328f0578dbfe0b7524f4bcfcce4`, owner-approved on 2026-11-18.
+- Same eight source/test trees as S3, 296 files byte-identical, including
+  manifests and notices. Lib has no content change from the receiving baseline.
+- Emulator owns monitor tokenization; X86 IBMPC forwards borrowed tokens and
+  X86 Debug retains its separate command grammar. X86 NXVM, PC110 and MyNES
+  receiving adapters are migrated locally, without an upstream fork.
+- No SoftPC App, proprietary code, firmware or media imported. See
+  [S5 evidence](../../../history/M5-T587-token-import.md).

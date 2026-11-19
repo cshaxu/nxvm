@@ -1317,3 +1317,5 @@ another principal document.
 - [T582 S1 initial performance audit](evidence/t582-s1-performance-audit.md): current-profile measurements and open hotspot investigation.
 
 - [T587 S3 import verification](evidence/t587-s3-import-verification.json): pinned eight-tree import, full dual-width suites, fourteen artifacts and log hashes.
+
+- [T587 S5 import verification](evidence/t587-s5-import-verification.json): exact token-contract import, receiving syntax migration, full dual-width qualification and fourteen artifacts.
