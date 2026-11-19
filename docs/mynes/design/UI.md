@@ -32,7 +32,8 @@ specifies the command grammar, ini syntax, defaults, limits and startup behavior
 
 Cartridge commands are `rom insert <file_path>` and `rom eject`, following the
 removable-media model used for floppy insertion/ejection. Paths containing spaces
-are quoted. Both use Emulator's existing removable-media interface; insert also
+are double-quoted. Emulator parses the bounded command line once and passes
+borrowed tokens; MyNES validates and copies paths for its operations. Both use Emulator's existing removable-media interface; insert also
 replaces an accepted cartridge, and failed preparation preserves the old one.
 
 ### Default Input Direction

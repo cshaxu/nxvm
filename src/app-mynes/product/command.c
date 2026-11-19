@@ -13,13 +13,14 @@ static void app_command_result(emulator_session_command_result *out_result,
 static void app_command_set_debug_prompt(emulator_session_command_result *out_result);
 static lib_bool app_command_submit_fixed(void *opaque,
     emulator_product_monitor_command fixed_command,
-    emulator_session_machine_state state, const char *arguments,
+    emulator_session_machine_state state, const emulator_product_monitor_arguments *arguments,
     emulator_session_command_result *out_result);
 static lib_status app_command_lifecycle_preflight(void *opaque,
     emulator_product_monitor_command command,
     emulator_session_command_result *out_result);
 static lib_bool app_command_submit_extension(void *opaque,
-    emulator_session_machine_state state, const char *line,
+    emulator_session_machine_state state, const char *name,
+    const emulator_product_monitor_arguments *arguments,
     emulator_session_command_result *out_result);
 
 /* Emulator Product supplies fixed command rows and the outer help layout.
@@ -192,32 +193,18 @@ static lib_bool app_command_end(const char *text)
     return *app_command_skip_space(text) == '\0';
 }
 
-/* Media paths cross the App/Common boundary as one bounded ASCII argument.
- * Quoting is deliberately limited to grouping; backslashes stay literal for
- * Win32 paths and no shell-style escaping is implied. */
-static lib_bool app_command_parse_path(const char *text, char *out_path,
-                                       lib_size capacity)
+/* Emulator owns quoting. Copy the decoded path before the callback returns;
+ * MyNES retains its bounded ASCII media-path contract. */
+static lib_bool app_command_copy_path(const char *text, char *out_path,
+                                      lib_size capacity)
 {
-    const char *cursor = app_command_skip_space(text);
-    lib_size length = 0u;
-    lib_bool quoted = *cursor == '"';
-
-    if (quoted)
-        ++cursor;
-    while (*cursor != '\0' && (quoted ? *cursor != '"' : *cursor != ' ' && *cursor != '\t'))
-    {
-        if ((lib_u8)*cursor < 0x20u || (lib_u8)*cursor == 0x7fu ||
-            (lib_u8)*cursor > 0x7fu || length + 1u >= capacity)
+    lib_size length = lib_text_length(text);
+    if (length == 0u || length >= capacity) return LIB_FALSE;
+    for (lib_size i = 0u; i < length; ++i) {
+        if ((lib_u8)text[i] < 0x20u || (lib_u8)text[i] >= 0x7fu)
             return LIB_FALSE;
-        out_path[length++] = *cursor++;
     }
-    if (length == 0u || (quoted && *cursor != '"'))
-        return LIB_FALSE;
-    if (quoted)
-        ++cursor;
-    if (!app_command_end(cursor))
-        return LIB_FALSE;
-    out_path[length] = '\0';
+    lib_memory_copy(out_path, text, length + 1u);
     return LIB_TRUE;
 }
 
@@ -800,19 +787,19 @@ void app_command_reject_line(void *opaque, emulator_session_command_result *out_
 }
 
 static lib_bool app_command_submit_extension(void *opaque,
-    emulator_session_machine_state state, const char *line,
+    emulator_session_machine_state state, const char *name,
+    const emulator_product_monitor_arguments *arguments,
     emulator_session_command_result *out_result)
 {
     app_command_context *context = opaque;
-    const char *path = LIB_NULL;
     char media_path[APP_COMMAND_PATH_CAPACITY];
 
     app_command_result(out_result, LIB_NULL);
-    if (context == LIB_NULL || line == LIB_NULL) return LIB_FALSE;
-    if (app_command_equal(line, "rom insert") ||
-             (path = app_command_after(line, "rom insert ")) != LIB_NULL)
+    if (context == LIB_NULL || name == LIB_NULL || arguments == LIB_NULL ||
+        !app_command_equal(name, "rom")) return LIB_FALSE;
+    if (arguments->count != 0u && app_command_equal(arguments->values[0], "insert"))
     {
-        if (!app_command_parse_path(path == LIB_NULL ? "" : path, media_path,
+        if (arguments->count != 2u || !app_command_copy_path(arguments->values[1], media_path,
                                     sizeof(media_path)))
         {
             app_command_result(out_result, "rom insert requires one ASCII file path.\n");
@@ -833,7 +820,7 @@ static lib_bool app_command_submit_extension(void *opaque,
         }
         return LIB_TRUE;
     }
-    else if (app_command_equal(line, "rom eject"))
+    else if (arguments->count == 1u && app_command_equal(arguments->values[0], "eject"))
     {
         if (state != EMULATOR_SESSION_MACHINE_STOPPED && state != EMULATOR_SESSION_MACHINE_PAUSED)
         {
@@ -858,7 +845,7 @@ static lib_bool app_command_submit_extension(void *opaque,
         }
         return LIB_TRUE;
     }
-    else if (app_command_after(line, "rom eject") != LIB_NULL)
+    else if (arguments->count != 0u && app_command_equal(arguments->values[0], "eject"))
     {
         app_command_result(out_result, "rom eject accepts no arguments.\n");
         return LIB_TRUE;
@@ -868,7 +855,7 @@ static lib_bool app_command_submit_extension(void *opaque,
 
 static lib_bool app_command_submit_fixed(void *opaque,
     emulator_product_monitor_command fixed_command,
-    emulator_session_machine_state state, const char *arguments,
+    emulator_session_machine_state state, const emulator_product_monitor_arguments *arguments,
     emulator_session_command_result *out_result)
 {
     app_command_context *context = opaque;
@@ -887,7 +874,8 @@ static lib_bool app_command_submit_fixed(void *opaque,
         return LIB_TRUE;
     }
     if (fixed_command == EMULATOR_PRODUCT_MONITOR_COMMAND_SAVE) {
-        if (!app_command_parse_path(arguments, media_path, sizeof(media_path)))
+        if (arguments->count != 1u ||
+            !app_command_copy_path(arguments->values[0], media_path, sizeof(media_path)))
             app_command_result(out_result, "Usage: save <file>\n");
         else if (state != EMULATOR_SESSION_MACHINE_RUNNING && state != EMULATOR_SESSION_MACHINE_PAUSED)
             app_command_result(out_result, "Machine is stopped; use start before save.\n");
@@ -895,7 +883,8 @@ static lib_bool app_command_submit_fixed(void *opaque,
         return LIB_TRUE;
     }
     if (fixed_command == EMULATOR_PRODUCT_MONITOR_COMMAND_LOAD) {
-        if (!app_command_parse_path(arguments, media_path, sizeof(media_path)))
+        if (arguments->count != 1u ||
+            !app_command_copy_path(arguments->values[0], media_path, sizeof(media_path)))
             app_command_result(out_result, "Usage: load <file>\n");
         else if (state != EMULATOR_SESSION_MACHINE_STOPPED)
             app_command_result(out_result,

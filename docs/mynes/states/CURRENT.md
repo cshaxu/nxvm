@@ -2,6 +2,13 @@
 
 ## Current Work
 
+NXVM T587 S5 migrates MyNES monitor callbacks to the imported Emulator token
+contract and refreshes both 0044 receiving EXEs. Emulator owns quoting; MyNES
+retains its ASCII path validation/copy and NES Debug grammar. The active packet
+and qualification are owned by [NXVM Current](../../nxvm/states/CURRENT.md)
+and [S5 evidence](../../nxvm/history/M5-T587-token-import.md). This is not a
+new independent MyNES task or a gameplay/RDP acceptance claim.
+
 NXVM T580 S85 refreshes the MyNES 0044 x86/x64 receiving EXEs for the Shared
 Window resize correction. The [NXVM evidence](../../nxvm/etc/evidence/t580-s85-window-scale.md)
 records the dual-width tests and validation boundaries; no MyNES source,
