@@ -90,3 +90,42 @@ Delivery commits: Shared import/PC extension adaptation `f060090a4`, MyNES
 adapter and receivers `6f6a83af9`, MyRaidenII receivers `3ca9f9052`. The final
 NXVM P4 owns PC110 adaptation, ten PC EXEs, provenance and the completed S5
 qualification record. Every scoped P is pushed immediately after commit.
+
+## Owner acceptance and S5 closure
+
+The owner accepted the delivered result and explicitly authorized S5 closure,
+while keeping T587 open and waiting for further instructions. The coordinator
+reviewed P1-P4 through `b11e2c266` against the original request and archived
+packet: byte-exact eight-tree import, receiving command migration, fourteen
+published EXEs, 1,658 registered tests plus four selected-ROM checks, manifests,
+documentation/LF checks and clean publication all have recorded evidence.
+
+This P5 changes NXVM governance records only. No source, test, binary, user
+configuration or media changes are required; existing build/test qualification
+remains applicable. Documentation governance, LF and diff checks validate this
+closure. S5 is closed; T587 stays open without an active S or newly admitted work.
+The owner acceptance does not broaden the recorded automated-test coverage into
+unperformed manual RDP or gameplay qualification.
+
+## Archived S5 delivery packet
+
+# M5 T587 S5 - Delivered: awaiting owner acceptance
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation: T587 S5 after owner-accepted S4 at 7a61c56d8. |
+| Admission And Approval | Owner approved exact SoftPC import and unified PC110 syntax on 2026-11-18; cached full build/publication/testing and scoped commit/push follow the standing delivery rules. |
+| Objective | Import committed eight trees unchanged, migrate receiving callbacks, and publish/qualify all fourteen EXEs. |
+| Non-goals | No changes to SoftPC, Lib forks, legacy callback/grammar compatibility, firmware, INI or user media; no gameplay claim. |
+| Reference Baseline | NXVM 7a61c56d8; SoftPC 4cd56d018abd5328f0578dbfe0b7524f4bcfcce4, clean at admission. |
+| Candidate Proposal | [S5 plan and evidence](../history/M5-T587-token-import.md). |
+| Files And ABI Surface | Shared eight-tree import; X86 NXVM Product, PC110 and MyNES command consumers/tests; fourteen receiving EXEs; affected product UX/help and task records. Existing callback signatures migrate without aliases. |
+| Applicable Rules | Execution/Documentation/Architecture/Coding rules; NXVM architecture/layout/UI/source policy; MyNES guide and source/layout rules for its explicitly approved consumer migration. |
+| Verification | Exact upstream bytes and manifests; callback lifetime/syntax tests; cached x86/x64 full build, all unit/integration suites and selected-profile/receiver checks; fourteen deployment hashes/PE widths; docs/LF/diff review. |
+| Expected Markers | No mismatched callbacks or duplicate lexer; all required tests pass; fourteen current outputs; upstream trees exact. |
+| Asset Needs | Existing owner BYOB only; preserve INI/media. Scratch build/t587-s5, 2 GiB budget, 15-minute no-progress review; archive evidence then clean after jobs exit. Stable .ninja/.ccache retained. |
+| Reporting Requirements | Actual per-owner diff, removed paths, verification/failures, artifact hashes and commits; distinguish native automated and manual testing. |
+| Stop Conditions | Do not weaken tests, overwrite unrelated changes, alter upstream or claim skipped verification. |
+| Exit Criteria | Receiving paths migrated; eight trees exact; 1,528 baseline cases, 130 profile cases and four selected-ROM checks pass; fourteen outputs published with hashes; scoped P1-P4 delivery and final gates recorded in S5 evidence. Await owner acceptance; T587 stays open. |
+| Original Owner Request | Admit new S, import current SoftPC eight packages unchanged; adopt ordinary token syntax for PC110. |
+| Similar-Issue Sweep | All fixed/extension callback declarations, direct test invocations, path copying and help/command fixtures; Debug grammars remain independent. |
