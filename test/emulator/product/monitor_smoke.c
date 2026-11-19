@@ -5,28 +5,36 @@
 static lib_u32 fixed_calls[EMULATOR_PRODUCT_MONITOR_COMMAND_EXIT + 1u];
 static lib_u32 extension_calls;
 static emulator_product_monitor_command last_fixed_command;
-static const char *last_fixed_arguments;
+static char last_fixed_arguments[1024];
+static lib_size last_fixed_count;
 
 static lib_bool submit_fixed(void *opaque, emulator_product_monitor_command command,
-                             emulator_session_machine_state state, const char *arguments,
+                             emulator_session_machine_state state, const emulator_product_monitor_arguments *arguments,
                              emulator_session_command_result *out)
 {
     (void)opaque;
     (void)state;
     ++fixed_calls[command];
     last_fixed_command = command;
-    last_fixed_arguments = arguments;
+    last_fixed_count = arguments->count;
+    lib_c_snprintf(last_fixed_arguments, sizeof(last_fixed_arguments), "%s",
+        arguments->count != 0u ? arguments->values[0] : "");
     out->request = command == EMULATOR_PRODUCT_MONITOR_COMMAND_START ? EMULATOR_SESSION_REQUEST_START : EMULATOR_SESSION_REQUEST_NONE;
     return LIB_TRUE;
 }
 
 static lib_bool submit_extension(void *opaque, emulator_session_machine_state state,
-                                 const char *line, emulator_session_command_result *out)
+                                 const char *name, const emulator_product_monitor_arguments *arguments,
+                                 emulator_session_command_result *out)
 {
     (void)opaque;
     (void)state;
     ++extension_calls;
-    if (lib_text_compare(line, "media attach disk.img") != 0)
+    if (lib_text_compare(name, "capture") == 0)
+        return submit_fixed(opaque, EMULATOR_PRODUCT_MONITOR_COMMAND_SAVE, state, arguments, out);
+    if (lib_text_compare(name, "media") != 0 || arguments->count != 2u ||
+        lib_text_compare(arguments->values[0], "attach") != 0 ||
+        lib_text_compare(arguments->values[1], "disk.img") != 0)
         return LIB_FALSE;
     (void)lib_c_snprintf(out->text, sizeof(out->text), "Media attached.\r\n");
     out->arm_prompt = LIB_TRUE;
@@ -35,18 +43,46 @@ static lib_bool submit_extension(void *opaque, emulator_session_machine_state st
 
 static void command_parse(void)
 {
-    emulator_product_monitor_command command;
-    const char *arguments;
-
-    lib_test_assert(emulator_product_monitor_parse("  StArT  ", &command, &arguments));
-    lib_test_assert(command == EMULATOR_PRODUCT_MONITOR_COMMAND_START && arguments[0] == '\0');
-    lib_test_assert(emulator_product_monitor_parse("save state.bin", &command, &arguments));
-    lib_test_assert(command == EMULATOR_PRODUCT_MONITOR_COMMAND_SAVE &&
-                    lib_text_compare(arguments, "state.bin") == 0);
-    lib_test_assert(emulator_product_monitor_parse("debug regs", &command, &arguments));
-    lib_test_assert(command == EMULATOR_PRODUCT_MONITOR_COMMAND_DEBUG &&
-                    lib_text_compare(arguments, "regs") == 0);
-    lib_test_assert(!emulator_product_monitor_parse("floppy eject", &command, &arguments));
+    const emulator_product_monitor_provider provider = {
+        .submit_fixed = submit_fixed, .submit_extension = submit_extension};
+    const char *tails[] = { " word", "  \t\"O:\\\xe6\xb5\x8b space\\file\" \t", " \"\"", " one two" };
+    const char *expected[] = { "word", "O:\\\xe6\xb5\x8b space\\file", "", "one" };
+    const char *invalid[] = { "save \"open", "capture \"abc\"def", "start bad\"quote", "exit \"open" };
+    emulator_session_command_result result;
+    char line[1025];
+    for (lib_size i = 0; i < 4u; ++i) {
+        for (lib_size extension = 0; extension < 2u; ++extension) {
+            lib_c_snprintf(line, sizeof(line), "%s%s", extension ? "capture" : "SaVe", tails[i]);
+            emulator_product_monitor_provider_submit_line((void *)&provider,
+                EMULATOR_SESSION_MACHINE_PAUSED, line, &result);
+            lib_test_assert(last_fixed_count == (i == 3u ? 2u : 1u));
+            lib_test_assert(lib_text_compare(last_fixed_arguments, expected[i]) == 0);
+        }
+    }
+    lib_u32 fixed_before = fixed_calls[EMULATOR_PRODUCT_MONITOR_COMMAND_SAVE];
+    lib_u32 extension_before = extension_calls;
+    for (lib_size i = 0; i < sizeof(invalid) / sizeof(invalid[0]); ++i) {
+        emulator_product_monitor_provider_submit_line((void *)&provider,
+            EMULATOR_SESSION_MACHINE_PAUSED, invalid[i], &result);
+        lib_test_assert(lib_text_compare(result.text, "Invalid command syntax.\r\n") == 0);
+        lib_test_assert(result.request == EMULATOR_SESSION_REQUEST_NONE && !result.exit_requested);
+    }
+    lib_test_assert(fixed_calls[EMULATOR_PRODUCT_MONITOR_COMMAND_SAVE] == fixed_before &&
+        extension_calls == extension_before);
+    lib_memory_copy(line, "save ", 5u);
+    for (lib_size i = 5u; i < 1023u; ++i) line[i] = i % 2u ? 'a' : ' ';
+    line[1023] = '\0';
+    emulator_product_monitor_provider_submit_line((void *)&provider,
+        EMULATOR_SESSION_MACHINE_PAUSED, line, &result);
+    lib_test_assert(last_fixed_count == 509u && lib_text_compare(last_fixed_arguments, "a") == 0);
+    lib_memory_set(line, 'a', sizeof(line) - 1u);
+    line[sizeof(line) - 1u] = '\0';
+    emulator_product_monitor_provider_submit_line((void *)&provider,
+        EMULATOR_SESSION_MACHINE_PAUSED, line, &result);
+    lib_test_assert(lib_text_compare(result.text, "Command is too long.\r\n") == 0);
+    emulator_product_monitor_provider_submit_line((void *)&provider,
+        EMULATOR_SESSION_MACHINE_PAUSED, " \t  ", &result);
+    lib_test_assert(result.text[0] == '\0' && result.arm_prompt);
 }
 
 static void text_format(void)
@@ -342,12 +378,12 @@ static void lifecycle_contract(void)
 
 int main(void)
 {
-    command_parse();
     text_format();
     window_format_boundaries();
     provider_contract();
     unavailable_fixed_commands();
     fixed_argument_contract();
     lifecycle_contract();
+    command_parse();
     return 0;
 }

@@ -272,17 +272,22 @@ static void original_cli(x86_debug *debug, debug_fake *fake)
     transcript(debug, "", "", "-");
     transcript(debug, " \t ", "", "-");
     /* Names survive the real command parser and Storage read/write boundary. */
-    transcript(debug, "n debug-\xe6\xb5\x8b-\xf0\x9f\x8e\xb5.bin", "", "-");
+    transcript(debug, "n \"debug space-\xe6\xb5\x8b-\xf0\x9f\x8e\xb5.bin\"", "", "-");
+    const char *bad_names[] = { "n \"\"", "n \"unterminated", "n \"file\"tail" };
+    for (lib_size i = 0; i < sizeof(bad_names) / sizeof(bad_names[0]); ++i) {
+        lib_test_assert(x86_debug_submit_line(debug, bad_names[i], &result) == LIB_STATUS_OK);
+        lib_test_assert(lib_text_find_substring(result.text, "Error") != LIB_NULL);
+    }
     fake->registers[X86_DEBUG_ECX] = 3u;
     lib_memory_copy(fake->memory + 0x500u, "ABC", 3u);
     transcript(debug, "w 0:500", "Writing 00000003 bytes\n", "-");
-    lib_c_file *file = lib_win32_wfopen(L"debug-\u6d4b-\U0001f3b5.bin", L"rb");
+    lib_c_file *file = lib_win32_wfopen(L"debug space-\u6d4b-\U0001f3b5.bin", L"rb");
     lib_u8 bytes[3];
     lib_test_assert(file != LIB_NULL && lib_c_fread(bytes, 1u, 3u, file) == 3u);
     lib_test_assert(lib_memory_compare(bytes, "ABC", 3u) == 0 && lib_c_fclose(file) == 0);
     transcript(debug, "l 0:510", "", "-");
     lib_test_assert(lib_memory_compare(fake->memory + 0x510u, "ABC", 3u) == 0);
-    lib_test_assert(lib_win32_wremove(L"debug-\u6d4b-\U0001f3b5.bin") == 0);
+    lib_test_assert(lib_win32_wremove(L"debug space-\u6d4b-\U0001f3b5.bin") == 0);
     lib_memory_set(fake->registers, 0, sizeof(fake->registers));
     lib_memory_set(fake->memory, 0, sizeof(fake->memory));
     /* All original low-word assignments must retain their 32-bit aliases. */

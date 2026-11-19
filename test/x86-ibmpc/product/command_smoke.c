@@ -6,17 +6,21 @@ static lib_u32 extension_submissions;
 static lib_u32 snapshot_submissions;
 
 static lib_bool fixture_extension(void *context, emulator_machine *machine,
-    emulator_session_machine_state state, const char *line,
+    emulator_session_machine_state state, const char *name,
+    const emulator_product_monitor_arguments *arguments,
     emulator_session_command_result *out)
 {
     (void)context;
     (void)machine;
     (void)state;
     ++extension_submissions;
-    if (lib_text_compare(line, "info") == 0)
+    if (lib_text_compare(name, "info") == 0 && arguments->count == 0u)
         (void)lib_c_snprintf((char *)out->text, sizeof(out->text),
             "Fixture information.\r\n");
-    else if (lib_text_compare(line, "floppy insert direct disk.img") == 0)
+    else if (lib_text_compare(name, "floppy") == 0 && arguments->count == 3u &&
+        lib_text_compare(arguments->values[0], "insert") == 0 &&
+        lib_text_compare(arguments->values[1], "direct") == 0 &&
+        lib_text_compare(arguments->values[2], "disk image.img") == 0)
         (void)lib_c_snprintf((char *)out->text, sizeof(out->text),
             "Fixture floppy extension.\r\n");
     else
@@ -26,13 +30,13 @@ static lib_bool fixture_extension(void *context, emulator_machine *machine,
 
 static lib_bool fixture_snapshot(void *context, emulator_machine *machine,
     emulator_product_monitor_command command, emulator_session_machine_state state,
-    const char *arguments, emulator_session_command_result *out)
+    const emulator_product_monitor_arguments *arguments, emulator_session_command_result *out)
 {
     (void)context;
     (void)machine;
     (void)state;
     ++snapshot_submissions;
-    if (lib_text_compare(arguments, "state.bin") != 0)
+    if (arguments->count != 1u || lib_text_compare(arguments->values[0], "state file.bin") != 0)
         return LIB_FALSE;
     if (command == EMULATOR_PRODUCT_MONITOR_COMMAND_SAVE)
         (void)lib_c_snprintf((char *)out->text, sizeof(out->text),
@@ -64,7 +68,7 @@ lib_i32 main(void)
             (emulator_machine *)&unsupported, EMULATOR_SESSION_DISPLAY_CONSOLE,
             LIB_NULL, &provider) != LIB_STATUS_OK) return 14;
     provider.submit_line(provider.context, EMULATOR_SESSION_MACHINE_STOPPED,
-        "load state.bin", &result);
+        "load \"state file.bin\"", &result);
     if (lib_text_find_substring(result.text, "Feature not implemented.") == LIB_NULL ||
         !result.arm_prompt) return 15;
     x86_ibmpc_product_command_dispose(&unsupported);
@@ -107,26 +111,26 @@ lib_i32 main(void)
         return 7;
 
     provider.submit_line(provider.context, EMULATOR_SESSION_MACHINE_PAUSED,
-        "save state.bin", &result);
+        "save \"state file.bin\"", &result);
     if (lib_text_find_substring(result.text, "Fixture saved snapshot.") == LIB_NULL ||
         !result.arm_prompt || snapshot_submissions != 1u)
         return 8;
 
     provider.submit_line(provider.context, EMULATOR_SESSION_MACHINE_STOPPED,
-        "load state.bin", &result);
+        "load \"state file.bin\"", &result);
     if (lib_text_find_substring(result.text, "Fixture loaded snapshot.") == LIB_NULL ||
         !result.arm_prompt || snapshot_submissions != 2u)
         return 13;
 
     provider.submit_line(provider.context, EMULATOR_SESSION_MACHINE_ERROR,
-        "save state.bin", &result);
+        "save \"state file.bin\"", &result);
     if (lib_text_find_substring(result.text,
             "Machine has failed; exit and restart the program.") == LIB_NULL ||
         !result.arm_prompt || snapshot_submissions != 2u)
         return 17;
 
     provider.submit_line(provider.context, EMULATOR_SESSION_MACHINE_PAUSED,
-        "floppy insert direct disk.img", &result);
+        "floppy insert direct \"disk image.img\"", &result);
     if (lib_text_find_substring(result.text, "Fixture floppy extension.") == LIB_NULL)
         return 9;
     if (extension_submissions != 2u)

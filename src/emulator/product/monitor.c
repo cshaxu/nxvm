@@ -2,6 +2,7 @@
 #include "lib/types/file.h"
 
 #define EMULATOR_PRODUCT_HELP_DESCRIPTION_COLUMN 17u
+#define EMULATOR_PRODUCT_MONITOR_LINE_CAPACITY 1024u
 
 typedef enum emulator_product_command_group {
     EMULATOR_PRODUCT_GROUP_MACHINE,
@@ -147,8 +148,7 @@ lib_bool emulator_product_monitor_request_lifecycle(
 
 static lib_bool emulator_product_monitor_space(char value)
 {
-    return value == ' ' || value == '\t' || value == '\n' || value == '\r' ||
-        value == '\f' || value == '\v';
+    return value == ' ' || value == '\t';
 }
 
 static char emulator_product_monitor_lowercase(char value)
@@ -179,31 +179,30 @@ static emulator_product_monitor_command emulator_product_monitor_lookup(
     return EMULATOR_PRODUCT_MONITOR_COMMAND_NONE;
 }
 
-lib_bool emulator_product_monitor_parse(const char *line,
-    emulator_product_monitor_command *out_command, const char **out_arguments)
+static lib_bool emulator_product_monitor_parse(char *line, const char **words,
+    lib_size *count)
 {
-    char word[32];
-    lib_size length = 0u;
-
-    if (out_command == LIB_NULL || out_arguments == LIB_NULL)
-        return LIB_FALSE;
-    *out_command = EMULATOR_PRODUCT_MONITOR_COMMAND_NONE;
-    *out_arguments = "";
-    if (line == LIB_NULL)
-        return LIB_FALSE;
-    while (emulator_product_monitor_space(*line))
-        ++line;
-    while (*line != '\0' && !emulator_product_monitor_space(*line)) {
-        if (length + 1u >= sizeof(word))
-            return LIB_FALSE;
-        word[length++] = *line++;
+    *count = 0u;
+    while (*line != '\0') {
+        while (emulator_product_monitor_space(*line)) ++line;
+        if (*line == '\0') break;
+        if (*line == '"') {
+            words[(*count)++] = ++line;
+            while (*line != '\0' && *line != '"') ++line;
+            if (*line == '\0') return LIB_FALSE;
+            *line++ = '\0';
+            if (*line != '\0' && !emulator_product_monitor_space(*line))
+                return LIB_FALSE;
+        } else {
+            words[(*count)++] = line;
+            while (*line != '\0' && !emulator_product_monitor_space(*line)) {
+                if (*line == '"') return LIB_FALSE;
+                ++line;
+            }
+            if (*line != '\0') *line++ = '\0';
+        }
     }
-    word[length] = '\0';
-    while (emulator_product_monitor_space(*line))
-        ++line;
-    *out_command = emulator_product_monitor_lookup(word);
-    *out_arguments = line;
-    return *out_command != EMULATOR_PRODUCT_MONITOR_COMMAND_NONE;
+    return LIB_TRUE;
 }
 
 void emulator_product_monitor_provider_open(void *opaque,
@@ -237,8 +236,11 @@ void emulator_product_monitor_provider_submit_line(void *opaque,
 {
     const emulator_product_monitor_provider *provider = opaque;
     emulator_product_monitor_command command;
-    const char *arguments;
-    const char *cursor;
+    char buffer[EMULATOR_PRODUCT_MONITOR_LINE_CAPACITY];
+    /* At most one single-byte word per two input bytes (including terminator). */
+    const char *words[EMULATOR_PRODUCT_MONITOR_LINE_CAPACITY / 2u];
+    lib_size count, length;
+    emulator_product_monitor_arguments arguments;
     const emulator_product_command_description *description;
 
     emulator_product_monitor_clear_result(out_result);
@@ -246,16 +248,27 @@ void emulator_product_monitor_provider_submit_line(void *opaque,
         emulator_product_monitor_message(out_result, "Invalid command context.");
         return;
     }
-    cursor = line;
-    while (emulator_product_monitor_space(*cursor)) ++cursor;
-    if (*cursor == '\0') {
+    length = lib_text_length(line);
+    if (length >= sizeof(buffer)) {
+        emulator_product_monitor_provider_reject_line(opaque, out_result);
+        return;
+    }
+    lib_memory_copy(buffer, line, length + 1u);
+    if (!emulator_product_monitor_parse(buffer, words, &count)) {
+        emulator_product_monitor_message(out_result, "Invalid command syntax.");
+        emulator_product_monitor_set_prompt(out_result);
+        return;
+    }
+    if (count == 0u) {
         out_result->arm_prompt = LIB_TRUE;
         emulator_product_monitor_set_prompt(out_result);
         return;
     }
-    if (!emulator_product_monitor_parse(line, &command, &arguments)) {
+    command = emulator_product_monitor_lookup(words[0]);
+    arguments = (emulator_product_monitor_arguments){count - 1u, words + 1u};
+    if (command == EMULATOR_PRODUCT_MONITOR_COMMAND_NONE) {
         if (provider->submit_extension != LIB_NULL &&
-            provider->submit_extension(provider->context, state, line, out_result)) {
+            provider->submit_extension(provider->context, state, words[0], &arguments, out_result)) {
             emulator_product_monitor_set_prompt(out_result);
             return;
         }
@@ -264,7 +277,7 @@ void emulator_product_monitor_provider_submit_line(void *opaque,
         return;
     }
     description = emulator_product_command_find(command);
-    if (!description->accepts_arguments && *arguments != '\0') {
+    if (!description->accepts_arguments && arguments.count != 0u) {
         emulator_product_monitor_message(out_result, "Unknown command.");
         emulator_product_monitor_set_prompt(out_result);
         return;
@@ -289,7 +302,7 @@ void emulator_product_monitor_provider_submit_line(void *opaque,
         return;
     }
     if (provider->submit_fixed == LIB_NULL ||
-        !provider->submit_fixed(provider->context, command, state, arguments, out_result)) {
+        !provider->submit_fixed(provider->context, command, state, &arguments, out_result)) {
         emulator_product_monitor_message(out_result, "Feature not implemented.");
     }
     emulator_product_monitor_set_prompt(out_result);

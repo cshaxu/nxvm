@@ -31,11 +31,18 @@ typedef enum emulator_product_monitor_command {
     EMULATOR_PRODUCT_MONITOR_COMMAND_EXIT
 } emulator_product_monitor_command;
 
+/* Borrowed, read-only tokens, valid only during the synchronous submit callback.
+ * Emulator owns their bounded storage; consumers must copy any retained value. */
+typedef struct emulator_product_monitor_arguments {
+    lib_size count;
+    const char *const *values;
+} emulator_product_monitor_arguments;
+
 /* Emulator owns monitor syntax, fixed-command order and result framing.
  * Product code owns the actual machine, snapshot and Debug operations. */
 typedef lib_bool (*emulator_product_monitor_fixed_submit)(void *context,
     emulator_product_monitor_command command,
-    emulator_session_machine_state state, const char *arguments,
+    emulator_session_machine_state state, const emulator_product_monitor_arguments *arguments,
     emulator_session_command_result *out_result);
 /* Runs only after Emulator has accepted the fixed lifecycle state transition.
  * An App may reject an otherwise legal command for an App-private prerequisite
@@ -45,7 +52,8 @@ typedef lib_status (*emulator_product_monitor_lifecycle_preflight)(void *context
     emulator_product_monitor_command command,
     emulator_session_command_result *out_result);
 typedef lib_bool (*emulator_product_monitor_extension_submit)(void *context,
-    emulator_session_machine_state state, const char *line,
+    emulator_session_machine_state state, const char *name,
+    const emulator_product_monitor_arguments *arguments,
     emulator_session_command_result *out_result);
 
 typedef struct emulator_product_monitor_provider {
@@ -57,12 +65,9 @@ typedef struct emulator_product_monitor_provider {
     emulator_product_monitor_extension_submit submit_extension;
 } emulator_product_monitor_provider;
 
-/* The command shell recognizes one fixed vocabulary.  Only save/load retain
- * their original argument tail for the selected product's snapshot grammar;
- * the other fixed commands accept no arguments. */
-lib_bool emulator_product_monitor_parse(const char *line,
-    emulator_product_monitor_command *out_command, const char **out_arguments);
-
+/* Monitor uses space/Tab separators and whole double-quoted tokens, preserving
+ * their bytes. Empty quoted arguments are valid; malformed quotes reject the
+ * entire line before dispatch. No escaping or expansion. DEBUG is independent. */
 /* These callbacks are directly suitable for Emulator Session's command
  * provider when its context is an emulator_product_monitor_provider. */
 void emulator_product_monitor_provider_open(void *opaque,

@@ -9,19 +9,20 @@
 #define X86_IBMPC_PRODUCT_COMMAND_TEXT_CAPACITY 2048u
 #define X86_IBMPC_PRODUCT_COMMAND_PATH_CAPACITY 1024u
 
-/* Optional App commands are deliberately outside the shared command grammar.
+/* Emulator lexes Monitor commands once; Apps own their parameter meanings.
  * Session owns monitor admission, prompt timing and lifecycle dispatch; an
  * App extension can only recognize and complete its own command through the
  * copied Emulator result. */
 typedef lib_bool (*x86_ibmpc_product_command_extension_submit)(void *context,
     emulator_machine *machine, emulator_session_machine_state state,
-    const char *line, emulator_session_command_result *out);
+    const char *name, const emulator_product_monitor_arguments *arguments,
+    emulator_session_command_result *out);
 
 /* Emulator Product recognizes the shared snapshot grammar. The selected App
  * owns the machine image and supplies its already-parsed SAVE/LOAD operation. */
 typedef lib_bool (*x86_ibmpc_product_command_snapshot_submit)(void *context,
     emulator_machine *machine, emulator_product_monitor_command command,
-    emulator_session_machine_state state, const char *arguments,
+    emulator_session_machine_state state, const emulator_product_monitor_arguments *arguments,
     emulator_session_command_result *out);
 
 typedef struct x86_ibmpc_product_command_extensions {

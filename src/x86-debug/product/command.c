@@ -1251,9 +1251,17 @@ static void n(command_context *debugContext)
 {
     if (narg != 2)
         seterr(debugContext, narg - 1);
-    else
+    else if (arg[1][0] == '\'' || arg[1][0] == '"')
+    {
+        lib_u8 bytes[sizeof(strCmdBuff)];
+        lib_size count = scanlist(debugContext, 1u, bytes);
+        if (nErrPos) return;
+        bytes[count] = '\0';
         if (!command_copy_text_checked(strFileName, sizeof(strFileName),
-                arg[1])) seterr(debugContext, 1u);
+                (const char *)bytes)) seterr(debugContext, 1u);
+    }
+    else if (!command_copy_text_checked(strFileName, sizeof(strFileName),
+            arg[1])) seterr(debugContext, 1u);
 }
 /* output */
 static void o(command_context *debugContext)

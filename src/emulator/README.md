@@ -151,3 +151,8 @@ The source-only build still accepts an explicit EMULATOR_LIB_ROOT when configure
 directly. It does not register or carry test code.
 Emulator synchronization tests run against actual Base primitives without sleeps.
 Platform backend availability does not imply complete native display parity.
+
+Monitor lexes a bounded line once before dispatch. Fixed and extension callbacks
+receive `emulator_product_monitor_arguments`; extensions also receive the command
+name. Token storage is borrowed only for the synchronous callback. The former
+raw-tail parse API is removed; consumers validate counts and meanings, not quotes.

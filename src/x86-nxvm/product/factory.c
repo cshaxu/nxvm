@@ -201,37 +201,24 @@ static void x86_nxvm_product_extension_append(emulator_session_command_result *o
     out->arm_prompt = LIB_TRUE;
 }
 
-static lib_bool x86_nxvm_product_extension_normalize(const char *source,
-    lib_u8 *destination, lib_size capacity)
+static lib_bool x86_nxvm_product_extension_equal(const char *text, const char *word)
 {
-    lib_size length;
-    lib_size begin = 0u;
-    lib_size end;
-    lib_size index;
-
-    if (source == LIB_NULL || destination == LIB_NULL) return LIB_FALSE;
-    length = lib_text_length(source);
-    while (begin < length && (source[begin] == ' ' || source[begin] == '\t')) ++begin;
-    end = length;
-    while (end > begin && (source[end - 1u] == ' ' || source[end - 1u] == '\t')) --end;
-    if (end - begin >= capacity) return LIB_FALSE;
-    for (index = 0u; begin + index < end; ++index) {
-        lib_u8 value = (lib_u8)source[begin + index];
-        destination[index] = value >= 'A' && value <= 'Z' ?
-            (lib_u8)(value + ('a' - 'A')) : value;
+    while (*text != '\0' && *word != '\0') {
+        char value = *text++;
+        if (value >= 'A' && value <= 'Z') value += 'a' - 'A';
+        if (value != *word++) return LIB_FALSE;
     }
-    destination[index] = '\0';
-    return LIB_TRUE;
+    return *text == '\0' && *word == '\0';
 }
 
 static lib_bool x86_nxvm_product_extension_floppy_mode(const char *text,
     lib_storage_medium_mode *out_mode)
 {
-    if (lib_text_compare(text, "direct") == 0)
+    if (x86_nxvm_product_extension_equal(text, "direct"))
         *out_mode = LIB_STORAGE_MEDIUM_DIRECT;
-    else if (lib_text_compare(text, "readonly") == 0)
+    else if (x86_nxvm_product_extension_equal(text, "readonly"))
         *out_mode = LIB_STORAGE_MEDIUM_READONLY;
-    else if (lib_text_compare(text, "overlay") == 0)
+    else if (x86_nxvm_product_extension_equal(text, "overlay"))
         *out_mode = LIB_STORAGE_MEDIUM_OVERLAY;
     else
         return LIB_FALSE;
@@ -239,72 +226,52 @@ static lib_bool x86_nxvm_product_extension_floppy_mode(const char *text,
 }
 
 static lib_bool x86_nxvm_product_extension_floppy(emulator_machine *machine,
-    emulator_session_machine_state state, char *command,
+    emulator_session_machine_state state,
+    const emulator_product_monitor_arguments *arguments,
     emulator_session_command_result *out)
 {
-    char *operation = command;
-    char *mode;
-    char *path;
-    lib_storage_medium_mode medium_mode;
+    lib_storage_medium_mode mode;
 
-    if (lib_text_compare(operation, "floppy") != 0)
-        return LIB_FALSE;
-    operation += 7u;
-    while (*operation == ' ' || *operation == '\t')
-        ++operation;
     if (state == EMULATOR_SESSION_MACHINE_RUNNING) {
         x86_nxvm_product_extension_append(out, "Cannot change floppy media now.\r\n");
         return LIB_TRUE;
     }
-    if (lib_text_compare(operation, "eject") == 0) {
+    if (arguments->count == 1u &&
+        x86_nxvm_product_extension_equal(arguments->values[0], "eject")) {
         x86_nxvm_product_extension_append(out,
             emulator_machine_set_removable_media(machine, LIB_NULL,
                 LIB_STORAGE_MEDIUM_OVERLAY) ?
             "Floppy disk ejected.\r\n" : "Cannot eject floppy disk.\r\n");
         return LIB_TRUE;
     }
-    if (lib_text_compare(operation, "insert ") != 0) {
-        x86_nxvm_product_extension_append(out,
-            "Usage: floppy insert <readonly|direct|overlay> <image> | floppy eject\r\n");
-        return LIB_TRUE;
-    }
-    mode = operation + 7u;
-    path = mode;
-    while (*path != '\0' && *path != ' ' && *path != '\t')
-        ++path;
-    if (*path == '\0') {
-        x86_nxvm_product_extension_append(out,
-            "Usage: floppy insert <readonly|direct|overlay> <image> | floppy eject\r\n");
-        return LIB_TRUE;
-    }
-    *path++ = '\0';
-    while (*path == ' ' || *path == '\t')
-        ++path;
-    if (*path == '\0' || !x86_nxvm_product_extension_floppy_mode(mode, &medium_mode)) {
+    if (arguments->count != 3u ||
+        !x86_nxvm_product_extension_equal(arguments->values[0], "insert") ||
+        !x86_nxvm_product_extension_floppy_mode(arguments->values[1], &mode) ||
+        arguments->values[2][0] == '\0') {
         x86_nxvm_product_extension_append(out,
             "Usage: floppy insert <readonly|direct|overlay> <image> | floppy eject\r\n");
         return LIB_TRUE;
     }
     x86_nxvm_product_extension_append(out,
-        emulator_machine_set_removable_media(machine, path, medium_mode) ?
+        emulator_machine_set_removable_media(machine, arguments->values[2], mode) ?
         "Floppy disk inserted.\r\n" : "Cannot read floppy disk.\r\n");
     return LIB_TRUE;
 }
 
 static lib_bool x86_nxvm_product_standard_extension(void *context,
     emulator_machine *machine, emulator_session_machine_state state,
-    const char *line, emulator_session_command_result *out)
+    const char *name, const emulator_product_monitor_arguments *arguments,
+    emulator_session_command_result *out)
 {
     const x86_nxvm_product_machine *app = context;
     x86_nxvm_product_information information;
     x86_nxvm_machine_speed speed;
-    lib_u8 command[X86_IBMPC_PRODUCT_COMMAND_PATH_CAPACITY];
 
     (void)machine;
-    if (app == LIB_NULL || line == LIB_NULL || out == LIB_NULL) return LIB_FALSE;
-    if (!x86_nxvm_product_extension_normalize(line, command, sizeof(command))) return LIB_FALSE;
+    if (app == LIB_NULL || name == LIB_NULL || arguments == LIB_NULL || out == LIB_NULL)
+        return LIB_FALSE;
     *out = (emulator_session_command_result){0};
-    if (lib_text_compare((const char *)command, "info") == 0) {
+    if (x86_nxvm_product_extension_equal(name, "info") && arguments->count == 0u) {
         if (x86_nxvm_product_information_read(app, &information) != LIB_STATUS_OK) {
             x86_nxvm_product_extension_append(out, "Machine information unavailable.\r\n");
             return LIB_TRUE;
@@ -331,15 +298,16 @@ static lib_bool x86_nxvm_product_standard_extension(void *context,
             state == EMULATOR_SESSION_MACHINE_RUNNING ? "Yes" : "No");
         return LIB_TRUE;
     }
-    if (lib_text_compare((const char *)command, "speed") == 0) {
+    if (x86_nxvm_product_extension_equal(name, "speed") && arguments->count == 0u) {
         if (x86_nxvm_product_speed_read(app, &speed) == LIB_STATUS_OK)
             x86_nxvm_product_extension_append(out, "Speed: %s\r\n",
                 speed == X86_NXVM_MACHINE_SPEED_TURBO ? "turbo" : "standard");
         return LIB_TRUE;
     }
-    if (lib_text_compare((const char *)command, "speed standard") == 0 ||
-        lib_text_compare((const char *)command, "speed turbo") == 0) {
-        speed = lib_text_compare((const char *)command, "speed turbo") == 0 ?
+    if (x86_nxvm_product_extension_equal(name, "speed") && arguments->count == 1u &&
+        (x86_nxvm_product_extension_equal(arguments->values[0], "standard") ||
+         x86_nxvm_product_extension_equal(arguments->values[0], "turbo"))) {
+        speed = x86_nxvm_product_extension_equal(arguments->values[0], "turbo") ?
             X86_NXVM_MACHINE_SPEED_TURBO : X86_NXVM_MACHINE_SPEED_STANDARD;
         if (x86_nxvm_product_speed_write(app, speed) == LIB_STATUS_OK)
             x86_nxvm_product_extension_append(out, "Speed: %s\r\n",
@@ -349,7 +317,9 @@ static lib_bool x86_nxvm_product_standard_extension(void *context,
                 "Cannot change speed while session is running.\r\n");
         return LIB_TRUE;
     }
-    return x86_nxvm_product_extension_floppy(machine, state, (char *)command, out);
+    if (x86_nxvm_product_extension_equal(name, "floppy"))
+        return x86_nxvm_product_extension_floppy(machine, state, arguments, out);
+    return LIB_FALSE;
 }
 
 lib_status x86_nxvm_product_configure_standard_extensions(x86_nxvm_product_machine *app,

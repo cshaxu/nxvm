@@ -159,10 +159,23 @@ lib_i32 main(void)
     if (x86_nxvm_product_configure_standard_extensions(&machine, &extensions) != LIB_STATUS_OK ||
         extensions.submit == LIB_NULL ||
         !extensions.submit(extensions.context, LIB_NULL,
-            EMULATOR_SESSION_MACHINE_STOPPED, "info", &result) ||
+            EMULATOR_SESSION_MACHINE_STOPPED, "info",
+            &(emulator_product_monitor_arguments){0}, &result) ||
         !result.arm_prompt || lib_text_compare_n(result.text, "Device Info\r\n",
             sizeof("Device Info\r\n") - 1u) != 0)
         return 7;
+    {
+        const char *values[] = {"TuRbO", "extra"};
+        emulator_product_monitor_arguments arguments = {1u, values};
+        if (!extensions.submit(extensions.context, LIB_NULL,
+                EMULATOR_SESSION_MACHINE_STOPPED, "SpEeD", &arguments, &result) ||
+            speed != X86_NXVM_MACHINE_SPEED_TURBO) return 9;
+        arguments.count = 2u;
+        if (extensions.submit(extensions.context, LIB_NULL,
+                EMULATOR_SESSION_MACHINE_STOPPED, "speed", &arguments, &result)) return 10;
+        if (extensions.submit(extensions.context, LIB_NULL,
+                EMULATOR_SESSION_MACHINE_STOPPED, "info", &arguments, &result)) return 11;
+    }
     machine.composition.destroy(machine.composition.machine);
     return 0;
 }

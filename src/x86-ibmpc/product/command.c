@@ -18,24 +18,24 @@ static void x86_ibmpc_product_command_message(emulator_session_command_result *o
 }
 
 static lib_bool x86_ibmpc_product_command_submit_extension(void *opaque,
-    emulator_session_machine_state state, const char *line,
+    emulator_session_machine_state state, const char *name,
+    const emulator_product_monitor_arguments *arguments,
     emulator_session_command_result *out)
 {
     x86_ibmpc_product_command_context *command = opaque;
 
     return command != LIB_NULL && command->extensions.submit != LIB_NULL &&
         command->extensions.submit(command->extensions.context, command->machine,
-            state, line, out);
+            state, name, arguments, out);
 }
 
 static lib_bool x86_ibmpc_product_command_submit_fixed(void *opaque,
     emulator_product_monitor_command fixed_command,
-    emulator_session_machine_state state, const char *arguments,
+    emulator_session_machine_state state, const emulator_product_monitor_arguments *arguments,
     emulator_session_command_result *out)
 {
     x86_ibmpc_product_command_context *command = opaque;
 
-    (void)arguments;
     if (command == LIB_NULL || out == LIB_NULL) return LIB_FALSE;
     if (fixed_command == EMULATOR_PRODUCT_MONITOR_COMMAND_SAVE ||
         fixed_command == EMULATOR_PRODUCT_MONITOR_COMMAND_LOAD)
