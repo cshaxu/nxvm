@@ -1,28 +1,27 @@
-# M5 T591 S2 - Active: Intel 8254 read-back selection
+# M5 T591 S3 - Active: OmniBook original-card Machine assembly
 
-[S1 is closed](../history/M5-T591-S1-ob300-original-rom.md).
-[Original firmware evidence](../etc/evidence/t591-s1-ob300-original-rom.md)
-establishes a shared 8254 register defect, independently of the next
-protected-mode shutdown.
+[S2 is closed](../history/M5-T591-S2-ob300-pit-readback.md).
+[S1 original-card checkpoints](../etc/evidence/t591-s1-ob300-original-rom.md)
+identify the unresolved protected-mode stop.
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | M5 T591 S2 after S1 receiver acceptance. |
-| Admission And Approval | Owner authorized ordered OmniBook work and autonomous S allocation; the standing x86 chip scope covers this behavior repair. S1 recorded the demonstrated Shared gap before this admission. |
-| Objective | Correct counter selection in the existing 8254 read-back decoder, reconcile tests that encoded the inverted mask, and qualify receiving products. |
-| Non-goals | No API, state, timing, compatibility path, other Shared package, ROM modification, or guessed repair for the next protected-mode stop. |
-| Reference Baseline | S1 commit 8209ce97c and its production/scratch replay; Intel 8254 data sheet Figures 10 and 12. |
-| Candidate Proposal | proposals/m5-ob300-rom-dos.md T591 S2. |
-| Files And ABI Surface | Shared x86-nxvm PIT chip and corresponding test/manifest; NXVM MyOB300 unit command encoding; publication follows each existing product scope. No ABI change. |
-| Applicable Rules | NXVM guide, Contributing, Roadmap, source policy and shared Execution/Documentation/Architecture/Coding. |
-| Verification | Focused cached x64/x86 PIT/board regressions and full repository qualifications following Shared rules; cached release, verify and publish 14 receiving EXEs. Recheck the original card with the actual production build when the owner input is readable. |
-| Expected Markers | Status-only counter 0 and all-counter selection work; counter-only, status-plus-count and 8253 behavior retain their distinct semantics. Real POST diagnostic changes from 1100h to 0000h. |
-| Asset Needs | Use build/t591-s2 for disposable diagnostics, at most 64 MiB and 300 seconds per native probe. Owner System Card remains external. |
-| Reporting Requirements | Record exact changed paths, cached build and verification results, artifact identity/hashes and any pending original-media verification. |
-| Stop Conditions | No new Shared interface or public change outside this PIT scope without fresh evidence and scope review. Do not use a higher boot budget to conceal a repeatable shutdown. |
-| Exit Criteria | Existing PIT semantics and the corrected polarity pass on both widths; Shared verification and pushed product artifact P records are complete, with a clean worktree. |
-| Original Owner Request | Implement original OmniBook hardware, wiring, ROM machine and product in ordered batches. |
-| Similar-Issue Sweep | Exact selection masks, repeated reads, per-counter latch behavior, unselected counters and 8253 behavior. |
+| Identifier Mode | M5 T591 S3 after the public 8254 fix and all receiver publication. |
+| Admission And Approval | Owner authorized ordered OmniBook implementation and single-session coordinator/executor execution. |
+| Objective | Own the external System Card through existing Machine construction/teardown; validate real guest boot, VGA and writable medium routing at their established owners. |
+| Non-goals | No embedded Microsoft payload, alternate executor, replacement ROM/DOS, product UX or guessed port/geometry. |
+| Reference Baseline | S1 original guest evidence, S2 shared correction and the HP 5965-0244 service manual. |
+| Candidate Proposal | proposals/m5-ob300-rom-dos.md T591 S3; quantified obligations from m5-ob300-architecture.md. |
+| Files And ABI Surface | NXVM App board/Machine preparation, tests and evidence. Use existing Shared contracts; qualify any separate demonstrated Shared gap before changing it. |
+| Applicable Rules | NXVM guide, Contributing, Roadmap, Architecture/Layout and source policy, shared Execution/Documentation/Architecture/Coding. |
+| Verification | Cached x64/x86; fixture covers external card input rejection, ownership and reset mapping through real Machine. Boot original card through the same Machine route, trace protected-mode descriptor access and identify whichever C medium route the guest uses before implementing it. |
+| Expected Markers | Machine owns immutable card bytes until after Core teardown. Original-card execution progresses past the demonstrated stop with unchanged firmware. Writable guest media is distinct from the read-only card. |
+| Asset Needs | Read-only owner 1.0 ABA System Card and matching C drive inputs; no downloading or distributing firmware/media. build/t591-s3 owns probes and disposable copies, 256 MiB, 300 seconds per native probe. |
+| Reporting Requirements | Compare real-card and fixture evidence, exact source hashes, known versus modeled semantics, and scope of remaining guest checks. |
+| Stop Conditions | Continue independent App work while original media is unavailable; do not claim a real ROM/C-media pass or choose an unobserved receiver. |
+| Exit Criteria | Exact external-card lifetime verified, real protected-mode stop resolved, observed media/VGA path verified on both widths, all repository unit tests passed and review pushed. |
+| Original Owner Request | Implement HP OmniBook 300 following MyPC110 boundaries: hardware, wiring, original-ROM Machine, then Product and testing. |
+| Similar-Issue Sweep | Wrong-sized/short card, candidate failure lifetime, clean stop/start and reset, protected descriptor versus board window, immutable System Card versus C medium. |
 
 # M5 T588 - Closed: OB300 hardware and execution design
 
