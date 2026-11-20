@@ -108,16 +108,16 @@ machines.
 
 Completed: [T588 design and reset proof](../history/M5-T588-ob300-design-closure.md).
 Completed: [T589 basic hardware](../history/M5-T589-ob300-hardware-closure.md).
+Active: [T590 board wiring](../proposals/m5-ob300-board.md).
 
-1. [OmniBook 300: board wiring](../proposals/m5-ob300-board.md)
-2. [OmniBook 300: machine composition and real ROM DOS](../proposals/m5-ob300-rom-dos.md)
-3. [OmniBook 300: product assembly and verification](../proposals/m5-ob300-product-qualification.md)
-4. [OmniBook 300: execution and interaction performance](../proposals/m5-ob300-performance.md)
-5. [OmniBook 300: ROM Windows, Word and Excel](../proposals/m5-ob300-rom-windows.md)
-6. [MyNeoGeo: Metal Slug 2](../proposals/myneogeo-metal-slug2.md)
-7. [CPU differential tools and specification tests](../proposals/m5-differential-and-unit-evidence.md)
-8. [Retained-machine DOS and Windows qualification](../proposals/m5-retained-guest-qualification.md)
-9. [x87 coprocessor execution](../proposals/m5-x87-coprocessor-execution.md)
+1. [OmniBook 300: machine composition and real ROM DOS](../proposals/m5-ob300-rom-dos.md)
+2. [OmniBook 300: product assembly and verification](../proposals/m5-ob300-product-qualification.md)
+3. [OmniBook 300: execution and interaction performance](../proposals/m5-ob300-performance.md)
+4. [OmniBook 300: ROM Windows, Word and Excel](../proposals/m5-ob300-rom-windows.md)
+5. [MyNeoGeo: Metal Slug 2](../proposals/myneogeo-metal-slug2.md)
+6. [CPU differential tools and specification tests](../proposals/m5-differential-and-unit-evidence.md)
+7. [Retained-machine DOS and Windows qualification](../proposals/m5-retained-guest-qualification.md)
+8. [x87 coprocessor execution](../proposals/m5-x87-coprocessor-execution.md)
 
 The former PC App test adapter candidate was transferred into T564 S13 by
 owner direction; its [proposal](../proposals/m5-pc-app-test-encapsulation.md)
