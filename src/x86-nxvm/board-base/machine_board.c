@@ -24,6 +24,27 @@ static void x86_nxvm_board_system_management_active(void *owner, lib_bool active
     if (board->profile_binding.system_management_active != LIB_NULL)
         board->profile_binding.system_management_active(board->profile_binding.context, active);
 }
+
+static lib_status x86_nxvm_board_read_smm_memory(void *owner, lib_u32 address,
+    void *destination, lib_u8 bytes, lib_bool observe_only)
+{
+    const x86_nxvm_board_state *board = owner;
+    const x86_nxvm_board_profile_binding *profile = &board->profile_binding;
+
+    if (profile->read_smm_memory == LIB_NULL) return LIB_STATUS_UNSUPPORTED;
+    return profile->read_smm_memory(profile->context, address, destination, bytes, observe_only);
+}
+
+static lib_status x86_nxvm_board_write_smm_memory(void *owner, lib_u32 address,
+    const void *source, lib_u8 bytes)
+{
+    const x86_nxvm_board_state *board = owner;
+    const x86_nxvm_board_profile_binding *profile = &board->profile_binding;
+
+    if (profile->write_smm_memory == LIB_NULL) return LIB_STATUS_UNSUPPORTED;
+    return profile->write_smm_memory(profile->context, address, source, bytes);
+}
+
 static lib_u32 x86_nxvm_board_reset_rom_alias(x86_core_cpu_profile profile);
 
 lib_status x86_nxvm_board_bind_profile(x86_nxvm_board_state *board,
@@ -37,6 +58,7 @@ lib_status x86_nxvm_board_bind_profile(x86_nxvm_board_state *board,
         binding->next_deadline == LIB_NULL || binding->finalize == LIB_NULL ||
         (binding->kbc_command_extension != LIB_NULL &&
          !x86_nxvm_board_keyboard_is_8042(board->keyboard_topology)) ||
+        ((binding->read_smm_memory == LIB_NULL) != (binding->write_smm_memory == LIB_NULL)) ||
         (binding->owns_refresh_output != LIB_FALSE && binding->owns_refresh_output != LIB_TRUE) ||
         (binding->shutdown_resets != LIB_FALSE && binding->shutdown_resets != LIB_TRUE))
         return LIB_STATUS_INVALID_ARGUMENT;
@@ -256,7 +278,9 @@ lib_status x86_nxvm_board_attach_machine(x86_core_machine *machine,
         .finalize_devices = x86_nxvm_board_finalize_devices,
         .firmware = x86_nxvm_board_register_reset_rom_alias,
         .system_management_active = x86_nxvm_board_system_management_active,
-        .context = board
+        .context = board,
+        .read_smm_memory = x86_nxvm_board_read_smm_memory,
+        .write_smm_memory = x86_nxvm_board_write_smm_memory
     };
 
     status = x86_core_machine_bind_attachment(machine, &attachment);

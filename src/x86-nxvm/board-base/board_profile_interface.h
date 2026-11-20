@@ -39,6 +39,12 @@ typedef struct x86_nxvm_board_profile_binding {
     /* Guest-time device work after current arbitration and before PIC refresh;
      * next_deadline supplies the next observable due tick on this same axis. */
     void (*advance)(void *context, lib_u64 source_ticks, lib_u64 due_tick);
+    /* Optional pair for the Core's SMIADS space. The profile owns its
+     * memory decode and must honor the observational flag. */
+    lib_status (*read_smm_memory)(void *context, lib_u32 address, void *destination,
+        lib_u8 bytes, lib_bool observe_only);
+    lib_status (*write_smm_memory)(void *context, lib_u32 address, const void *source,
+        lib_u8 bytes);
 } x86_nxvm_board_profile_binding;
 
 /* Scoped construction inputs, not a runtime board getter. Handles are
