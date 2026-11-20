@@ -1,28 +1,26 @@
-# M5 T592 S1 - Active: OmniBook Product entry and external inputs
+# M5 T592 S2 - Active: OmniBook release entry and native DOS qualification
 
-[T591 is closed](../history/M5-T591-S4-ob300-rom-dos-closure.md).
-The production Machine reaches original DOS on both widths. The next
-receiver builds a runnable Product with the same Machine and media
-semantics.
+[S1 is accepted and closed](../history/M5-T592-S1-ob300-product-entry.md).
+The accepted build-only candidate validates external inputs on both host widths.
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | New M5 T592 S1, the first queued OmniBook Product receiver after T591. |
-| Admission And Approval | Execute the owner-approved ordered OmniBook implementation and single-session coordinator/executor sequence. |
-| Objective | Bind MyOB300 to the existing X86-NXVM Product startup, prove portable external ROM and C-medium input paths, and register the App in the normal cached build graph. |
-| Non-goals | No embedded protected ROM, second entry framework, guessed Windows fix or published usability claim. |
-| Reference Baseline | T591 S4 owner-media evidence, MyPC110 Product composition, and the existing X86-NXVM Product. |
+| Identifier Mode | M5 T592 S2 after ordered S1 acceptance. |
+| Admission And Approval | Continue the owner's ordered OmniBook implementation with single-session coordinator/executor review. Necessary X86-NXVM and X86 Core changes are owner-approved. |
+| Objective | Register MyOB300 in the existing build and publication tools, qualify the ordinary Product entry through interactive original ROM DOS, and publish the x64/x86 pair. |
+| Non-goals | No protected bytes in Git, alternative entry, unrelated Shared edits or claim of Windows qualification. |
+| Reference Baseline | T592 S1 entry evidence and the original DOS Machine evidence from T591. |
 | Candidate Proposal | proposals/m5-ob300-product-qualification.md and m5-ob300-architecture.md O12. |
-| Files And ABI Surface | MyOB300 App/fixture and product build registrations. Reuse the existing binding and INI grammar. No planned Shared ABI change. |
+| Files And ABI Surface | MyOB300, common build/publication registration and owned documentation/test fixtures. Reuse the existing Product binding. Touch X86-NXVM/Core only for a reproduced defect that requires it. |
 | Applicable Rules | NXVM guide, Contributing, Roadmap, Architecture/Layout, source and UI policy, shared Execution/Documentation/Architecture/Coding. |
-| Verification | Cached x64/x86 builds, fixture inputs for startup and failure behavior, original ROM kept external, retained product rules and existing machine unit baseline. |
-| Expected Markers | MyOB300 resolves inputs relative to its executable, accepts correctly identified ROM, and rejects missing or incompatible inputs before worker startup. |
-| Asset Needs | Verified owner System 1.0 ABA raw card and temporary C fixture. S1 temporary directory build/t592-s1, 200 MiB maximum and 300 seconds per native probe. |
-| Reporting Requirements | Record config/ROM path source, dependency diff, dual-width build outputs and unqualified desktop/performance boundaries. |
-| Stop Conditions | Do not enable deployment or rewrite existing receiver obligations before product scope and artifact identity are verified. Do not commit third-party bytes or machine-local paths. |
-| Exit Criteria | One tested entry, portable BYOB contract and dual-width compile ready for native verification and publication in the next S. |
-| Original Owner Request | Complete MyOB300 in the order hardware, wiring, original Machine, Product and testing. |
-| Similar-Issue Sweep | Missing and wrong ROM, shortcut launch directory, old EXE entries, user media ownership and shutdown lifetime. |
+| Verification | Cached x64/x86 build, release identity and deployment hash, relevant tests, original external card and disposable C medium. Exercise command delivery including start, DOS input, pause/resume, reset/resume and stop/start through the ordinary executable. Report desktop results separately. |
+| Expected Markers | Both native executables reach the original DOS prompt, echo input and remain reusable across the lifecycle. Media writes do not affect the source. |
+| Asset Needs | Owner System 1.0 ABA card and valid disposable C fixture. build/t592-s2 owns transient probes/media, 200 MiB and 300 seconds per probe. |
+| Reporting Requirements | Preserve artifact hashes, provenance, actual native coverage, performance results and explicit remaining limitations. |
+| Stop Conditions | Do not declare native usability or release qualification when command delivery or the original DOS marker is unverified. Do not commit third-party bytes or machine-local paths. |
+| Exit Criteria | One proven release path, both published artifacts, repeatable BYOB setup and dual-width native original DOS verification. |
+| Original Owner Request | Complete the OmniBook in hardware, board, Machine, Product and verification order. |
+| Similar-Issue Sweep | INI and media relative paths, release inventory, built-on time, synthetic versus native input, and retained owner files. |
 
 # M5 T588 - Closed: OB300 hardware and execution design
 
