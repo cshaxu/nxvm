@@ -53,8 +53,9 @@ windows and original-ROM POST remain later board and machine stages.
 A read-only probe passed the same 32 KiB original BIOS span from S1 to
 the App board plan and stepped the guest one instruction at a time.
 Both host widths left the reset path, reached the PIC initialization
-routine at FA65Fh, and stopped at FDAF0h on step 84 with
-`LIB_STATUS_UNSUPPORTED`. The stopped instruction writes EDh, following
+routine at FA65Fh, and stopped at FDAF0h on step 84. The board declined
+the output and Core reported `LIB_STATUS_INTERNAL_ERROR` (status 6).
+The stopped instruction writes EDh, following
 the unlocked selection of index 2Ch. The next routine instructions
 select 2Fh and start a search at F000:7FF0 for an eight-byte marker
 beginning with BIOS0. All eight bytes match the bytes at card offset

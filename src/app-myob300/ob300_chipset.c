@@ -22,6 +22,7 @@ void myob300_chipset_reset(myob300_chipset *chipset)
     chipset->management_control = 0x20u;
     chipset->configuration_enabled = LIB_FALSE;
     chipset->management_active = LIB_FALSE;
+    myob300_card_reset(&chipset->card);
 }
 
 static lib_status myob300_chipset_read(void *owner, lib_u16 port,
@@ -52,7 +53,8 @@ static lib_status myob300_chipset_read(void *owner, lib_u16 port,
         *out_value = chipset->management_control |
             (chipset->management_active ? MYOB300_CHIPSET_MANAGEMENT_ACTIVE : 0u);
         break;
-    default: return LIB_STATUS_UNSUPPORTED;
+    default: return myob300_card_register_read(&chipset->card,
+        chipset->configuration_index, out_value);
     }
     return LIB_STATUS_OK;
 }
@@ -86,7 +88,8 @@ static lib_status myob300_chipset_write(void *owner, lib_u16 port,
             chipset->management_active)
             chipset->management_control = (lib_u8)value & MYOB300_CHIPSET_MANAGEMENT_WRITABLE;
         break;
-    default: return LIB_STATUS_UNSUPPORTED;
+    default: return myob300_card_register_write(&chipset->card,
+        chipset->configuration_index, (lib_u8)value);
     }
     return LIB_STATUS_OK;
 }

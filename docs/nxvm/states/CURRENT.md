@@ -3,6 +3,8 @@
 [S3 is closed](../history/M5-T590-S3-ob300-display-input.md).
 The [card-route handoff](../etc/evidence/t590-s3-ob300-display-input.md#system-card-handoff)
 contains the candidate decoder evidence from original execution.
+[S4 card evidence](../etc/evidence/t590-s4-ob300-system-card.md) records the
+production board replay and the synthetic route checks.
 
 | Field | Required record |
 | --- | --- |

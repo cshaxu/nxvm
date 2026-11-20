@@ -1,11 +1,11 @@
 #ifndef MYOB300_CHIPSET_H
 #define MYOB300_CHIPSET_H
 
-#include "lib/types/types_interface.h"
-#include "x86-core/machine/port_interface.h"
+#include "app-myob300/ob300_card.h"
 
 typedef struct myob300_chipset {
     x86_core_machine *core;
+    myob300_card card;
     lib_u8 configuration_index;
     lib_u8 miscellaneous;
     lib_u8 management_control;

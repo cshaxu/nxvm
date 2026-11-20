@@ -5,16 +5,21 @@
 
 extern const x86_nxvm_board_config myob300_board_configuration;
 
-#define MYOB300_SYSTEM_ROM_BYTES 0x8000u
+#define MYOB300_CARD_BOOT_BYTES 0x800000u
 
 typedef struct myob300_board myob300_board;
 
-/* The plan borrows this setup and its optional reset image through
- * construction. The profile is usable only after construction succeeds
- * and is owned by the resulting Core machine. */
+typedef struct myob300_card_image {
+    const lib_u8 *data;
+    lib_size bytes;
+} myob300_card_image;
+
+/* The plan borrows this setup through construction. The resulting Core
+ * machine owns the profile and borrows the immutable card images for
+ * its lifetime. The profile is usable only after construction succeeds. */
 typedef struct myob300_board_setup {
-    const lib_u8 *reset_image;
-    lib_size reset_image_bytes;
+    myob300_card_image common;
+    myob300_card_image attribute;
     myob300_board *profile;
 } myob300_board_setup;
 

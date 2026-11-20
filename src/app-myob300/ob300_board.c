@@ -16,8 +16,6 @@ struct myob300_board {
     myob300_chipset chipset;
     x86_ct_vga *display;
     lib_u8 management_memory[MYOB300_MANAGEMENT_MEMORY_BYTES];
-    lib_u8 reset_image[MYOB300_SYSTEM_ROM_BYTES];
-    lib_bool reset_image_present;
 };
 
 const x86_nxvm_board_config myob300_board_configuration = {
@@ -80,13 +78,13 @@ static lib_status myob300_board_management_read(void *owner, lib_u32 address,
     lib_u32 rom_offset;
 
     (void)observe_only;
-    if (source == LIB_NULL && board->reset_image_present && bytes != 0u) {
+    if (source == LIB_NULL && board->chipset.card.common.data != LIB_NULL && bytes != 0u) {
         rom_offset = address >= MYOB300_SYSTEM_ROM_RESET_ALIAS ?
             address - MYOB300_SYSTEM_ROM_RESET_ALIAS :
             address - MYOB300_SYSTEM_ROM_BASE;
-        if (rom_offset < MYOB300_SYSTEM_ROM_BYTES &&
-            bytes <= MYOB300_SYSTEM_ROM_BYTES - rom_offset)
-            source = board->reset_image + rom_offset;
+        if (rom_offset < MYOB300_CARD_RESET_BYTES &&
+            bytes <= MYOB300_CARD_RESET_BYTES - rom_offset)
+            source = board->chipset.card.common.data + MYOB300_CARD_RESET_OFFSET + rom_offset;
     }
     if (source == LIB_NULL) return LIB_STATUS_UNSUPPORTED;
     lib_memory_copy(destination, source, bytes);
@@ -156,21 +154,27 @@ static lib_status myob300_board_bind(
     lib_status status;
 
     if (board == LIB_NULL) return LIB_STATUS_NO_MEMORY;
+    board->chipset.card.common = setup->common;
+    board->chipset.card.attribute = setup->attribute;
     status = LIB_STATUS_OK;
-    if (setup->reset_image != LIB_NULL) {
-        lib_memory_copy(board->reset_image, setup->reset_image, sizeof(board->reset_image));
-        board->reset_image_present = LIB_TRUE;
+    if (setup->common.data != LIB_NULL) {
         status = x86_core_machine_register_immutable_rom_mapping(services->core,
-            MYOB300_SYSTEM_ROM_BASE, board->reset_image, sizeof(board->reset_image));
+            MYOB300_SYSTEM_ROM_BASE, setup->common.data + MYOB300_CARD_RESET_OFFSET,
+            MYOB300_CARD_RESET_BYTES);
         if (status == LIB_STATUS_OK)
             status = x86_core_machine_register_immutable_rom_mapping_reset_alias(services->core,
                 MYOB300_SYSTEM_ROM_BASE, MYOB300_SYSTEM_ROM_RESET_ALIAS,
-                sizeof(board->reset_image));
+                MYOB300_CARD_RESET_BYTES);
     }
     if (status == LIB_STATUS_OK) status = x86_ct_vga_create(X86_CT_VGA_65510, &board->display);
     if (status == LIB_STATUS_OK) status = myob300_chipset_install(&board->chipset, services->core);
     if (status == LIB_STATUS_OK) {
-        status = myob300_display_install(services->core, board->display);
+        status = myob300_card_install(&board->chipset.card, services->core);
+        if (status == LIB_STATUS_OK) {
+            status = myob300_display_install(services->core, board->display);
+            if (status != LIB_STATUS_OK)
+                (void)x86_core_machine_remove_memory_device_routes(services->core, &board->chipset.card);
+        }
         if (status != LIB_STATUS_OK)
             (void)x86_core_machine_remove_port_routes(services->core, &board->chipset);
     }
@@ -211,8 +215,10 @@ lib_status myob300_board_configure(x86_nxvm_board_plan *plan, myob300_board_setu
     };
     lib_status status;
 
-    if (setup == LIB_NULL || (setup->reset_image == LIB_NULL ?
-        setup->reset_image_bytes != 0u : setup->reset_image_bytes != MYOB300_SYSTEM_ROM_BYTES))
+    if (setup == LIB_NULL ||
+        (setup->common.data == LIB_NULL ? setup->common.bytes != 0u :
+            setup->common.bytes < MYOB300_CARD_BOOT_BYTES) ||
+        ((setup->attribute.data == LIB_NULL) != (setup->attribute.bytes == 0u)))
         return LIB_STATUS_INVALID_ARGUMENT;
     setup->profile = LIB_NULL;
     status = x86_nxvm_board_plan_set_topology(plan, &topology);

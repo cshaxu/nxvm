@@ -218,6 +218,56 @@ static void test_display(x86_core_machine *core, myob300_board *board)
         snapshot.pixels[0] == 1u && snapshot.pixels[1] == 0u);
 }
 
+static void expect_memory_pair(x86_core_machine *core, lib_u32 address,
+    lib_u8 first, lib_u8 second)
+{
+    lib_u8 pair[2];
+
+    lib_test_assert(x86_core_machine_memory_read(core, address, pair, sizeof(pair)) == LIB_STATUS_OK);
+    lib_test_assert(pair[0] == first && pair[1] == second);
+}
+
+static void test_card(x86_core_machine *core)
+{
+    const x86_core_cpu_debug_register_patch entry = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP),
+        .values = {[X86_CORE_CPU_DEBUG_CS] = 0xf000u, [X86_CORE_CPU_DEBUG_EIP] = 0x100u}
+    };
+    const lib_u8 write = 0xffu;
+    x86_core_machine_run_result result;
+    lib_u32 eax;
+
+    expect_memory_pair(core, 0xf7ff0u, 0xa1u, 0x1au);
+    write_port(core, 0xfbu, 0u);
+    write_indexed(core, 0xecu, 0xedu, 0x2cu, 0xbcu);
+    write_indexed(core, 0xecu, 0xedu, 0x2du, 0xc2u);
+    write_indexed(core, 0xecu, 0xedu, 0x2fu, 0xbdu);
+    write_indexed(core, 0xecu, 0xedu, 0x30u, 0xc2u);
+    write_indexed(core, 0xecu, 0xedu, 0x31u, 1u);
+    expect_port(core, 0xedu, 1u);
+    expect_memory_pair(core, 0xf3fffu, 0x11u, 0x22u);
+    lib_test_assert(x86_core_machine_memory_write(core, 0xf4000u, &write,
+        sizeof(write)) == LIB_STATUS_OK);
+    expect_memory_pair(core, 0xf3fffu, 0x11u, 0x22u);
+    lib_test_assert(x86_core_machine_debug_patch_registers(core, &entry) == LIB_STATUS_OK);
+    lib_test_assert(x86_core_machine_run(core, (x86_core_machine_run_budget){1u, 0u},
+        &result) == LIB_STATUS_OK);
+    lib_test_assert(x86_core_machine_debug_read_register(core, X86_CORE_CPU_DEBUG_EAX,
+        &eax) == LIB_STATUS_OK && (eax & 0xffffu) == 0x1234u);
+
+    /* Repoint the first window to the independent byte-wide attribute space. */
+    write_indexed(core, 0xecu, 0xedu, 0x2du, 0x80u);
+    expect_memory_pair(core, 0xf0000u, 0x61u, 0xffu);
+    expect_memory_pair(core, 0xf0002u, 0x62u, 0xffu);
+    expect_memory_pair(core, 0xf0004u, 0xffu, 0xffu);
+    /* A disabled window reveals the immutable boot window again. */
+    write_indexed(core, 0xecu, 0xedu, 0x2fu, 0xf7u);
+    expect_memory_pair(core, 0xf7ff0u, 0xa1u, 0x1au);
+    lib_test_assert(x86_core_machine_reset(core) == LIB_STATUS_OK);
+    expect_memory_pair(core, 0xf0000u, 0u, 0u);
+}
+
 static void test_management_memory(x86_core_machine *core)
 {
     const lib_u8 ordinary = 0xa5u;
@@ -250,7 +300,10 @@ static void test_management_memory(x86_core_machine *core)
 
 int main(void)
 {
-    static const lib_u8 image[MYOB300_SYSTEM_ROM_BYTES] = {
+    static lib_u8 image[MYOB300_CARD_BOOT_BYTES + 0x8000u];
+    static const lib_u8 attribute[] = {0x61u, 0x62u};
+    static const lib_u8 reset_vector[] = {0xeau, 0x00u, 0x80u, 0x00u, 0xf0u};
+    static const lib_u8 reset_program[] = {
         /* Select SMMCTL. A cold reset halts. SMI enters the data test. */
         0x31u, 0xc0u, 0xe6u, 0xfbu, 0xb0u, 0x18u, 0xe6u, 0xecu,
         0xe4u, 0xedu, 0xa8u, 0x08u, 0x75u, 0x03u, 0xf4u, 0xebu, 0xfdu,
@@ -258,16 +311,28 @@ int main(void)
          * read a private byte. RES3 executes only on a match. */
         0xb8u, 0x00u, 0x60u, 0x8eu, 0xd8u, 0x8eu, 0xc0u, 0x31u, 0xffu,
         0xc6u, 0x06u, 0x10u, 0x02u, 0x5au, 0xa0u, 0x10u, 0x02u,
-        0x3cu, 0x5au, 0x75u, 0x02u, 0x0fu, 0x07u, 0xf4u,
-        [MYOB300_SYSTEM_ROM_BYTES - 16u] = 0xeau, 0x00u, 0x80u, 0x00u, 0xf0u
+        0x3cu, 0x5au, 0x75u, 0x02u, 0x0fu, 0x07u, 0xf4u
     };
     x86_nxvm_board_plan *plan = LIB_NULL;
     x86_nxvm_board_state *board = LIB_NULL;
     x86_core_machine *core = LIB_NULL;
     x86_core_cpu_profile profile = X86_CORE_CPU_PROFILE_DEFAULT;
-    myob300_board_setup setup = {image, sizeof(image), LIB_NULL};
+    myob300_board_setup setup = {
+        .common = {image, sizeof(image)},
+        .attribute = {attribute, sizeof(attribute)}
+    };
     lib_size memory = 0u;
 
+    lib_memory_copy(image + MYOB300_CARD_BOOT_BYTES - 0x8000u,
+        reset_program, sizeof(reset_program));
+    lib_memory_copy(image + MYOB300_CARD_BOOT_BYTES - 16u, reset_vector, sizeof(reset_vector));
+    image[0x7f7ff0u] = 0xa1u;
+    image[0x7f7ff1u] = 0x1au;
+    image[0x803fffu] = 0x11u;
+    image[0x804000u] = 0x22u;
+    image[0x800100u] = 0xb8u;
+    image[0x800101u] = 0x34u;
+    image[0x800102u] = 0x12u;
     lib_test_assert(x86_nxvm_board_plan_create(&myob300_board_configuration, &plan) == LIB_STATUS_OK);
     lib_test_assert(myob300_board_configure(plan, &setup) == LIB_STATUS_OK);
     lib_test_assert(x86_nxvm_board_create_from_plan(plan, &core, &board) == LIB_STATUS_OK);
@@ -282,6 +347,7 @@ int main(void)
     test_support_devices(core, board);
     test_display(core, setup.profile);
     test_input(core, board);
+    test_card(core);
     test_management_memory(core);
     lib_test_assert(x86_core_machine_reset(core) == LIB_STATUS_OK);
     expect_port(core, 0xecu, 0u);

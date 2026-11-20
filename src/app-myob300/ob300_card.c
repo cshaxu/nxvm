@@ -1,0 +1,123 @@
+#include "app-myob300/ob300_card.h"
+#include "x86-core/machine/memory_interface.h"
+
+#define MYOB300_CARD_INDEX_BASE 0x26u
+#define MYOB300_CARD_PAGE_SHIFT 14u
+#define MYOB300_CARD_PAGE_BYTES (1u << MYOB300_CARD_PAGE_SHIFT)
+#define MYOB300_CARD_LEGACY_START 0xd0000u
+#define MYOB300_CARD_BOOT_START 0xf0000u
+#define MYOB300_CARD_LEGACY_END 0xf8000u
+#define MYOB300_CARD_PAGE_MASK 0x3fu
+#define MYOB300_CARD_WINDOW_CONTROL 0xc0u
+#define MYOB300_CARD_WINDOW_ENABLED 0x80u
+#define MYOB300_CARD_COMMON_SELECT 0x40u
+
+void myob300_card_reset(myob300_card *card)
+{
+    for (lib_size i = 0u; i < MYOB300_CARD_WINDOW_COUNT; ++i) {
+        lib_u8 *window = card->windows + i * MYOB300_CARD_WINDOW_REGISTER_COUNT;
+        window[0] = (lib_u8)(0xf4u + i);
+        window[1] = 0x80u;
+        window[2] = 0u;
+    }
+}
+
+lib_status myob300_card_register_read(const myob300_card *card, lib_u8 index,
+    lib_u32 *out_value)
+{
+    if (index < MYOB300_CARD_INDEX_BASE ||
+        index - MYOB300_CARD_INDEX_BASE >= sizeof(card->windows)) return LIB_STATUS_UNSUPPORTED;
+    *out_value = card->windows[index - MYOB300_CARD_INDEX_BASE];
+    return LIB_STATUS_OK;
+}
+
+lib_status myob300_card_register_write(myob300_card *card, lib_u8 index, lib_u8 value)
+{
+    if (index < MYOB300_CARD_INDEX_BASE ||
+        index - MYOB300_CARD_INDEX_BASE >= sizeof(card->windows)) return LIB_STATUS_UNSUPPORTED;
+    card->windows[index - MYOB300_CARD_INDEX_BASE] = value;
+    return LIB_STATUS_OK;
+}
+
+/* Real firmware proves the selected F0000/F4000 common pages. Extend
+ * the same decode to the four consecutive groups. Selection priority
+ * and the complementary attribute mode are L1 assumptions. */
+static lib_bool myob300_card_resolve(const myob300_card *card, lib_u32 address,
+    const lib_u8 **out_byte)
+{
+    const lib_u32 guest_page = address >> MYOB300_CARD_PAGE_SHIFT;
+    lib_size offset;
+
+    *out_byte = LIB_NULL;
+    for (lib_size i = 0u; i < MYOB300_CARD_WINDOW_COUNT; ++i) {
+        const lib_u8 *window = card->windows + i * MYOB300_CARD_WINDOW_REGISTER_COUNT;
+        const myob300_card_image *image;
+        const lib_bool common = (window[1] & MYOB300_CARD_COMMON_SELECT) != 0u;
+
+        if ((window[0] & MYOB300_CARD_WINDOW_CONTROL) != MYOB300_CARD_WINDOW_ENABLED ||
+            (window[0] & MYOB300_CARD_PAGE_MASK) != guest_page) continue;
+        offset = (((lib_u32)(window[1] & MYOB300_CARD_PAGE_MASK) << 8u) | window[2]) *
+            MYOB300_CARD_PAGE_BYTES + (address & (MYOB300_CARD_PAGE_BYTES - 1u));
+        image = common ? &card->common : &card->attribute;
+        if (!common && (offset & 1u) != 0u) return LIB_TRUE;
+        if (!common) offset >>= 1u;
+        if (offset < image->bytes) *out_byte = image->data + offset;
+        return LIB_TRUE;
+    }
+    if (address >= MYOB300_CARD_BOOT_START && card->common.data != LIB_NULL) {
+        offset = MYOB300_CARD_BOOT_OFFSET + address - MYOB300_CARD_BOOT_START;
+        *out_byte = card->common.data + offset;
+        return LIB_TRUE;
+    }
+    return LIB_FALSE;
+}
+
+static lib_status myob300_card_transfer(const myob300_card *card, lib_u32 physical,
+    lib_uptr bytes, lib_u8 *destination)
+{
+    const lib_u8 *source;
+
+    if (physical < MYOB300_CARD_LEGACY_START || physical >= MYOB300_CARD_LEGACY_END ||
+        bytes == 0u || bytes > MYOB300_CARD_LEGACY_END - physical)
+        return LIB_STATUS_UNSUPPORTED;
+    for (lib_uptr i = 0u; i < bytes; ++i) {
+        if (!myob300_card_resolve(card, physical + (lib_u32)i, &source))
+            return LIB_STATUS_UNSUPPORTED;
+        if (destination != LIB_NULL) destination[i] = source == LIB_NULL ? 0xffu : *source;
+    }
+    return LIB_STATUS_OK;
+}
+
+static lib_status myob300_card_query(void *owner, lib_u32 physical, lib_uptr bytes,
+    x86_core_machine_memory_access access)
+{
+    (void)access;
+    return myob300_card_transfer(owner, physical, bytes, LIB_NULL);
+}
+
+static lib_status myob300_card_read(void *owner, lib_u32 physical, lib_uptr destination,
+    lib_uptr bytes, lib_bool observe_only)
+{
+    (void)observe_only;
+    return myob300_card_transfer(owner, physical, bytes, (lib_u8 *)destination);
+}
+
+static lib_status myob300_card_write(void *owner, lib_u32 physical, lib_uptr source,
+    lib_uptr bytes)
+{
+    (void)source;
+    return myob300_card_transfer(owner, physical, bytes, LIB_NULL);
+}
+
+lib_status myob300_card_install(myob300_card *card, x86_core_machine *core)
+{
+    const x86_core_machine_memory_device_route route = {
+        MYOB300_CARD_LEGACY_START, MYOB300_CARD_LEGACY_END - MYOB300_CARD_LEGACY_START,
+        {myob300_card_read, myob300_card_write, myob300_card_query},
+        X86_CORE_MACHINE_MEMORY_PROVIDER_REPLACEMENT_PARTIAL, LIB_NULL
+    };
+
+    myob300_card_reset(card);
+    return x86_core_machine_install_memory_device_routes(core, &route, 1u,
+        LIB_NULL, LIB_NULL, card);
+}
