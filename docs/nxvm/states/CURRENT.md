@@ -1,30 +1,27 @@
-# M5 T589 S5 - Delivered: C&T 65510 display hardware
+# M5 T589 S6 - Active: OmniBook keyboard and pointing device
 
-[S4 is closed](../history/M5-T589-S4-sxlv-management.md).
-The [display handoff](../etc/evidence/t589-s4-am386sxlv-management.md#display-handoff)
-records the 65510 option ROM and compared VGA paths.
-The [S5 display evidence](../etc/evidence/t589-s5-ct65510-display.md)
-records the device contract, 716 passing unit tests on each host width,
-MyPC110 integration and the fourteen qualified receiver artifacts.
+[S5 is closed](../history/M5-T589-S5-ct65510-display.md).
+The [S5 input handoff](../etc/evidence/t589-s5-ct65510-display.md#input-handoff)
+records the HP service evidence and original System 1.0 driver behavior.
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation M5 T589 S5. S4 accepted and closed. |
-| Admission And Approval | Owner authorized basic hardware work and sequential single-session dual-role admission on 2026-11-19. |
-| Objective | Establish the OB300 display identity and implement the C&T 65510 register, VRAM and frame contract for later HP board and ROM assembly. |
-| Non-goals | No motherboard address decode, complete firmware boot, second host renderer, invented panel timing or 65535/65536 relabeling. |
-| Reference Baseline | Shared 4d9a248a3 and receiver baseline 1cf01a0ab; C&T 65510 preliminary data sheet rev 0.7 and HP 5965-0244; verified System ROM 1.0 option image. |
-| Candidate Proposal | proposals/m5-ob300-hardware.md S5 and proposals/m5-ob300-architecture.md O06. |
-| Files And ABI Surface | X86-NXVM display chip code, tests/build/manifests. Share proven standard VGA mechanics with the existing C&T receiver while keeping variant-specific extensions. Limit any receiving MyPC110 changes to wiring needed by the common interface. Required receiving product releases and NXVM evidence. |
-| Applicable Rules | NXVM guide, Contributing, Roadmap, architecture/layout, source policy and shared Execution/Documentation/Architecture/Coding. |
-| Verification | Check variant identity, indexed register ownership and reset, standard latches/write modes, extended single/dual VRAM mapping and address boundaries, font/text and graphics capture, panel blanking and 640x480 grayscale output as supported. Cached dual-width chip and MyPC110 regressions, full Shared unit and receiving release requirements. |
-| Expected Markers | One standard VGA backing and rendering owner, separate 65510 and 65535 extension semantics, evidence-classed 65510 register and frame output. |
-| Asset Needs | Hash-verified readonly System ROM option window, C&T and HP manuals, synthetic tests. S5 owns build/t589-s5 up to 64 MiB, cleaned after process exit. Publication allows 40 minutes; each unit aggregate retains the 300-second deadline. |
-| Reporting Requirements | Evidence supporting 65510 versus the 65536 lead, actual diff, preserved MyPC110 behavior, artifact hashes and bounded remaining panel/board work. |
-| Stop Conditions | Do not silently substitute an unrelated VGA chip, retain a duplicate VGA backing, treat undocumented board straps as exact, or publish raw option ROM bytes. |
-| Exit Criteria | Correct documented/firmware-observed C&T behavior verified independently on both host widths, retained PC110 paths tested, and required receiving delivery reviewed and pushed. |
-| Original Owner Request | Implement MyOB300 in hardware, wiring, machine and product stages. |
-| Similar-Issue Sweep | VGA storage routes, latches, bank crossing, text font/CRTC ownership, presentation and obsolete duplicate paths. |
+| Identifier Mode | Continuation M5 T589 S6 after S5 publication at 5b0a97d5b. |
+| Admission And Approval | Owner authorized sequential single-session coordinator/executor admission. |
+| Objective | Qualify or implement the keyboard and auxiliary pointing-device contracts needed by the OmniBook 300. |
+| Non-goals | No HP port decode guesses, new host input route, original ROM full boot or unsupported hardware precision claim. |
+| Reference Baseline | HP service publication 5965-0244; System 1.0 ABA mouse driver and BIOS evidence; current X86-NXVM AT controller, keyboard and mouse tests. |
+| Candidate Proposal | proposals/m5-ob300-hardware.md S6 and proposals/m5-ob300-architecture.md O07. |
+| Files And ABI Surface | NXVM evidence first. Change existing X86-NXVM device owners and tests only for a demonstrated hardware-contract gap. Apply receiver obligations to actual Shared changes. |
+| Applicable Rules | NXVM guide, Contributing, Roadmap, architecture/layout, source policy, shared Execution/Documentation/Architecture/Coding. |
+| Verification | Establish the controller protocol from supplied evidence. Verify keyboard make/break, auxiliary motion/buttons, reset, command and IRQ delivery on cached x64/x86. Retain clear separate board receiver conditions. |
+| Expected Markers | One keyboard and auxiliary owner using existing Machine input admission. Hardware reset and guest command evidence remains distinguishable from inferred board routing. |
+| Asset Needs | Local HP service manual and read-only System 1.0 files. Temporary work in build/t589-s6 up to 32 MiB; 300 seconds for a test batch, then retain necessary hashes and remove owned temporaries. |
+| Reporting Requirements | State reuse or demonstrate a concrete gap, list relevant tests and limits, distinguish the underlying controller protocol from board and driver behavior. |
+| Stop Conditions | No unsupported exact controller marking, protected asset publication, or second device implementation where the current owner already supplies the contract. |
+| Exit Criteria | Sourced HP driver/protocol evidence, verified independent make/break and motion/button/reset tests on both host widths, recorded board requirements and pushed reviewed delivery. |
+| Original Owner Request | Build the OmniBook 300 in hardware, wiring, machine and product stages. |
+| Similar-Issue Sweep | Existing keyboard/aux forwarding, scan translation, typematic, controller handshakes and reset. |
 
 # M5 T588 - Closed: OB300 hardware and execution design
 
