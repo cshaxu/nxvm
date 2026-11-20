@@ -55,5 +55,6 @@ receiving batch before selecting fixes, and reuse existing shared tests.
 | S | Scope and evidence |
 | --- | --- |
 | 1 | Receive the original E-region option, extended CMOS and 8042 self-test ordering. Reproduce board progress and classify the next BIOS diagnostic. |
-| 2 | Construct the external source and writable-media lifetime, then complete ROM/VGA and storage routes required by the observed POST and boot paths. |
-| 3 | Check the unchanged System ROM reaches interactive MS-DOS on both widths. Verify input, writable-media persistence, repeated lifecycle behavior, and timing baselines. |
+| 2 | Correct the shared 8254 read-back select polarity and reconcile existing callers and tests. Validate the firmware checkpoint, keep the separate protected-mode stop open, and qualify receiving products. |
+| 3 | Construct the external source and writable-media lifetime, then complete ROM/VGA and storage routes required by the observed POST and boot paths. Resolve the protected-mode stop at its demonstrated owner. |
+| 4 | Check the unchanged System ROM reaches interactive MS-DOS on both widths. Verify input, writable-media persistence, repeated lifecycle behavior, and timing baselines. |
