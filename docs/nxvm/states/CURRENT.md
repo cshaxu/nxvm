@@ -1,9 +1,12 @@
-# M5 T589 S4 - Active: Am386SXLV system management
+# M5 T589 S4 - Delivered: Am386SXLV system management
 
 [S3 is closed](../history/M5-T589-S3-sxlv-word-bus.md).
 The [S4 firmware handoff](../etc/evidence/t589-s3-am386sxlv-word-bus.md#s4-firmware-handoff)
 records the verified RES3 consumer and separates silicon contracts from
 HP decode facts that still belong to the board receiver.
+The [S4 implementation record](../etc/evidence/t589-s4-am386sxlv-management.md)
+records the CPU-to-Machine route proof, 716/716 unit outcomes on both
+host widths, and all fourteen verified receiver artifacts.
 
 | Field | Required record |
 | --- | --- |
@@ -13,7 +16,7 @@ HP decode facts that still belong to the board receiver.
 | Non-goals | No HP board port or address decode, ROM boot claim, independent CPU executor, per-product SMM branching, or precise undocumented silicon timing. |
 | Reference Baseline | Shared 01d60a30e and receiver baseline 420529dc9; AMD 21020 Rev A and 16305; ROM evidence in the S3 handoff. |
 | Candidate Proposal | proposals/m5-ob300-hardware.md S4. |
-| Files And ABI Surface | Shared src/test x86-core CPU, Machine and manifests. Specify a minimal distinct memory-space contract at the existing bus/provider boundary. NXVM evidence and required NXVM, MyNES and MyRaidenII receiver publication. |
+| Files And ABI Surface | Shared src/test x86-core CPU, Machine and manifests. Specify a minimal distinct memory-space contract at the existing bus/provider boundary. Update two x86-nxvm test fixtures that assert the Core opcode and profile metadata inventory, with their test manifest. NXVM evidence and required NXVM, MyNES and MyRaidenII receiver publication. |
 | Applicable Rules | NXVM guide, Contributing, Roadmap, architecture/layout, source policy, and shared Execution/Documentation/Architecture/Coding. |
 | Verification | Extend existing CPU SMM and Machine bus fixtures to prove entry priority, 16-bit save cycles, same-address separation, I/O and UMOV routing, guest-edited restore, reset/failure and retained 486 behavior on x86/x64. Apply full Shared receiver build, test and publication requirements before delivery. |
 | Expected Markers | One execution and transaction path. CPU owns architectural state and space selection. Board attachment owns backing and decode. Verified spans and modeled fields are distinguished. |

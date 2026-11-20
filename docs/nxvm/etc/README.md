@@ -7,6 +7,9 @@ S2 [ordinary execution](evidence/t589-s2-am386sxlv-execution.md) records
 S3 [16-bit external bus](evidence/t589-s3-am386sxlv-word-bus.md) records
 memory and port lanes, prefetch, qualification and the firmware findings
 that guide the SMM implementation.
+S4 [system management](evidence/t589-s4-am386sxlv-management.md) records
+the AMD entry and restore results, receiving releases, and the verified
+firmware and device leads for display and board wiring.
 
 T588 S1: [OB300 identity and convergence ledger](evidence/t588-ob300-convergence.md)
 records external archive verification, current implementation owners and the
