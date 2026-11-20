@@ -101,6 +101,8 @@ typedef struct x86_hdc_config {
     lib_u32 command_ticks, next_sector_ticks;
     lib_u32 step_ticks[16];
     x86_hdc_geometry xebec_geometry;
+    /* Initial ATA cylinder latch values on hardware reset. SRST uses zero. */
+    lib_u8 ata_power_on_cylinder_low, ata_power_on_cylinder_high;
 } x86_hdc_config;
 
 /* Unit is the controller's drive selection, not a registry or file identity.

@@ -377,6 +377,8 @@ lib_status x86_ct_vga_vga_read(x86_ct_vga *chip, lib_u16 port,
     } else if (port == 0x03cfu) {
         *out_value = x86_ct_vga_indexed_read(chip->graphics,
             sizeof(chip->graphics), chip->graphics_index);
+    } else if (port == 0x03d4u) {
+        *out_value = chip->crtc_index;
     } else if (port == 0x03d5u) {
         *out_value = x86_ct_vga_indexed_read(chip->crtc,
             sizeof(chip->crtc), chip->crtc_index);

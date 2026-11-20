@@ -255,7 +255,8 @@ static lib_i32 fixture_identify_capability(lib_bool lba)
 lib_i32 main(void)
 {
     const x86_hdc_config config = {.protocol = X86_HDC_PROTOCOL_ATA_PIO,
-        .lba28_supported = LIB_TRUE, .command_ticks = 7u, .next_sector_ticks = 3u};
+        .lba28_supported = LIB_TRUE, .command_ticks = 7u, .next_sector_ticks = 3u,
+        .ata_power_on_cylinder_low = 0xaau, .ata_power_on_cylinder_high = 0x55u};
     fixture_media media = {.present = LIB_TRUE};
     const x86_hdc_connection connection = {.context = &media, .query = fixture_query,
         .read = fixture_read_record, .write = fixture_write_record};
@@ -266,6 +267,20 @@ lib_i32 main(void)
     media.sector[0][0] = 0x34u;
     media.sector[0][1] = 0x12u;
     if (x86_hdc_create(&config, &connection, &hdc) != LIB_STATUS_OK) return 1;
+    if (!fixture_read(hdc, X86_HDC_REGISTER_CYLINDER_LOW, &status) || status != 0xaau ||
+        !fixture_read(hdc, X86_HDC_REGISTER_CYLINDER_HIGH, &status) || status != 0x55u ||
+        !fixture_write(hdc, X86_HDC_REGISTER_CONTROL, X86_HDC_DEVICE_CONTROL_SRST) ||
+        !fixture_write(hdc, X86_HDC_REGISTER_CONTROL, 0u) ||
+        !fixture_read(hdc, X86_HDC_REGISTER_CYLINDER_LOW, &status) || status != 0u ||
+        !fixture_read(hdc, X86_HDC_REGISTER_CYLINDER_HIGH, &status) || status != 0u ||
+        !fixture_command(hdc, 0x90u) || !x86_hdc_irq_pending(hdc) ||
+        !fixture_read(hdc, X86_HDC_REGISTER_STATUS_COMMAND, &status) ||
+        status != (X86_HDC_STATUS_DRDY | X86_HDC_STATUS_DSC) ||
+        !fixture_read(hdc, X86_HDC_REGISTER_ERROR_FEATURES, &error) ||
+        error != X86_HDC_ERROR_DIAGNOSTIC_OK) {
+        x86_hdc_destroy(hdc);
+        return 1;
+    }
     if (hdc_observe(hdc).error != 0x01u || hdc_observe(hdc).sector_count != 1u ||
         hdc_observe(hdc).sector_number != 1u ||
         !fixture_write(hdc,

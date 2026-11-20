@@ -2044,9 +2044,10 @@ static void _ksa_prepare_stack_sreg(x86_core_cpu_execution_context *context,
     rsreg->seg.data.writable = (lib_u8)_IsDescDataWritable(descriptor);
     CPU_TRACE_CALL_END;
 }
-/* Clearing PE deliberately retains protected caches.  A later real-address
- * segment reload, including the far transfer which reloads CS, replaces the
- * selected cache with real-address attributes. */
+/* Clearing PE retains the protected caches. The Am386SXLV real-address
+ * data reload also retains the previous limit, as required by HIMEM's
+ * extended-memory copy. VM86 and protected compatibility loads keep their
+ * existing limits. */
 static void _ksa_load_real_sreg(x86_core_cpu_execution_context *context,
     t_cpu_data_sreg *rsreg,
     lib_u16 selector, lib_u8 vm86)
@@ -2055,7 +2056,9 @@ static void _ksa_load_real_sreg(x86_core_cpu_execution_context *context,
     rsreg->selector = selector;
     rsreg->base = (lib_u32)selector << 4u;
     if (context->smm_active && !_GetCR0_PE) return;
-    rsreg->limit = 0x0000ffffu;
+    if (_GetCR0_PE || vm86 || rsreg->sregtype != SREG_DATA ||
+        context->cpu_profile != X86_CORE_CPU_PROFILE_AM386SXLV)
+        rsreg->limit = 0x0000ffffu;
     rsreg->dpl = vm86 ? 3u : 0u;
     rsreg->seg.accessed = LIB_TRUE;
     rsreg->seg.executable = rsreg->sregtype == SREG_CODE;

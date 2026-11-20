@@ -95,6 +95,7 @@ typedef struct x86_nxvm_board_hdc_task_file_config {
     /* Required only by IBM WD1003: selected Core axis rate for its manual
      * step-rate selector, never a host clock or HDC-owned time axis. */
     lib_u32 clock_ticks_per_second;
+    lib_u8 ata_power_on_cylinder_low, ata_power_on_cylinder_high;
 } x86_nxvm_board_hdc_task_file_config;
 
 /* This is an immutable adapter/drive pairing selected by a profile at

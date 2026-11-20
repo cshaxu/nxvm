@@ -116,6 +116,13 @@ static void verify_65510_banks(void)
     lib_u8 readback[sizeof(pair)];
 
     lib_test_assert(x86_ct_vga_create(X86_CT_VGA_65510, &chip) == LIB_STATUS_OK);
+    lib_test_assert(x86_ct_vga_vga_read(chip, 0x03d4u, &value) == LIB_STATUS_OK &&
+        value == 0u);
+    lib_test_assert(write_indexed(chip, 0x03d4u, 0x03d5u, 0xe9u, 15u) == LIB_STATUS_OK);
+    lib_test_assert(x86_ct_vga_vga_read(chip, 0x03d4u, &value) == LIB_STATUS_OK &&
+        value == 9u);
+    lib_test_assert(x86_ct_vga_vga_read(chip, 0x03d5u, &value) == LIB_STATUS_OK &&
+        value == 15u);
     lib_test_assert(x86_ct_vga_extension_write(chip,
         X86_CT_VGA_EXTENSION_DATA_PORT, 0xffu) == LIB_STATUS_OK);
     lib_test_assert(x86_ct_vga_extension_read(chip,

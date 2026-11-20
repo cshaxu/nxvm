@@ -294,6 +294,8 @@ static lib_status x86_nxvm_board_hdc_initialize(x86_nxvm_board_hdc *hdc)
         config.xebec_geometry = hdc_geometry(board->bus.xebec.expected_media_geometry);
     } else {
         config.lba28_supported = board->bus.task_file.lba28_supported;
+        config.ata_power_on_cylinder_low = board->bus.task_file.ata_power_on_cylinder_low;
+        config.ata_power_on_cylinder_high = board->bus.task_file.ata_power_on_cylinder_high;
         rate = board->bus.task_file.clock_ticks_per_second;
         for (lib_u32 i = 0u; i < 16u; ++i) {
             lib_u32 tenths_microsecond = i == 0u ? 350u : 5000u * i;

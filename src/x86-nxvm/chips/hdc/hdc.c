@@ -742,6 +742,17 @@ static void x86_hdc_execute_command(x86_hdc *hdc, lib_u8 command)
     if (hdc == LIB_NULL) return;
     hdc->data.last_command = command;
     ++hdc->data.command_count;
+    if (x86_hdc_is_ata_pio(hdc) && command == X86_HDC_COMMAND_EXECUTE_DIAGNOSTICS) {
+        x86_hdc_medium info;
+        x86_hdc_record_result result;
+        if (!x86_hdc_media_info(hdc, &info, &result) || !info.present) {
+            x86_hdc_fail(hdc, X86_HDC_ERROR_ABORT);
+            return;
+        }
+        hdc->data.error = X86_HDC_ERROR_DIAGNOSTIC_OK;
+        x86_hdc_complete(hdc, LIB_TRUE);
+        return;
+    }
     if ((!x86_hdc_is_ata_pio(hdc) && !x86_hdc_is_compaq_wd_40mb(hdc) && !x86_hdc_is_ibm_wd1003(hdc) &&
             !x86_hdc_selected_master(hdc)) ||
         (!x86_hdc_is_compaq_wd_40mb(hdc) && !x86_hdc_is_ibm_wd1003(hdc) &&
@@ -1629,6 +1640,10 @@ void x86_hdc_reset(x86_hdc *hdc)
     if (hdc == LIB_NULL) return;
     hdc->data.elapsed_ticks = 0u;
     x86_hdc_reset_controller(hdc);
+    if (x86_hdc_is_ata_pio(hdc)) {
+        hdc->data.cylinder_low = hdc->config.ata_power_on_cylinder_low;
+        hdc->data.cylinder_high = hdc->config.ata_power_on_cylinder_high;
+    }
 }
 
 void x86_hdc_advance_at(x86_hdc *hdc, lib_u64 now)

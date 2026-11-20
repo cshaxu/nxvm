@@ -717,6 +717,26 @@ static lib_i32 segment_test_real_sreg_loads(x86_core_cpu_profile cpu_profile)
     return failed;
 }
 
+static lib_i32 segment_test_real_data_limit(x86_core_cpu_profile profile)
+{
+    static const lib_u8 code[] = {
+        0xb8u, 0x34u, 0x12u, 0x8eu, 0xd8u, 0x8eu, 0xc0u, 0x8eu, 0xd0u, 0xf4u
+    };
+    const lib_u32 limit = profile == X86_CORE_CPU_PROFILE_AM386SXLV ?
+        0xffffffffu : 0x0000ffffu;
+    segment_cpu state;
+    t_cpu cpu;
+
+    if (!segment_prepare(&state, profile)) return 1;
+    state.chip.cpu.data.ds.limit = 0xffffffffu;
+    state.chip.cpu.data.es.limit = 0xffffffffu;
+    state.chip.cpu.data.ss.limit = 0xffffffffu;
+    return !segment_run_halt(&state, code, sizeof(code), 0u, &cpu) ||
+        cpu.data.ds.base != 0x12340u || cpu.data.ds.limit != limit ||
+        cpu.data.es.base != 0x12340u || cpu.data.es.limit != limit ||
+        cpu.data.ss.base != 0x12340u || cpu.data.ss.limit != 0x0000ffffu;
+}
+
 static lib_i32 segment_test_protected_sreg_success(x86_core_cpu_profile cpu_profile)
 {
     static const segment_sreg_form forms[] = {
@@ -1259,7 +1279,9 @@ lib_i32 main(void)
 
     if (segment_test_80286_protected_legal_forms() ||
         segment_test_80286_protected_cache_rejections() ||
-        segment_test_rejected_forms() || segment_test_metadata()) return 1;
+        segment_test_rejected_forms() || segment_test_metadata() ||
+        segment_test_real_data_limit(X86_CORE_CPU_PROFILE_AM386SXLV) ||
+        segment_test_real_data_limit(X86_CORE_CPU_PROFILE_80386)) return 1;
     for (lib_size profile = 0u; profile < sizeof(profiles) / sizeof(profiles[0]);
         ++profile) {
         for (lib_size index = 0u; index < sizeof(cases) / sizeof(cases[0]); ++index) {
