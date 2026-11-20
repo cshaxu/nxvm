@@ -142,6 +142,7 @@ typedef struct x86_nxvm_board_config {
     lib_u8 kbc_reset_system_flag_configured;
     lib_u8 kbc_reset_system_flag;
     /* Optional full command byte sampled immediately after 8042 reset. */
+    lib_bool kbc_retain_output_read;
     lib_u8 kbc_reset_command_byte_configured;
     lib_u8 kbc_reset_command_byte;
     x86_nxvm_board_keyboard_topology keyboard_topology;

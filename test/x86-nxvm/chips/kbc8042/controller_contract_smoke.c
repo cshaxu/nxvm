@@ -830,6 +830,26 @@ static lib_bool output_pulses(controller_fixture *f)
     return failed;
 }
 
+static lib_bool output_read_retention(controller_fixture *fixture)
+{
+    x86_kbc8042 *controller = fixture->controller;
+    lib_bool failed = LIB_FALSE;
+
+    x86_kbc8042_reset(controller);
+    x86_kbc8042_set_output_read_retention(controller, LIB_TRUE);
+    x86_kbc8042_write_command(controller, 0xaau);
+    failed |= x86_kbc8042_read_data(controller) != 0x55u;
+    failed |= (x86_kbc8042_read_status(controller) & 1u) != 0u ||
+        x86_kbc8042_read_data(controller) != 0x55u || fixture->irq[0] || fixture->irq[1];
+    x86_kbc8042_reset(controller);
+    failed |= x86_kbc8042_read_data(controller) != 0u;
+    x86_kbc8042_write_command(controller, 0xaau);
+    failed |= x86_kbc8042_read_data(controller) != 0x55u ||
+        x86_kbc8042_read_data(controller) != 0x55u;
+    x86_kbc8042_set_output_read_retention(controller, LIB_FALSE);
+    return failed || x86_kbc8042_read_data(controller) != 0u;
+}
+
 int main(void)
 {
     controller_fixture fixture = { 0 };
@@ -854,6 +874,7 @@ int main(void)
     failed |= initialization_clears_controller_stream(&fixture);
     failed |= set3_suppression_and_capacity(&fixture);
     failed |= output_pulses(&fixture);
+    failed |= output_read_retention(&fixture);
     destroy(&fixture);
     failed |= fixture.irq[0] || fixture.irq[1];
     return failed ? 1 : 0;

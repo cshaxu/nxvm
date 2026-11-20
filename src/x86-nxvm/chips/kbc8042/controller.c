@@ -318,8 +318,11 @@ static lib_u8 x86_kbc8042_dequeue(x86_kbc8042 *controller)
     lib_u8 value = 0u;
     x86_kbc8042_origin origin;
 
-    if (controller == LIB_NULL || controller->data.fifo_count == 0u) return 0u;
+    if (controller == LIB_NULL) return 0u;
+    if (controller->data.fifo_count == 0u)
+        return controller->retain_output_read ? controller->data.last_output_read : 0u;
     value = controller->data.fifo[controller->data.fifo_head];
+    controller->data.last_output_read = value;
     origin = controller->data.fifo_origin[controller->data.fifo_head];
     controller->data.fifo_head = (lib_u8)((controller->data.fifo_head + 1u) %
         KBC_FIFO_CAPACITY);
@@ -588,6 +591,11 @@ void x86_kbc8042_set_reset_system_flag(x86_kbc8042 *controller,
     } else {
         controller->data.command_byte &= (lib_u8)~KBC_COMMAND_SYSTEM;
     }
+}
+
+void x86_kbc8042_set_output_read_retention(x86_kbc8042 *controller, lib_bool enabled)
+{
+    if (controller != LIB_NULL) controller->retain_output_read = enabled;
 }
 
 void x86_kbc8042_set_reset_command_byte(x86_kbc8042 *controller, lib_u8 value)

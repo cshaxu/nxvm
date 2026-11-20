@@ -484,6 +484,8 @@ lib_status x86_nxvm_board_attach_machine(x86_core_machine *machine,
             x86_nxvm_board_kbc_set_reset_output_port(board->shared_kbc,
                 config->kbc_reset_output_port);
         }
+        x86_nxvm_board_kbc_set_output_read_retention(board->shared_kbc,
+            config->kbc_retain_output_read);
         if (config->kbc_reset_command_byte_configured) {
             x86_nxvm_board_kbc_set_reset_command_byte(board->shared_kbc,
                 config->kbc_reset_command_byte);

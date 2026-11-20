@@ -61,6 +61,8 @@ void x86_kbc8042_destroy(x86_kbc8042 *controller);
 /* Reset preserves connections and configured delays, releases IRQ outputs,
  * and reapplies the reset output port. The composer resets endpoints first. */
 void x86_kbc8042_reset(x86_kbc8042 *controller);
+/* Optional empty read latch. It neither sets OBF nor asserts IRQ. */
+void x86_kbc8042_set_output_read_retention(x86_kbc8042 *controller, lib_bool enabled);
 lib_u8 x86_kbc8042_read_data(x86_kbc8042 *controller);
 lib_u8 x86_kbc8042_read_status(x86_kbc8042 *controller);
 void x86_kbc8042_write_data(x86_kbc8042 *controller, lib_u8 value);
