@@ -1,8 +1,7 @@
 # Product UX
 
-XT, AT, DeskPro 386, default PC/AT and PC110 share one NXVM interaction
-model. Each product uses its own executable and adjacent INI; PC110's two
-firmware variants are selected as described below.
+XT, AT, DeskPro 386, default PC/AT, PC110 and OmniBook 300 share one NXVM
+interaction model. Each product uses its own executable and adjacent INI.
 
 ## NXVM
 
@@ -58,6 +57,14 @@ bounded virtual pen and the left button for pen contact while the guest has
 enabled the pad. The same pointer events continue to the guest's independent
 PS/2 pointing device. This L2 binding is not a claim of physical pen timing;
 real-driver calibration and desktop interaction remain to be validated.
+
+## OmniBook 300
+
+MyOB300 loads `myob300.ini` beside its executable. Its fixed profile uses
+2 MiB and the original System 1.0 ABA System Card. The raw System Card and
+C medium stay external. The [asset guide](../../../assets/myob300/README.md)
+specifies their identity and placement, including the original ROM's first
+startup prompt.
 
 ## Presentation And Debugging
 
