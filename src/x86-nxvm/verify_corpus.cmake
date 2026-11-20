@@ -17,13 +17,13 @@ set(edges_machine lib/types lib/base lib/storage lib/kvm-base lib/kvm-window
     x86-core/machine x86-debug/product x86-nxvm/board-base x86-nxvm/chips/video)
 set(edges_product emulator/product lib/types lib/base lib/storage
     x86-ibmpc/product x86-nxvm/machine)
-foreach(chip IN ITEMS pit825x rtc146818 pic8259 dma8237 fdc8272 hdc video f65535
+foreach(chip IN ITEMS pit825x rtc146818 pic8259 dma8237 fdc8272 hdc video ct-vga
         rb5c396 uart16550 ps2mouse keyboard ppi8255 xtkeyboard kbc8042)
     list(APPEND components "chips/${chip}")
     set(edges_chips/${chip} lib/types)
 endforeach()
 list(APPEND edges_chips/kbc8042 x86-nxvm/chips/keyboard)
-list(APPEND edges_chips/f65535 x86-nxvm/chips/video)
+list(APPEND edges_chips/ct-vga x86-nxvm/chips/video)
 
 function(check_edge owner dependency)
     if(NOT dependency STREQUAL "x86-nxvm/${owner}" AND NOT dependency IN_LIST edges_${owner})

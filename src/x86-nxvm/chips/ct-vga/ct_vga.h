@@ -1,13 +1,14 @@
 /* Copyright 2012-2026 Neko. */
-#ifndef X86_F65535_H
-#define X86_F65535_H
+#ifndef X86_CT_VGA_H
+#define X86_CT_VGA_H
 
-#include "x86-nxvm/chips/f65535/f65535_interface.h"
+#include "x86-nxvm/chips/ct-vga/ct_vga_interface.h"
 
-struct x86_f65535 {
+struct x86_ct_vga {
+    x86_ct_vga_variant variant;
     lib_u8 extension_index;
-    lib_u8 extensions[X86_F65535_EXTENSION_REGISTER_COUNT];
-    lib_u8 vram[X86_F65535_VRAM_BYTES];
+    lib_u8 extensions[X86_CT_VGA_EXTENSION_REGISTER_COUNT];
+    lib_u8 vram[X86_CT_VGA_VRAM_BYTES];
     lib_u8 sequencer_index;
     lib_u8 graphics_index;
     lib_u8 crtc_index;
