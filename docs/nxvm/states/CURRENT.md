@@ -1,29 +1,28 @@
-# M5 T591 S4 - Active: OmniBook original DOS qualification and baseline
+# M5 T592 S1 - Active: OmniBook Product entry and external inputs
 
-[S3 is accepted and closed](../history/M5-T591-S3-ob300-machine-assembly.md).
-Its [original-card evidence](../etc/evidence/t591-s3-ob300-machine-assembly.md)
-establishes the production DOS, C write and functional lifecycle paths.
-Controlled timing and a DOS directory check remain open. Preserve
-the 60-second x64 and 90-second x86 usability targets.
+[T591 is closed](../history/M5-T591-S4-ob300-rom-dos-closure.md).
+The production Machine reaches original DOS on both widths. The next
+receiver builds a runnable Product with the same Machine and media
+semantics.
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | M5 T591 S4 after ordered S3 acceptance. |
-| Admission And Approval | Owner authorized autonomous S allocation and single-session coordinator/executor review for OmniBook implementation. |
-| Objective | Qualify original ROM DOS input, directory read, persistence and lifecycle on both widths and freeze measured timing for the performance receiver. |
-| Non-goals | No product UI, Windows work, firmware patch, speculative RAM map, or relaxed usability target. |
-| Reference Baseline | S3 final production source, fourteen receiving artifacts and the unchanged owner System Card. |
-| Candidate Proposal | proposals/m5-ob300-rom-dos.md T591 S4 and m5-ob300-architecture.md O07/O09 and usability gates. |
-| Files And ABI Surface | NXVM evidence and existing MyOB300 tests or code only if a proven DOS path requires repair. No planned Shared ABI change. |
-| Applicable Rules | NXVM guide, Contributing, Roadmap, Architecture/Layout and source policy, shared Execution/Documentation/Architecture/Coding. |
-| Verification | Cached Release x64/x86, fixed disposable C image, neutral input and published frames. Reuse S3 functional lifecycle and persisted media proof. Record ten key-to-echo samples, DIR-to-prompt, pause completion and controlled boot timing. |
-| Expected Markers | Original ROM DOS lists the matching C volume file and accepts ten host keys. Missing timing targets transfer with evidence, not altered thresholds. |
-| Asset Needs | Read-only owner 1.0 ABA card and matching backup. build/t591-s4 owns generated DOS media and probes, 200 MiB total, 300 seconds per native probe. Retain result digests before cleanup after exit. |
-| Reporting Requirements | Distinguish functional success, latency qualification and remaining Windows/desktop checks. |
-| Stop Conditions | Do not claim timing or interactive success without published observations. Delegate Windows memory-map investigation to its ordered receiver. |
-| Exit Criteria | Both widths show the interactive results with verified media isolation; measured boot/input/pause/DIR evidence reconciles the usability targets and explicitly transfers any shortfall. |
-| Original Owner Request | Implement the HP OmniBook 300 in order from hardware and wiring to original machine and Product. |
-| Similar-Issue Sweep | Fresh generation after lifecycle, completed visible command output, accumulated admission latency and owner-media hashes. |
+| Identifier Mode | New M5 T592 S1, the first queued OmniBook Product receiver after T591. |
+| Admission And Approval | Execute the owner-approved ordered OmniBook implementation and single-session coordinator/executor sequence. |
+| Objective | Bind MyOB300 to the existing X86-NXVM Product startup, prove portable external ROM and C-medium input paths, and register the App in the normal cached build graph. |
+| Non-goals | No embedded protected ROM, second entry framework, guessed Windows fix or published usability claim. |
+| Reference Baseline | T591 S4 owner-media evidence, MyPC110 Product composition, and the existing X86-NXVM Product. |
+| Candidate Proposal | proposals/m5-ob300-product-qualification.md and m5-ob300-architecture.md O12. |
+| Files And ABI Surface | MyOB300 App/fixture and product build registrations. Reuse the existing binding and INI grammar. No planned Shared ABI change. |
+| Applicable Rules | NXVM guide, Contributing, Roadmap, Architecture/Layout, source and UI policy, shared Execution/Documentation/Architecture/Coding. |
+| Verification | Cached x64/x86 builds, fixture inputs for startup and failure behavior, original ROM kept external, retained product rules and existing machine unit baseline. |
+| Expected Markers | MyOB300 resolves inputs relative to its executable, accepts correctly identified ROM, and rejects missing or incompatible inputs before worker startup. |
+| Asset Needs | Verified owner System 1.0 ABA raw card and temporary C fixture. S1 temporary directory build/t592-s1, 200 MiB maximum and 300 seconds per native probe. |
+| Reporting Requirements | Record config/ROM path source, dependency diff, dual-width build outputs and unqualified desktop/performance boundaries. |
+| Stop Conditions | Do not enable deployment or rewrite existing receiver obligations before product scope and artifact identity are verified. Do not commit third-party bytes or machine-local paths. |
+| Exit Criteria | One tested entry, portable BYOB contract and dual-width compile ready for native verification and publication in the next S. |
+| Original Owner Request | Complete MyOB300 in the order hardware, wiring, original Machine, Product and testing. |
+| Similar-Issue Sweep | Missing and wrong ROM, shortcut launch directory, old EXE entries, user media ownership and shutdown lifetime. |
 
 # M5 T588 - Closed: OB300 hardware and execution design
 

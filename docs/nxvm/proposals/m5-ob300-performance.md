@@ -23,7 +23,10 @@ review the expected payoff before adding further implementation batches.
 ## Dependencies
 
 Working real ROM DOS, [product assembly](m5-ob300-product-qualification.md)
-and the design-stage measurement/budget contract.
+and the design-stage measurement/budget contract. T591 S4 transfers
+the measured startup and directory latency misses. Start with the
+[controlled baseline](../etc/evidence/t591-s4-ob300-dos-baseline.md)
+and preserve its comparison method and thresholds.
 
 ## Non-goals
 

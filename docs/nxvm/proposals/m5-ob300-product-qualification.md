@@ -1,7 +1,8 @@
 # M5 Candidate: OmniBook 300: complete product qualification
 
-Owner queued this bounded T candidate on 2026-11-19. Numeric T/S identifiers
-are allocated only at admission. [Queue](../states/QUEUE.md) owns priority;
+Owner queued this bounded T on 2026-11-19. Admitted as M5 T592 after
+[original DOS qualification](../history/M5-T591-S4-ob300-rom-dos-closure.md).
+[Queue](../states/QUEUE.md) owns priority;
 [family research and shared boundaries](m5-omnibook-emulator.md) apply.
 
 ## Objective and scope
