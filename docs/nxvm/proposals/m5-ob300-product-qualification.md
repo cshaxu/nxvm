@@ -22,7 +22,9 @@ qualification and preserve owner configuration and media.
 
 ## Dependencies
 
-Accepted design, ROM DOS, performance and ROM Windows/application receivers.
+Accepted [real-ROM machine assembly](m5-ob300-rom-dos.md). This product
+delivery provides the executable for the later performance and
+ROM Windows/application receivers.
 
 ## Non-goals
 
@@ -30,9 +32,11 @@ No implicit full-family support, unsupported peripheral fidelity claim or redist
 
 ## Completion and stop conditions
 
-A repeatable new-user setup reaches ROM DOS and the original Windows/Word/
-Excel workflows within accepted responsiveness budgets on both widths. Release
-identity, artifact hashes, test coverage and source provenance are recorded.
+A repeatable new-user setup reaches interactive ROM DOS on both widths.
+Release identity, artifact hashes, test coverage and provenance are recorded.
+Record responsiveness against the existing budgets and hand verified results
+to the next performance stage. Original Windows, Word and Excel qualification
+remains the final stage.
 Manual checks and environment limitations are reported separately. Obtain
 owner acceptance of the usable product and each explicit remaining limitation.
 

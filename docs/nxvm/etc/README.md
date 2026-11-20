@@ -1,5 +1,8 @@
 # Supporting Documentation Index
 
+T589 S1: [Am386SXLV contract](evidence/t589-s1-am386sxlv.md) records
+CPU ownership and the two-width baseline.
+
 T588 S1: [OB300 identity and convergence ledger](evidence/t588-ob300-convergence.md)
 records external archive verification, current implementation owners and the
 remaining reset-mapping, execution and performance design proofs.

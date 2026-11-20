@@ -22,7 +22,8 @@ review the expected payoff before adding further implementation batches.
 
 ## Dependencies
 
-Working real ROM DOS and the design-stage measurement/budget contract.
+Working real ROM DOS, [product assembly](m5-ob300-product-qualification.md)
+and the design-stage measurement/budget contract.
 
 ## Non-goals
 

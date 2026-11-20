@@ -6,11 +6,9 @@ are allocated only at admission. [Queue](../states/QUEUE.md) owns priority;
 
 ## Objective and scope
 
-Implement the build-fixed App and minimum real board composition, reset
-mapping, System ROM card, required controllers, C&T 65510 display and keyboard.
-Reuse existing PC and CPU mechanisms only after checking their contracts.
-Keep HP-specific behavior in the App and independently reusable chip behavior
-in the appropriate shared owner; no copied CPU executor or host BIOS handler.
+Assemble the proven OB300 board as a Machine with reset mapping, original
+System ROM card and matching writable storage. Keep card/media lifetimes in
+the existing Machine construction and teardown path.
 
 Execute original reset, POST and ROM DOS. Provide the writable C-drive medium
 needed by the original software; retain the immutable card master. Validate
@@ -20,7 +18,7 @@ working guest, retaining raw-work counts separately from wall time.
 
 ## Dependencies
 
-Accepted hardware/ROM design and convergence ledger.
+Accepted [board wiring](m5-ob300-board.md), hardware contracts and T588 ledger.
 
 ## Non-goals
 
