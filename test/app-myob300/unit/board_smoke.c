@@ -92,7 +92,7 @@ static void test_support_devices(x86_core_machine *core, x86_nxvm_board_state *b
     write_port(core, 0x43u, 0x30u);
     write_port(core, 0x40u, 0x56u);
     write_port(core, 0x40u, 0x34u);
-    write_port(core, 0x43u, 0xecu);
+    write_port(core, 0x43u, 0xe2u);
     expect_port(core, 0x40u, 0x70u);
 
     write_port(core, 0x81u, 0x17u);
