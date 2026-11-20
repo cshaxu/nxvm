@@ -5,6 +5,8 @@ records external archive verification, current implementation owners and the
 remaining reset-mapping, execution and performance design proofs.
 S2 [reset proof and execution baseline](evidence/t588-s2-reset-proof.md)
 records both host widths, the first unmodeled port and local memory-map evidence.
+The [S3 design](../proposals/m5-ob300-architecture.md) resolves ownership,
+asset publication, receiving tests and usability targets.
 
 T581 S1: [PC110 stopped-state display selection](evidence/t581-s1-vdisplay-design.md)
 records ownership, shared contracts, per-variant CMOS, media retention and

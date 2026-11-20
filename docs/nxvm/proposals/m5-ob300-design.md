@@ -70,3 +70,11 @@ X86-IBMPC interaction and X86 Debug. Emulator owns generic lifecycle/UI;
 Lib owns native presentation. Generic chip extraction needs an evidenced
 boundary, not a speculative framework. S3 resolves exact hardware/model and
 asset contracts. Documentation/tools/task numbering remain in the NXVM family.
+
+## Final design receiver
+
+[OB300 implementation architecture](m5-ob300-architecture.md) freezes the
+flat MyPC110-style App, twelve domain dispositions, external System Card
+ownership, shared review boundaries and measurable usability targets.
+[Actual reset proof](../etc/evidence/t588-s2-reset-proof.md) is bounded to the
+first unmodeled FBh write; it is not a POST/DOS qualification.

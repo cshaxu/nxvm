@@ -1,6 +1,8 @@
-# M5 T588 S3 - Active: OB300 design and implementation handoff
+# M5 T588 S3 - Delivered for coordinator review: OB300 design and implementation handoff
 
-S1/S2 are closed. S3 is the final bounded design batch, not the later boot implementation.
+S1/S2 are closed. [S3 design](../proposals/m5-ob300-architecture.md) and all four
+receiving proposals are updated. Twelve ledger domains retain their actual
+proof limits. Documentation-only delivery: no source, Shared or EXE changes.
 
 | Field | Required record |
 | --- | --- |

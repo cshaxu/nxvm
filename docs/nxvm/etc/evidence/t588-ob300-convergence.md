@@ -96,3 +96,12 @@ checked; NXVM documentation governance and `git diff --check` pass. Changed
 text is LF. The review keeps observed ROM offsets separate from address-map
 claims, and file backups separate from sector images. No temporary files or
 external modifications were created. S1 is delivered for review; S2 is next.
+
+## S3 final dispositions
+
+All O01-O12 inventory rows now map to the explicit owner, model limit and
+receiving proof in [the final design](../../proposals/m5-ob300-architecture.md).
+O01/O02/O11 have the additional bounded [S2 execution evidence](t588-s2-reset-proof.md);
+other hardware behaviors remain implementation receivers, not accepted devices.
+No row is dropped. The design gate is complete; the four downstream product
+qualification gates remain unexecuted.

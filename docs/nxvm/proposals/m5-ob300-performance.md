@@ -44,3 +44,11 @@ L2 reference models or L3 explicit manual formulas/constants honestly. Public
 interface changes follow the applicable review rules. New evidence that
 invalidates a prerequisite requires a recorded design/scope decision, not a
 second execution route or an unreported transfer.
+
+## T588 handoff
+
+Consume the [OB300 design](m5-ob300-architecture.md), including its O01-O12
+owner/proof table, external System Card contract and numeric usability gates.
+The reset experiment reaches the first FBh write only; no hardware, DOS or
+Windows completion is inherited from design closure. Reconcile the complete
+receiving batch before selecting fixes, and reuse existing shared tests.
