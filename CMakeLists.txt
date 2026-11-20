@@ -91,4 +91,7 @@ if(REPOSITORY_BUILD_NXVM)
         get_target_property(pc110_filename mypc110 MYPC110_ARTIFACT_NAME)
         repository_publish_product(mypc110 mypc110 "${pc110_filename}")
     endif()
+    string(REPLACE "." "_" ob300_artifact_version "${NXVM_PC_PRODUCT_VERSION}")
+    repository_publish_product(myob300 myob300
+        "myob300_${ob300_artifact_version}_${PROJECT_ARTIFACT_ARCHITECTURE}.exe")
 endif()

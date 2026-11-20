@@ -16,13 +16,18 @@ echo   4. MyDeskPro386
 echo   5. MyPC110
 echo   6. MyNES
 echo   7. MyRaidenII
-echo   8. All products
+echo   8. MyOB300
+echo   9. All products
 echo   0. Exit
-choice /c 123456780 /n /m "Product: "
+choice /c 1234567890 /n /m "Product: "
 if errorlevel 255 goto finish
-if errorlevel 9 exit /b 0
-if errorlevel 8 (
+if errorlevel 10 exit /b 0
+if errorlevel 9 (
     set "build_app=all"
+    goto run
+)
+if errorlevel 8 (
+    set "build_app=myob300"
     goto run
 )
 if errorlevel 7 (
@@ -65,7 +70,7 @@ set "build_result=%errorlevel%"
 if not "%build_result%"=="0" echo Build failed. Some products or architectures may not be updated.
 goto finish
 :usage
-echo Usage: build.cmd [nxvm^|my5160^|my5170^|mydeskpro386^|mypc110^|mynes^|myraidenii^|all] [--no-pause]
+echo Usage: build.cmd [nxvm^|my5160^|my5170^|mydeskpro386^|mypc110^|mynes^|myraidenii^|myob300^|all] [--no-pause]
 :finish
 if "%build_pause%"=="1" pause
 exit /b %build_result%

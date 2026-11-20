@@ -525,16 +525,23 @@ delete superseded EXEs in that product's artifact commit; retain old binaries
 only in Git history, not elsewhere under `assets/`. Current identifies the
 retained revision. Preserve adjacent configuration, snapshots and non-EXE assets.
 
-Every Shared component source/build import or change requires a full Release rebuild, verification and publication of all seven products on both x64 and x86: NXVM, My5160, My5170, MyDeskPro386, MyPC110, MyRaidenII and MyNES (14 EXEs). Before S closure deploy the verified artifacts, commit/push changed EXEs in product-scoped P commits, and record source revision, identity, architecture and hashes for all 14. This applies even when a receiver is otherwise unaffected.
+Every Shared component source/build import or change requires a full Release
+rebuild, verification and publication of all eight products on both x64 and
+x86: NXVM, My5160, My5170, MyDeskPro386, MyPC110, MyOB300, MyRaidenII and MyNES
+(16 EXEs). Before S closure deploy the verified artifacts, commit/push changed
+EXEs in product-scoped P commits, and record source revision, identity,
+architecture and hashes for all 16. This applies even when a receiver is
+otherwise unaffected.
 Unit-test builds do not substitute for product-target builds. An unchanged hash
 needs no binary commit. Receiving Apps retain their current artifact version
 unless a version change is explicitly admitted; unrelated user INI/configuration
 must remain unchanged. Missing or stale required artifacts block closure.
 
-The five PC Apps publish product-prefixed lowercase EXEs
+The six PC Apps publish product-prefixed lowercase EXEs
 `<app>_0_5_NNNN_<arch>.exe` and an owner-maintained `<app>.ini` under
-`assets/<app>/`, with App keys `my5160`, `my5170`, `mydeskpro386`, `mypc110`, `nxvm`
-and architectures `x64`, `x86`. Build only implemented profiles admitted as
+`assets/<app>/`, with App keys `my5160`, `my5170`, `mydeskpro386`, `mypc110`,
+`myob300`, `nxvm` and architectures `x64`, `x86`. MyPC110 retains its
+established `mypc110_<arch>.exe` names. Build only implemented profiles admitted as
 runnable. Any absent implementation must be reported, not replaced by a stub
 artifact. Product targets share one build recipe and revision
 declaration; each links exactly one profile, and the toolchain selects host
@@ -552,10 +559,10 @@ verified build of the same named task.
 
 A current product artifact is a stripped Release build with no compiler debug information; this never removes an admitted runtime debugger, and Debug builds are for development and gates only.
 
-Each PC EXE embeds its retained profile; no profile subdirectory or generated
-replacement INI is required. Preserve owner INI contents and media references.
-All four retain the one task revision; original default-386 hardware is the
-NXVM App, not a separately branded default-at product.
+Each PC EXE fixes its retained profile. MyOB300 reads its owner-supplied System
+Card at run time. No profile subdirectory or generated replacement INI is
+required. Preserve owner INI contents and media references. The PC products
+retain the one task revision. Original default-386 hardware is the NXVM App.
 
 ## Build Tree Hygiene
 

@@ -1933,8 +1933,15 @@ function(add_current_vm_artifact target version)
         APP_PRODUCT_INI_NAME="${NXVM_PRODUCT_INI_NAME}")
 endfunction()
 
-set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0582)
-add_current_vm_artifact(vm-0-5-0582 "0.5.0582")
+set(pc_product_version_header "${CMAKE_SOURCE_DIR}/src/x86-nxvm/product/version.h")
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${pc_product_version_header}")
+file(STRINGS "${pc_product_version_header}" pc_product_version_declaration
+    REGEX "^#define X86_NXVM_PRODUCT_VERSION ")
+string(REGEX REPLACE "^#define X86_NXVM_PRODUCT_VERSION \"([^\"]+)\"$" "\\1"
+    NXVM_PC_PRODUCT_VERSION "${pc_product_version_declaration}")
+string(REPLACE "." "-" pc_product_target_version "${NXVM_PC_PRODUCT_VERSION}")
+set(PROJECT_CURRENT_VM_ARTIFACT_TARGET "vm-${pc_product_target_version}")
+add_current_vm_artifact("${PROJECT_CURRENT_VM_ARTIFACT_TARGET}" "${NXVM_PC_PRODUCT_VERSION}")
 add_dependencies(pc-product-ini-identity-smoke ${PROJECT_CURRENT_VM_ARTIFACT_TARGET})
 file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/test/pc-product-ini-identity")
 project_add_test(pc-product-ini-identity-smoke integration "${PROJECT_CURRENT_VM_RUNTIME_PATH}"

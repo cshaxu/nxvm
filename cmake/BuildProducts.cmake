@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.23)
 get_filename_component(root "${CMAKE_CURRENT_LIST_DIR}/.." ABSOLUTE)
-set(products nxvm my5160 my5170 mydeskpro386 mypc110 mynes myraidenii)
+set(products nxvm my5160 my5170 mydeskpro386 mypc110 mynes myraidenii myob300)
 string(TOLOWER "${PRODUCT}" PRODUCT)
 if(PRODUCT STREQUAL "all")
     set(selected ${products})
