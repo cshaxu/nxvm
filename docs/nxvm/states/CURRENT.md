@@ -1,32 +1,25 @@
-# M5 T588 S2 - Delivered: OB300 reset proof and execution baseline
+# M5 T588 S3 - Active: OB300 design and implementation handoff
 
-Dual-width reset proof and fixed-work results are retained in
-[the S2 evidence](../etc/evidence/t588-s2-reset-proof.md). Diagnostic processes
-have exited and the reviewed 1,697,489-byte scratch directory is removed.
-No source, Shared API or product artifacts changed.
-
-S1 is [closed](../history/M5-T588-S1-ob300-inventory.md) after coordinator review
-under owner-authorized autonomous progression. T588 remains a design/proof T;
-ROM DOS, Windows and full product qualification retain their queued receivers.
+S1/S2 are closed. S3 is the final bounded design batch, not the later boot implementation.
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation M5 T588 S2; S1 closed, S3 planned. |
-| Admission And Approval | Owner directed autonomous S planning, goals and execution on 2026-11-19; App architecture follows app-mypc110. |
-| Objective | Consume O01-O05/O07/O11: prove candidate reset bytes through the existing executor, identify unsupported routes and measure bounded execution on both host widths. |
-| Non-goals | No complete OB300 boot, production device implementation, Shared changes, ROM publication or unqualified silicon timing claims. |
-| Reference Baseline | 6954bab1c source inventory; immutable owner System ROM 1.0 ABA and matching Drive C files. |
-| Candidate Proposal | proposals/m5-ob300-design.md and etc/evidence/t588-ob300-convergence.md. |
-| Files And ABI Surface | NXVM evidence/proposal/history/current plus temporary diagnostic only; no public API changes. |
-| Applicable Rules | NXVM guide, Contributing, Roadmap, architecture/layout, shared Execution/Documentation/Architecture/Coding, source policy. |
-| Verification | Exact input hash; bounded public-Core reset/ROM-alias execution and first-port observation; same fixed-work probe on cached x64/x86 libraries; local manual/config review; actual diff/docs/LF checks. |
-| Expected Markers | Mapping hypothesis, first real executed destination and first unsupported hardware access distinguished; reproducible work/time and no complete-machine performance claim. |
-| Asset Needs | External archives read only; scratch build/t588-s2 owned solely by S2, at most 256 MiB, each process 120 seconds and no-progress 60 seconds; archive evidence then remove on delivery. |
-| Reporting Requirements | Report actual trace and limits, hardware owner decisions, timing comparability and next S3 decisions. |
-| Stop Conditions | Bound diagnostics rather than fake devices; do not alter Shared or owner media; unresolved bus mapping remains explicit design evidence. |
-| Exit Criteria | Dual-width executor proof/baseline and local source findings archived, no unqualified boot claim, actual diff reviewed, docs validated, complete P committed/pushed and scratch cleaned. |
-| Original Owner Request | Independently plan goals and execute T588, using app-mypc110 architecture. |
-| Similar-Issue Sweep | Alias versus physical decode, 386 family versus SXLV, file backup versus disk, synthetic throughput versus boot latency, shared test versus App external diagnostic. |
+| Identifier Mode | Continuation M5 T588 S3; S1/S2 closed under autonomous coordinator review. |
+| Admission And Approval | Owner authorized autonomous goals and S execution on 2026-11-19, with app-mypc110 structure. |
+| Objective | Resolve O01-O12 into a minimal App architecture, explicit hardware/model research receivers and numeric usability acceptance; reconcile T588 design closure. |
+| Non-goals | No production implementation, claimed DOS/Windows boot, Shared ABI modification, protected asset publication or new release. |
+| Reference Baseline | 031bb4dc2; S1 input hashes, S2 actual reset/first-port proof and both-width fixed-work baseline. |
+| Candidate Proposal | proposals/m5-ob300-design.md and its four existing implementation receivers. |
+| Files And ABI Surface | NXVM proposal, ledger, design evidence, current and history only; no ABI. |
+| Applicable Rules | NXVM guide, architecture/layout, Roadmap, Contributing, shared Execution/Documentation/Architecture/Coding and source policy. |
+| Verification | Map all twelve ledger domains to a named owner, model limit and finite receiving test; review dependency and lifecycle boundaries, ROM publication, performance criteria, actual diff/local links/docs/LF. |
+| Expected Markers | One flat app-myob300 design, one executor/clock/lifecycle path, no pretend chip equivalence, explicit DOS/Windows/performance receivers. |
+| Asset Needs | Use retained S1/S2 facts; no new scratch or external asset writes. |
+| Reporting Requirements | State design completed versus hardware still unimplemented, exact Shared change admission boundaries, budget rationale and receiving task order. |
+| Stop Conditions | Do not turn unproved registers into hardware facts or claim synthetic loop latency measures guest interaction; no speculative API changes. |
+| Exit Criteria | All twelve rows have explicit design dispositions and receiving tests, numeric usability gates frozen, actual diff reviewed, docs checks pass and complete P pushed; T closure audit distinguishes design from full product. |
+| Original Owner Request | Plan S sequence and goals and execute this T autonomously, following PC110 App architecture. |
+| Similar-Issue Sweep | No shared App identity branches, no duplicated parser/worker/clock, no copied PC110 silicon, no disk-image claim from file backup, no unmeasured boot-performance claim. |
 
 # M5 Td S186 - Completed: OmniBook 300 queue planning
 
