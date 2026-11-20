@@ -600,3 +600,46 @@ are `44a48813b` (PC), `3f3b1e266` (MyNES) and `625acaeec` (MyRaidenII).
 | `card-integrated-x86.log` | `d3d68c92520ff5a270740ff9feca78528f9ab0a3b61bab45f04b1bcc6b9943c0` |
 | `card-mono-stop-x64.log` | `411943dc25e13450bbcf31ddb0a29e5f01a12d5e93e64ae80ab582b7b630a438` |
 | `card-crtc-x64.log` | `6c716ed4da79fefdf2f26ec527929bafdb4fa7568a3aa549102bd59e167d364f` |
+
+## Worker lifecycle and memory handoff
+
+The production shared worker used the published frame exchange and
+neutral KVM make/break events. It executed VER after each lifecycle
+route using the unchanged System Card and disposable C image. Reset
+and restart published generation 2, independently of the cold
+generation. Both cold runs on each width included a successful pause
+and resume. This is headless evidence, not native desktop validation.
+
+| Route | x64 to VER | x86 to VER |
+| --- | --- | --- |
+| Cold start with pause/resume | 91.609–99.271 s | 107.857–114.352 s |
+| Reset/resume | 112.201 s | 119.075 s |
+| Stop/start | 98.454 s | 125.214 s |
+
+The figures are Turbo observations with parallel background work.
+They exceed the engineering gates and are not controlled performance
+qualification. An initial 72-second x64 diagnostic timed out before
+the successful longer cold-start probe. The latter confirmed VER at
+93.565 seconds. Keep the original startup budget when judging usable
+performance.
+
+The DOS memory diagnostic reported 625 KiB conventional and 959 KiB
+largest and total free XMS, with no XMS error. INT 15h AH=88h reported
+zero after HIMEM installed. HP specifies 2 MB factory RAM and lists
+Windows 3.1 as preinstalled. The SCAMP II manual documents RAMMAP bit 4
+and the restriction to supported map encodings. The original boot
+wrote 00h, 03h, 02h, 01h, 00h and 10h to register 03h. Its map-selection
+and address-probe behavior needs to be reconciled before enabling a RAM
+alias or accepting a larger-memory workaround.
+[HP service manual](https://www.elhvb.com/mobokive/edwin/laptops/hp/omnibook/service/ob300-425-430-530_sm.pdf).
+[VLSI SCAMP II, Tables 1 and 8 and Figure 9](https://www.bitsavers.org/components/vti/pc/VTI_VL82C316_VL82C323_SCAMP_II_199210.pdf).
+
+| Record | SHA-256 |
+| --- | --- |
+| `ob300-worker-reset-x64.log` | `b486876927211fffd84d094743760c64508a542819629d62987dc7ba20d6147d` |
+| `ob300-worker-reset-x86.log` | `613a13ddf81ebad9fc44ae72ed379ab3c53afe88a78aa3f2ccc7e780e2ef545f` |
+| `ob300-worker-restart-x64.log` | `19ef165c5bd7edcfd598a8d4dc230c673f31e439d7095d500d3c2e744ae7431b` |
+| `ob300-worker-restart-x86.log` | `9c7fcc1d949065c60e0c856b0e5bc399a4c90a08bcc5d3263b760ce50e393eb9` |
+| `ob300-cold-worker-x64.log` | `7a8c502eeb2e91df7503b0db7d5c70789be63489555e0eb92d7dffd31944c557` |
+| `ob300-xmscheck-x64.log` | `ecdbe7df6257c65edc6939d1a1ad60e3e3c350e80b1b54e90b8be58e33fe982e` |
+| `ob300-rammap-trace-x64.err` | `af0db752069f6b04638b52e21e5f2b7ef82882f42126f19581202b24512964d2` |
