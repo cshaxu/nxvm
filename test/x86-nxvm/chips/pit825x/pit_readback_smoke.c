@@ -32,39 +32,39 @@ lib_i32 main(void)
     x86_pit_set_output(pit, 0u, LIB_NULL, LIB_NULL);
 
     x86_pit_write_register(pit, 3u, 0x0036u);
-    x86_pit_write_register(pit, 3u, 0x00ecu);
+    x86_pit_write_register(pit, 3u, 0x00e2u);
     status_before = x86_pit_read_byte(pit, 0u);
     failed |= status_before != 0xf6u;
     x86_pit_write_register(pit, 0u, 0x0034u);
     x86_pit_write_register(pit, 0u, 0x0012u);
-    x86_pit_write_register(pit, 3u, 0x00ecu);
+    x86_pit_write_register(pit, 3u, 0x00e2u);
     status_after = x86_pit_read_byte(pit, 0u);
     failed |= status_after != 0xf6u;
     x86_pit_write_register(pit, 3u, 0x0000u);
     failed |= x86_pit_read_byte(pit, 0u) == 0x34u;
     failed |= x86_pit_read_byte(pit, 0u) == 0x12u;
     x86_pit_advance(pit, 1u);
-    x86_pit_write_register(pit, 3u, 0x00ecu);
+    x86_pit_write_register(pit, 3u, 0x00e2u);
     status_after = x86_pit_read_byte(pit, 0u);
     failed |= status_after != 0xb6u;
 
     x86_pit_write_counter(pit, 0x0074u, 0x5678u);
     x86_pit_advance(pit, 1u);
-    x86_pit_write_register(pit, 3u, 0x00d8u);
+    x86_pit_write_register(pit, 3u, 0x00d6u);
     failed |= x86_pit_read_byte(pit, 0u) != 0x32u;
     failed |= x86_pit_read_byte(pit, 0u) != 0x12u;
     failed |= x86_pit_read_byte(pit, 1u) != 0x78u;
     failed |= x86_pit_read_byte(pit, 1u) != 0x56u;
 
-    x86_pit_write_register(pit, 3u, 0x00ccu);
+    x86_pit_write_register(pit, 3u, 0x00c2u);
     x86_pit_advance(pit, 1u);
     failed |= x86_pit_read_byte(pit, 0u) != 0xb6u;
     failed |= x86_pit_read_byte(pit, 0u) != 0x32u;
     failed |= x86_pit_read_byte(pit, 0u) != 0x12u;
 
-    x86_pit_write_register(pit, 3u, 0x00dcu);
+    x86_pit_write_register(pit, 3u, 0x00d2u);
     x86_pit_advance(pit, 1u);
-    x86_pit_write_register(pit, 3u, 0x00dcu);
+    x86_pit_write_register(pit, 3u, 0x00d2u);
     failed |= x86_pit_read_byte(pit, 0u) != 0x30u;
     failed |= x86_pit_read_byte(pit, 0u) != 0x12u;
     failed |= x86_pit_read_byte(pit, 0u) != 0x2eu;
@@ -87,6 +87,19 @@ lib_i32 main(void)
     x86_pit_advance(pit, 1u);
     x86_pit_write_register(pit, 3u, 0x0080u);
     failed |= x86_pit_read_byte(pit, 2u) != 0x12u;
+
+    x86_pit_reset(pit);
+    for (lib_u8 counter = 0u; counter < 3u; ++counter) {
+        x86_pit_write_register(pit, 3u, (counter << 6u) | 0x10u);
+        x86_pit_write_register(pit, counter, 3u + counter);
+    }
+    x86_pit_advance(pit, 1u);
+    x86_pit_write_register(pit, 3u, 0x00e0u);
+    for (lib_u8 counter = 0u; counter < 3u; ++counter)
+        failed |= x86_pit_read_byte(pit, counter) != 3u + counter;
+    x86_pit_write_register(pit, 3u, 0x00eeu);
+    for (lib_u8 counter = 0u; counter < 3u; ++counter)
+        failed |= x86_pit_read_byte(pit, counter) != 0x10u;
 
     x86_pit_destroy(pit);
     if (failed) return 1;

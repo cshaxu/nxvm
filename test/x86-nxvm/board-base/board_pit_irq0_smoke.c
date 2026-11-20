@@ -117,15 +117,15 @@ static lib_i32 pit_irq0_test_counter_forms(void)
     if (pit_irq0_initialize(&fixture) != LIB_STATUS_OK) return 1;
     test_pic_port_write(fixture.machine, 0x0043u, 0x70u);
     test_pic_port_write(fixture.machine, 0x0041u, 0x34u);
-    test_pic_port_write(fixture.machine, 0x0043u, 0xeau);
+    test_pic_port_write(fixture.machine, 0x0043u, 0xe4u);
     failed |= test_pic_port_read(fixture.machine, 0x0041u) != 0x70u;
     test_pic_port_write(fixture.machine, 0x0041u, 0x12u);
-    test_pic_port_write(fixture.machine, 0x0043u, 0xeau);
+    test_pic_port_write(fixture.machine, 0x0043u, 0xe4u);
     failed |= test_pic_port_read(fixture.machine, 0x0041u) != 0x70u;
     x86_pit_advance(fixture.pit, 1u);
-    test_pic_port_write(fixture.machine, 0x0043u, 0xeau);
+    test_pic_port_write(fixture.machine, 0x0043u, 0xe4u);
     failed |= test_pic_port_read(fixture.machine, 0x0041u) != 0x30u;
-    test_pic_port_write(fixture.machine, 0x0043u, 0x00d8u);
+    test_pic_port_write(fixture.machine, 0x0043u, 0x00d6u);
     failed |= test_pic_port_read(fixture.machine, 0x0041u) != 0x34u ||
         test_pic_port_read(fixture.machine, 0x0041u) != 0x12u;
     pit_irq0_program(fixture.machine, 0x75u, 0x0003u);
@@ -135,7 +135,7 @@ static lib_i32 pit_irq0_test_counter_forms(void)
     failed |= !x86_pit_get_output(fixture.pit, 1u) ||
         test_pic_port_read(fixture.machine, 0x0041u) != 0x03u;
     failed |= test_pic_port_read(fixture.machine, 0x0041u) != 0x00u;
-    test_pic_port_write(fixture.machine, 0x0043u, 0x00eau);
+    test_pic_port_write(fixture.machine, 0x0043u, 0x00e4u);
     status = (lib_u8)test_pic_port_read(fixture.machine, 0x0041u);
     failed |= status != 0xb5u;
     pit_irq0_finalize(&fixture);

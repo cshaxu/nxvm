@@ -13,7 +13,7 @@ lib_i32 main(void)
     lib_test_assert(x86_pit_write_register(pit, 0u, 0u) == LIB_STATUS_OK);
     x86_pit_advance(pit, 1u);
     /* 8253 ignores the 8254 read-back encoding: neither status nor count latches. */
-    lib_test_assert(x86_pit_write_register(pit, 3u, 0xecu) == LIB_STATUS_OK);
+    lib_test_assert(x86_pit_write_register(pit, 3u, 0xc2u) == LIB_STATUS_OK);
     lib_test_assert(x86_pit_read_counter(pit, 0u, &value) == LIB_STATUS_OK);
     lib_test_assert(value == 3u);
     x86_pit_advance(pit, 1u);

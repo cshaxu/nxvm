@@ -421,7 +421,7 @@ static void x86_pit_write_control(x86_pit *pit, lib_u8 value)
     if (id == 3u) {
         if (pit->personality != X86_PIT_PERSONALITY_8254) return;
         for (selected = 0u; selected < 3u; ++selected) {
-            if ((value & VPIT_RB_CNT(selected)) != 0u) continue;
+            if ((value & VPIT_RB_CNT(selected)) == 0u) continue;
             if ((value & VPIT_RB_COUNT) == 0u) {
                 x86_pit_latch_count(pit, selected);
             }
