@@ -1,29 +1,28 @@
-# M5 T589 S3 - Delivered: Am386SXLV 16-bit transfers and fetch
+# M5 T589 S4 - Active: Am386SXLV system management
 
-[S2 is closed](../history/M5-T589-S2-sxlv-execution.md).
-[S3 qualification evidence](../etc/evidence/t589-s3-am386sxlv-word-bus.md)
-records the modeled word bus, transaction checks, 716/716 unit coverage on
-each host width, and the fourteen verified receiver artifacts. x64 coverage
-combines the original bounded run with the exact remaining inventory.
+[S3 is closed](../history/M5-T589-S3-sxlv-word-bus.md).
+The [S4 firmware handoff](../etc/evidence/t589-s3-am386sxlv-word-bus.md#s4-firmware-handoff)
+records the verified RES3 consumer and separates silicon contracts from
+HP decode facts that still belong to the board receiver.
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation M5 T589 S3. S2 accepted and closed. |
-| Admission And Approval | Owner authorized basic hardware execution and sequential single-session dual-role operation on 2026-11-19. |
-| Objective | Implement Am386SXLV 16-bit external memory and I/O data cycles and two-byte prefetch transactions on the existing Core CPU path. |
-| Non-goals | No exact OB300 wait-state schedule, separate prefetch engine, SMM implementation, or HP board wiring. |
-| Reference Baseline | 49aef45c6 and AMD 21020 Rev A, SX/DX differences and bus sections. |
-| Candidate Proposal | proposals/m5-ob300-hardware.md S3 and etc/evidence/t589-s2-am386sxlv-execution.md S3 handoff. |
-| Files And ABI Surface | Shared X86 Core CPU and existing test corpus, manifests, with no planned public ABI change. NXVM documentation and required NXVM, MyNES, MyRaidenII receiver publication. |
-| Applicable Rules | NXVM guide and shared execution, architecture, coding, and documentation rules. |
-| Verification | Check aligned and odd memory/port byte, word and dword cycle addresses and widths, instruction prefetch, fault cancellation, retained 386/V30 behavior, and dual-width scope and required full cached qualification. |
-| Expected Markers | Architectural instruction results and 24-bit address logic are preserved. External 16-bit lane widths, order and commit/cancel are observable through existing cycle contracts. |
-| Asset Needs | Stable Ninja trees, synthetic fixtures, S3-owned build/t589-s3 scratch up to 64 MiB, with cleanup after reviewed process exit. Release publication budget is 40 minutes; each unit aggregate retains its 300-second test deadline. |
-| Reporting Requirements | Actual delta, evidence grade, qualified artifact hashes and test outcomes. |
-| Stop Conditions | Do not classify nominal transfer timing as verified OB300 physical pacing. Do not publish a second clock or retry a partially committed device write. |
-| Exit Criteria | Required cycles and prefetch verified in both widths, regressions and receiver publication checked, reviewed complete commits pushed. |
+| Identifier Mode | Continuation M5 T589 S4. S3 accepted and closed. |
+| Admission And Approval | Owner authorized independent sequential admission and basic hardware implementation in single-session dual-role mode on 2026-11-19. |
+| Objective | Implement Am386SXLV SMI entry, distinct management memory, RES3, UMOV and software SMI on the existing CPU/Machine execution path. |
+| Non-goals | No HP board port or address decode, ROM boot claim, independent CPU executor, per-product SMM branching, or precise undocumented silicon timing. |
+| Reference Baseline | Shared 01d60a30e and receiver baseline 420529dc9; AMD 21020 Rev A and 16305; ROM evidence in the S3 handoff. |
+| Candidate Proposal | proposals/m5-ob300-hardware.md S4. |
+| Files And ABI Surface | Shared src/test x86-core CPU, Machine and manifests. Specify a minimal distinct memory-space contract at the existing bus/provider boundary. NXVM evidence and required NXVM, MyNES and MyRaidenII receiver publication. |
+| Applicable Rules | NXVM guide, Contributing, Roadmap, architecture/layout, source policy, and shared Execution/Documentation/Architecture/Coding. |
+| Verification | Extend existing CPU SMM and Machine bus fixtures to prove entry priority, 16-bit save cycles, same-address separation, I/O and UMOV routing, guest-edited restore, reset/failure and retained 486 behavior on x86/x64. Apply full Shared receiver build, test and publication requirements before delivery. |
+| Expected Markers | One execution and transaction path. CPU owns architectural state and space selection. Board attachment owns backing and decode. Verified spans and modeled fields are distinguished. |
+| Asset Needs | Stable Ninja trees, synthetic SMM fixtures and read-only hash-verified System ROM analysis. S4 owns build/t589-s4 up to 64 MiB with deletion after exit. Publication allows 40 minutes; unit aggregates retain 300-second deadlines. |
+| Reporting Requirements | Integration boundary, per-field evidence status, delta, test and artifact results, remaining HP board decode obligations. |
+| Stop Conditions | Do not publish vendor ROM bytes, silently route AMD management accesses to ordinary RAM, or represent a modeled save-area offset as a primary-source fact. Resolve documented and ROM-evidenced requirements before delivery. |
+| Exit Criteria | SMM entry/restore, memory space and intended I/O paths qualified with real-opcode synthetic fixtures, retained profiles pass, required artifacts published, scoped delivery reviewed and pushed. |
 | Original Owner Request | Implement MyOB300 in hardware, wiring, machine and product stages. |
-| Similar-Issue Sweep | Operand width versus cycle width, port validation before partial commits, reset routing and odd/page-crossing fetch behavior. |
+| Similar-Issue Sweep | CPU fetch/preview, data, ordinary I/O, reset/fault paths, and management-memory routing across the existing bus contract. |
 
 # M5 T588 - Closed: OB300 hardware and execution design
 
