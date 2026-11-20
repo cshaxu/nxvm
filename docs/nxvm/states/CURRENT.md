@@ -1,30 +1,25 @@
-# M5 T589 S2 - Delivered: Am386SXLV ordinary execution and reset
+# M5 T589 S3 - Active: Am386SXLV 16-bit transfers and fetch
 
-[S1 is closed](../history/M5-T589-S1-cpu-contract.md).
-[S2 implementation and focused proof](../etc/evidence/t589-s2-am386sxlv-execution.md)
-are in qualification. An AMD reset-identity review corrected the SXLV
-model to DX=2300h. All fourteen refreshed EXEs have verified hashes and
-PE architecture. Full unit aggregates passed 716/716 on x64 and x86 after
-two stale negative fixtures were repaired.
+[S2 is closed](../history/M5-T589-S2-sxlv-execution.md).
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation M5 T589 S2. S1 accepted and closed. |
-| Admission And Approval | Owner authorized basic hardware execution and independent S sequencing in single-session dual-role mode on 2026-11-19. |
-| Objective | Implement Am386SXLV ordinary CPU selection, 24-bit external addressing and reset on the existing Core CPU path. |
-| Non-goals | No SMM implementation, detailed 16-bit bus timing, HP board or firmware boot in this S. |
-| Reference Baseline | 8d9e78260, AMD 21020 with its electrical and architectural distinctions, T589 S1 core baseline. |
-| Candidate Proposal | proposals/m5-ob300-hardware.md S2 and etc/evidence/t589-s1-am386sxlv.md. |
-| Files And ABI Surface | Shared X86 Core CPU and Machine, matching Core tests and manifests. Append one profile enum and retain existing signatures and values. Receiving publication: NXVM, My5160, My5170, MyDeskPro386, MyPC110, MyNES, MyRaidenII. NXVM evidence and governance. |
-| Applicable Rules | NXVM guide, Contributing, Roadmap, architecture/layout, source policy and shared Execution/Documentation/Architecture/Coding. |
-| Verification | Synthetic reset/far transfer, ordinary instruction and paging regression, A20 separation and physical boundary cases on x86/x64. Apply full affected Shared consumer build/publication/test requirements before delivery. |
-| Expected Markers | Existing executor selects a distinct tested SXLV CPU profile. Ordinary accesses resolve within the 24-bit physical address domain without truncating logical addresses or changing other profiles. |
-| Asset Needs | Synthetic focused tests and existing stable Ninja build trees. S2 owns build/t589-s2, up to 64 MiB, for scripts and qualification logs. Product publication allows 40 minutes and each unit aggregate allows 30 minutes, following the aggregate's own deadline rules. Review logs before cleanup after process exit. |
-| Reporting Requirements | Actual implementation delta, named retained limitations, dual-width tests and required artifact qualification. |
-| Stop Conditions | Do not conflate the board A20 bit with fixed CPU pin width or relabel Intel/486 execution as full SXLV. |
-| Exit Criteria | CPU ordinary contract proved by tests, actual scope/quality reviewed, applied manifests and affected artifacts verified, complete delivery pushed. |
-| Original Owner Request | Replan four layers and begin the hardware T. Execute sequentially in single-session dual-role mode. |
-| Similar-Issue Sweep | Fetch, data, page walks, debug inspection, reset alias and DMA at the CPU/board boundary. |
+| Identifier Mode | Continuation M5 T589 S3. S2 accepted and closed. |
+| Admission And Approval | Owner authorized basic hardware execution and sequential single-session dual-role operation on 2026-11-19. |
+| Objective | Implement Am386SXLV 16-bit external memory and I/O data cycles and two-byte prefetch transactions on the existing Core CPU path. |
+| Non-goals | No exact OB300 wait-state schedule, separate prefetch engine, SMM implementation, or HP board wiring. |
+| Reference Baseline | 49aef45c6 and AMD 21020 Rev A, SX/DX differences and bus sections. |
+| Candidate Proposal | proposals/m5-ob300-hardware.md S3 and etc/evidence/t589-s2-am386sxlv-execution.md S3 handoff. |
+| Files And ABI Surface | Shared X86 Core CPU and existing test corpus, manifests, with no planned public ABI change. NXVM documentation and required NXVM, MyNES, MyRaidenII receiver publication. |
+| Applicable Rules | NXVM guide and shared execution, architecture, coding, and documentation rules. |
+| Verification | Check aligned and odd memory/port byte, word and dword cycle addresses and widths, instruction prefetch, fault cancellation, retained 386/V30 behavior, and dual-width scope and required full cached qualification. |
+| Expected Markers | Architectural instruction results and 24-bit address logic are preserved. External 16-bit lane widths, order and commit/cancel are observable through existing cycle contracts. |
+| Asset Needs | Stable Ninja trees, synthetic fixtures, optional build/t589-s3 scratch up to 64 MiB with cleanup after reviewed process exit. |
+| Reporting Requirements | Actual delta, evidence grade, qualified artifact hashes and test outcomes. |
+| Stop Conditions | Do not classify nominal transfer timing as verified OB300 physical pacing. Do not publish a second clock or retry a partially committed device write. |
+| Exit Criteria | Required cycles and prefetch verified in both widths, regressions and receiver publication checked, reviewed complete commits pushed. |
+| Original Owner Request | Implement MyOB300 in hardware, wiring, machine and product stages. |
+| Similar-Issue Sweep | Operand width versus cycle width, port validation before partial commits, reset routing and odd/page-crossing fetch behavior. |
 
 # M5 T588 - Closed: OB300 hardware and execution design
 
