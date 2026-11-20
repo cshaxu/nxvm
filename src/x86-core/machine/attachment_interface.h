@@ -97,6 +97,13 @@ typedef struct x86_core_machine_attachment {
     void (*complete_special_cycle)(void *owner, x86_core_cpu_special_cycle cycle,
         lib_bool commit);
     void *context;
+    /* Optional pair for CPU SMIADS cycles. The board owns the physical decode.
+     * No ordinary RAM, ROM, A20 or cache policy is applied to these cycles.
+     * Observational reads must leave device state unchanged. */
+    lib_status (*read_smm_memory)(void *owner, lib_u32 address, void *destination,
+        lib_u8 bytes, lib_bool observe_only);
+    lib_status (*write_smm_memory)(void *owner, lib_u32 address, const void *source,
+        lib_u8 bytes);
 } x86_core_machine_attachment;
 
 lib_status x86_core_machine_bind_attachment(x86_core_machine *machine,

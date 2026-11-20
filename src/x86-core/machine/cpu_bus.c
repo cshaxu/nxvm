@@ -8,6 +8,7 @@ static lib_status x86_core_machine_cpu_bus_read_memory(void *opaque,
 {
     x86_core_machine *machine = (x86_core_machine *)opaque;
     lib_status status;
+    const lib_bool smm = (provenance & X86_CORE_CPU_MEMORY_ACCESS_SMM) != 0u;
     const lib_bool locked = machine != LIB_NULL &&
         machine->transaction.owner == X86_CORE_MACHINE_TRANSACTION_OWNER_CPU &&
         machine->transaction.kind == X86_CORE_MACHINE_TRANSACTION_CPU_MEMORY_LOCK;
@@ -15,17 +16,17 @@ static lib_status x86_core_machine_cpu_bus_read_memory(void *opaque,
     if (machine == LIB_NULL ||
         (cache_control & ~(X86_CORE_CPU_MEMORY_CACHE_PWT | X86_CORE_CPU_MEMORY_CACHE_PCD)))
         return LIB_STATUS_INVALID_ARGUMENT;
-    if (observe_only) {
+    if (observe_only && !smm) {
         return x86_core_machine_memory_inspect_physical(&machine->executor_memory,
             address, (lib_uptr)destination, bytes, reset_fetch);
     }
-    if (!locked) {
+    if (!locked && !observe_only) {
         status = x86_core_machine_transaction_begin(&machine->transaction,
             X86_CORE_MACHINE_TRANSACTION_OWNER_CPU, X86_CORE_MACHINE_TRANSACTION_CPU_MEMORY_READ,
             address, bytes, (lib_u32)provenance | ((lib_u32)cache_control << 8u));
         if (status != LIB_STATUS_OK) return status;
     }
-    if (machine->attachment.memory_cache_control != LIB_NULL) {
+    if (!smm && machine->attachment.memory_cache_control != LIB_NULL) {
         status = machine->attachment.memory_cache_control(machine->attachment.context,
             address, bytes, LIB_FALSE, cache_control);
         if (status != LIB_STATUS_OK) {
@@ -33,20 +34,27 @@ static lib_status x86_core_machine_cpu_bus_read_memory(void *opaque,
             return status;
         }
     }
-    status = reset_fetch ?
-        x86_core_machine_memory_read_reset_physical(&machine->executor_memory,
-            address, (lib_uptr)destination, bytes) :
-        (provenance == X86_CORE_CPU_MEMORY_ACCESS_INSTRUCTION_FETCH ||
-         provenance == X86_CORE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH) ?
-        x86_core_machine_memory_read_instruction_physical(&machine->executor_memory,
-            address, (lib_uptr)destination, bytes) :
-        x86_core_machine_memory_read_physical(&machine->executor_memory,
-            address, (lib_uptr)destination, bytes, LIB_TRUE);
-    if (status == LIB_STATUS_UNSUPPORTED) {
-        status = x86_core_machine_memory_read_physical(&machine->executor_memory,
-            address, (lib_uptr)destination, bytes, LIB_TRUE);
+    if (smm) {
+        status = machine->attachment.read_smm_memory == LIB_NULL ?
+            LIB_STATUS_UNSUPPORTED :
+            machine->attachment.read_smm_memory(machine->attachment.context,
+                address, destination, bytes, observe_only);
+    } else {
+        status = reset_fetch ?
+            x86_core_machine_memory_read_reset_physical(&machine->executor_memory,
+                address, (lib_uptr)destination, bytes) :
+            (provenance == X86_CORE_CPU_MEMORY_ACCESS_INSTRUCTION_FETCH ||
+             provenance == X86_CORE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH) ?
+            x86_core_machine_memory_read_instruction_physical(&machine->executor_memory,
+                address, (lib_uptr)destination, bytes) :
+            x86_core_machine_memory_read_physical(&machine->executor_memory,
+                address, (lib_uptr)destination, bytes, LIB_TRUE);
+        if (status == LIB_STATUS_UNSUPPORTED) {
+            status = x86_core_machine_memory_read_physical(&machine->executor_memory,
+                address, (lib_uptr)destination, bytes, LIB_TRUE);
+        }
     }
-    if (!locked) {
+    if (!locked && !observe_only) {
         if (status == LIB_STATUS_OK) x86_core_machine_transaction_commit(&machine->transaction);
         else x86_core_machine_transaction_cancel(&machine->transaction);
     }
@@ -59,6 +67,7 @@ static lib_status x86_core_machine_cpu_bus_write_memory(void *opaque,
 {
     x86_core_machine *machine = (x86_core_machine *)opaque;
     lib_status status;
+    const lib_bool smm = (provenance & X86_CORE_CPU_MEMORY_ACCESS_SMM) != 0u;
     const lib_bool locked = machine != LIB_NULL &&
         machine->transaction.owner == X86_CORE_MACHINE_TRANSACTION_OWNER_CPU &&
         machine->transaction.kind == X86_CORE_MACHINE_TRANSACTION_CPU_MEMORY_LOCK;
@@ -72,7 +81,7 @@ static lib_status x86_core_machine_cpu_bus_write_memory(void *opaque,
             address, bytes, (lib_u32)provenance | ((lib_u32)cache_control << 8u));
         if (status != LIB_STATUS_OK) return status;
     }
-    if (machine->attachment.memory_cache_control != LIB_NULL) {
+    if (!smm && machine->attachment.memory_cache_control != LIB_NULL) {
         status = machine->attachment.memory_cache_control(machine->attachment.context,
             address, bytes, LIB_TRUE, cache_control);
         if (status != LIB_STATUS_OK) {
@@ -87,8 +96,12 @@ static lib_status x86_core_machine_cpu_bus_write_memory(void *opaque,
         machine->transaction.address = address;
         machine->transaction.value = bytes;
     }
-    status = x86_core_machine_memory_write_physical(&machine->executor_memory,
-        address, (lib_uptr)source, bytes, LIB_TRUE);
+    status = smm ?
+        (machine->attachment.write_smm_memory == LIB_NULL ? LIB_STATUS_UNSUPPORTED :
+         machine->attachment.write_smm_memory(machine->attachment.context,
+             address, source, bytes)) :
+        x86_core_machine_memory_write_physical(&machine->executor_memory,
+            address, (lib_uptr)source, bytes, LIB_TRUE);
     if (locked) {
         machine->transaction.address = lock_address;
         machine->transaction.value = 0u;
@@ -478,9 +491,10 @@ lib_u64 x86_core_machine_cpu_external_cycle_trace(void *opaque,
     lib_i32 pending_matches;
     lib_u8 page_timing_enabled;
     lib_u64 cycle_ticks = 0u;
+    const lib_bool smm = (provenance & X86_CORE_CPU_MEMORY_ACCESS_SMM) != 0u;
 
     if (machine == LIB_NULL) return 0u;
-    page_timing_enabled = space == X86_CORE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY &&
+    page_timing_enabled = !smm && space == X86_CORE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY &&
         machine->transaction_contract.external_cycle_timing.page_bytes != 0u &&
         ((machine->transaction_contract.external_cycle_timing.first_eligible_address == 0u &&
           machine->transaction_contract.external_cycle_timing.last_eligible_address == 0u) ||
@@ -543,9 +557,9 @@ lib_u64 x86_core_machine_cpu_external_cycle_trace(void *opaque,
             cycle_ticks += wait_ticks;
         }
         if (pending_matches) {
-            lib_u32 wait_ticks = x86_core_machine_external_access_wait_ticks(
-                machine, space, address);
-            cycle_ticks += wait_ticks;
+            if (!smm)
+                cycle_ticks += x86_core_machine_external_access_wait_ticks(machine,
+                    space, address);
             machine->external_cycle_pending_valid = LIB_FALSE;
         }
         /* SX records service and deferred writes in its sole CPU bus owner.

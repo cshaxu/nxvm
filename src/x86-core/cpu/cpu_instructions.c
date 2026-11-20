@@ -125,6 +125,22 @@ static void x86_core_cpu_execution_raise_exception(
 #define VCPU_DR6_BT 0x00008000u
 #define VCPU_DR7_LOCAL_ENABLE_MASK 0x00000155u
 #define VCPU_DR7_GD 0x00002000u
+#define AMD_SMM_SOFTWARE_ENABLE 0x00001000u
+
+static lib_bool _amd_umov_opcode(x86_core_cpu_profile profile, lib_u8 opcode)
+{
+    return profile == X86_CORE_CPU_PROFILE_AM386SXLV && opcode >= 0x10u && opcode <= 0x13u;
+}
+
+static lib_bool _kdf_profile_allows_instruction(x86_core_cpu_profile profile,
+    x86_core_cpu_instruction_space space, lib_u8 opcode,
+    x86_core_cpu_instruction_metadata metadata)
+{
+    return metadata.valid && (cpu_profile_allows_minimum(profile, metadata.minimum_cpu) ||
+        (space == X86_CORE_CPU_INSTRUCTION_0F && _amd_umov_opcode(profile, opcode)) ||
+        (space == X86_CORE_CPU_INSTRUCTION_PRIMARY && opcode == 0xf1u &&
+            profile == X86_CORE_CPU_PROFILE_AM386SXLV));
+}
 
 
 static void UndefinedOpcode(x86_core_cpu_execution_context *context);
@@ -372,7 +388,9 @@ static void _kma_read_bus(x86_core_cpu_execution_context *context,
     x86_core_cpu_memory_access_provenance provenance, lib_u32 attributes)
 {
     lib_status memory_status;
-    const lib_bool reset_fetch = _kma_is_reset_vector_fetch(context, physical, byte, provenance);
+    provenance = x86_core_cpu_effective_memory_provenance(context, provenance);
+    const lib_bool reset_fetch = !(provenance & X86_CORE_CPU_MEMORY_ACCESS_SMM) &&
+        _kma_is_reset_vector_fetch(context, physical, byte, provenance);
     CPU_TRACE_CALL_BEGIN("_kma_read_bus");
     physical = cpu_profile_external_address(context->cpu_profile, physical);
     x86_core_cpu_bus_prepare_read(context, instruction_state.data.memory_lock_active);
@@ -514,6 +532,7 @@ static void _kma_write_bus(x86_core_cpu_execution_context *context,
     x86_core_cpu_memory_access_provenance provenance, lib_u32 attributes)
 {
     CPU_TRACE_CALL_BEGIN("_kma_write_bus");
+    provenance = x86_core_cpu_effective_memory_provenance(context, provenance);
     physical = cpu_profile_external_address(context->cpu_profile, physical);
     x86_core_cpu_bus_prepare_write(context);
     _kma_publish_external_cycle(context, X86_CORE_CPU_EXTERNAL_CYCLE_PHASE_BEGIN,
@@ -9106,14 +9125,14 @@ static lib_u8 x86_core_cpu_instruction_lexeme_scan_with_options(
     if (!nec && !_kdf_modrm_form_valid(opcode, extended, modrm,
         cpu_80386_cr_mov_ignores_mod, profile))
         return LIB_FALSE;
-    metadata = x86_core_cpu_instruction_metadata_get(nec ?
+    const x86_core_cpu_instruction_space space = nec ?
         X86_CORE_CPU_INSTRUCTION_NEC_0F : extended ?
-        X86_CORE_CPU_INSTRUCTION_0F : X86_CORE_CPU_INSTRUCTION_PRIMARY,
-        opcode, modrm);
+        X86_CORE_CPU_INSTRUCTION_0F : X86_CORE_CPU_INSTRUCTION_PRIMARY;
+    metadata = x86_core_cpu_instruction_metadata_get(space, opcode, modrm);
     if (extended && opcode >= 0xc8u && opcode <= 0xcfu && operand_bytes != 4u)
         return LIB_FALSE;
     if (((extended || !_kdf_is_nec_escape(profile, opcode)) &&
-        (!metadata.valid || !cpu_profile_allows_minimum(profile, metadata.minimum_cpu))) || lock_prefix) {
+        !_kdf_profile_allows_instruction(profile, space, opcode, metadata)) || lock_prefix) {
         return LIB_FALSE;
     }
     immediate = nec ? (nec_format == X86_CPU_NEC_FORMAT_MODRM_IMMEDIATE ||
@@ -9224,6 +9243,11 @@ x86_core_cpu_instruction_metadata x86_core_cpu_instruction_metadata_get(
             metadata.minimum_cpu = X86_CORE_CPU_PROFILE_80286;
             metadata.valid = 1;
         }
+        else if (opcode == 0x07u)
+        {
+            metadata.minimum_cpu = X86_CORE_CPU_PROFILE_AM386SXLV;
+            metadata.valid = LIB_TRUE;
+        }
         else if (opcode >= 0x10u && opcode <= 0x13u)
         {
             metadata.minimum_cpu = X86_CORE_CPU_PROFILE_80486SX;
@@ -9310,7 +9334,7 @@ static lib_i32 x86_core_cpu_profile_allows_form(
         space != X86_CORE_CPU_INSTRUCTION_PRIMARY &&
         space != X86_CORE_CPU_INSTRUCTION_NEC_0F) return 0;
     metadata = x86_core_cpu_instruction_metadata_get(space, opcode, modrm);
-    return metadata.valid && cpu_profile_allows_minimum(context->cpu_profile, metadata.minimum_cpu);
+    return _kdf_profile_allows_instruction(context->cpu_profile, space, opcode, metadata);
 }
 
 lib_u8 x86_core_cpu_instruction_lexeme_scan(
@@ -16542,8 +16566,14 @@ static void INT1(x86_core_cpu_execution_context *context)
 {
     CPU_TRACE_CALL_BEGIN("INT1");
     _adv;
-    /* Presence and DR6 cause are independent: INT1 adds no cause bits. */
-    context->debug_trap_pending = LIB_TRUE;
+    if (context->cpu_profile == X86_CORE_CPU_PROFILE_AM386SXLV &&
+        !context->smm_active && (cpu_state.data.dr7 & AMD_SMM_SOFTWARE_ENABLE) &&
+        context->bus->system_management_active != LIB_NULL) {
+        context->smi_pending = LIB_TRUE;
+    } else {
+        /* Presence and DR6 cause are independent: INT1 adds no cause bits. */
+        context->debug_trap_pending = LIB_TRUE;
+    }
     CPU_TRACE_CALL_END;
 }
 static void PREFIX_REPNZ(x86_core_cpu_execution_context *context)
@@ -19145,15 +19175,144 @@ static void _smm_initialize_segment(t_cpu_data_sreg *segment,
     }
 }
 
+enum {
+    AMD_SMM_SAVE_BASE = 0x60000u,
+    AMD_SMM_IMAGE_DWORDS = 0x128u / 4u
+};
+
+/* The transfer spans are documented. The individual register slots below
+ * are an L2 image, including the firmware-observed DR6/DR7 edits. */
+static void _amd_smm_image_state(lib_u32 *image, t_cpu_data *state, lib_bool restore)
+{
+    lib_u32 *registers[] = {&state->cr0, &state->eflags, &state->eip,
+        &state->edi, &state->esi, &state->ebp, &state->esp, &state->ebx,
+        &state->edx, &state->ecx, &state->eax, &state->dr6, &state->dr7};
+    t_cpu_data_sreg *segments[] = {&state->tr, &state->ldtr, &state->gs,
+        &state->fs, &state->ds, &state->ss, &state->cs, &state->es};
+    const lib_u8 slots[] = {0x54u, 0x78u, 0x84u, 0x90u, 0x9cu, 0xa8u, 0xb4u, 0xc0u};
+    lib_u32 *extended[] = {&state->cr2, &state->cr3, &state->dr0, &state->dr1,
+        &state->dr2, &state->dr3};
+
+    for (lib_u8 i = 0u; i < sizeof(registers) / sizeof(registers[0]); ++i) {
+        if (restore) *registers[i] = image[i];
+        else image[i] = *registers[i];
+    }
+    for (lib_u8 i = 0u; i < sizeof(extended) / sizeof(extended[0]); ++i) {
+        if (restore) *extended[i] = image[0x100u / 4u + i];
+        else image[0x100u / 4u + i] = *extended[i];
+    }
+    for (lib_u8 i = 0u; i < sizeof(segments) / sizeof(segments[0]); ++i) {
+        t_cpu_data_sreg *segment = segments[i];
+        lib_u32 *selector = &image[0x34u / 4u + i];
+        lib_u32 *descriptor = &image[slots[i] / 4u];
+        lib_u8 packed[12];
+
+        if (restore) {
+            segment->selector = (lib_u16)*selector;
+            _smm_put(packed, X86_CPU_SMM_IMAGE_OFFSET + 8u, descriptor[0] >> 8u);
+            _smm_put(packed, X86_CPU_SMM_IMAGE_OFFSET + 4u, descriptor[1]);
+            _smm_put(packed, X86_CPU_SMM_IMAGE_OFFSET, descriptor[2]);
+            _smm_restore_segment(packed, X86_CPU_SMM_IMAGE_OFFSET + 8u, segment);
+        } else {
+            _smm_save_segment(packed, X86_CPU_SMM_IMAGE_OFFSET + 8u, segment);
+            *selector = segment->selector;
+            descriptor[0] = _smm_get(packed, X86_CPU_SMM_IMAGE_OFFSET + 8u) << 8u;
+            descriptor[1] = segment->base;
+            descriptor[2] = segment->limit;
+        }
+    }
+    if (restore) {
+        state->idtr.base = image[0x64u / 4u];
+        state->idtr.limit = image[0x68u / 4u];
+        state->gdtr.base = image[0x70u / 4u];
+        state->gdtr.limit = image[0x74u / 4u];
+    } else {
+        image[0x64u / 4u] = state->idtr.base;
+        image[0x68u / 4u] = state->idtr.limit;
+        image[0x70u / 4u] = state->gdtr.base;
+        image[0x74u / 4u] = state->gdtr.limit;
+    }
+}
+
+static void _amd_smm_transfer(x86_core_cpu_execution_context *context,
+    lib_u32 base, lib_u32 *image, lib_bool restore)
+{
+    lib_u32 completed_words = 0u;
+    for (lib_u16 offset = 0u; offset < 0x128u; offset += 2u) {
+        if (offset == 0xccu) offset = 0x100u;
+        const lib_u8 shift = (lib_u8)((offset & 2u) * 8u);
+        lib_u16 word = (lib_u16)(image[offset / 4u] >> shift);
+        if (restore)
+            _kma_read_physical(context, base + offset, X86_CPU_REFERENCE_OF(word),
+                2u, X86_CORE_CPU_MEMORY_ACCESS_DATA, 0u);
+        else
+            _kma_write_physical(context, base + offset, X86_CPU_REFERENCE_OF(word),
+                2u, X86_CORE_CPU_MEMORY_ACCESS_DATA, 0u);
+        if (instruction_state.data.except) break;
+        if (restore) image[offset / 4u] |= (lib_u32)word << shift;
+        ++completed_words;
+    }
+    /* Nominal two clocks per completed bus word, without undocumented
+     * management microcode latency or physical HP wait states. */
+    (void)_e_timing_charge(context, completed_words * 2u);
+}
+
+static void _smm_enter_execution(x86_core_cpu_execution_context *context,
+    lib_u16 selector, lib_u32 base, lib_u32 offset)
+{
+    t_cpu_data_sreg *segments[] = {&cpu_state.data.es, &cpu_state.data.ss,
+        &cpu_state.data.ds, &cpu_state.data.fs, &cpu_state.data.gs};
+
+    cpu_state.data.eflags = 2u;
+    cpu_state.data.cr0 &= ~(VCPU_CR0_PE | VCPU_CR0_EM | VCPU_CR0_TS | VCPU_CR0_PG);
+    cpu_state.data.dr6 = 0u;
+    cpu_state.data.dr7 &= 0x00003000u;
+    cpu_state.data.eip = offset;
+    cpu_state.data.flagHalt = LIB_FALSE;
+    _smm_initialize_segment(&cpu_state.data.cs, selector, base);
+    for (lib_u8 index = 0u; index < 5u; ++index)
+        _smm_initialize_segment(segments[index], 0u, 0u);
+    context->debug_trap_pending = LIB_FALSE;
+    context->debug_trap_cause = 0u;
+    context->interrupt_shadow = CPU_INTERRUPT_SHADOW_NONE;
+    context->nmi_in_service = LIB_TRUE;
+    context->wait_state = CPU_WAIT_STATE_NONE;
+    context->wait_poll_remaining_ticks = 0u;
+    context->shutdown_state = CPU_SHUTDOWN_NONE;
+    context->shutdown_requested = LIB_FALSE;
+    context->source_repeat_active = LIB_FALSE;
+    x86_core_cpu_execution_invalidate_prefetch(context);
+    x86_core_cpu_execution_invalidate_tlb(context);
+}
+
+static void _amd_smm_enter(x86_core_cpu_execution_context *context)
+{
+    lib_u32 image[AMD_SMM_IMAGE_DWORDS] = {0};
+
+    _amd_smm_image_state(image, &cpu_state.data, LIB_FALSE);
+    image[0x118u / 4u] = (lib_u32)context->interrupt_shadow |
+        (context->nmi_in_service ? 0x100u : 0u) |
+        (context->debug_trap_pending ? 0x200u : 0u) |
+        (cpu_state.data.flagHalt ? 0x400u : 0u);
+    image[0x11cu / 4u] = context->debug_trap_cause;
+    if (context->io_restart_valid) image[0x124u / 4u] = context->io_restart_eip;
+    context->smm_active = LIB_TRUE;
+    context->bus->system_management_active(context->bus_context, LIB_TRUE);
+    _amd_smm_transfer(context, AMD_SMM_SAVE_BASE, image, LIB_FALSE);
+    if (instruction_state.data.except) return;
+    _smm_enter_execution(context, 0xf000u, 0xff0000u, 0xfff0u);
+    cpu_state.data.cs.limit = 0xffffu;
+    cpu_state.data.dr7 = 0u;
+}
+
 static lib_bool _smm_enter(x86_core_cpu_execution_context *context)
 {
     lib_u8 image[X86_CPU_SMM_IMAGE_BYTES];
-    t_cpu_data_sreg *segments[] = {&cpu_state.data.es, &cpu_state.data.ss,
-        &cpu_state.data.ds, &cpu_state.data.fs, &cpu_state.data.gs};
     const lib_u32 physical = context->smbase + 0xfe00u;
     lib_u64 prefix_service, ticks;
+    const lib_bool amd = context->cpu_profile == X86_CORE_CPU_PROFILE_AM386SXLV;
 
-    if (context->cpu_profile != X86_CORE_CPU_PROFILE_80486SX ||
+    if ((!amd && context->cpu_profile != X86_CORE_CPU_PROFILE_80486SX) ||
         !context->smi_pending || context->smm_active || x86_core_cpu_is_system_waiting(context) ||
         context->stop_requested || context->debug_pause_requested ||
         (context->shutdown_state != CPU_SHUTDOWN_NONE &&
@@ -19161,11 +19320,15 @@ static lib_bool _smm_enter(x86_core_cpu_execution_context *context)
         context->reset_requested != X86_CORE_CPU_RESET_NONE ||
         instruction_state.data.memory_lock_active) return LIB_FALSE;
     context->repeat_compare_flags_valid = LIB_FALSE;
-    _smm_build_image(context, image);
+    if (!amd) _smm_build_image(context, image);
     /* No ExecInit/prefetch: SMI must work even when the next guest instruction
      * cannot be fetched. The existing finalizer owns any provider failure. */
     ExecBoundary(context);
     context->smi_pending = LIB_FALSE;
+    if (amd) {
+        _amd_smm_enter(context);
+        return LIB_TRUE;
+    }
     x86_core_cpu_bus_drain(context, LIB_TRUE);
     if (context->bus_timing.invalid) {
         _SetExcept_CE(LIB_STATUS_LIMIT_EXCEEDED);
@@ -19194,27 +19357,42 @@ static lib_bool _smm_enter(x86_core_cpu_execution_context *context)
     instruction_state.data.timing_entry_transfer_ticks = instruction_state.data.timing_transfer_ticks;
     x86_core_cpu_bus_clear_observation(context);
     if (instruction_state.data.except) return LIB_TRUE;
-    cpu_state.data.eflags = 2u;
-    cpu_state.data.cr0 &= ~(VCPU_CR0_PE | VCPU_CR0_EM | VCPU_CR0_TS | VCPU_CR0_PG);
-    cpu_state.data.dr6 = 0u;
-    cpu_state.data.dr7 &= 0x00003000u;
-    cpu_state.data.eip = 0x8000u;
-    cpu_state.data.flagHalt = LIB_FALSE;
-    _smm_initialize_segment(&cpu_state.data.cs, 0x3000u, context->smbase);
-    for (lib_u8 index = 0u; index < 5u; ++index)
-        _smm_initialize_segment(segments[index], 0u, 0u);
-    context->debug_trap_pending = LIB_FALSE;
-    context->debug_trap_cause = 0u;
-    context->interrupt_shadow = CPU_INTERRUPT_SHADOW_NONE;
-    context->nmi_in_service = LIB_TRUE;
-    context->wait_state = CPU_WAIT_STATE_NONE;
-    context->wait_poll_remaining_ticks = 0u;
-    context->shutdown_state = CPU_SHUTDOWN_NONE;
-    context->shutdown_requested = LIB_FALSE;
+    _smm_enter_execution(context, 0x3000u, context->smbase, 0x8000u);
+    return LIB_TRUE;
+}
+
+static void RES3(x86_core_cpu_execution_context *context)
+{
+    lib_u32 image[AMD_SMM_IMAGE_DWORDS] = {0};
+    t_cpu candidate = cpu_state;
+    const lib_u32 base = cpu_state.data.es.base + cpu_state.data.edi;
+
+    CPU_TRACE_CALL_BEGIN("RES3");
+    if (context->cpu_profile != X86_CORE_CPU_PROFILE_AM386SXLV || !context->smm_active)
+        CPU_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+    if ((base & 1u) || (base & 0xffffu) > 0x10000u - 0x128u)
+        CPU_TRACE_CHECK_RETURN(_SetExcept_GP(0u));
+    _adv;
+    CPU_TRACE_CHECK_RETURN(_amd_smm_transfer(context, base, image, LIB_TRUE));
+    _amd_smm_image_state(image, &candidate.data, LIB_TRUE);
+    if ((candidate.data.cr0 & (VCPU_CR0_PG | VCPU_CR0_PE)) == VCPU_CR0_PG)
+        CPU_TRACE_CHECK_RETURN(_SetExcept_GP(0u));
+    candidate.data.eflags = _e_eflags_load(context, candidate.data.eflags);
+    const lib_u32 pending = image[0x118u / 4u];
+    candidate.data.flagHalt = (pending & 0x400u) != 0u;
+    cpu_state = candidate;
+    instruction_state.data.timing_gpr_writes = 0xffu;
+    context->interrupt_shadow = (cpu_interrupt_shadow)(pending & 3u);
+    context->nmi_in_service = (pending & 0x100u) != 0u;
+    context->debug_trap_pending = (pending & 0x200u) != 0u;
+    context->debug_trap_cause = image[0x11cu / 4u];
     context->source_repeat_active = LIB_FALSE;
+    context->smm_active = LIB_FALSE;
+    context->bus->system_management_active(context->bus_context, LIB_FALSE);
+    if (context->smi_asserted) context->smi_pending = LIB_TRUE;
     x86_core_cpu_execution_invalidate_prefetch(context);
     x86_core_cpu_execution_invalidate_tlb(context);
-    return LIB_TRUE;
+    CPU_TRACE_CALL_END;
 }
 
 static void _smm_failed_restore(x86_core_cpu_execution_context *context, lib_bool released)
@@ -20723,12 +20901,15 @@ static void x86_core_cpu_dispatch_primary(x86_core_cpu_execution_context *contex
 
 static void x86_core_cpu_dispatch_0f(x86_core_cpu_execution_context *context, lib_u8 opcode)
 {
+    const lib_bool umov = context->smm_active && _amd_umov_opcode(context->cpu_profile, opcode);
+    if (umov) context->memory_access_provenance = AMD_SMM_NORMAL_DATA;
     switch (opcode) {
     case 0x00: INS_0F_00(context); break;
     case 0x01: INS_0F_01(context); break;
     case 0x02: LAR_R32_RM32(context); break;
     case 0x03: LSL_R32_RM32(context); break;
     case 0x06: CLTS(context); break;
+    case 0x07: RES3(context); break;
     case 0x08: INVD(context); break;
     case 0x09: WBINVD(context); break;
     case 0x10: MOV_RM8_R8(context); break;
@@ -20807,6 +20988,7 @@ static void x86_core_cpu_dispatch_0f(x86_core_cpu_execution_context *context, li
     case 0xc8: case 0xc9: case 0xca: case 0xcb: case 0xcc: case 0xcd: case 0xce: case 0xcf: BSWAP_R32(context); break;
     default: UndefinedOpcode(context); break;
     }
+    if (umov) context->memory_access_provenance = X86_CORE_CPU_MEMORY_ACCESS_DATA;
 }
 
 static void ExecIns(x86_core_cpu_execution_context *context)

@@ -545,6 +545,232 @@ static lib_status executor_smm_memory_control(void *context, lib_u32 address,
     return LIB_STATUS_OK;
 }
 
+typedef struct executor_smm_memory_probe {
+    lib_u8 image[0x128];
+    lib_u16 reads;
+    lib_u16 writes;
+    lib_u16 observations;
+    lib_u16 port_writes;
+    lib_u32 fail_read;
+    lib_u32 fail_write;
+    lib_bool active;
+} executor_smm_memory_probe;
+
+static const lib_u8 executor_smm_vector[16] = {0xeau, 0u, 2u, 0u, 0u};
+static const lib_u8 executor_smm_handler[48] = {
+    0xb8u, 0u, 0x60u,             /* AX = management save segment */
+    0x8eu, 0xd8u,                 /* DS = AX */
+    0x8eu, 0xc0u,                 /* ES = AX */
+    0x66u, 0x31u, 0xffu,          /* EDI = 0 */
+    0x0fu, 0x12u, 0x1eu, 0u, 0u,  /* UMOV BL,[0], from ordinary RAM */
+    0x88u, 0x1eu, 0x28u, 0u,       /* Patch saved AL in management RAM */
+    0x80u, 0x26u, 0x2du, 0u, 0xefu, /* Clear bit 12 of saved DR6 */
+    0x80u, 0x26u, 0x31u, 0u, 0xefu, /* Clear bit 12 of saved DR7 */
+    0xe6u, 0x42u,                 /* OUT 42h, AL uses ordinary I/O */
+    0x0fu, 0x07u                  /* RES3 ES:EDI */
+};
+
+static const lib_u8 executor_smm_software[] = {
+    0x66u, 0xb8u, 0u, 0x10u, 0u, 0u, /* EAX = 1000h */
+    0x0fu, 0x23u, 0xf0u,              /* DR6 = EAX */
+    0x0fu, 0x23u, 0xf8u,              /* DR7 = EAX */
+    0xf1u,                            /* Software SMI */
+    0x0fu, 0x21u, 0xf0u,              /* Copy DR6 to EAX after returning */
+    0x0fu, 0x21u, 0xfbu               /* Copy DR7 to EBX after returning */
+};
+
+static void executor_smm_memory_finalize(void *context)
+{
+    (void)context;
+}
+
+static void executor_smm_memory_active(void *context, lib_bool active)
+{
+    ((executor_smm_memory_probe *)context)->active = active;
+}
+
+static lib_status executor_smm_memory_read(void *context, lib_u32 address,
+    void *destination, lib_u8 bytes, lib_bool observe_only)
+{
+    executor_smm_memory_probe *probe = context;
+
+    if (!observe_only && address == probe->fail_read && probe->fail_read != 0u)
+        return LIB_STATUS_IO_ERROR;
+    if (address >= 0x60000u && address + bytes <= 0x60000u + sizeof(probe->image)) {
+        lib_memory_copy(destination, probe->image + (address - 0x60000u), bytes);
+    } else if (probe->active && address >= 0xfffff0u && address + bytes <= 0x1000000u) {
+        lib_memory_copy(destination, executor_smm_vector + (address - 0xfffff0u), bytes);
+    } else if (probe->active && address >= 0x200u &&
+        address + bytes <= 0x200u + sizeof(executor_smm_handler)) {
+        lib_memory_copy(destination, executor_smm_handler + (address - 0x200u), bytes);
+    } else return LIB_STATUS_UNSUPPORTED;
+    if (observe_only) ++probe->observations;
+    else ++probe->reads;
+    return LIB_STATUS_OK;
+}
+
+static lib_status executor_smm_memory_write(void *context, lib_u32 address,
+    const void *source, lib_u8 bytes)
+{
+    executor_smm_memory_probe *probe = context;
+
+    if (address == probe->fail_write && probe->fail_write != 0u)
+        return LIB_STATUS_IO_ERROR;
+    if (address < 0x60000u || address + bytes > 0x60000u + sizeof(probe->image) ||
+        (probe->active && address < 0x60100u && address + bytes > 0x600ccu))
+        return LIB_STATUS_UNSUPPORTED;
+    lib_memory_copy(probe->image + (address - 0x60000u), source, bytes);
+    ++probe->writes;
+    return LIB_STATUS_OK;
+}
+
+static lib_status executor_smm_memory_port_write(void *context, lib_u16 port,
+    lib_u8 bytes, lib_u32 value)
+{
+    executor_smm_memory_probe *probe = context;
+
+    if (!probe->active || port != 0x42u || bytes != 1u || value != 0u)
+        return LIB_STATUS_INVALID_STATE;
+    ++probe->port_writes;
+    return LIB_STATUS_OK;
+}
+
+static lib_bool executor_sxlv_smm_memory(void)
+{
+    const x86_core_machine_executor_config config = {
+        .memory_bytes = 1024u * 1024u,
+        .cpu_profile = X86_CORE_CPU_PROFILE_AM386SXLV,
+        .fpu_profile = X86_FPU_PROFILE_NONE
+    };
+    const x86_core_cpu_bus_provider *bus = &x86_core_machine_cpu_bus;
+    const x86_core_cpu_memory_access_provenance smm_fetch =
+        X86_CORE_CPU_MEMORY_ACCESS_INSTRUCTION_FETCH | X86_CORE_CPU_MEMORY_ACCESS_SMM;
+    executor_smm_memory_probe probe = {0};
+    const x86_core_machine_attachment attachment = {
+        .finalize_devices = executor_smm_memory_finalize,
+        .context = &probe,
+        .system_management_active = executor_smm_memory_active,
+        .read_smm_memory = executor_smm_memory_read,
+        .write_smm_memory = executor_smm_memory_write
+    };
+    const x86_core_machine_port_route route = {
+        .address = 0x42u, .write = executor_smm_memory_port_write, .owner = &probe
+    };
+    const lib_u8 ordinary = 0x21u, hidden = 0x43u;
+    lib_u8 value = 0u;
+    x86_core_machine *machine = LIB_NULL;
+
+    if (x86_core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK)
+        return LIB_FALSE;
+    lib_bool passed =
+        bus->write_memory(machine, 0x60000u, &hidden, 1u,
+            X86_CORE_CPU_MEMORY_ACCESS_SMM, 0u) == LIB_STATUS_UNSUPPORTED &&
+        x86_core_machine_bind_attachment(machine, &attachment) == LIB_STATUS_OK &&
+        bus->write_memory(machine, 0x60000u, &ordinary, 1u,
+            X86_CORE_CPU_MEMORY_ACCESS_DATA, 0u) == LIB_STATUS_OK &&
+        bus->write_memory(machine, 0x60000u, &hidden, 1u,
+            X86_CORE_CPU_MEMORY_ACCESS_SMM, 0u) == LIB_STATUS_OK &&
+        bus->read_memory(machine, 0x60000u, &value, 1u, smm_fetch,
+            LIB_TRUE, LIB_FALSE, 0u) == LIB_STATUS_OK && value == hidden &&
+        bus->read_memory(machine, 0x60000u, &value, 1u, smm_fetch,
+            LIB_FALSE, LIB_TRUE, 0u) == LIB_STATUS_OK && value == hidden &&
+        bus->read_memory(machine, 0x60128u, &value, 1u, smm_fetch,
+            LIB_FALSE, LIB_FALSE, 0u) == LIB_STATUS_UNSUPPORTED &&
+        bus->read_memory(machine, 0x60000u, &value, 1u,
+            X86_CORE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) ==
+                LIB_STATUS_OK && value == ordinary &&
+        probe.reads == 1u && probe.observations == 1u &&
+        machine->transaction.owner == X86_CORE_MACHINE_TRANSACTION_OWNER_NONE;
+    const x86_core_cpu_debug_register_patch entry = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EAX),
+        .values = {[X86_CORE_CPU_DEBUG_EIP] = 0x100u,
+            [X86_CORE_CPU_DEBUG_EAX] = 0x87654300u}
+    };
+    x86_core_machine_run_result run = {0};
+    probe.image[0xccu] = 0x5au;
+    passed = passed &&
+        x86_core_machine_install_port_routes(machine, &route, 1u) == LIB_STATUS_OK &&
+        x86_core_machine_freeze_execution_providers(machine) == LIB_STATUS_OK &&
+        x86_core_machine_reset(machine) == LIB_STATUS_OK &&
+        x86_core_machine_debug_patch_registers(machine, &entry) == LIB_STATUS_OK &&
+        x86_core_machine_memory_write(machine, 0x60000u, &ordinary, sizeof(ordinary)) ==
+            LIB_STATUS_OK &&
+        x86_core_machine_set_smi(machine, LIB_TRUE) == LIB_STATUS_OK &&
+        x86_core_machine_run(machine, (x86_core_machine_run_budget){1u,0u}, &run) ==
+            LIB_STATUS_OK && run.executed == 0u && run.linear_pc == 0xfffff0u &&
+        probe.active && probe.writes == 123u && probe.image[0xccu] == 0x5au &&
+        x86_core_machine_set_smi(machine, LIB_FALSE) == LIB_STATUS_OK;
+    for (lib_u8 i = 0u; passed && i < 11u; ++i)
+        passed = x86_core_machine_run(machine, (x86_core_machine_run_budget){1u,0u},
+            &run) == LIB_STATUS_OK && run.executed == 1u;
+    x86_core_cpu_debug_cpu_snapshot snapshot;
+    passed = passed && !probe.active && probe.writes == 126u && probe.port_writes == 1u &&
+        x86_core_machine_debug_capture_cpu_snapshot(machine, X86_CORE_CPU_SNAPSHOT_CURRENT,
+            &snapshot) == LIB_STATUS_OK && snapshot.eip == 0x100u &&
+        snapshot.eax == 0x87654321u;
+    passed = passed && x86_core_machine_memory_write(machine, 0x100u,
+        executor_smm_software, sizeof(executor_smm_software)) == LIB_STATUS_OK;
+    for (lib_u8 i = 0u; passed && i < 4u; ++i)
+        passed = x86_core_machine_run(machine, (x86_core_machine_run_budget){1u,0u},
+            &run) == LIB_STATUS_OK && run.executed == 1u;
+    passed = passed && probe.active && run.linear_pc == 0xfffff0u &&
+        probe.image[0x2du] == 0x10u && probe.image[0x31u] == 0x10u;
+    for (lib_u8 i = 0u; passed && i < 13u; ++i)
+        passed = x86_core_machine_run(machine, (x86_core_machine_run_budget){1u,0u},
+            &run) == LIB_STATUS_OK && run.executed == 1u;
+    passed = passed && !probe.active && probe.port_writes == 2u &&
+        x86_core_machine_debug_capture_cpu_snapshot(machine, X86_CORE_CPU_SNAPSHOT_CURRENT,
+            &snapshot) == LIB_STATUS_OK && snapshot.eip == 0x113u &&
+        (snapshot.eax & 0x1000u) == 0u && (snapshot.ebx & 0x1000u) == 0u;
+    for (lib_u8 restore = 0u; passed && restore < 2u; ++restore) {
+        const lib_u32 fault_address = restore ? 0x60120u : 0x6000au;
+
+        passed = x86_core_machine_reset(machine) == LIB_STATUS_OK && !probe.active &&
+            x86_core_machine_debug_patch_registers(machine, &entry) == LIB_STATUS_OK &&
+            x86_core_machine_set_smi(machine, LIB_TRUE) == LIB_STATUS_OK;
+        probe.fail_read = restore ? fault_address : 0u;
+        probe.fail_write = restore ? 0u : fault_address;
+        if (restore && passed) {
+            passed = x86_core_cpu_request_nmi(machine->executor_cpu_execution) &&
+                x86_core_machine_run(machine, (x86_core_machine_run_budget){1u,0u},
+                &run) == LIB_STATUS_OK && run.executed == 0u &&
+                run.linear_pc == 0xfffff0u &&
+                x86_core_machine_set_smi(machine, LIB_FALSE) == LIB_STATUS_OK;
+            for (lib_u8 i = 0u; passed && i < 10u; ++i)
+                passed = x86_core_machine_run(machine, (x86_core_machine_run_budget){1u,0u},
+                    &run) == LIB_STATUS_OK && run.executed == 1u;
+        }
+        const lib_u64 cancelled = machine->transaction.cancelled_count;
+        x86_core_cpu_diagnostic fault;
+
+        passed = passed &&
+            x86_core_machine_run(machine, (x86_core_machine_run_budget){1u,0u}, &run) ==
+                LIB_STATUS_INTERNAL_ERROR && run.reason == X86_CORE_MACHINE_STOP_FAULT &&
+            run.executed == 0u && probe.active &&
+            run.linear_pc == (restore ? 0x21fu : 0x100u) &&
+            x86_core_machine_get_cpu_diagnostic(machine, &fault) == LIB_STATUS_OK &&
+            fault.first_fault.valid && fault.first_fault.exception_mask == VCPUINS_EXCEPT_CE &&
+            fault.first_fault.exception_code == fault_address &&
+            machine->transaction.owner == X86_CORE_MACHINE_TRANSACTION_OWNER_NONE &&
+            machine->transaction.cancelled_count == cancelled + 1u;
+        probe.fail_read = probe.fail_write = 0u;
+    }
+    if (!passed) {
+        x86_core_cpu_diagnostic diagnostic = {0};
+        (void)x86_core_machine_get_cpu_diagnostic(machine, &diagnostic);
+        const x86_core_cpu_timing_result timing =
+            x86_core_cpu_capture_timing(machine->executor_cpu_execution);
+        lib_c_fprintf(lib_c_stderr, "AMD SMM pc=%08x reason=%u detail=%08x executed=%llu writes=%u active=%u ticks=%llu events=%llu exception=%x/%x\n",
+            run.linear_pc, (lib_u32)run.reason, run.detail, run.executed, probe.writes,
+            (lib_u32)probe.active, timing.ticks, timing.event_ticks,
+            diagnostic.first_fault.exception_mask, diagnostic.first_fault.exception_code);
+    }
+    x86_core_machine_destroy(machine);
+    return passed && !probe.active;
+}
+
 static lib_bool executor_sx_smm(void)
 {
     const x86_core_machine_executor_config config = {
@@ -1113,7 +1339,8 @@ lib_i32 main(void)
         {"sx-bounded-retirement",executor_sx_bounded_retirement},
         {"retired-before-entry-fault",executor_retired_before_entry_fault},
         {"sx-soft-reset",executor_sx_soft_reset}, {"sx-smm",executor_sx_smm},
-        {"sx-smm-fault",executor_sx_smm_fault}, {"dma-hold",executor_dma_hold},
+        {"sx-smm-fault",executor_sx_smm_fault}, {"sxlv-smm-memory",executor_sxlv_smm_memory},
+        {"dma-hold",executor_dma_hold},
         {"locked-ports",executor_locked_ports}
     };
     lib_bool failed = LIB_FALSE;

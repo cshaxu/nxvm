@@ -4,8 +4,9 @@
 
 static lib_i32 valid_cpu_profile(x86_core_cpu_profile profile)
 {
-    return profile >= X86_CORE_CPU_PROFILE_8086 &&
-        profile <= X86_CORE_CPU_PROFILE_80486SX;
+    return (profile >= X86_CORE_CPU_PROFILE_8086 &&
+        profile <= X86_CORE_CPU_PROFILE_80486SX) ||
+        profile == X86_CORE_CPU_PROFILE_AM386SXLV;
 }
 
 static lib_i32 valid_fpu_profile(x86_fpu_profile profile)

@@ -75,7 +75,9 @@ typedef enum x86_core_cpu_memory_access_provenance {
     X86_CORE_CPU_MEMORY_ACCESS_INSTRUCTION_FETCH,
     X86_CORE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH,
     X86_CORE_CPU_MEMORY_ACCESS_PAGE_TABLE_READ,
-    X86_CORE_CPU_MEMORY_ACCESS_PAGE_TABLE_WRITE
+    X86_CORE_CPU_MEMORY_ACCESS_PAGE_TABLE_WRITE,
+    /* OR with the access kind for a cycle in the separate SMIADS space. */
+    X86_CORE_CPU_MEMORY_ACCESS_SMM = 0x80
 } x86_core_cpu_memory_access_provenance;
 
 typedef struct x86_core_cpu_cache_memory {

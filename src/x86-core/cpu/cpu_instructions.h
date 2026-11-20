@@ -367,6 +367,20 @@ struct x86_core_cpu_execution_context {
     x86_fpu *fpu;
 };
 
+/* An explicit UMOV operand selects the ordinary bus while instruction
+ * bytes and other accesses in the same handler use management space. */
+#define AMD_SMM_NORMAL_DATA ((x86_core_cpu_memory_access_provenance)0x40u)
+
+static inline x86_core_cpu_memory_access_provenance x86_core_cpu_effective_memory_provenance(
+    const x86_core_cpu_execution_context *context,
+    x86_core_cpu_memory_access_provenance provenance)
+{
+    if (!context->smm_active || context->cpu_profile != X86_CORE_CPU_PROFILE_AM386SXLV)
+        return provenance;
+    return provenance == AMD_SMM_NORMAL_DATA ? X86_CORE_CPU_MEMORY_ACCESS_DATA :
+        provenance | X86_CORE_CPU_MEMORY_ACCESS_SMM;
+}
+
 void x86_core_cpu_execution_context_initialize(
     x86_core_cpu_execution_context *context, t_cpu *cpu,
     t_cpuins *instructions, const x86_core_cpu_bus_provider *bus,

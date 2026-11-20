@@ -211,7 +211,8 @@ lib_status x86_core_cpu_set_smi(x86_core_cpu_execution_context *context,
     lib_bool asserted)
 {
     if (context == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    if (context->cpu_profile != X86_CORE_CPU_PROFILE_80486SX ||
+    if ((context->cpu_profile != X86_CORE_CPU_PROFILE_80486SX &&
+         context->cpu_profile != X86_CORE_CPU_PROFILE_AM386SXLV) ||
         context->bus == LIB_NULL || context->bus->system_management_active == LIB_NULL)
         return LIB_STATUS_UNSUPPORTED;
     if (asserted && !context->smi_asserted && !context->stop_granted && context->clock_running)

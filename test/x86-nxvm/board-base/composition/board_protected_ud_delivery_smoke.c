@@ -326,6 +326,7 @@ static lib_i32 ud_primary_metadata_matrix(void)
 }
 static x86_core_cpu_profile ud_0f_expected_minimum(lib_u8 opcode)
 {
+    if (opcode == 0x07u) return X86_CORE_CPU_PROFILE_AM386SXLV;
     if (opcode == 0x08u || opcode == 0x09u ||
         (opcode >= 0x10u && opcode <= 0x13u) ||
         opcode == 0xa2u || opcode == 0xaau || opcode == 0xb0u || opcode == 0xb1u ||
@@ -406,13 +407,15 @@ lib_i32 main(void)
     static const lib_u8 unsupported_invd[] = { 0x0fu, 0x08u };
     static const lib_u8 unsupported_wbinvd[] = { 0x0fu, 0x09u };
     static const lib_u8 unsupported_rsm[] = { 0x0fu, 0xaau };
+    static const lib_u8 unsupported_res3[] = { 0x0fu, 0x07u };
     const lib_u8 *forms[] = {
         invalid_primary, reserved_0f, reserved_0f25, invalid_operand, invalid_lock,
-        unsupported_invd, unsupported_wbinvd, unsupported_rsm
+        unsupported_invd, unsupported_wbinvd, unsupported_rsm, unsupported_res3
     };
     const lib_size sizes[] = {
         sizeof(invalid_primary), sizeof(reserved_0f), sizeof(reserved_0f25), sizeof(invalid_operand),
-        sizeof(invalid_lock), sizeof(unsupported_invd), sizeof(unsupported_wbinvd), sizeof(unsupported_rsm)
+        sizeof(invalid_lock), sizeof(unsupported_invd), sizeof(unsupported_wbinvd),
+        sizeof(unsupported_rsm), sizeof(unsupported_res3)
     };
     lib_size index;
 

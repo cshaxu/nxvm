@@ -94,6 +94,7 @@ static inline lib_bool cpu_profile_allows_minimum(x86_core_cpu_profile profile,
     case X86_CORE_CPU_PROFILE_80286:
         return cpu_profile_has_protected_architecture(profile);
     case X86_CORE_CPU_PROFILE_AM386SXLV:
+        return profile == X86_CORE_CPU_PROFILE_AM386SXLV;
     case X86_CORE_CPU_PROFILE_80386:
         return cpu_profile_has_32bit_architecture(profile);
     case X86_CORE_CPU_PROFILE_80486SX:

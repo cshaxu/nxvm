@@ -2882,7 +2882,8 @@ static lib_i32 x86_core_cpu_control_stack_direct_call_gate_parameters(
         context->bus_context,
         cpu_profile_external_address(context->cpu_profile,
             table_base + (selector & VCPU_SELECTOR_IDX) + 4u),
-        out_parameters, 1u, X86_CORE_CPU_MEMORY_ACCESS_DATA,
+        out_parameters, 1u, x86_core_cpu_effective_memory_provenance(
+            context, X86_CORE_CPU_MEMORY_ACCESS_DATA),
         LIB_TRUE, LIB_FALSE, 0u) == LIB_STATUS_OK;
 }
 
@@ -2898,7 +2899,8 @@ static lib_i32 x86_core_cpu_control_stack_call_gate_parameters(x86_core_cpu_exec
         context->bus_context,
         cpu_profile_external_address(context->cpu_profile,
             table_base + (selector & VCPU_SELECTOR_IDX) + 4u),
-        out_parameters, 1u, X86_CORE_CPU_MEMORY_ACCESS_DATA,
+        out_parameters, 1u, x86_core_cpu_effective_memory_provenance(
+            context, X86_CORE_CPU_MEMORY_ACCESS_DATA),
         LIB_TRUE, LIB_FALSE, 0u) == LIB_STATUS_OK;
 }
 
@@ -2915,7 +2917,8 @@ static lib_i32 x86_core_cpu_control_stack_selector_is_task_gate(x86_core_cpu_exe
             context->bus_context,
             cpu_profile_external_address(context->cpu_profile,
             table_base + (selector & VCPU_SELECTOR_IDX) + 5u),
-            &access, 1u, X86_CORE_CPU_MEMORY_ACCESS_DATA,
+            &access, 1u, x86_core_cpu_effective_memory_provenance(
+                context, X86_CORE_CPU_MEMORY_ACCESS_DATA),
             LIB_TRUE, LIB_FALSE, 0u) != LIB_STATUS_OK) return 0;
     return (access & 0x0fu) == VCPU_DESC_SYS_TYPE_TASKGATE;
 }
@@ -3743,6 +3746,23 @@ lib_i32 x86_core_cpu_80386_secondary_source_instruction_cost(
     opcode = data->opcodes[prefixes];
     if (opcode != 0x0fu) return 0;
     secondary = data->opcodes[prefixes + 1u];
+    if (context->cpu_profile == X86_CORE_CPU_PROFILE_AM386SXLV) {
+        /* RES3 transfers are charged as events. UMOV borrows ordinary MOV
+         * execution costs. Neither row claims physical SXLV timing. */
+        if (secondary == 0x07u) {
+            *out_ticks = 2u;
+            return 1;
+        }
+        if (secondary >= 0x10u && secondary <= 0x13u &&
+            prefixes + 2u < data->oplen) {
+            *out_ticks = x86_core_cpu_80386_source_timing_lookup(context,
+                !x86_core_cpu_source_timing_modrm_is_memory(data, prefixes + 1u) ?
+                    X86_CORE_CPU_SOURCE_TIMING_MOV_REGISTER_REGISTER :
+                    secondary < 0x12u ? X86_CORE_CPU_SOURCE_TIMING_MOV_RM_REGISTER :
+                    X86_CORE_CPU_SOURCE_TIMING_MOV_REGISTER_RM);
+            return 1;
+        }
+    }
     operand_bytes = data->oldcpu.data.cs.seg.exec.defsize ? 4u : 2u;
     if (data->prefix_oprsize) operand_bytes = operand_bytes == 4u ? 2u : 4u;
 
@@ -4291,6 +4311,11 @@ lib_i32 x86_core_cpu_80386_source_instruction_cost(x86_core_cpu_execution_contex
     case 0xa2u: case 0xa3u:
         *out_ticks = x86_core_cpu_80386_source_timing_lookup(context,
             X86_CORE_CPU_SOURCE_TIMING_MOV_MOFFS_WRITE);
+        return 1;
+    case 0xf1u:
+        if (context->cpu_profile != X86_CORE_CPU_PROFILE_AM386SXLV) break;
+        /* Nominal instruction cost. SMI entry owns the image transfer. */
+        *out_ticks = 2u;
         return 1;
     default:
         if (opcode >= 0xb0u && opcode <= 0xbfu) {

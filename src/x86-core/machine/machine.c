@@ -158,7 +158,9 @@ lib_status x86_core_machine_bind_attachment(x86_core_machine *machine,
             attachment->context == LIB_NULL ||
             attachment->finalize_devices == LIB_NULL ||
             ((attachment->special_cycle == LIB_NULL) !=
-             (attachment->complete_special_cycle == LIB_NULL))) {
+             (attachment->complete_special_cycle == LIB_NULL)) ||
+            ((attachment->read_smm_memory == LIB_NULL) !=
+             (attachment->write_smm_memory == LIB_NULL))) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
     if (!x86_core_machine_configuration_is_open(machine) ||
