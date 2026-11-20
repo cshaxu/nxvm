@@ -48,8 +48,6 @@ endfunction()
 
 # The current implementation inventory has one dispatch owner in each space,
 # one metadata classifier, and exactly one source-cost publisher.
-instruction_timing_require("${instruction_timing_source_text}" "insTable\\[0x00\\]" "primary dispatch is missing")
-instruction_timing_require("${instruction_timing_source_text}" "insTable_0f\\[0x00\\]" "secondary dispatch is missing")
 instruction_timing_require("${instruction_timing_source_text}" "x86_core_cpu_instruction_metadata_get" "metadata classifier is missing")
 instruction_timing_require("${instruction_timing_timing_text}" "x86_core_cpu_timing_select" "B0 timing selector is missing")
 instruction_timing_require("${instruction_timing_source_text}" "x86_core_cpu_timing_select" "CPU retirement selection seam is missing")
@@ -61,22 +59,24 @@ instruction_timing_require("${instruction_timing_machine_text}" "x86_core_cpu_80
 instruction_timing_require("${instruction_timing_machine_text}" "x86_core_cpu_80386_source_instruction_cost" "80386 source owner is missing")
 instruction_timing_require("${instruction_timing_machine_text}" "x86_core_cpu_primary_source_instruction_cost" "S2 primary source owner is missing")
 instruction_timing_require("${instruction_timing_machine_text}" "x86_core_cpu_80386_dynamic_multiply_cost" "S2 dynamic multiplier owner is missing")
-string(REGEX MATCHALL
-    "instruction_state\\.connect\\.insTable\\[0x[0-9a-f][0-9a-f]\\] ="
-    instruction_timing_primary_assignments "${instruction_timing_source_text}")
-list(LENGTH instruction_timing_primary_assignments instruction_timing_primary_count)
-if(NOT instruction_timing_primary_count EQUAL 256)
-    message(FATAL_ERROR
-        "Primary dispatch inventory must have 256 explicit assignments, found ${instruction_timing_primary_count}")
-endif()
-string(REGEX MATCHALL
-    "instruction_state\\.connect\\.insTable_0f\\[0x[0-9a-f][0-9a-f]\\] ="
-    instruction_timing_secondary_assignments "${instruction_timing_source_text}")
-list(LENGTH instruction_timing_secondary_assignments instruction_timing_secondary_count)
-if(NOT instruction_timing_secondary_count EQUAL 256)
-    message(FATAL_ERROR
-        "Secondary dispatch inventory must have 256 explicit assignments, found ${instruction_timing_secondary_count}")
-endif()
+function(instruction_timing_verify_dispatch space expected_cases)
+    string(REGEX MATCH
+        "static void x86_core_cpu_dispatch_${space}\\([^;\r\n]*\\)[ \t\r\n]*[{][^}]*[}]"
+        switch_body "${instruction_timing_source_text}")
+    instruction_timing_require("${switch_body}" "switch \\(opcode\\)" "${space} dispatch is missing")
+    instruction_timing_require("${switch_body}" "default: UndefinedOpcode\\(context\\)"
+        "${space} dispatch lacks an undefined-opcode default")
+    string(REGEX MATCHALL "case 0x[0-9a-f][0-9a-f]:" cases "${switch_body}")
+    list(REMOVE_DUPLICATES cases)
+    list(LENGTH cases count)
+    if(NOT count EQUAL expected_cases)
+        message(FATAL_ERROR
+            "${space} dispatch inventory expected ${expected_cases} explicit cases, found ${count}")
+    endif()
+endfunction()
+instruction_timing_verify_dispatch(primary 256)
+# Unallocated 0F values are handled by the default, without explicit cases.
+instruction_timing_verify_dispatch(0f 89)
 
 # Exact inventory anchors prevent a later edit from silently converting a
 # complete opcode space into an unnamed family or dropping an allocated receiver.

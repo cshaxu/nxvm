@@ -11,10 +11,13 @@ if(legacy_i386_gate)
     message(FATAL_ERROR "Legacy unconditional i386 gate found: ${legacy_i386_gate}")
 endif()
 
-string(REGEX MATCH "insTable\\[0xd[89abcdef]\\][^\n\r]*UndefinedOpcode"
-    direct_fpu_undefined "${cpu_instructions}")
-if(direct_fpu_undefined)
-    message(FATAL_ERROR "Direct FPU ESC undefined mapping found: ${direct_fpu_undefined}")
+string(REGEX MATCH "(case 0xd[89a-f]:[ \t\r\n]*)+FPU_ESCAPE\\(context\\);"
+    fpu_dispatch "${cpu_instructions}")
+string(REGEX MATCHALL "case 0xd[89a-f]:" fpu_cases "${fpu_dispatch}")
+list(REMOVE_DUPLICATES fpu_cases)
+list(LENGTH fpu_cases fpu_case_count)
+if(NOT fpu_case_count EQUAL 8)
+    message(FATAL_ERROR "CPU dispatch must route all eight D8-DF opcodes through FPU_ESCAPE")
 endif()
 
 message(STATUS "CPU/FPU static closure: OK")

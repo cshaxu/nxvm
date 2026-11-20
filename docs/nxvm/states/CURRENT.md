@@ -1,8 +1,10 @@
-# M5 T589 S7 - Active: Basic hardware qualification
+# M5 T589 S7 - Delivered: Basic hardware qualification
 
 [S6 is closed](../history/M5-T589-S6-ob300-input.md).
 [S5 display evidence](../etc/evidence/t589-s5-ct65510-display.md) records
 the two stale NXVM repository timing checks found during display regression.
+The [hardware qualification](../etc/evidence/t589-s7-ob300-hardware.md)
+records the verified device contracts and board-wiring handoff.
 
 | Field | Required record |
 | --- | --- |

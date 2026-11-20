@@ -34,12 +34,14 @@ endforeach()
 jcc_target_require("${preview_text}" "preview_mode = LIB_TRUE")
 jcc_target_require("${preview_text}" "memory_status = context->bus->read_memory(context->bus_context, physical,")
 jcc_target_require("${preview_text}" "(void *)rdata, byte, provenance, context->preview_mode,")
-jcc_target_require("${bus_text}" "if (observe_only) {
+jcc_target_require("${bus_text}" "if (observe_only && !smm) {
         return x86_core_machine_memory_inspect_physical(&machine->executor_memory,
             address, (lib_uptr)destination, bytes, reset_fetch);
     }
-    if (!locked) {
+    if (!locked && !observe_only) {
         status = x86_core_machine_transaction_begin")
+jcc_target_require("${bus_text}" "machine->attachment.read_smm_memory(machine->attachment.context,
+                address, destination, bytes, observe_only)")
 if(preview_text MATCHES "core_machine_memory_(inspect|read)_.*physical\\(")
     message(FATAL_ERROR "CPU preview must use the bus observation contract, not board memory")
 endif()
