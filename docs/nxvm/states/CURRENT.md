@@ -1,29 +1,27 @@
-# M5 T589 S6 - Delivered: OmniBook keyboard and pointing device
+# M5 T589 S7 - Active: Basic hardware qualification
 
-[S5 is closed](../history/M5-T589-S5-ct65510-display.md).
-The [S5 input handoff](../etc/evidence/t589-s5-ct65510-display.md#input-handoff)
-records the HP service evidence and original System 1.0 driver behavior.
-The [S6 qualification](../etc/evidence/t589-s6-ob300-input.md) records the
-two-width test results and the HP board handoff.
+[S6 is closed](../history/M5-T589-S6-ob300-input.md).
+[S5 display evidence](../etc/evidence/t589-s5-ct65510-display.md) records
+the two stale NXVM repository timing checks found during display regression.
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation M5 T589 S6 after S5 publication at 5b0a97d5b. |
+| Identifier Mode | Continuation M5 T589 S7 after S6 qualification at 15039a56f. |
 | Admission And Approval | Owner authorized sequential single-session coordinator/executor admission. |
-| Objective | Qualify or implement the keyboard and auxiliary pointing-device contracts needed by the OmniBook 300. |
-| Non-goals | No HP port decode guesses, new host input route, original ROM full boot or unsupported hardware precision claim. |
-| Reference Baseline | HP service publication 5965-0244; System 1.0 ABA mouse driver and BIOS evidence; current X86-NXVM AT controller, keyboard and mouse tests. |
-| Candidate Proposal | proposals/m5-ob300-hardware.md S6 and proposals/m5-ob300-architecture.md O07. |
-| Files And ABI Surface | NXVM evidence first. Change existing X86-NXVM device owners and tests only for a demonstrated hardware-contract gap. Apply receiver obligations to actual Shared changes. |
+| Objective | Verify the basic CPU, video, input and PIC/PIT/DMA/RTC device contracts for the HP board receiver, and repair stale NXVM qualification checks. |
+| Non-goals | No HP board wiring, product binary, original ROM boot, speculative silicon precision or CPU timing changes to appease static checks. |
+| Reference Baseline | T589 S1-S6 delivered contracts, the HP service and compatibility evidence, existing dual-width cached integration inventory. |
+| Candidate Proposal | proposals/m5-ob300-hardware.md S7 and proposals/m5-ob300-architecture.md. |
+| Files And ABI Surface | NXVM static checks and evidence. Change a shared device only if verification demonstrates a real missing board-facing contract, with a recorded scope revision and receiver tests. |
 | Applicable Rules | NXVM guide, Contributing, Roadmap, architecture/layout, source policy, shared Execution/Documentation/Architecture/Coding. |
-| Verification | Establish the controller protocol from supplied evidence. Verify keyboard make/break, auxiliary motion/buttons, reset, command and IRQ delivery on cached x64/x86. Retain clear separate board receiver conditions. |
-| Expected Markers | One keyboard and auxiliary owner using existing Machine input admission. Hardware reset and guest command evidence remains distinguishable from inferred board routing. |
-| Asset Needs | Local HP service manual and read-only System 1.0 files. Temporary work in build/t589-s6 up to 32 MiB; 300 seconds for a test batch, then retain necessary hashes and remove owned temporaries. |
-| Reporting Requirements | State reuse or demonstrate a concrete gap, list relevant tests and limits, distinguish the underlying controller protocol from board and driver behavior. |
-| Stop Conditions | No unsupported exact controller marking, protected asset publication, or second device implementation where the current owner already supplies the contract. |
-| Exit Criteria | Sourced HP driver/protocol evidence, verified independent make/break and motion/button/reset tests on both host widths, recorded board requirements and pushed reviewed delivery. |
+| Verification | Verify runtime chip contracts on both cached Release widths and NXVM manifest and boundary gates. Replace stale timing source probes with assertions against current dispatch and retirement behavior. Record test-backed capabilities and board signal ownership. |
+| Expected Markers | Verified independent hardware contracts and a concrete HP board handoff with retained model limits. |
+| Asset Needs | Existing fixture data and the read-only manual. Temporary work in build/t589-s7, up to 64 MiB; 300 seconds for focused tests or one aggregate. |
+| Reporting Requirements | Record real coverage, corrected check results, tested widths and the remaining board/ROM gaps. |
+| Stop Conditions | Preserve all established timing and device semantics. Distinguish proven behavior from unanswered board strap and decode questions. |
+| Exit Criteria | Verified CPU/display/input and support-device contracts, corrected checks, complete board handoff, reviewed pushed deliverable and clean worktree. |
 | Original Owner Request | Build the OmniBook 300 in hardware, wiring, machine and product stages. |
-| Similar-Issue Sweep | Existing keyboard/aux forwarding, scan translation, typematic, controller handshakes and reset. |
+| Similar-Issue Sweep | NXVM timing inventories, retirement boundary probes, device phase/IRQ, reset and DMA ownership. |
 
 # M5 T588 - Closed: OB300 hardware and execution design
 
