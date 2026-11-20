@@ -1,17 +1,19 @@
-# M5 Candidate: HP OmniBook emulator
+# HP OmniBook research and OB300 implementation plan
 
-Owner requested queue registration on 2026-11-11. This is an unadmitted
-candidate at the tail of the NXVM queue, not an allocated numeric T or an
-authorization to modify shared code. Product naming and build variants will
-be decided at admission.
+Owner requested family queue registration on 2026-11-11. On 2026-11-19 the
+owner prioritized OmniBook 300 and requested several bounded T candidates at
+the queue head. This file now preserves the family research and common design
+boundaries; it is not an additional queued T or an implementation admission.
 
 ## Objective
 
-Emulate the classic OmniBook 300/425/430 hardware family and its System ROM
-1.0, 1.1s and 2.0s cards. Execute the original guest BIOS and system software:
-POST, ROM DOS, writable C-drive boot, and the original ROM Windows environment
-where supplied. Preserve the distinction between machine hardware and card
-revision; cross-machine card compatibility requires evidence.
+Deliver a usable OmniBook 300 with System ROM 1.0 ABA: original firmware,
+ROM DOS, original OBSETUP/ROM Windows, Word and Excel, with persistent writable
+storage and measured responsiveness. OB425/430 and cards 1.1s/2.0s remain
+research references and possible future scope, not prerequisites or currently
+queued implementations. HP's service manual identifies OB300 as 20 MHz
+386SXLV, whereas OB425/430 use 486SLC/e; verify concrete silicon differences
+rather than importing another machine's CPU personality.
 
 ## Read-only research baseline
 
@@ -51,25 +53,18 @@ before further acquisition, derivation or packaging. Raw card images, Microsoft
 software and writable media remain external; queue registration does not
 authorize embedding the combined Microsoft-bearing card into published EXEs.
 
-## Design and implementation sequence
+## Ordered implementation candidates
 
-1. Freeze exact hardware/card identities and external asset provenance. Audit
-   chip manuals, reset mappings, PCMCIA common/attribute memory, HP control
-   registers and available references against current shared implementation.
-   Establish a finite hardware/boot coverage ledger and explicit model grades.
-2. Prove a minimal real-firmware boot chain. Prefer OB430 with 2.0s as the first
-   research baseline because its boundaries, FAT12 files and BIOS checksums
-   are verified; confirm this choice at admission. Trace reset, POST and
-   missing I/O behavior instead of replacing guest BIOS services.
-3. Implement the required board mapping, PCMCIA and writable storage, C&T
-   65510 display, keyboard/pointer and necessary power behavior. Reuse existing
-   CPU and neutral devices after checking contracts; do not relabel F65535 as
-   F65510 or assume every AMD/Cyrix profile equals the generic Intel profile.
-4. Qualify ROM DOS, C-drive boot and interactive read/write operation. Then
-   add OB300/425 differences, FFS20/ROM module access and original OBSETUP,
-   Windows, Word and Excel workflows. Guest ROM code owns software semantics.
-5. Qualify lifecycle, reset, input, display and performance on both host widths;
-   publish under the applicable artifact/source rules and obtain owner acceptance.
+1. [Hardware, ROM and execution design](m5-ob300-design.md).
+2. [Real firmware and ROM DOS](m5-ob300-rom-dos.md).
+3. [Execution and interaction performance](m5-ob300-performance.md).
+4. [ROM Windows, Word and Excel](m5-ob300-rom-windows.md).
+5. [Complete product qualification](m5-ob300-product-qualification.md).
+
+This replaces the earlier suggestion to start with OB430. The existing family
+ROM observations remain valid research, not proof of OB300 boot. Performance
+is measured from the first executable path and has an explicit usability gate
+before full Windows work; no elapsed-time promise is inferred from PC110.
 
 App code owns model composition, firmware/card binding and unique hardware
 policy. Existing Lib/Emulator own host services and generic lifecycle; applicable

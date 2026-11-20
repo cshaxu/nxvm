@@ -1,3 +1,14 @@
+# M5 Td S186 - Completed: OmniBook 300 queue planning
+
+Owner requested five bounded OB300 implementation candidates at the queue head.
+[Queue](QUEUE.md) positions 1-5 now cover design, ROM DOS, performance,
+ROM Windows/applications and final product qualification. The former broad
+family candidate is a research umbrella, not a duplicate task. Existing
+pending candidates retain their relative order at positions 6-9.
+[Governance record](../history/M5-Td-S186-ob300-planning.md) preserves the
+packet and review. No numeric implementation T/S was allocated. T587 remains
+open with S1-S5 closed and no active implementation S.
+
 # M5 T587 - Open; S5 accepted and closed
 
 The owner accepted S5 and explicitly approved closure after delivery through
@@ -7,7 +18,7 @@ approved packet. [S5 history](../history/M5-T587-token-import.md) retains the
 verification evidence and archived packet.
 
 S1-S5 are accepted and closed. T587 remains open with no active S; wait for
-the owner's next instruction. No new implementation or queue task is admitted.
+the owner's next implementation instruction. Queue registration above does not admit implementation.
 
 | Task | Status |
 | --- | --- |

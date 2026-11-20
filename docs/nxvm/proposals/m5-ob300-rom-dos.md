@@ -1,0 +1,44 @@
+# M5 Candidate: OmniBook 300: real firmware and ROM DOS
+
+Owner queued this bounded T candidate on 2026-11-19. Numeric T/S identifiers
+are allocated only at admission. [Queue](../states/QUEUE.md) owns priority;
+[family research and shared boundaries](m5-omnibook-emulator.md) apply.
+
+## Objective and scope
+
+Implement the build-fixed App and minimum real board composition, reset
+mapping, System ROM card, required controllers, C&T 65510 display and keyboard.
+Reuse existing PC and CPU mechanisms only after checking their contracts.
+Keep HP-specific behavior in the App and independently reusable chip behavior
+in the appropriate shared owner; no copied CPU executor or host BIOS handler.
+
+Execute original reset, POST and ROM DOS. Provide the writable C-drive medium
+needed by the original software; retain the immutable card master. Validate
+card bank/window changes and failure behavior, not merely extracted files.
+Measure boot stages, execution throughput and input latency from this first
+working guest, retaining raw-work counts separately from wall time.
+
+## Dependencies
+
+Accepted hardware/ROM design and convergence ledger.
+
+## Non-goals
+
+No host-side DOS/FFS/Windows replacement, arbitrary ROM patch or full-family claim.
+
+## Completion and stop conditions
+
+Both host widths reach an interactive ROM DOS checkpoint through the real
+firmware, with usable display/input, directory access and writable storage.
+Reset/resume and stop/start repeat successfully. The ledger distinguishes
+completed boot requirements from Windows/peripheral receivers. Record current
+performance against the frozen budgets and transfer any shortfall explicitly
+to the next performance task; do not call a static POST screen a DOS boot.
+
+At admission, plan bounded numeric S batches from the convergence ledger rather
+than one S per symptom. Reuse existing tests where they cover the contract.
+Missing manuals alone are not an indefinite blocker: document L1 assumptions,
+L2 reference models or L3 explicit manual formulas/constants honestly. Public
+interface changes follow the applicable review rules. New evidence that
+invalidates a prerequisite requires a recorded design/scope decision, not a
+second execution route or an unreported transfer.
