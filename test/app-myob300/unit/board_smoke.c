@@ -27,7 +27,7 @@ static void expect_port(x86_core_machine *core, lib_u16 port, lib_u8 expected)
     lib_test_assert((lib_u8)value == expected);
 }
 
-static void test_chipset(x86_core_machine *core)
+static void test_chipset(x86_core_machine *core, myob300_board *profile)
 {
     lib_u32 value;
 
@@ -50,6 +50,19 @@ static void test_chipset(x86_core_machine *core)
     lib_test_assert(x86_core_machine_bus_read(core, 0xedu, &value) == LIB_STATUS_UNSUPPORTED);
     lib_test_assert(x86_core_machine_bus_write(core, 0xedu, 0u) == LIB_STATUS_UNSUPPORTED);
     lib_test_assert(x86_core_machine_bus_read(core, 0x3d8u, &value) == LIB_STATUS_UNSUPPORTED);
+
+    write_port(core, 0xecu, 0x03u);
+    expect_port(core, 0xedu, 0x03u);
+    write_port(core, 0xedu, 0x13u);
+    expect_port(core, 0xedu, 0x13u);
+
+    write_indexed(core, 0xecu, 0xedu, 0x3au, 0xfeu);
+    write_port(core, 0xecu, 0x3bu);
+    expect_port(core, 0xedu, 0xffu);
+    lib_test_assert(myob300_board_set_matrix_key(profile, 0u, 4u, LIB_TRUE) == LIB_STATUS_OK);
+    expect_port(core, 0xedu, 0xefu);
+    lib_test_assert(myob300_board_set_matrix_key(profile, 0u, 4u, LIB_FALSE) == LIB_STATUS_OK);
+    expect_port(core, 0xedu, 0xffu);
 }
 
 static void configure_pic(x86_core_machine *core)
@@ -93,6 +106,58 @@ static void test_support_devices(x86_core_machine *core, x86_nxvm_board_state *b
     lib_test_assert(x86_nxvm_board_observe_a20(board, &enabled) == LIB_STATUS_OK && enabled);
     write_port(core, 0x92u, 0u);
     lib_test_assert(x86_nxvm_board_observe_a20(board, &enabled) == LIB_STATUS_OK && !enabled);
+}
+
+static void test_refresh_and_ram(x86_core_machine *core)
+{
+    const lib_u8 idle[] = {0xebu, 0xfeu};
+    const lib_u8 written = 0x74u;
+    const x86_core_cpu_debug_register_patch entry = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP)
+    };
+    x86_core_machine_run_result result;
+    lib_bool refresh_low = LIB_FALSE;
+    lib_bool refresh_high = LIB_FALSE;
+    lib_u8 actual;
+
+    lib_test_assert(x86_core_machine_reset(core) == LIB_STATUS_OK);
+    write_port(core, 0x92u, 2u);
+    lib_test_assert(x86_core_machine_memory_write(core, 0x1fffffu, &written, 1u) == LIB_STATUS_OK);
+    lib_test_assert(x86_core_machine_memory_write(core, 0x7fffffu, &written, 1u) == LIB_STATUS_OK);
+    lib_test_assert(x86_core_machine_memory_read(core, 0x1fffffu, &actual, 1u) == LIB_STATUS_OK &&
+        actual == written);
+    lib_test_assert(x86_core_machine_memory_read(core, 0x7fffffu, &actual, 1u) == LIB_STATUS_OK &&
+        actual == 0xffu);
+
+    lib_test_assert(x86_core_machine_memory_write(core, 0u, idle, sizeof(idle)) == LIB_STATUS_OK);
+    lib_test_assert(x86_core_machine_debug_patch_registers(core, &entry) == LIB_STATUS_OK);
+    for (lib_u32 step = 0u; step < 1000u && (!refresh_low || !refresh_high); ++step) {
+        lib_u32 port;
+        lib_test_assert(x86_core_machine_bus_read(core, 0x61u, &port) == LIB_STATUS_OK);
+        if ((port & 0x10u) != 0u) refresh_high = LIB_TRUE;
+        else refresh_low = LIB_TRUE;
+        lib_test_assert(x86_core_machine_run(core, (x86_core_machine_run_budget){1u, 0u},
+            &result) == LIB_STATUS_OK);
+    }
+    lib_test_assert(refresh_low && refresh_high);
+    lib_test_assert(x86_core_machine_reset(core) == LIB_STATUS_OK);
+}
+
+static void test_ab_shadow(x86_core_machine *core)
+{
+    const lib_u8 value = 0xa5u;
+    lib_u8 actual;
+
+    write_port(core, 0xfbu, 0u);
+    write_indexed(core, 0xecu, 0xedu, 0x0eu, 1u);
+    lib_test_assert(x86_core_machine_memory_write(core, 0xa0000u, &value, 1u) == LIB_STATUS_OK);
+    lib_test_assert(x86_core_machine_memory_read(core, 0xa0000u, &actual, 1u) == LIB_STATUS_OK &&
+        actual != value);
+    write_port(core, 0xedu, 3u);
+    lib_test_assert(x86_core_machine_memory_read(core, 0xa0000u, &actual, 1u) == LIB_STATUS_OK &&
+        actual == value);
+    write_port(core, 0xedu, 0u);
 }
 
 static void expect_input(x86_core_machine *core, lib_u32 address, lib_u8 expected)
@@ -343,8 +408,10 @@ int main(void)
         memory == 2u * 1024u * 1024u);
     lib_test_assert(x86_core_machine_freeze_execution_providers(core) == LIB_STATUS_OK);
     lib_test_assert(x86_core_machine_reset(core) == LIB_STATUS_OK);
-    test_chipset(core);
+    test_chipset(core, setup.profile);
     test_support_devices(core, board);
+    test_refresh_and_ram(core);
+    test_ab_shadow(core);
     test_display(core, setup.profile);
     test_input(core, board);
     test_card(core);

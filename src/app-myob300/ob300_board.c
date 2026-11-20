@@ -4,8 +4,12 @@
 #include "x86-core/machine/memory_interface.h"
 
 #define MYOB300_CPU_CLOCK_HZ 20000000u
+#define MYOB300_RAM_BYTES 0x200000u
+#define MYOB300_RAM_PROBE_LIMIT 0x800000u
 #define MYOB300_PIT_INPUT_HZ 1193182u
 #define MYOB300_RTC_INPUT_HZ 32768u
+#define MYOB300_REFRESH_HZ 64000u
+#define MYOB300_REFRESH_TICKS ((MYOB300_CPU_CLOCK_HZ + MYOB300_REFRESH_HZ / 2u) / MYOB300_REFRESH_HZ)
 #define MYOB300_SYSTEM_ROM_BASE 0x000f8000u
 #define MYOB300_SYSTEM_ROM_RESET_ALIAS 0x00ff8000u
 #define MYOB300_MANAGEMENT_WINDOW_BASE 0x00060000u
@@ -19,7 +23,7 @@ struct myob300_board {
 };
 
 const x86_nxvm_board_config myob300_board_configuration = {
-    .memory_bytes = 2u * 1024u * 1024u,
+    .memory_bytes = MYOB300_RAM_BYTES,
     .cpu_profile = X86_CORE_CPU_PROFILE_AM386SXLV,
     .fpu_profile = X86_FPU_PROFILE_NONE,
     .ticks_per_instruction = 1u,
@@ -122,6 +126,19 @@ static lib_bool myob300_board_no_deadline(void *owner, lib_u64 now, lib_u64 *dea
     return LIB_FALSE;
 }
 
+lib_status myob300_board_set_matrix_key(myob300_board *board, lib_u8 row,
+    lib_u8 column, lib_bool pressed)
+{
+    lib_u16 mask;
+
+    if (board == LIB_NULL || row >= MYOB300_KEYBOARD_ROWS ||
+        column >= MYOB300_KEYBOARD_COLUMNS) return LIB_STATUS_INVALID_ARGUMENT;
+    mask = (lib_u16)(1u << column);
+    if (pressed) board->chipset.keyboard_columns[row] &= (lib_u16)~mask;
+    else board->chipset.keyboard_columns[row] |= mask;
+    return LIB_STATUS_OK;
+}
+
 lib_status myob300_board_capture_display(void *context, x86_video_snapshot *out_snapshot)
 {
     myob300_board *board = context;
@@ -175,8 +192,10 @@ static lib_status myob300_board_bind(
             if (status != LIB_STATUS_OK)
                 (void)x86_core_machine_remove_memory_device_routes(services->core, &board->chipset.card);
         }
-        if (status != LIB_STATUS_OK)
+        if (status != LIB_STATUS_OK) {
+            (void)x86_core_machine_remove_memory_device_routes(services->core, &board->chipset);
             (void)x86_core_machine_remove_port_routes(services->core, &board->chipset);
+        }
     }
     if (status != LIB_STATUS_OK) {
         myob300_board_finalize(board);
@@ -204,6 +223,19 @@ lib_status myob300_board_configure(x86_nxvm_board_plan *plan, myob300_board_setu
         .dma_present = LIB_TRUE,
         .dma = {X86_NXVM_BOARD_DMA_FDC_CHANNEL_UNBOUND,
             X86_NXVM_BOARD_DMA_CONTROLLER_COUNT, X86_NXVM_BOARD_DMA_CASCADE_CHANNEL},
+        .absent_memory_count = 1u,
+        .absent_memory = {
+            {MYOB300_RAM_BYTES, MYOB300_RAM_PROBE_LIMIT - MYOB300_RAM_BYTES, 0xffu}
+        },
+        /* SCAMP II REFCTL resets to a 15.625 us interval. Port B observes
+         * that cadence before the guest programs PIT counter 1. */
+        .planar_parity_present = LIB_TRUE,
+        .planar_parity = {
+            .port = 0x61u,
+            .refresh_status_source =
+                X86_NXVM_BOARD_PLANAR_PARITY_REFRESH_STATUS_ELAPSED_TICK_TOGGLE,
+            .refresh_status_toggle_ticks = MYOB300_REFRESH_TICKS
+        },
         .rtc_cmos_present = LIB_TRUE,
         .rtc_cmos = {
             .index_port = 0x70u,

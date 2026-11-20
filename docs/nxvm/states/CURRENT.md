@@ -3,6 +3,8 @@
 [S4 is closed](../history/M5-T590-S4-ob300-system-card.md).
 The [card and refresh handoff](../etc/evidence/t590-s4-ob300-system-card.md)
 contains the production checkpoint and the separately identified board gaps.
+[S5 qualification evidence](../etc/evidence/t590-s5-ob300-board-qualification.md)
+tracks the active board checks.
 
 | Field | Required record |
 | --- | --- |

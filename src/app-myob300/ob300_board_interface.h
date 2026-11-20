@@ -25,5 +25,7 @@ typedef struct myob300_board_setup {
 
 lib_status myob300_board_configure(x86_nxvm_board_plan *plan, myob300_board_setup *setup);
 lib_status myob300_board_capture_display(void *context, x86_video_snapshot *out_snapshot);
+lib_status myob300_board_set_matrix_key(myob300_board *board, lib_u8 row,
+    lib_u8 column, lib_bool pressed);
 
 #endif
