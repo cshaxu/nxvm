@@ -4,3 +4,9 @@ target_link_libraries(myob300-board PUBLIC x86-nxvm-board-base PRIVATE x86-nxvm-
 if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(myob300-board PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
+
+add_library(myob300-machine STATIC ob300_machine.c)
+target_link_libraries(myob300-machine PUBLIC x86-nxvm-machine PRIVATE myob300-board storage)
+if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(myob300-machine PRIVATE -Wall -Wextra -Wpedantic -Werror)
+endif()

@@ -4,6 +4,7 @@
 #include "x86-nxvm/board-base/machine_board_interface.h"
 
 extern const x86_nxvm_board_config myob300_board_configuration;
+extern const x86_nxvm_board_plan_topology myob300_board_topology;
 
 #define MYOB300_CARD_BOOT_BYTES 0x800000u
 
@@ -20,10 +21,11 @@ typedef struct myob300_card_image {
 typedef struct myob300_board_setup {
     myob300_card_image common;
     myob300_card_image attribute;
+    lib_bool fixed_disk_card_installed;
     myob300_board *profile;
 } myob300_board_setup;
 
-lib_status myob300_board_configure(x86_nxvm_board_plan *plan, myob300_board_setup *setup);
+lib_status myob300_board_configure(void *owner, x86_nxvm_board_plan *plan);
 lib_status myob300_board_capture_display(void *context, x86_video_snapshot *out_snapshot);
 lib_status myob300_board_set_matrix_key(myob300_board *board, lib_u8 row,
     lib_u8 column, lib_bool pressed);

@@ -12,15 +12,16 @@
 #define MYOB300_REFRESH_HZ 64000u
 #define MYOB300_REFRESH_TICKS ((MYOB300_CPU_CLOCK_HZ + MYOB300_REFRESH_HZ / 2u) / MYOB300_REFRESH_HZ)
 #define MYOB300_SYSTEM_ROM_BASE 0x000f8000u
-#define MYOB300_E_ROM_BASE 0x000e0000u
 #define MYOB300_SYSTEM_ROM_RESET_ALIAS 0x00ff8000u
 #define MYOB300_MANAGEMENT_WINDOW_BASE 0x00060000u
 #define MYOB300_MANAGEMENT_MEMORY_BYTES 0x20000u
 #define MYOB300_PANEL_DEFAULT_VSYNC_HZ 60u
+#define MYOB300_PARALLEL_DATA_PORT 0x378u
 
 struct myob300_board {
     myob300_chipset chipset;
     x86_ct_vga *display;
+    lib_u8 parallel_data;
     lib_u8 management_memory[MYOB300_MANAGEMENT_MEMORY_BYTES];
 };
 
@@ -38,6 +39,9 @@ const x86_nxvm_board_config myob300_board_configuration = {
     .pic_topology = X86_NXVM_BOARD_PIC_TOPOLOGY_CASCADED,
     .dma_controller_count = X86_NXVM_BOARD_DMA_CONTROLLER_COUNT,
     .keyboard_topology = X86_NXVM_BOARD_KEYBOARD_TOPOLOGY_8042,
+    /* The internal keyboard fuse sense is high on input-port bit 2. */
+    .kbc_input_port_configured = LIB_TRUE,
+    .kbc_input_port = 0x84u,
     /* L2: keep the self-test reply pending beyond POST's first data read. */
     .kbc_command_response_ticks = MYOB300_KBC_COMMAND_RESPONSE_TICKS,
     .display_topology = X86_NXVM_BOARD_DISPLAY_TOPOLOGY_NONE,
@@ -52,8 +56,32 @@ static void myob300_board_reset(void *owner, x86_nxvm_board_reset_phase phase)
     if (phase == X86_NXVM_BOARD_RESET_BEFORE_DEVICES) {
         myob300_chipset_reset(&board->chipset);
         x86_ct_vga_reset(board->display);
+        board->parallel_data = 0u;
         lib_memory_set(board->management_memory, 0, sizeof(board->management_memory));
     }
+}
+
+/* The onboard parallel connector exposes a readable SPP data latch. */
+static lib_status myob300_board_parallel_read(void *owner, lib_u16 port,
+    lib_u64 tick, lib_u32 *out_value)
+{
+    const myob300_board *board = owner;
+
+    (void)port;
+    (void)tick;
+    *out_value = board->parallel_data;
+    return LIB_STATUS_OK;
+}
+
+static lib_status myob300_board_parallel_write(void *owner, lib_u16 port,
+    lib_u8 access_bytes, lib_u32 value)
+{
+    myob300_board *board = owner;
+
+    (void)port;
+    if (access_bytes != 1u) return LIB_STATUS_UNSUPPORTED;
+    board->parallel_data = (lib_u8)value;
+    return LIB_STATUS_OK;
 }
 
 static void myob300_board_management_active(void *owner, lib_bool active)
@@ -172,11 +200,16 @@ static lib_status myob300_board_bind(
 {
     myob300_board_setup *setup = owner;
     myob300_board *board = lib_allocate_zero(1u, sizeof(*board));
+    const x86_core_machine_port_route parallel = {
+        MYOB300_PARALLEL_DATA_PORT, myob300_board_parallel_read,
+        myob300_board_parallel_write, board, LIB_FALSE, 0u
+    };
     lib_status status;
 
     if (board == LIB_NULL) return LIB_STATUS_NO_MEMORY;
     board->chipset.card.common = setup->common;
     board->chipset.card.attribute = setup->attribute;
+    board->chipset.fixed_disk_card_installed = setup->fixed_disk_card_installed;
     status = LIB_STATUS_OK;
     if (setup->common.data != LIB_NULL) {
         status = x86_core_machine_register_immutable_rom_mapping(services->core,
@@ -186,21 +219,20 @@ static lib_status myob300_board_bind(
             status = x86_core_machine_register_immutable_rom_mapping_reset_alias(services->core,
                 MYOB300_SYSTEM_ROM_BASE, MYOB300_SYSTEM_ROM_RESET_ALIAS,
                 MYOB300_CARD_RESET_BYTES);
-        if (status == LIB_STATUS_OK)
-            status = x86_core_machine_register_immutable_rom_mapping(services->core,
-                MYOB300_E_ROM_BASE, setup->common.data + MYOB300_CARD_E_ROM_OFFSET,
-                MYOB300_CARD_E_ROM_BYTES);
     }
     if (status == LIB_STATUS_OK) status = x86_ct_vga_create(X86_CT_VGA_65510, &board->display);
-    if (status == LIB_STATUS_OK) status = myob300_chipset_install(&board->chipset, services->core);
+    if (status == LIB_STATUS_OK) status = myob300_chipset_install(&board->chipset, services);
     if (status == LIB_STATUS_OK) {
-        status = myob300_card_install(&board->chipset.card, services->core);
+        status = x86_core_machine_install_port_routes(services->core, &parallel, 1u);
+        if (status == LIB_STATUS_OK)
+            status = myob300_card_install(&board->chipset.card, services->core);
         if (status == LIB_STATUS_OK) {
             status = myob300_display_install(services->core, board->display);
             if (status != LIB_STATUS_OK)
                 (void)x86_core_machine_remove_memory_device_routes(services->core, &board->chipset.card);
         }
         if (status != LIB_STATUS_OK) {
+            (void)x86_core_machine_remove_port_routes(services->core, board);
             (void)x86_core_machine_remove_memory_device_routes(services->core, &board->chipset);
             (void)x86_core_machine_remove_port_routes(services->core, &board->chipset);
         }
@@ -225,36 +257,36 @@ static lib_status myob300_board_bind(
     return LIB_STATUS_OK;
 }
 
-lib_status myob300_board_configure(x86_nxvm_board_plan *plan, myob300_board_setup *setup)
+const x86_nxvm_board_plan_topology myob300_board_topology = {
+    .dma_present = LIB_TRUE,
+    .dma = {X86_NXVM_BOARD_DMA_FDC_CHANNEL_UNBOUND,
+        X86_NXVM_BOARD_DMA_CONTROLLER_COUNT, X86_NXVM_BOARD_DMA_CASCADE_CHANNEL},
+    .absent_memory_count = 1u,
+    .absent_memory = {
+        {MYOB300_RAM_BYTES, MYOB300_RAM_PROBE_LIMIT - MYOB300_RAM_BYTES, 0xffu}
+    },
+    /* SCAMP II REFCTL resets to a 15.625 us interval, before PIT programming. */
+    .planar_parity_present = LIB_TRUE,
+    .planar_parity = {
+        .port = 0x61u,
+        .refresh_status_source =
+            X86_NXVM_BOARD_PLANAR_PARITY_REFRESH_STATUS_ELAPSED_TICK_TOGGLE,
+        .refresh_status_toggle_ticks = MYOB300_REFRESH_TICKS
+    },
+    .rtc_cmos_present = LIB_TRUE,
+    .rtc_cmos = {
+        .index_port = 0x70u,
+        .data_port = 0x71u,
+        .irq = 8u,
+        .nmi_mask_bit = 0x80u,
+        .extended_registers = LIB_TRUE,
+        .ticks_per_second = MYOB300_RTC_INPUT_HZ
+    }
+};
+
+lib_status myob300_board_configure(void *owner, x86_nxvm_board_plan *plan)
 {
-    const x86_nxvm_board_plan_topology topology = {
-        .dma_present = LIB_TRUE,
-        .dma = {X86_NXVM_BOARD_DMA_FDC_CHANNEL_UNBOUND,
-            X86_NXVM_BOARD_DMA_CONTROLLER_COUNT, X86_NXVM_BOARD_DMA_CASCADE_CHANNEL},
-        .absent_memory_count = 1u,
-        .absent_memory = {
-            {MYOB300_RAM_BYTES, MYOB300_RAM_PROBE_LIMIT - MYOB300_RAM_BYTES, 0xffu}
-        },
-        /* SCAMP II REFCTL resets to a 15.625 us interval. Port B observes
-         * that cadence before the guest programs PIT counter 1. */
-        .planar_parity_present = LIB_TRUE,
-        .planar_parity = {
-            .port = 0x61u,
-            .refresh_status_source =
-                X86_NXVM_BOARD_PLANAR_PARITY_REFRESH_STATUS_ELAPSED_TICK_TOGGLE,
-            .refresh_status_toggle_ticks = MYOB300_REFRESH_TICKS
-        },
-        .rtc_cmos_present = LIB_TRUE,
-        .rtc_cmos = {
-            .index_port = 0x70u,
-            .data_port = 0x71u,
-            .irq = 8u,
-            .nmi_mask_bit = 0x80u,
-            .extended_registers = LIB_TRUE,
-            .ticks_per_second = MYOB300_RTC_INPUT_HZ
-        }
-    };
-    lib_status status;
+    myob300_board_setup *setup = owner;
 
     if (setup == LIB_NULL ||
         (setup->common.data == LIB_NULL ? setup->common.bytes != 0u :
@@ -262,9 +294,5 @@ lib_status myob300_board_configure(x86_nxvm_board_plan *plan, myob300_board_setu
         ((setup->attribute.data == LIB_NULL) != (setup->attribute.bytes == 0u)))
         return LIB_STATUS_INVALID_ARGUMENT;
     setup->profile = LIB_NULL;
-    status = x86_nxvm_board_plan_set_topology(plan, &topology);
-    if (status == LIB_STATUS_OK)
-        status = x86_nxvm_board_plan_bind_profile_factory(plan,
-            myob300_board_bind, setup);
-    return status;
+    return x86_nxvm_board_plan_bind_profile_factory(plan, myob300_board_bind, setup);
 }

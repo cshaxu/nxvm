@@ -2,17 +2,29 @@
 #include "x86-core/machine/machine_interface.h"
 #include "x86-core/machine/memory_interface.h"
 
+#define MYOB300_CHIPSET_SUPPLY_SAMPLE_PORT 0xb4u
+#define MYOB300_CHIPSET_REFERENCE_SAMPLE_PORT 0xb6u
 #define MYOB300_CHIPSET_INDEX_PORT 0xecu
 #define MYOB300_CHIPSET_DATA_PORT 0xedu
+#define MYOB300_CHIPSET_FAST_A20_PORT 0xeeu
 #define MYOB300_CHIPSET_FAST_RESET_PORT 0xefu
 #define MYOB300_CHIPSET_LOCK_PORT 0xf9u
 #define MYOB300_CHIPSET_UNLOCK_PORT 0xfbu
 #define MYOB300_CHIPSET_VERSION 0x00u
+#define MYOB300_CHIPSET_SLEEP_CONTROL 0x13u
+#define MYOB300_CHIPSET_SLEEP_CONTROL_WRITABLE 0xf9u
+#define MYOB300_CHIPSET_SLEEP_REQUESTED 0x80u
+#define MYOB300_CHIPSET_SLEEP_PIN_HIGH 0x04u
+#define MYOB300_CHIPSET_SYSTEM_CLOCK_ENABLED 0x01u
 #define MYOB300_CHIPSET_MISCELLANEOUS 0x14u
 #define MYOB300_CHIPSET_AB_ACCESS 0x0eu
 #define MYOB300_CHIPSET_AB_BASE 0xa0000u
 #define MYOB300_CHIPSET_AB_BLOCK_BYTES 0x8000u
 #define MYOB300_CHIPSET_MANAGEMENT 0x18u
+#define MYOB300_CHIPSET_SYSTEM_SOCKET_STATUS 0x33u
+#define MYOB300_CHIPSET_SYSTEM_SOCKET_READY 0x08u
+#define MYOB300_CHIPSET_FIXED_DISK_SOCKET_STATUS 0x35u
+#define MYOB300_CHIPSET_FIXED_DISK_SOCKET_SENSE 0x18u
 #define MYOB300_KEYBOARD_ROW_SELECT 0x3au
 #define MYOB300_KEYBOARD_COLUMN_LOW 0x3bu
 #define MYOB300_KEYBOARD_COLUMN_HIGH 0x3cu
@@ -20,6 +32,8 @@
 #define MYOB300_CHIPSET_MANAGEMENT_ACTIVE 0x08u
 #define MYOB300_CHIPSET_MANAGEMENT_LOCK 0x10u
 #define MYOB300_CHIPSET_MANAGEMENT_WRITABLE 0xb7u
+#define MYOB300_CHIPSET_NOMINAL_SUPPLY_SAMPLE 128u
+#define MYOB300_CHIPSET_NOMINAL_REFERENCE_SAMPLE 180u
 
 /* Table 65 gives SCAMP defaults, with the 2 MiB strap modeled as map 3.
  * The HP extension entries are observed startup latches. Their
@@ -33,10 +47,11 @@ static const struct {
     {0x11u, 0x00u}, {0x15u, 0x00u},
     {0x1eu, 0x00u}, {0x1fu, 0x00u}, {0x20u, 0x00u}, {0x21u, 0x00u},
     {0x22u, 0x00u}, {0x23u, 0x00u}, {0x24u, 0x00u}, {0x25u, 0x00u},
-    {0x32u, 0x00u}, {0x33u, 0x00u}, {0x34u, 0x00u}, {0x35u, 0x00u},
+    {0x32u, 0x00u}, {MYOB300_CHIPSET_SYSTEM_SOCKET_STATUS, 0x00u},
+    {0x34u, 0x00u}, {MYOB300_CHIPSET_FIXED_DISK_SOCKET_STATUS, 0x00u},
     {0x36u, 0x00u}, {0x37u, 0x00u}, {0x38u, 0x00u}, {0x39u, 0x00u},
-    {0x3du, 0x00u}, {0x40u, 0x00u}, {0x41u, 0x00u}, {0x42u, 0x00u}, {0x43u, 0x00u},
-    {0x44u, 0x00u}, {0x47u, 0x00u}, {0x48u, 0x00u}
+    {0x3du, 0x00u}, {0x3fu, 0x00u}, {0x40u, 0x00u}, {0x41u, 0x00u},
+    {0x42u, 0x00u}, {0x43u, 0x00u}, {0x44u, 0x00u}, {0x47u, 0x00u}, {0x48u, 0x00u}
 };
 
 static lib_u8 *myob300_chipset_startup_register(myob300_chipset *chipset)
@@ -98,6 +113,7 @@ void myob300_chipset_reset(myob300_chipset *chipset)
     chipset->configuration_index = 0u;
     /* SCAMP II Table 51 defaults, with the unverified MA9 strap low. */
     chipset->miscellaneous = 0x11u;
+    chipset->sleep_control = MYOB300_CHIPSET_SYSTEM_CLOCK_ENABLED;
     chipset->management_control = 0x20u;
     chipset->configuration_enabled = LIB_FALSE;
     chipset->management_active = LIB_FALSE;
@@ -119,9 +135,22 @@ static lib_status myob300_chipset_read(void *owner, lib_u16 port,
 
     (void)tick;
     switch (port) {
+    /* L1 fixed healthy supply. The ROM converts these samples and
+     * owns its battery-level decisions. */
+    case MYOB300_CHIPSET_SUPPLY_SAMPLE_PORT:
+        *out_value = MYOB300_CHIPSET_NOMINAL_SUPPLY_SAMPLE;
+        return LIB_STATUS_OK;
+    case MYOB300_CHIPSET_REFERENCE_SAMPLE_PORT:
+        *out_value = MYOB300_CHIPSET_NOMINAL_REFERENCE_SAMPLE;
+        return LIB_STATUS_OK;
     case MYOB300_CHIPSET_INDEX_PORT:
         *out_value = chipset->configuration_index;
         return LIB_STATUS_OK;
+    case MYOB300_CHIPSET_FAST_A20_PORT:
+        if ((chipset->miscellaneous & MYOB300_CHIPSET_VSF_DISABLED) != 0u)
+            return LIB_STATUS_UNSUPPORTED;
+        *out_value = 0xffu;
+        return chipset->set_fast_a20(chipset->fast_a20_context, LIB_TRUE);
     case MYOB300_CHIPSET_FAST_RESET_PORT:
         if ((chipset->miscellaneous & MYOB300_CHIPSET_VSF_DISABLED) != 0u)
             return LIB_STATUS_UNSUPPORTED;
@@ -136,6 +165,14 @@ static lib_status myob300_chipset_read(void *owner, lib_u16 port,
     switch (chipset->configuration_index) {
     case MYOB300_CHIPSET_VERSION: *out_value = 0x6au; break;
     case MYOB300_CHIPSET_AB_ACCESS: *out_value = chipset->ab_access; break;
+    case MYOB300_CHIPSET_SLEEP_CONTROL:
+        /* SCAMP II wakes on IRQ. Observe the asserted PIC output before
+         * the BIOS acknowledges it, including when the CPU masks IRQ. */
+        if ((chipset->sleep_control & MYOB300_CHIPSET_SLEEP_REQUESTED) != 0u &&
+            x86_nxvm_board_pic_scan_interrupt(chipset->pic_master, chipset->pic_slave))
+            chipset->sleep_control &= (lib_u8)~MYOB300_CHIPSET_SLEEP_REQUESTED;
+        *out_value = chipset->sleep_control | MYOB300_CHIPSET_SLEEP_PIN_HIGH;
+        break;
     case MYOB300_CHIPSET_MISCELLANEOUS: *out_value = chipset->miscellaneous; break;
     case MYOB300_CHIPSET_MANAGEMENT:
         *out_value = chipset->management_control |
@@ -153,6 +190,16 @@ static lib_status myob300_chipset_read(void *owner, lib_u16 port,
             return myob300_card_register_read(&chipset->card,
                 chipset->configuration_index, out_value);
         *out_value = *startup;
+        if (chipset->configuration_index == MYOB300_CHIPSET_SYSTEM_SOCKET_STATUS) {
+            /* The installed immutable System Card is ready without a power-up delay. */
+            *out_value &= ~MYOB300_CHIPSET_SYSTEM_SOCKET_READY;
+            if (chipset->card.common.data != LIB_NULL)
+                *out_value |= MYOB300_CHIPSET_SYSTEM_SOCKET_READY;
+        } else if (chipset->configuration_index == MYOB300_CHIPSET_FIXED_DISK_SOCKET_STATUS) {
+            *out_value &= ~MYOB300_CHIPSET_FIXED_DISK_SOCKET_SENSE;
+            if (chipset->fixed_disk_card_installed)
+                *out_value |= MYOB300_CHIPSET_FIXED_DISK_SOCKET_SENSE;
+        }
         break;
     }
     return LIB_STATUS_OK;
@@ -167,6 +214,9 @@ static lib_status myob300_chipset_write(void *owner, lib_u16 port,
         (chipset->miscellaneous & MYOB300_CHIPSET_VSF_DISABLED) != 0u;
 
     if (access_bytes != 1u) return LIB_STATUS_UNSUPPORTED;
+    if (port == MYOB300_CHIPSET_FAST_A20_PORT)
+        return vsf_disabled ? LIB_STATUS_UNSUPPORTED :
+            chipset->set_fast_a20(chipset->fast_a20_context, LIB_FALSE);
     if (port == MYOB300_CHIPSET_UNLOCK_PORT || port == MYOB300_CHIPSET_LOCK_PORT) {
         if (vsf_disabled) return LIB_STATUS_UNSUPPORTED;
         chipset->configuration_enabled = port == MYOB300_CHIPSET_UNLOCK_PORT;
@@ -182,6 +232,11 @@ static lib_status myob300_chipset_write(void *owner, lib_u16 port,
     if (port != MYOB300_CHIPSET_DATA_PORT) return LIB_STATUS_UNSUPPORTED;
     switch (chipset->configuration_index) {
     case MYOB300_CHIPSET_VERSION: break;
+    case MYOB300_CHIPSET_SLEEP_CONTROL:
+        /* SCAMP II Table 23. The observed divide-by-one path keeps the
+         * clock rate. Other power and clock effects are not modeled. */
+        chipset->sleep_control = (lib_u8)value & MYOB300_CHIPSET_SLEEP_CONTROL_WRITABLE;
+        break;
     case MYOB300_CHIPSET_AB_ACCESS: chipset->ab_access = (lib_u8)value; break;
     case MYOB300_CHIPSET_MISCELLANEOUS: chipset->miscellaneous = (lib_u8)value; break;
     case MYOB300_CHIPSET_MANAGEMENT:
@@ -203,13 +258,21 @@ static lib_status myob300_chipset_write(void *owner, lib_u16 port,
     return LIB_STATUS_OK;
 }
 
-lib_status myob300_chipset_install(myob300_chipset *chipset, x86_core_machine *core)
+lib_status myob300_chipset_install(myob300_chipset *chipset,
+    const x86_nxvm_board_profile_services *services)
 {
+    x86_core_machine *core = services->core;
     const x86_core_machine_port_route routes[] = {
+        {MYOB300_CHIPSET_SUPPLY_SAMPLE_PORT, myob300_chipset_read, LIB_NULL,
+            chipset, LIB_FALSE, 0u},
+        {MYOB300_CHIPSET_REFERENCE_SAMPLE_PORT, myob300_chipset_read, LIB_NULL,
+            chipset, LIB_FALSE, 0u},
         {MYOB300_CHIPSET_INDEX_PORT, myob300_chipset_read, myob300_chipset_write,
             chipset, LIB_FALSE, MYOB300_CHIPSET_DATA_PORT + 1u},
         {MYOB300_CHIPSET_DATA_PORT, myob300_chipset_read, myob300_chipset_write,
             chipset, LIB_FALSE, MYOB300_CHIPSET_DATA_PORT + 1u},
+        {MYOB300_CHIPSET_FAST_A20_PORT, myob300_chipset_read, myob300_chipset_write,
+            chipset, LIB_FALSE, 0u},
         {MYOB300_CHIPSET_FAST_RESET_PORT, myob300_chipset_read, LIB_NULL,
             chipset, LIB_FALSE, 0u},
         {MYOB300_CHIPSET_LOCK_PORT, LIB_NULL, myob300_chipset_write,
@@ -233,6 +296,10 @@ lib_status myob300_chipset_install(myob300_chipset *chipset, x86_core_machine *c
         return status;
     }
     chipset->core = core;
+    chipset->pic_master = services->pic_master;
+    chipset->pic_slave = services->pic_slave;
+    chipset->set_fast_a20 = services->set_fast_a20;
+    chipset->fast_a20_context = services->fast_a20_context;
     myob300_chipset_reset(chipset);
     return LIB_STATUS_OK;
 }

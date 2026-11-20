@@ -1,6 +1,11 @@
 #include "app-myob300/ob300_display.h"
 #include "x86-core/machine/memory_interface.h"
 
+static lib_u16 myob300_display_vga_port(lib_u16 port)
+{
+    return port < 0x03c0u ? port + 0x20u : port;
+}
+
 static lib_status myob300_display_port_read(void *owner, lib_u16 port,
     lib_u64 tick, lib_u32 *out_value)
 {
@@ -8,7 +13,7 @@ static lib_status myob300_display_port_read(void *owner, lib_u16 port,
     lib_status status;
 
     (void)tick;
-    status = x86_ct_vga_vga_read(owner, port, &value);
+    status = x86_ct_vga_vga_read(owner, myob300_display_vga_port(port), &value);
     if (status == LIB_STATUS_OK) *out_value = value;
     return status;
 }
@@ -17,7 +22,7 @@ static lib_status myob300_display_port_write(void *owner, lib_u16 port,
     lib_u8 access_bytes, lib_u32 value)
 {
     if (access_bytes != 1u) return LIB_STATUS_UNSUPPORTED;
-    return x86_ct_vga_vga_write(owner, port, (lib_u8)value);
+    return x86_ct_vga_vga_write(owner, myob300_display_vga_port(port), (lib_u8)value);
 }
 
 static lib_status myob300_display_memory_query(void *owner, lib_u32 physical,
@@ -45,6 +50,7 @@ lib_status myob300_display_install(x86_core_machine *core, x86_ct_vga *chip)
         lib_u16 port;
         lib_u16 byte_lane_end;
     } decode[] = {
+        {0x03b4u, 0x03b6u}, {0x03b5u, 0u}, {0x03bau, 0u},
         {0x03c0u, 0u}, {0x03c1u, 0u}, {0x03c2u, 0u},
         {0x03c4u, 0x03c6u}, {0x03c5u, 0u},
         {0x03c6u, 0u}, {0x03c7u, 0u}, {0x03c8u, 0u}, {0x03c9u, 0u},

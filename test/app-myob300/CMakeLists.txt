@@ -1,5 +1,5 @@
 add_executable(myob300-board-smoke unit/board_smoke.c)
-target_link_libraries(myob300-board-smoke PRIVATE myob300-board)
+target_link_libraries(myob300-board-smoke PRIVATE myob300-board myob300-machine)
 if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(myob300-board-smoke PRIVATE -UNDEBUG -Wall -Wextra -Wpedantic -Werror)
 elseif(MSVC)
