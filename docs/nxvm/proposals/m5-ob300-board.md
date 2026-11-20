@@ -18,3 +18,9 @@ Use synthetic programs and media fixtures to prove complete signal routes,
 reset defaults and accepted versus unmapped transactions. Do not claim the
 original firmware boots from a passing synthetic test. Transfer the proved
 board contract to [real-ROM machine assembly](m5-ob300-rom-dos.md).
+
+The [original S2 replay](../etc/evidence/t590-s2-ob300-board.md#original-reset-replay)
+identifies indexed writes to 2Ch and 2Fh immediately before the firmware
+searches below its mapped reset ROM. S4 must verify the lower F000 segment
+against the card marker at offset 7F7FF0h and establish how the guest's
+register writes select that range. Keep that decode in the HP board.

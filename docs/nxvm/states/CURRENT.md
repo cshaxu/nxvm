@@ -3,6 +3,8 @@
 [S1 is closed](../history/M5-T590-S1-ob300-reset-decode.md).
 The [reset evidence](../etc/evidence/t590-s1-ob300-reset-decode.md)
 defines the first cold and system-management paths for the board receiver.
+The [S2 board evidence](../etc/evidence/t590-s2-ob300-board.md)
+records the implemented routes and the two-width board smoke.
 
 | Field | Required record |
 | --- | --- |
@@ -12,9 +14,9 @@ defines the first cold and system-management paths for the board receiver.
 | Non-goals | No executable product, protected assets, existing PC model changes, invented firmware responses or second Core time axis. VGA/input wiring and System Card decode are later admitted batches. |
 | Reference Baseline | T589 device closure a50285848, S1 original reset route, HP service 5965-0244 and VLSI SCAMP II Tables 40, 53, 54 and 59. |
 | Candidate Proposal | proposals/m5-ob300-board.md S2; architecture O02, O04, O05, O08. |
-| Files And ABI Surface | App-owned src/app-myob300 and test/app-myob300, minimal repository build registration and NXVM evidence. Inspect existing Shared interfaces first. Revise the brief if a missing Shared contract is demonstrated. |
+| Files And ABI Surface | NXVM owns src/app-myob300, test/app-myob300, their registration under the root NXVM build branch, evidence and its five PC artifact pairs. Shared owns X86-NXVM Board Profile forwarding of the existing Core SMIADS read/write pair. Lib, Emulator and X86 Core have no changes. The Shared release requirement also covers the MyNES and MyRaidenII pairs in their own artifact-only Ps. |
 | Applicable Rules | NXVM guide, Contributing, Roadmap, architecture/layout, source policy and shared Execution/Documentation/Architecture/Coding. |
-| Verification | Use synthetic firmware and board tests on cached x64/x86 for reset, unclaimed ports, byte/index data decode, management separation, CPU profile, RAM, PIC/PIT/DMA, RTC and A20. |
+| Verification | Use synthetic firmware and board tests on cached x64/x86 for reset, unclaimed ports, byte/index data decode, management separation, CPU profile, RAM, PIC/PIT/DMA, RTC and A20. Verify the full cached unit inventories and all fourteen receiver PE identities and hashes for the Shared Board Profile change. |
 | Expected Markers | Single App board plan and Core time source, configuration gating from the observed firmware path, no silent acceptance of out-of-scope hardware. |
 | Asset Needs | Source manuals and synthetic fixtures only. Temporary work in build/t590-s2 up to 64 MiB; 300 seconds for focused qualification runs. |
 | Reporting Requirements | Record code and interfaces, hardware/model attribution, exact proof limits and display/input/card handoff. |

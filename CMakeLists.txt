@@ -70,6 +70,8 @@ if(REPOSITORY_BUILD_NXVM)
     add_subdirectory(src/app-mypc110)
     add_subdirectory(test/app-mypc110)
     include(cmake/nxvm/verify_mypc110_boundary.cmake)
+    add_subdirectory(src/app-myob300)
+    add_subdirectory(test/app-myob300)
 endif()
 
 if(REPOSITORY_BUILD_MYNES)
