@@ -122,6 +122,7 @@ static lib_i32 x86_core_machine_valid_cpu_profile(x86_core_cpu_profile profile)
     case X86_CORE_CPU_PROFILE_8088:
     case X86_CORE_CPU_PROFILE_80186:
     case X86_CORE_CPU_PROFILE_80286:
+    case X86_CORE_CPU_PROFILE_AM386SXLV:
     case X86_CORE_CPU_PROFILE_80386:
     case X86_CORE_CPU_PROFILE_80486SX:
     case X86_CORE_CPU_PROFILE_V30:
@@ -392,6 +393,9 @@ lib_i32 x86_core_machine_neutral_config_is_valid(
         (config->cpu_profile != X86_CORE_CPU_PROFILE_V30 ||
          (config->fpu_profile == X86_FPU_PROFILE_NONE &&
           config->retirement_time_contract == X86_CORE_MACHINE_RETIREMENT_TIME_DETERMINISTIC &&
+          config->time_axis.kind != X86_CORE_MACHINE_TIME_AXIS_VERIFIED_PHYSICAL)) &&
+        (config->cpu_profile != X86_CORE_CPU_PROFILE_AM386SXLV ||
+         (config->retirement_time_contract == X86_CORE_MACHINE_RETIREMENT_TIME_DETERMINISTIC &&
           config->time_axis.kind != X86_CORE_MACHINE_TIME_AXIS_VERIFIED_PHYSICAL)) &&
         (!config->cpu_80386_cr_mov_ignores_mod ||
          config->cpu_profile == X86_CORE_CPU_PROFILE_80386) &&

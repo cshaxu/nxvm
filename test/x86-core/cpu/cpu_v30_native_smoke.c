@@ -36,7 +36,7 @@ static lib_i32 v30_family(void)
     return lib_text_compare(x86_core_cpu_profile_name(X86_CORE_CPU_PROFILE_V30), "V30") != 0 ||
         x86_core_cpu_profile_has_8086_semantics(X86_CORE_CPU_PROFILE_V30) ||
         cpu_profile_allows_minimum(X86_CORE_CPU_PROFILE_V30, X86_CORE_CPU_PROFILE_80286) ||
-        cpu_profile_allows_minimum((x86_core_cpu_profile)8, X86_CORE_CPU_PROFILE_8086);
+        cpu_profile_allows_minimum((x86_core_cpu_profile)0xffu, X86_CORE_CPU_PROFILE_8086);
 }
 
 static lib_i32 v30_reset(void)
@@ -164,7 +164,7 @@ static lib_i32 v30_preview(void)
         }
     }
     return x86_core_cpu_instruction_lexeme_scan(cases[0].code, cases[0].size,
-        (x86_core_cpu_profile)8, LIB_FALSE, &lexeme);
+        (x86_core_cpu_profile)0xffu, LIB_FALSE, &lexeme);
 }
 
 static lib_i32 v30_not_admitted(void)

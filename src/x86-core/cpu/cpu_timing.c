@@ -724,7 +724,7 @@ lib_i32 x86_core_cpu_timing_select(x86_core_cpu_execution_context *context)
           x86_core_cpu_timing_try(context, &result,
               X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY,
               x86_core_cpu_8086_source_instruction_cost, prefixes)) &&
-        !(context->cpu_profile == X86_CORE_CPU_PROFILE_80386 &&
+        !(cpu_profile_has_386_semantics(context->cpu_profile) &&
           x86_core_cpu_timing_try(context, &result,
               X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_80386_FALLBACK,
               x86_core_cpu_80386_source_instruction_cost, prefixes)) &&
@@ -746,6 +746,12 @@ lib_i32 x86_core_cpu_timing_select(x86_core_cpu_execution_context *context)
     result.source_timing_unallocated = context->timing_result.source_timing_unallocated;
     result.form_id = context->timing_result.form_id;
     result.repeat_phase = context->timing_result.repeat_phase;
+    if (context->cpu_profile == X86_CORE_CPU_PROFILE_AM386SXLV) {
+        /* Borrow the instruction cost as a functional baseline only. */
+        result.retirement_origin = X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_COMPATIBILITY;
+        result.form_id = X86_CORE_CPU_RETIREMENT_SOURCE_FORM_UNATTRIBUTED;
+        result.key_id = X86_CORE_CPU_RETIREMENT_SOURCE_FORM_UNATTRIBUTED;
+    }
     context->timing_result = result;
     return 1;
 }

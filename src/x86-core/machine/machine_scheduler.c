@@ -133,6 +133,7 @@ static void x86_core_machine_dma_grant_advance(x86_core_machine *machine)
     if (machine == LIB_NULL) return;
     if ((machine->cpu_profile == X86_CORE_CPU_PROFILE_80286 ||
         machine->cpu_profile == X86_CORE_CPU_PROFILE_80386 ||
+        machine->cpu_profile == X86_CORE_CPU_PROFILE_AM386SXLV ||
         machine->cpu_profile == X86_CORE_CPU_PROFILE_80486SX) &&
         machine->attachment.dma_request != LIB_NULL &&
         machine->attachment.dma_request(machine->attachment.context) &&
@@ -234,6 +235,7 @@ static void x86_core_machine_arbitration_advance(x86_core_machine *machine,
         }
     } else if ((machine->cpu_profile == X86_CORE_CPU_PROFILE_80286 ||
         machine->cpu_profile == X86_CORE_CPU_PROFILE_80386 ||
+        machine->cpu_profile == X86_CORE_CPU_PROFILE_AM386SXLV ||
         machine->cpu_profile == X86_CORE_CPU_PROFILE_80486SX) &&
         dma_ticks != 0u &&
         machine->attachment.dma_request != LIB_NULL &&

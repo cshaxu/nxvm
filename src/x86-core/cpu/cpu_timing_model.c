@@ -673,6 +673,7 @@ static const x86_core_cpu_source_repeat_timing_contract
         return &x86_core_cpu_80186_source_repeat_timing_contract;
     case X86_CORE_CPU_PROFILE_80286:
         return &x86_core_cpu_80286_source_repeat_timing_contract;
+    case X86_CORE_CPU_PROFILE_AM386SXLV:
     case X86_CORE_CPU_PROFILE_80386:
         return &x86_core_cpu_80386_source_repeat_timing_contract;
     default:
@@ -732,7 +733,7 @@ lib_i32 x86_core_cpu_string_io_source_instruction_cost(
             return 0;
         }
         context->timing_result.form_id = (lib_u32)form;
-        if (context->cpu_profile == X86_CORE_CPU_PROFILE_80386 &&
+        if (cpu_profile_has_386_semantics(context->cpu_profile) &&
             x86_core_cpu_80386_source_string_port_entry(data, form,
                 &port_entry)) {
             *out_ticks = x86_core_cpu_source_timing_repeat_string(context, data,
@@ -780,7 +781,7 @@ lib_i32 x86_core_cpu_string_io_source_instruction_cost(
     default:
         return 0;
     }
-    if (context->cpu_profile == X86_CORE_CPU_PROFILE_80386) {
+    if (cpu_profile_has_386_semantics(context->cpu_profile)) {
         switch (form) {
         case X86_CORE_CPU_SOURCE_TIMING_IN_IMMEDIATE:
             *out_ticks = x86_core_cpu_80386_source_timing_port_cost(context, data, form,
@@ -1955,10 +1956,10 @@ lib_i32 x86_core_cpu_primary_source_instruction_cost(
     lock_prefix = x86_core_cpu_instruction_has_lock_prefix(data, prefixes);
     if (prefixes >= data->oplen ||
         (prefixes != 0u &&
-            ((context->cpu_profile == X86_CORE_CPU_PROFILE_80386 &&
+            ((cpu_profile_has_386_semantics(context->cpu_profile) &&
                 !x86_core_cpu_80386_timing_has_source_prefixes(data,
                     prefixes)) ||
-             (context->cpu_profile != X86_CORE_CPU_PROFILE_80386 &&
+             (!cpu_profile_has_386_semantics(context->cpu_profile) &&
                 !segment_override && !lock_prefix)))) {
         return 0;
     }
@@ -2057,20 +2058,20 @@ lib_i32 x86_core_cpu_primary_source_instruction_cost(
         *out_ticks = 1u;
         return 1;
     }
-    if (context->cpu_profile == X86_CORE_CPU_PROFILE_80386 &&
+    if (cpu_profile_has_386_semantics(context->cpu_profile) &&
         !data->flagLock && x86_core_cpu_80386_timing_has_source_prefixes(data,
             prefixes) && opcode == 0xd7u) {
         context->timing_result.form_id = X86_CORE_CPU_SOURCE_TIMING_8086_XLAT;
         *out_ticks = 5u;
         return 1;
     }
-    if (context->cpu_profile == X86_CORE_CPU_PROFILE_80386 &&
+    if (cpu_profile_has_386_semantics(context->cpu_profile) &&
         !data->flagLock && prefixes == 0u && opcode == 0x9bu) {
         *out_ticks = x86_core_cpu_80386_source_timing_lookup(context,
             X86_CORE_CPU_SOURCE_TIMING_WAIT);
         return 1;
     }
-    if (context->cpu_profile == X86_CORE_CPU_PROFILE_80386 &&
+    if (cpu_profile_has_386_semantics(context->cpu_profile) &&
         !data->flagLock && x86_core_cpu_80386_timing_has_source_prefixes(data,
             prefixes) && opcode == 0x62u &&
         x86_core_cpu_source_timing_modrm_is_memory(data, prefixes)) {
@@ -2078,7 +2079,7 @@ lib_i32 x86_core_cpu_primary_source_instruction_cost(
             X86_CORE_CPU_SOURCE_TIMING_BOUND);
         return 1;
     }
-    if (context->cpu_profile == X86_CORE_CPU_PROFILE_80386 &&
+    if (cpu_profile_has_386_semantics(context->cpu_profile) &&
         !x86_core_cpu_control_stack_is_protected(data) && !data->flagLock &&
         x86_core_cpu_80386_timing_has_source_prefixes(data, prefixes) &&
         (opcode == 0xc4u || opcode == 0xc5u) &&
@@ -2509,6 +2510,7 @@ lib_i32 x86_core_cpu_primary_source_instruction_cost(
                 x86_core_cpu_80286_timing_odd_word(data);
         }
         break;
+    case X86_CORE_CPU_PROFILE_AM386SXLV:
     case X86_CORE_CPU_PROFILE_80386:
         switch (shape.form) {
         case X86_CORE_CPU_SOURCE_TIMING_ALU_ADD_RM_REGISTER:
@@ -2643,6 +2645,7 @@ static lib_u64 x86_core_cpu_control_stack_source_lookup(
                 sizeof(x86_core_cpu_80186_source_timing_ledger[0]), form);
     case X86_CORE_CPU_PROFILE_80286:
         return x86_core_cpu_80286_source_timing_lookup(context, form);
+    case X86_CORE_CPU_PROFILE_AM386SXLV:
     case X86_CORE_CPU_PROFILE_80386:
         return x86_core_cpu_80386_source_timing_lookup(context, form);
     default:
@@ -2664,7 +2667,7 @@ static lib_i32 x86_core_cpu_control_stack_next_term(x86_core_cpu_execution_conte
 
     if (context == LIB_NULL || out_ticks == LIB_NULL) return 0;
     if (context->cpu_profile != X86_CORE_CPU_PROFILE_80286 &&
-        context->cpu_profile != X86_CORE_CPU_PROFILE_80386) {
+        !cpu_profile_has_386_semantics(context->cpu_profile)) {
         *out_ticks = 0u;
         return 1;
     }
@@ -2690,7 +2693,7 @@ static lib_i32 x86_core_cpu_control_stack_prefixes_are_source_backed(
     lib_i32 segment_override;
 
     if (context == LIB_NULL || data == LIB_NULL) return 0;
-    if (context->cpu_profile == X86_CORE_CPU_PROFILE_80386) {
+    if (cpu_profile_has_386_semantics(context->cpu_profile)) {
         return x86_core_cpu_80386_timing_has_source_prefixes(data, prefixes) &&
             !data->flagLock;
     }
@@ -2877,7 +2880,8 @@ static lib_i32 x86_core_cpu_control_stack_direct_call_gate_parameters(
         data->oldcpu.data.ldtr.base : data->oldcpu.data.gdtr.base;
     return context->bus->read_memory(
         context->bus_context,
-        table_base + (selector & VCPU_SELECTOR_IDX) + 4u,
+        cpu_profile_external_address(context->cpu_profile,
+            table_base + (selector & VCPU_SELECTOR_IDX) + 4u),
         out_parameters, 1u, X86_CORE_CPU_MEMORY_ACCESS_DATA,
         LIB_TRUE, LIB_FALSE, 0u) == LIB_STATUS_OK;
 }
@@ -2892,7 +2896,8 @@ static lib_i32 x86_core_cpu_control_stack_call_gate_parameters(x86_core_cpu_exec
         context->cpu->data.ldtr.base : context->cpu->data.gdtr.base;
     return context->bus->read_memory(
         context->bus_context,
-        table_base + (selector & VCPU_SELECTOR_IDX) + 4u,
+        cpu_profile_external_address(context->cpu_profile,
+            table_base + (selector & VCPU_SELECTOR_IDX) + 4u),
         out_parameters, 1u, X86_CORE_CPU_MEMORY_ACCESS_DATA,
         LIB_TRUE, LIB_FALSE, 0u) == LIB_STATUS_OK;
 }
@@ -2908,7 +2913,8 @@ static lib_i32 x86_core_cpu_control_stack_selector_is_task_gate(x86_core_cpu_exe
         context->cpu->data.ldtr.base : context->cpu->data.gdtr.base;
     if (context->bus->read_memory(
             context->bus_context,
-            table_base + (selector & VCPU_SELECTOR_IDX) + 5u,
+            cpu_profile_external_address(context->cpu_profile,
+            table_base + (selector & VCPU_SELECTOR_IDX) + 5u),
             &access, 1u, X86_CORE_CPU_MEMORY_ACCESS_DATA,
             LIB_TRUE, LIB_FALSE, 0u) != LIB_STATUS_OK) return 0;
     return (access & 0x0fu) == VCPU_DESC_SYS_TYPE_TASKGATE;
@@ -3044,11 +3050,11 @@ lib_i32 x86_core_cpu_control_stack_source_instruction_cost(
      * outcome before the code-segment and privilege paths: task switches can
      * otherwise look like ordinary same-level far transfers after refresh. */
     task_switch = (context->cpu_profile == X86_CORE_CPU_PROFILE_80286 ||
-        context->cpu_profile == X86_CORE_CPU_PROFILE_80386) &&
+        cpu_profile_has_386_semantics(context->cpu_profile)) &&
         protected_execution && data->oldcpu.data.tr.selector !=
         context->cpu->data.tr.selector;
     direct_gate = (context->cpu_profile == X86_CORE_CPU_PROFILE_80286 ||
-        context->cpu_profile == X86_CORE_CPU_PROFILE_80386) &&
+        cpu_profile_has_386_semantics(context->cpu_profile)) &&
         protected_mode && x86_core_cpu_control_stack_direct_target_is_gate(data,
             prefixes, context->cpu);
     memory = x86_core_cpu_source_timing_modrm_is_memory(data, prefixes);
@@ -3074,7 +3080,7 @@ lib_i32 x86_core_cpu_control_stack_source_instruction_cost(
             return 1;
         }
         if (context->cpu_profile != X86_CORE_CPU_PROFILE_80286 &&
-            context->cpu_profile != X86_CORE_CPU_PROFILE_80386) return 0;
+            !cpu_profile_has_386_semantics(context->cpu_profile)) return 0;
         *out_ticks = x86_core_cpu_control_stack_source_lookup(context,
             X86_CORE_CPU_SOURCE_TIMING_PUSH_REGISTER);
         return 1;
@@ -3084,7 +3090,7 @@ lib_i32 x86_core_cpu_control_stack_source_instruction_cost(
                 X86_CORE_CPU_SOURCE_TIMING_POP_REGISTER, 0u, 0, out_ticks);
         }
         if (context->cpu_profile != X86_CORE_CPU_PROFILE_80286 &&
-            context->cpu_profile != X86_CORE_CPU_PROFILE_80386) {
+            !cpu_profile_has_386_semantics(context->cpu_profile)) {
             return 0;
         }
         /* Appendix B distinguishes the protected selector-validation path
@@ -3098,7 +3104,7 @@ lib_i32 x86_core_cpu_control_stack_source_instruction_cost(
             X86_CORE_CPU_SOURCE_TIMING_CALL_NEAR_DIRECT, 0u, 1, out_ticks);
     case 0x9au:
         if (task_switch) {
-            if (context->cpu_profile == X86_CORE_CPU_PROFILE_80386) {
+            if (cpu_profile_has_386_semantics(context->cpu_profile)) {
                 (void)x86_core_cpu_control_stack_source_lookup(context,
                     X86_CORE_CPU_SOURCE_TIMING_CALL_FAR_DIRECT);
                 *out_ticks = x86_core_cpu_80386_task_transfer_ticks(context, data,
@@ -3117,7 +3123,7 @@ lib_i32 x86_core_cpu_control_stack_source_instruction_cost(
             if (!same_privilege &&
                 !x86_core_cpu_control_stack_direct_call_gate_parameters(context,
                     data, prefixes, &parameters)) return 0;
-            if (context->cpu_profile == X86_CORE_CPU_PROFILE_80386) {
+            if (cpu_profile_has_386_semantics(context->cpu_profile)) {
                 (void)x86_core_cpu_control_stack_source_lookup(context,
                     X86_CORE_CPU_SOURCE_TIMING_CALL_FAR_DIRECT);
                 *out_ticks = same_privilege ? 52u :
@@ -3135,7 +3141,7 @@ lib_i32 x86_core_cpu_control_stack_source_instruction_cost(
             return x86_core_cpu_control_stack_add_next_term(context,
                 *out_ticks, out_ticks);
         }
-        if (context->cpu_profile == X86_CORE_CPU_PROFILE_80386 &&
+        if (cpu_profile_has_386_semantics(context->cpu_profile) &&
             protected_mode && same_privilege) {
             (void)x86_core_cpu_control_stack_source_lookup(context,
                 X86_CORE_CPU_SOURCE_TIMING_CALL_FAR_DIRECT);
@@ -3150,7 +3156,7 @@ lib_i32 x86_core_cpu_control_stack_source_instruction_cost(
             X86_CORE_CPU_SOURCE_TIMING_JMP_DIRECT, 0u, 1, out_ticks);
     case 0xeau:
         if (task_switch) {
-            if (context->cpu_profile == X86_CORE_CPU_PROFILE_80386) {
+            if (cpu_profile_has_386_semantics(context->cpu_profile)) {
                 (void)x86_core_cpu_control_stack_source_lookup(context,
                     X86_CORE_CPU_SOURCE_TIMING_JMP_FAR_DIRECT);
                 *out_ticks = x86_core_cpu_80386_task_transfer_ticks(context, data,
@@ -3164,7 +3170,7 @@ lib_i32 x86_core_cpu_control_stack_source_instruction_cost(
                 *out_ticks, out_ticks);
         }
         if (direct_gate && same_privilege) {
-            if (context->cpu_profile == X86_CORE_CPU_PROFILE_80386) {
+            if (cpu_profile_has_386_semantics(context->cpu_profile)) {
                 (void)x86_core_cpu_control_stack_source_lookup(context,
                     X86_CORE_CPU_SOURCE_TIMING_JMP_FAR_DIRECT);
                 return x86_core_cpu_control_stack_add_next_term(context, 45u,
@@ -3180,7 +3186,7 @@ lib_i32 x86_core_cpu_control_stack_source_instruction_cost(
             return x86_core_cpu_control_stack_add_next_term(context,
                 *out_ticks, out_ticks);
         }
-        if (context->cpu_profile == X86_CORE_CPU_PROFILE_80386 &&
+        if (cpu_profile_has_386_semantics(context->cpu_profile) &&
             protected_mode && same_privilege) {
             (void)x86_core_cpu_control_stack_source_lookup(context,
                 X86_CORE_CPU_SOURCE_TIMING_JMP_FAR_DIRECT);
@@ -3200,14 +3206,14 @@ lib_i32 x86_core_cpu_control_stack_source_instruction_cost(
         if (context->cpu_profile != X86_CORE_CPU_PROFILE_8088 &&
             context->cpu_profile != X86_CORE_CPU_PROFILE_80186 &&
             context->cpu_profile != X86_CORE_CPU_PROFILE_80286 &&
-            context->cpu_profile != X86_CORE_CPU_PROFILE_80386) return 0;
+            !cpu_profile_has_386_semantics(context->cpu_profile)) return 0;
         if (context->cpu_profile == X86_CORE_CPU_PROFILE_80286 &&
             protected_mode) {
             *out_ticks = same_privilege ? 25u : 55u;
             return x86_core_cpu_control_stack_add_next_term(context,
                 *out_ticks, out_ticks);
         }
-        if (context->cpu_profile == X86_CORE_CPU_PROFILE_80386 &&
+        if (cpu_profile_has_386_semantics(context->cpu_profile) &&
             protected_mode) {
             (void)x86_core_cpu_control_stack_source_lookup(context,
                 X86_CORE_CPU_SOURCE_TIMING_RET_FAR_IMMEDIATE);
@@ -3224,14 +3230,14 @@ lib_i32 x86_core_cpu_control_stack_source_instruction_cost(
         if (context->cpu_profile != X86_CORE_CPU_PROFILE_8088 &&
             context->cpu_profile != X86_CORE_CPU_PROFILE_80186 &&
             context->cpu_profile != X86_CORE_CPU_PROFILE_80286 &&
-            context->cpu_profile != X86_CORE_CPU_PROFILE_80386) return 0;
+            !cpu_profile_has_386_semantics(context->cpu_profile)) return 0;
         if (context->cpu_profile == X86_CORE_CPU_PROFILE_80286 &&
             protected_mode) {
             *out_ticks = same_privilege ? 25u : 55u;
             return x86_core_cpu_control_stack_add_next_term(context,
                 *out_ticks, out_ticks);
         }
-        if (context->cpu_profile == X86_CORE_CPU_PROFILE_80386 &&
+        if (cpu_profile_has_386_semantics(context->cpu_profile) &&
             protected_mode) {
             (void)x86_core_cpu_control_stack_source_lookup(context,
                 X86_CORE_CPU_SOURCE_TIMING_RET_FAR);
@@ -3322,7 +3328,7 @@ lib_i32 x86_core_cpu_control_stack_source_instruction_cost(
         if (context->cpu_profile == X86_CORE_CPU_PROFILE_8086) {
             context->timing_result.form_id = X86_CORE_CPU_SOURCE_TIMING_8086_LOOP;
         }
-        if (context->cpu_profile == X86_CORE_CPU_PROFILE_80386) {
+        if (cpu_profile_has_386_semantics(context->cpu_profile)) {
             context->timing_result.form_id = X86_CORE_CPU_SOURCE_TIMING_JCC;
             ticks = opcode == 0xe3u ?
                 (context->cpu->data.eip == data->oldcpu.data.eip +
@@ -3384,7 +3390,7 @@ lib_i32 x86_core_cpu_control_stack_source_instruction_cost(
                 X86_CORE_CPU_SOURCE_TIMING_INT_IMMEDIATE, 0u, 0, out_ticks);
         }
         if (task_switch) {
-            if (context->cpu_profile == X86_CORE_CPU_PROFILE_80386) {
+            if (cpu_profile_has_386_semantics(context->cpu_profile)) {
                 (void)x86_core_cpu_control_stack_source_lookup(context,
                     opcode == 0xccu ? X86_CORE_CPU_SOURCE_TIMING_INT3 :
                     X86_CORE_CPU_SOURCE_TIMING_INT_IMMEDIATE);
@@ -3401,7 +3407,7 @@ lib_i32 x86_core_cpu_control_stack_source_instruction_cost(
             return x86_core_cpu_control_stack_add_next_term(context,
                 *out_ticks, out_ticks);
         }
-        if (context->cpu_profile == X86_CORE_CPU_PROFILE_80386 &&
+        if (cpu_profile_has_386_semantics(context->cpu_profile) &&
             protected_execution) {
             (void)x86_core_cpu_control_stack_source_lookup(context,
                 opcode == 0xccu ? X86_CORE_CPU_SOURCE_TIMING_INT3 :
@@ -3428,7 +3434,7 @@ lib_i32 x86_core_cpu_control_stack_source_instruction_cost(
             return x86_core_cpu_control_stack_source_result(context,
                 X86_CORE_CPU_SOURCE_TIMING_INTO, 0u, 0, out_ticks);
         }
-        if (context->cpu_profile == X86_CORE_CPU_PROFILE_80386) {
+        if (cpu_profile_has_386_semantics(context->cpu_profile)) {
             context->timing_result.form_id = X86_CORE_CPU_SOURCE_TIMING_INTO;
         }
         if (context->cpu_profile == X86_CORE_CPU_PROFILE_8086) {
@@ -3436,12 +3442,12 @@ lib_i32 x86_core_cpu_control_stack_source_instruction_cost(
         }
         if ((data->oldcpu.data.eflags & VCPU_EFLAGS_OF) == 0u) {
             *out_ticks = context->cpu_profile == X86_CORE_CPU_PROFILE_80286 ||
-                context->cpu_profile == X86_CORE_CPU_PROFILE_80386 ? 3u : 4u;
+                cpu_profile_has_386_semantics(context->cpu_profile) ? 3u : 4u;
             return context->cpu_profile == X86_CORE_CPU_PROFILE_80286 ?
                 x86_core_cpu_control_stack_add_next_term(context, *out_ticks,
                     out_ticks) : 1;
         }
-        if (context->cpu_profile == X86_CORE_CPU_PROFILE_80386 &&
+        if (cpu_profile_has_386_semantics(context->cpu_profile) &&
             protected_execution) {
             if (task_switch) {
                 *out_ticks = 309u;
@@ -3452,7 +3458,7 @@ lib_i32 x86_core_cpu_control_stack_source_instruction_cost(
             return 1;
         }
         if (!same_privilege || protected_mode) return 0;
-        if (context->cpu_profile == X86_CORE_CPU_PROFILE_80386) {
+        if (cpu_profile_has_386_semantics(context->cpu_profile)) {
             *out_ticks = 35u;
         } else if (context->cpu_profile == X86_CORE_CPU_PROFILE_80286) {
             *out_ticks = 24u;
@@ -3469,7 +3475,7 @@ lib_i32 x86_core_cpu_control_stack_source_instruction_cost(
                 X86_CORE_CPU_SOURCE_TIMING_IRET, 0u, 0, out_ticks);
         }
         if (task_switch) {
-            if (context->cpu_profile == X86_CORE_CPU_PROFILE_80386) {
+            if (cpu_profile_has_386_semantics(context->cpu_profile)) {
                 (void)x86_core_cpu_control_stack_source_lookup(context,
                     X86_CORE_CPU_SOURCE_TIMING_IRET);
                 *out_ticks = 275u;
@@ -3485,7 +3491,7 @@ lib_i32 x86_core_cpu_control_stack_source_instruction_cost(
             return x86_core_cpu_control_stack_add_next_term(context,
                 *out_ticks, out_ticks);
         }
-        if (context->cpu_profile == X86_CORE_CPU_PROFILE_80386 &&
+        if (cpu_profile_has_386_semantics(context->cpu_profile) &&
             protected_mode) {
             (void)x86_core_cpu_control_stack_source_lookup(context,
                 X86_CORE_CPU_SOURCE_TIMING_IRET);
@@ -3520,7 +3526,7 @@ lib_i32 x86_core_cpu_control_stack_source_instruction_cost(
         }
         if (extension == 3u || extension == 5u) {
             if (task_switch) {
-                if (context->cpu_profile == X86_CORE_CPU_PROFILE_80386) {
+                if (cpu_profile_has_386_semantics(context->cpu_profile)) {
                     (void)x86_core_cpu_control_stack_source_lookup(context,
                         extension == 3u ? X86_CORE_CPU_SOURCE_TIMING_CALL_FAR_MEMORY :
                         X86_CORE_CPU_SOURCE_TIMING_JMP_FAR_MEMORY_PROTECTED);
@@ -3535,13 +3541,12 @@ lib_i32 x86_core_cpu_control_stack_source_instruction_cost(
                 return x86_core_cpu_control_stack_add_next_term(context,
                     *out_ticks, out_ticks);
             }
-            if (!memory || (!same_privilege && !(context->cpu_profile ==
-                X86_CORE_CPU_PROFILE_80386 && protected_mode && extension == 3u &&
+            if (!memory || (!same_privilege && !(cpu_profile_has_386_semantics(context->cpu_profile) && protected_mode && extension == 3u &&
                 data->crm != context->cpu->data.cs.selector)) ||
                 (protected_mode && extension == 5u &&
                 data->crm != context->cpu->data.cs.selector &&
-                context->cpu_profile != X86_CORE_CPU_PROFILE_80386)) return 0;
-            if (context->cpu_profile == X86_CORE_CPU_PROFILE_80386 &&
+                !cpu_profile_has_386_semantics(context->cpu_profile))) return 0;
+            if (cpu_profile_has_386_semantics(context->cpu_profile) &&
                 protected_mode && data->crm != context->cpu->data.cs.selector) {
                 lib_u8 parameters = 0u;
 
@@ -3559,7 +3564,7 @@ lib_i32 x86_core_cpu_control_stack_source_instruction_cost(
             if (context->cpu_profile == X86_CORE_CPU_PROFILE_80286 &&
                 protected_mode) {
                 *out_ticks = extension == 3u ? 29u : 26u;
-            } else if (context->cpu_profile == X86_CORE_CPU_PROFILE_80386 &&
+            } else if (cpu_profile_has_386_semantics(context->cpu_profile) &&
                 protected_mode) {
                 (void)x86_core_cpu_control_stack_source_lookup(context,
                     extension == 3u ? X86_CORE_CPU_SOURCE_TIMING_CALL_FAR_MEMORY :
@@ -3640,7 +3645,7 @@ lib_i32 x86_core_cpu_80386_dynamic_multiply_cost(x86_core_cpu_execution_context 
     lib_i32 memory_multiplier;
 
     if (context == LIB_NULL || out_ticks == LIB_NULL ||
-        context->cpu_profile != X86_CORE_CPU_PROFILE_80386) return 0;
+        !cpu_profile_has_386_semantics(context->cpu_profile)) return 0;
     data = &context->instructions->data;
     if (prefixes + 1u >= data->oplen ||
         !x86_core_cpu_80386_timing_has_source_prefixes(data, prefixes)) {
@@ -3729,7 +3734,7 @@ lib_i32 x86_core_cpu_80386_secondary_source_instruction_cost(
     lib_i32 memory;
 
     if (context == LIB_NULL || out_ticks == LIB_NULL ||
-        context->cpu_profile != X86_CORE_CPU_PROFILE_80386) return 0;
+        !cpu_profile_has_386_semantics(context->cpu_profile)) return 0;
     data = &context->instructions->data;
     if (prefixes + 1u >= data->oplen ||
         !x86_core_cpu_80386_timing_has_source_prefixes(data, prefixes)) {
@@ -3830,7 +3835,7 @@ lib_i32 x86_core_cpu_80386_privileged_source_instruction_cost(
     lib_i32 operand32;
 
     if (context == LIB_NULL || out_ticks == LIB_NULL ||
-        context->cpu_profile != X86_CORE_CPU_PROFILE_80386) return 0;
+        !cpu_profile_has_386_semantics(context->cpu_profile)) return 0;
     data = &context->instructions->data;
     if (prefixes >= data->oplen || data->flagLock ||
         !x86_core_cpu_80386_timing_has_source_prefixes(data, prefixes)) {
@@ -4311,6 +4316,7 @@ lib_u64 x86_core_cpu_timing_maximum_ticks(
         return X86_CORE_CPU_80186_SOURCE_MAXIMUM_TICKS;
     case X86_CORE_CPU_PROFILE_80286:
         return X86_CORE_CPU_80286_SOURCE_MAXIMUM_TICKS;
+    case X86_CORE_CPU_PROFILE_AM386SXLV:
     case X86_CORE_CPU_PROFILE_80386:
         return X86_CORE_CPU_80386_SOURCE_MAXIMUM_TICKS;
     case X86_CORE_CPU_PROFILE_80486SX:

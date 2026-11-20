@@ -2,6 +2,7 @@
 #include "lib/types/file.h"
 
 #include "x86-core/machine/machine_interface.h"
+#include "x86-core/machine/debug_interface.h"
 #include "x86-core/machine/machine.h"
 #include "support/memory_alias_fixture.h"
 
@@ -122,6 +123,87 @@ done:
     return failed;
 }
 
+static lib_i32 am386sxlv_reset_bus(void)
+{
+    static const lib_u8 reset[16] = {
+        0xeau, 0x00u, 0x10u, 0x00u, 0x00u, [14] = 0x78u, [15] = 0x56u
+    };
+    static const lib_u8 program[32] = {
+        0xb8u, 0xffu, 0xffu, 0x8eu, 0xd8u, /* MOV AX,FFFF; MOV DS,AX */
+        0x66u, 0xc7u, 0x06u, 0x30u, 0x00u, /* MOV DWORD PTR [0030], immediate */
+        0x78u, 0x56u, 0x34u, 0x12u, 0xf4u
+    };
+    const x86_core_machine_executor_config config = {
+        .memory_bytes = 16u * 1024u * 1024u,
+        .cpu_profile = X86_CORE_CPU_PROFILE_AM386SXLV,
+        .address_decode = {0u, LIB_UINT32_MAX, 0x00100000u}
+    };
+    x86_core_machine *machine = LIB_NULL;
+    x86_core_machine_run_result result = {0};
+    x86_core_cpu_state state = {0};
+    x86_core_cpu_profile selected = X86_CORE_CPU_PROFILE_DEFAULT;
+    lib_i32 failed = 1;
+
+    if (x86_core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK)
+        return 1;
+    if (x86_core_machine_get_cpu_profile(machine, &selected) != LIB_STATUS_OK ||
+        selected != X86_CORE_CPU_PROFILE_AM386SXLV ||
+        x86_core_machine_register_immutable_rom_mapping(machine, 0x1000u,
+            program, sizeof(program)) != LIB_STATUS_OK ||
+        x86_core_machine_register_immutable_rom_mapping(machine, 0xffff0u,
+            reset, sizeof(reset)) != LIB_STATUS_OK ||
+        x86_core_machine_register_immutable_rom_mapping_reset_alias(machine,
+            0xffff0u, 0xfffff0u, sizeof(reset)) != LIB_STATUS_OK ||
+        x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK)
+        goto done;
+    for (lib_u32 enabled = 0u; enabled < 2u; ++enabled) {
+        lib_u8 actual[4];
+        lib_u32 revision;
+        const lib_u32 address = enabled ? 0x100020u : 0x20u;
+        if (x86_core_machine_reset(machine) != LIB_STATUS_OK ||
+            x86_core_machine_debug_read_register(machine, X86_CORE_CPU_DEBUG_EDX,
+                &revision) != LIB_STATUS_OK || revision != 0x2300u ||
+            x86_core_machine_set_address_clear_mask(machine,
+                enabled ? 0u : 0x00100000u) != LIB_STATUS_OK ||
+            x86_core_machine_run(machine, (x86_core_machine_run_budget){1u, 0u},
+                &result) != LIB_STATUS_OK || result.executed != 1u ||
+            x86_core_machine_get_cpu_state(machine, &state) != LIB_STATUS_OK ||
+            state.cs_base != 0u || state.eip != 0x1000u ||
+            x86_core_machine_run(machine, (x86_core_machine_run_budget){8u, 0u},
+                &result) != LIB_STATUS_OK ||
+            result.reason != X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
+            x86_core_machine_memory_read(machine, address, actual, sizeof(actual)) != LIB_STATUS_OK ||
+            lib_memory_compare(actual, program + 10u, sizeof(actual)) != 0)
+            goto done;
+    }
+    {
+        static const lib_u8 low[] = {0x34u, 0x12u};
+        static const lib_u8 expected[] = {0x78u, 0x56u, 0x34u, 0x12u};
+        static const lib_u8 replaced[] = {0x11u, 0x22u, 0x33u, 0x44u};
+        static const lib_u8 after_write[] = {0x78u, 0x56u, 0x33u, 0x44u};
+        lib_u8 actual[sizeof(expected)];
+        if (x86_core_machine_reset(machine) != LIB_STATUS_OK ||
+            x86_core_machine_set_address_clear_mask(machine, 0u) != LIB_STATUS_OK ||
+            x86_core_machine_memory_write(machine, 0u, low, sizeof(low)) != LIB_STATUS_OK ||
+            x86_core_machine_debug_read_linear(machine, 0x01fffffeu, actual,
+                sizeof(actual)) != LIB_STATUS_OK ||
+            lib_memory_compare(actual, expected, sizeof(actual)) != 0 ||
+            x86_core_machine_debug_write_linear(machine, 0x01fffffeu, replaced,
+                sizeof(replaced)) != LIB_STATUS_OK ||
+            x86_core_machine_debug_read_linear(machine, 0x01fffffeu, actual,
+                sizeof(actual)) != LIB_STATUS_OK ||
+            lib_memory_compare(actual, after_write, sizeof(actual)) != 0)
+            goto done;
+    }
+    failed = 0;
+done:
+    if (failed)
+        lib_c_printf("Am386SXLV reset test failed: profile=%u reason=%u pc=%08x cs_base=%08x eip=%08x\n",
+            (lib_u32)selected, (lib_u32)result.reason, result.linear_pc, state.cs_base, state.eip);
+    x86_core_machine_destroy(machine);
+    return failed;
+}
+
 lib_i32 main(void)
 {
     static const lib_u8 image[] = { 0xf4u, 0x90u, 0x90u };
@@ -185,7 +267,7 @@ lib_i32 main(void)
             lib_memory_compare(image, observed, sizeof(image)) != 0;
     }
     x86_core_machine_destroy(machine);
-    if (failed || firmware_rollback_contract()) return 1;
+    if (failed || firmware_rollback_contract() || am386sxlv_reset_bus()) return 1;
     for (lib_u32 mode = 0u; mode < 4u; ++mode)
         if (reset_window_segments(0xffff0000u, mode) ||
             reset_window_segments(0x00ff0000u, mode)) return 1;

@@ -49,17 +49,29 @@ extern "C" {
 
 #define X86_CPU_NEC_PSW_MD 0x8000u
 
+static inline lib_bool cpu_profile_has_386_semantics(x86_core_cpu_profile profile)
+{
+    return profile == X86_CORE_CPU_PROFILE_80386 ||
+        profile == X86_CORE_CPU_PROFILE_AM386SXLV;
+}
+
+static inline lib_u32 cpu_profile_external_address(x86_core_cpu_profile profile,
+    lib_u32 physical)
+{
+    return profile == X86_CORE_CPU_PROFILE_AM386SXLV ? X86_CPU_MASK_U24(physical) : physical;
+}
+
 /* Family capabilities are not an ordering of the public profile enum. */
 static inline lib_bool cpu_profile_has_protected_architecture(x86_core_cpu_profile profile)
 {
     return profile == X86_CORE_CPU_PROFILE_80286 ||
-        profile == X86_CORE_CPU_PROFILE_80386 ||
+        cpu_profile_has_386_semantics(profile) ||
         profile == X86_CORE_CPU_PROFILE_80486SX;
 }
 
 static inline lib_bool cpu_profile_has_32bit_architecture(x86_core_cpu_profile profile)
 {
-    return profile == X86_CORE_CPU_PROFILE_80386 ||
+    return cpu_profile_has_386_semantics(profile) ||
         profile == X86_CORE_CPU_PROFILE_80486SX;
 }
 
@@ -81,6 +93,7 @@ static inline lib_bool cpu_profile_allows_minimum(x86_core_cpu_profile profile,
         return cpu_profile_has_186_integer(profile);
     case X86_CORE_CPU_PROFILE_80286:
         return cpu_profile_has_protected_architecture(profile);
+    case X86_CORE_CPU_PROFILE_AM386SXLV:
     case X86_CORE_CPU_PROFILE_80386:
         return cpu_profile_has_32bit_architecture(profile);
     case X86_CORE_CPU_PROFILE_80486SX:

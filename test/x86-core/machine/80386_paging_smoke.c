@@ -293,9 +293,9 @@ static lib_i32 paging_test_delivered_page_fault(void)
     return failed;
 }
 
-static lib_i32 paging_test_valid_path(void)
+static lib_i32 paging_test_valid_path(x86_core_cpu_profile profile)
 {
-    static const lib_u8 protected_code[] = {
+    lib_u8 protected_code[] = {
         0xbcu, 0x00u, 0x50u,
         0x66u, 0xb8u, 0x00u, 0x10u, 0x00u, 0x00u,
         0x0fu, 0x22u, 0xd8u,
@@ -310,10 +310,11 @@ static lib_i32 paging_test_valid_path(void)
         0x5eu,
         0xf4u
     };
-    const lib_u32 code_entry = TEST_PAGE_PRESENT | TEST_PAGE_WRITABLE;
-    const lib_u32 data_entry = TEST_DATA_PHYSICAL | TEST_PAGE_PRESENT |
+    const lib_u32 upper = profile == X86_CORE_CPU_PROFILE_AM386SXLV ? 0x01000000u : 0u;
+    const lib_u32 code_entry = upper | TEST_PAGE_PRESENT | TEST_PAGE_WRITABLE;
+    const lib_u32 data_entry = upper | TEST_DATA_PHYSICAL | TEST_PAGE_PRESENT |
         TEST_PAGE_WRITABLE;
-    const lib_u32 stack_entry = TEST_STACK_PHYSICAL | TEST_PAGE_PRESENT |
+    const lib_u32 stack_entry = upper | TEST_STACK_PHYSICAL | TEST_PAGE_PRESENT |
         TEST_PAGE_WRITABLE;
     paging_machine state;
     x86_core_machine_run_result result = {0};
@@ -338,7 +339,8 @@ static lib_i32 paging_test_valid_path(void)
     lib_i32 entries_ok = 0;
     lib_i32 provenance_ok = 0;
     lib_i32 reset_ok = 0;
-    lib_i32 failed = !paging_prepare(&state, X86_CORE_CPU_PROFILE_80386);
+    lib_i32 failed = !paging_prepare(&state, profile);
+    protected_code[8] = (lib_u8)(upper >> 24u);
 
     if (!failed) {
         if (!failed) failed |= x86_core_machine_set_trace_provider(state.machine,
@@ -361,7 +363,7 @@ static lib_i32 paging_test_valid_path(void)
         if (!failed) {
             registers = !diagnostic.first_fault.valid &&
                 pre_cr0 == (VCPU_CR0_PE | VCPU_CR0_PG) && pre_cr2 == 0u &&
-                pre_cr3 == TEST_PAGE_DIRECTORY && pre_ecx ==
+                pre_cr3 == (TEST_PAGE_DIRECTORY | upper) && pre_ecx ==
                     (VCPU_CR0_PE | VCPU_CR0_PG) && pre_edx == 0u;
             failed |= !registers;
         }
@@ -1237,7 +1239,8 @@ static lib_i32 paging_test_cross_page(void)
 
 lib_i32 main(void)
 {
-    const lib_i32 valid = paging_test_valid_path();
+    const lib_i32 valid = paging_test_valid_path(X86_CORE_CPU_PROFILE_80386);
+    const lib_i32 sxlv = paging_test_valid_path(X86_CORE_CPU_PROFILE_AM386SXLV);
     const lib_i32 delivered = paging_test_delivered_page_fault();
     const lib_i32 faults = paging_test_page_faults();
     const lib_i32 cr3_reload = paging_test_cr3_directory_reload();
@@ -1245,11 +1248,11 @@ lib_i32 main(void)
     const lib_i32 permissions = paging_test_permissions();
     const lib_i32 cross_page = paging_test_cross_page();
 
-    if (valid || delivered || faults ||
+    if (valid || sxlv || delivered || faults ||
         cr3_reload || no_stale_translation || permissions || cross_page) {
         lib_c_fprintf(lib_c_stderr,
-            "I386-PAGING:FAIL valid=%d delivered=%d faults=%d cr3=%d stale=%d permissions=%d cross=%d\n",
-            valid, delivered, faults,
+            "I386-PAGING:FAIL valid=%d sxlv=%d delivered=%d faults=%d cr3=%d stale=%d permissions=%d cross=%d\n",
+            valid, sxlv, delivered, faults,
             cr3_reload, no_stale_translation, permissions, cross_page);
         return 1;
     }

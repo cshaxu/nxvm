@@ -589,6 +589,7 @@ static lib_u32 x86_core_cpu_reset_code_base(
     case X86_CORE_CPU_PROFILE_80286:
         return 0x00ff0000u;
     case X86_CORE_CPU_PROFILE_DEFAULT:
+    case X86_CORE_CPU_PROFILE_AM386SXLV:
     case X86_CORE_CPU_PROFILE_80386:
     case X86_CORE_CPU_PROFILE_80486SX:
         return 0xffff0000u;
@@ -710,6 +711,7 @@ const char *x86_core_cpu_profile_name(x86_core_cpu_profile profile)
     case X86_CORE_CPU_PROFILE_80386: return "80386";
     case X86_CORE_CPU_PROFILE_80486SX: return "80486SX";
     case X86_CORE_CPU_PROFILE_V30: return "V30";
+    case X86_CORE_CPU_PROFILE_AM386SXLV: return "Am386SXLV";
     case X86_CORE_CPU_PROFILE_DEFAULT: return "default";
     }
     return "invalid";
@@ -797,7 +799,10 @@ static void x86_core_cpu_state_apply_reset(
     /* Intel 80386 PRM 10.1 defines DH=3 after RESET# for the 386DX.
      * The selected zero revision keeps the documented device identifier
      * without inventing a board-specific stepping value. */
-    if (context->cpu_profile == X86_CORE_CPU_PROFILE_80386)
+    if (context->cpu_profile == X86_CORE_CPU_PROFILE_AM386SXLV)
+        /* AMD 21020 Rev A, SX/DX differences: DH=23h. */
+        cpu_state.data.edx = 0x00002300u;
+    else if (context->cpu_profile == X86_CORE_CPU_PROFILE_80386)
         cpu_state.data.edx = 0x00000300u;
     else if (context->cpu_profile == X86_CORE_CPU_PROFILE_80486SX) {
         cpu_state.data.edx = VCPU_486SX_SIGNATURE;

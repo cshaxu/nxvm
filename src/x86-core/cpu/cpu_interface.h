@@ -53,7 +53,9 @@ typedef enum x86_core_cpu_profile {
     /* Selected embedded SX model: CPUID 042Bh, VME/SMM, no integrated FPU. */
     X86_CORE_CPU_PROFILE_80486SX,
     /* Native CPU work is incremental; Machine admission requires qualification. */
-    X86_CORE_CPU_PROFILE_V30
+    X86_CORE_CPU_PROFILE_V30,
+    /* Am386SXLV ordinary execution. Management mode is separately qualified. */
+    X86_CORE_CPU_PROFILE_AM386SXLV
 } x86_core_cpu_profile;
 
 /* Strict protected-mode descriptor loading is the architectural default.

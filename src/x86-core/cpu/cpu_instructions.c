@@ -298,7 +298,7 @@ static lib_i32 _kma_is_reset_vector_fetch(
     }
     if (context->cpu_profile == X86_CORE_CPU_PROFILE_80286) {
         reset_vector = 0x00fffff0u;
-    } else if (context->cpu_profile == X86_CORE_CPU_PROFILE_80386 ||
+    } else if (cpu_profile_has_386_semantics(context->cpu_profile) ||
         context->cpu_profile == X86_CORE_CPU_PROFILE_80486SX) {
         reset_vector = 0xfffffff0u;
     } else {
@@ -372,13 +372,15 @@ static void _kma_read_bus(x86_core_cpu_execution_context *context,
     x86_core_cpu_memory_access_provenance provenance, lib_u32 attributes)
 {
     lib_status memory_status;
+    const lib_bool reset_fetch = _kma_is_reset_vector_fetch(context, physical, byte, provenance);
     CPU_TRACE_CALL_BEGIN("_kma_read_bus");
+    physical = cpu_profile_external_address(context->cpu_profile, physical);
     x86_core_cpu_bus_prepare_read(context, instruction_state.data.memory_lock_active);
     _kma_publish_external_cycle(context, X86_CORE_CPU_EXTERNAL_CYCLE_PHASE_BEGIN,
         X86_CORE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY, physical, byte, LIB_FALSE, provenance);
     memory_status = context->bus->read_memory(context->bus_context, physical,
         (void *)rdata, byte, provenance, context->preview_mode,
-        _kma_is_reset_vector_fetch(context, physical, byte, provenance),
+        reset_fetch,
         _kma_memory_cache_control(context, attributes));
     if (memory_status != LIB_STATUS_OK) {
         _kma_publish_external_cycle(context, X86_CORE_CPU_EXTERNAL_CYCLE_PHASE_CANCEL,
@@ -396,10 +398,14 @@ static void _kma_read_bus(x86_core_cpu_execution_context *context,
     CPU_TRACE_CALL_END;
 }
 
-/* NEC V30: an even word uses both lanes; an odd word uses two byte cycles. */
-static lib_u8 _kma_v30_bus_part(lib_u32 physical, lib_u8 remaining)
+/* V30 splits on word lanes. SXLV splits at 24-bit address rollover. */
+static lib_u8 _kma_bus_part(x86_core_cpu_profile profile, lib_u32 physical,
+    lib_u8 remaining)
 {
-    return remaining >= 2u && (physical & 1u) == 0u ? 2u : 1u;
+    if (profile == X86_CORE_CPU_PROFILE_V30)
+        return remaining >= 2u && (physical & 1u) == 0u ? 2u : 1u;
+    const lib_u32 span = 0x01000000u - X86_CPU_MASK_U24(physical);
+    return span < remaining ? (lib_u8)span : remaining;
 }
 
 /* Cache eligibility affects fills, not hits in an already resident line. */
@@ -417,10 +423,12 @@ static void _kma_read_physical(x86_core_cpu_execution_context *context,
     } else if (context->cpu_profile == X86_CORE_CPU_PROFILE_80286) {
         physical &= 0x00ffffffu;
     }
-    if (context->cpu_profile == X86_CORE_CPU_PROFILE_V30) {
+    if (context->cpu_profile == X86_CORE_CPU_PROFILE_V30 ||
+        context->cpu_profile == X86_CORE_CPU_PROFILE_AM386SXLV) {
         for (lib_u8 done = 0u; done < byte;) {
-            const lib_u32 address = (physical + done) & 0x000fffffu;
-            const lib_u8 part = _kma_v30_bus_part(address, byte - done);
+            const lib_u32 address = context->cpu_profile == X86_CORE_CPU_PROFILE_V30 ?
+                (physical + done) & 0x000fffffu : physical + done;
+            const lib_u8 part = _kma_bus_part(context->cpu_profile, address, byte - done);
 
             CPU_TRACE_CHECK_RETURN(_kma_read_bus(context, address, rdata + done,
                 part, provenance, attributes));
@@ -510,6 +518,7 @@ static void _kma_write_bus(x86_core_cpu_execution_context *context,
     x86_core_cpu_memory_access_provenance provenance, lib_u32 attributes)
 {
     CPU_TRACE_CALL_BEGIN("_kma_write_bus");
+    physical = cpu_profile_external_address(context->cpu_profile, physical);
     x86_core_cpu_bus_prepare_write(context);
     _kma_publish_external_cycle(context, X86_CORE_CPU_EXTERNAL_CYCLE_PHASE_BEGIN,
         X86_CORE_CPU_EXTERNAL_CYCLE_SPACE_MEMORY, physical, byte, LIB_TRUE, provenance);
@@ -538,10 +547,12 @@ static void _kma_write_physical(x86_core_cpu_execution_context *context, lib_u32
     } else if (context->cpu_profile == X86_CORE_CPU_PROFILE_80286) {
         physical &= 0x00ffffffu;
     }
-    if (context->cpu_profile == X86_CORE_CPU_PROFILE_V30) {
+    if (context->cpu_profile == X86_CORE_CPU_PROFILE_V30 ||
+        context->cpu_profile == X86_CORE_CPU_PROFILE_AM386SXLV) {
         for (lib_u8 done = 0u; done < byte;) {
-            const lib_u32 address = (physical + done) & 0x000fffffu;
-            const lib_u8 part = _kma_v30_bus_part(address, byte - done);
+            const lib_u32 address = context->cpu_profile == X86_CORE_CPU_PROFILE_V30 ?
+                (physical + done) & 0x000fffffu : physical + done;
+            const lib_u8 part = _kma_bus_part(context->cpu_profile, address, byte - done);
 
             CPU_TRACE_CHECK_RETURN(_kma_write_bus(context, address, rdata + done,
                 part, provenance, attributes));
@@ -9020,7 +9031,7 @@ static lib_u8 x86_core_cpu_instruction_lexeme_scan_with_options(
     if (opcode == 0x0fu && !x86_core_cpu_profile_has_8086_semantics(profile)) {
         nec = profile == X86_CORE_CPU_PROFILE_V30;
         if (!nec && profile != X86_CORE_CPU_PROFILE_80286 &&
-            profile != X86_CORE_CPU_PROFILE_80386 &&
+            !cpu_profile_has_386_semantics(profile) &&
             profile != X86_CORE_CPU_PROFILE_80486SX) return LIB_FALSE;
         if (index >= available_bytes || index >= 15u) return LIB_FALSE;
         opcode = bytes[index++];
@@ -9297,10 +9308,10 @@ static lib_bool x86_core_cpu_allows_fpu(x86_core_cpu_profile cpu,
     }
     if (fpu == X86_FPU_PROFILE_80287) {
         return cpu == X86_CORE_CPU_PROFILE_80286 ||
-            cpu == X86_CORE_CPU_PROFILE_80386;
+            cpu_profile_has_386_semantics(cpu);
     }
     return fpu == X86_FPU_PROFILE_80387 &&
-        cpu == X86_CORE_CPU_PROFILE_80386;
+        cpu_profile_has_386_semantics(cpu);
 }
 
 static lib_bool x86_core_cpu_wait_test_asserted(
@@ -18149,7 +18160,7 @@ static void LSL_R32_RM32(x86_core_cpu_execution_context *context)
             {
                 CPU_TRACE_BLOCK_BEGIN("EFLAGS_ZF");
                 limit = _IsDescSegGranularLarge(descriptor) ? ((_GetDescSeg_Limit(descriptor) << 12) | 0x0fff) : _GetDescSeg_Limit(descriptor);
-                if (context->cpu_profile == X86_CORE_CPU_PROFILE_80386) {
+                if (cpu_profile_has_386_semantics(context->cpu_profile)) {
                     instruction_state.data.source_lsl_granularity_valid = LIB_TRUE;
                     instruction_state.data.source_lsl_page_granular =
                         _IsDescSegGranularLarge(descriptor);
