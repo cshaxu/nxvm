@@ -107,7 +107,7 @@ Windows/Office remain follow-up qualification stages. 425/430 remain reference
 machines.
 
 Completed: [T588 design and reset proof](../history/M5-T588-ob300-design-closure.md).
-Active: [T589 basic hardware](../proposals/m5-ob300-hardware.md).
+Completed: [T589 basic hardware](../history/M5-T589-ob300-hardware-closure.md).
 
 1. [OmniBook 300: board wiring](../proposals/m5-ob300-board.md)
 2. [OmniBook 300: machine composition and real ROM DOS](../proposals/m5-ob300-rom-dos.md)
