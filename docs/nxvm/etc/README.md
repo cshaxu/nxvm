@@ -4,6 +4,9 @@ T589 S1: [Am386SXLV contract](evidence/t589-s1-am386sxlv.md) records
 CPU ownership and the two-width baseline.
 S2 [ordinary execution](evidence/t589-s2-am386sxlv-execution.md) records
 24-bit CPU addressing, reset identity, tests and the receiving release matrix.
+S3 [16-bit external bus](evidence/t589-s3-am386sxlv-word-bus.md) records
+memory and port lanes, prefetch, qualification and the firmware findings
+that guide the SMM implementation.
 
 T588 S1: [OB300 identity and convergence ledger](evidence/t588-ob300-convergence.md)
 records external archive verification, current implementation owners and the

@@ -1,6 +1,10 @@
-# M5 T589 S3 - Active: Am386SXLV 16-bit transfers and fetch
+# M5 T589 S3 - Delivered: Am386SXLV 16-bit transfers and fetch
 
 [S2 is closed](../history/M5-T589-S2-sxlv-execution.md).
+[S3 qualification evidence](../etc/evidence/t589-s3-am386sxlv-word-bus.md)
+records the modeled word bus, transaction checks, 716/716 unit coverage on
+each host width, and the fourteen verified receiver artifacts. x64 coverage
+combines the original bounded run with the exact remaining inventory.
 
 | Field | Required record |
 | --- | --- |
@@ -14,7 +18,7 @@
 | Applicable Rules | NXVM guide and shared execution, architecture, coding, and documentation rules. |
 | Verification | Check aligned and odd memory/port byte, word and dword cycle addresses and widths, instruction prefetch, fault cancellation, retained 386/V30 behavior, and dual-width scope and required full cached qualification. |
 | Expected Markers | Architectural instruction results and 24-bit address logic are preserved. External 16-bit lane widths, order and commit/cancel are observable through existing cycle contracts. |
-| Asset Needs | Stable Ninja trees, synthetic fixtures, optional build/t589-s3 scratch up to 64 MiB with cleanup after reviewed process exit. |
+| Asset Needs | Stable Ninja trees, synthetic fixtures, S3-owned build/t589-s3 scratch up to 64 MiB, with cleanup after reviewed process exit. Release publication budget is 40 minutes; each unit aggregate retains its 300-second test deadline. |
 | Reporting Requirements | Actual delta, evidence grade, qualified artifact hashes and test outcomes. |
 | Stop Conditions | Do not classify nominal transfer timing as verified OB300 physical pacing. Do not publish a second clock or retry a partially committed device write. |
 | Exit Criteria | Required cycles and prefetch verified in both widths, regressions and receiver publication checked, reviewed complete commits pushed. |
