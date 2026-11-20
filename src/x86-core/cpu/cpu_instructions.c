@@ -398,14 +398,10 @@ static void _kma_read_bus(x86_core_cpu_execution_context *context,
     CPU_TRACE_CALL_END;
 }
 
-/* V30 splits on word lanes. SXLV splits at 24-bit address rollover. */
-static lib_u8 _kma_bus_part(x86_core_cpu_profile profile, lib_u32 physical,
-    lib_u8 remaining)
+/* The 16-bit bus transfers one aligned word or a single byte lane. */
+static lib_u8 _kma_word_bus_part(lib_u32 physical, lib_u8 remaining)
 {
-    if (profile == X86_CORE_CPU_PROFILE_V30)
-        return remaining >= 2u && (physical & 1u) == 0u ? 2u : 1u;
-    const lib_u32 span = 0x01000000u - X86_CPU_MASK_U24(physical);
-    return span < remaining ? (lib_u8)span : remaining;
+    return remaining >= 2u && (physical & 1u) == 0u ? 2u : 1u;
 }
 
 /* Cache eligibility affects fills, not hits in an already resident line. */
@@ -428,7 +424,7 @@ static void _kma_read_physical(x86_core_cpu_execution_context *context,
         for (lib_u8 done = 0u; done < byte;) {
             const lib_u32 address = context->cpu_profile == X86_CORE_CPU_PROFILE_V30 ?
                 (physical + done) & 0x000fffffu : physical + done;
-            const lib_u8 part = _kma_bus_part(context->cpu_profile, address, byte - done);
+            const lib_u8 part = _kma_word_bus_part(address, byte - done);
 
             CPU_TRACE_CHECK_RETURN(_kma_read_bus(context, address, rdata + done,
                 part, provenance, attributes));
@@ -552,7 +548,7 @@ static void _kma_write_physical(x86_core_cpu_execution_context *context, lib_u32
         for (lib_u8 done = 0u; done < byte;) {
             const lib_u32 address = context->cpu_profile == X86_CORE_CPU_PROFILE_V30 ?
                 (physical + done) & 0x000fffffu : physical + done;
-            const lib_u8 part = _kma_bus_part(context->cpu_profile, address, byte - done);
+            const lib_u8 part = _kma_word_bus_part(address, byte - done);
 
             CPU_TRACE_CHECK_RETURN(_kma_write_bus(context, address, rdata + done,
                 part, provenance, attributes));
@@ -3005,20 +3001,12 @@ static void _smm_record_io(x86_core_cpu_execution_context *context)
 }
 
 /* regular portid accessing */
-static void _p_input(x86_core_cpu_execution_context *context, lib_u16 portid, lib_uptr rdata, lib_u8 byte)
+static void _p_input_cycle(x86_core_cpu_execution_context *context, lib_u16 portid, lib_uptr rdata, lib_u8 byte)
 {
     lib_u32 value;
     lib_u16 word;
     lib_u8 octet;
-    CPU_TRACE_CALL_BEGIN("_p_input");
-    CPU_TRACE_CHECK_RETURN(_kpa_test_mode(context, portid, byte));
-    if (context->cpu_profile == X86_CORE_CPU_PROFILE_V30 && byte == 2u && (portid & 1u)) {
-        /* Each accepted byte completes before the next bus cycle begins. */
-        CPU_TRACE_CHECK_RETURN(_p_input(context, portid, rdata, 1u));
-        CPU_TRACE_CHECK_RETURN(_p_input(context, (lib_u16)(portid + 1u), rdata + 1u, 1u));
-        CPU_TRACE_CALL_END;
-        return;
-    }
+    CPU_TRACE_CALL_BEGIN("_p_input_cycle");
     if (byte != 1u && byte != 2u && byte != 4u) {
         CPU_TRACE_CHECK_RETURN(_SetExcept_CE(byte));
     }
@@ -3070,19 +3058,12 @@ static void _p_input(x86_core_cpu_execution_context *context, lib_u16 portid, li
     x86_core_cpu_bus_read_complete(context, 0u, byte, wait_ticks);
     CPU_TRACE_CALL_END;
 }
-static void _p_output(x86_core_cpu_execution_context *context, lib_u16 portid, lib_uptr rdata, lib_u8 byte)
+static void _p_output_cycle(x86_core_cpu_execution_context *context, lib_u16 portid, lib_uptr rdata, lib_u8 byte)
 {
     lib_u32 value = 0u;
     lib_u16 word;
     lib_u8 octet;
-    CPU_TRACE_CALL_BEGIN("_p_output");
-    CPU_TRACE_CHECK_RETURN(_kpa_test_mode(context, portid, byte));
-    if (context->cpu_profile == X86_CORE_CPU_PROFILE_V30 && byte == 2u && (portid & 1u)) {
-        CPU_TRACE_CHECK_RETURN(_p_output(context, portid, rdata, 1u));
-        CPU_TRACE_CHECK_RETURN(_p_output(context, (lib_u16)(portid + 1u), rdata + 1u, 1u));
-        CPU_TRACE_CALL_END;
-        return;
-    }
+    CPU_TRACE_CALL_BEGIN("_p_output_cycle");
     switch (byte)
     {
     case 1:
@@ -3139,6 +3120,55 @@ static void _p_output(x86_core_cpu_execution_context *context, lib_u16 portid, l
         X86_CORE_CPU_EXTERNAL_CYCLE_SPACE_PORT, portid, byte, LIB_TRUE,
         X86_CORE_CPU_MEMORY_ACCESS_DATA);
     x86_core_cpu_bus_write_complete(context, 0u, byte, wait_ticks, LIB_FALSE, buffered);
+    CPU_TRACE_CALL_END;
+}
+
+/* Validate the architectural operand before issuing any partial I/O cycle. */
+static void _p_input(x86_core_cpu_execution_context *context, lib_u16 portid,
+    lib_uptr rdata, lib_u8 byte)
+{
+    lib_u32 value = 0u;
+    const lib_bool sxlv = context->cpu_profile == X86_CORE_CPU_PROFILE_AM386SXLV;
+    CPU_TRACE_CALL_BEGIN("_p_input");
+    CPU_TRACE_CHECK_RETURN(_kpa_test_mode(context, portid, byte));
+    if (byte != 1u && byte != 2u && byte != 4u)
+        CPU_TRACE_CHECK_RETURN(_SetExcept_CE(byte));
+    if (sxlv || (context->cpu_profile == X86_CORE_CPU_PROFILE_V30 &&
+            byte == 2u && (portid & 1u))) {
+        const lib_uptr destination = sxlv ? X86_CPU_REFERENCE_OF(value) : rdata;
+        for (lib_u8 done = 0u; done < byte;) {
+            const lib_u16 port = (lib_u16)(portid + done);
+            const lib_u8 part = _kma_word_bus_part(port, byte - done);
+            CPU_TRACE_CHECK_RETURN(_p_input_cycle(context, port, destination + done, part));
+            done += part;
+        }
+        if (sxlv)
+            CPU_TRACE_CHECK_RETURN(_kma_write_ref(context, rdata, X86_CPU_REFERENCE_OF(value), byte));
+    } else {
+        CPU_TRACE_CHECK_RETURN(_p_input_cycle(context, portid, rdata, byte));
+    }
+    CPU_TRACE_CALL_END;
+}
+
+static void _p_output(x86_core_cpu_execution_context *context, lib_u16 portid,
+    lib_uptr rdata, lib_u8 byte)
+{
+    CPU_TRACE_CALL_BEGIN("_p_output");
+    CPU_TRACE_CHECK_RETURN(_kpa_test_mode(context, portid, byte));
+    if (byte != 1u && byte != 2u && byte != 4u)
+        CPU_TRACE_CHECK_RETURN(_SetExcept_CE(byte));
+    if (context->cpu_profile == X86_CORE_CPU_PROFILE_AM386SXLV ||
+        (context->cpu_profile == X86_CORE_CPU_PROFILE_V30 &&
+         byte == 2u && (portid & 1u))) {
+        for (lib_u8 done = 0u; done < byte;) {
+            const lib_u16 port = (lib_u16)(portid + done);
+            const lib_u8 part = _kma_word_bus_part(port, byte - done);
+            CPU_TRACE_CHECK_RETURN(_p_output_cycle(context, port, rdata + done, part));
+            done += part;
+        }
+    } else {
+        CPU_TRACE_CHECK_RETURN(_p_output_cycle(context, portid, rdata, byte));
+    }
     CPU_TRACE_CALL_END;
 }
 

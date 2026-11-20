@@ -16,6 +16,7 @@ typedef struct cpu_port_instruction_fixture {
     lib_u32 input_value;
     lib_u8 transfer_count;
     lib_u8 complete_count;
+    lib_u8 transfers_before_failure;
     lib_status fail_status;
     lib_u64 cycle_wait_ticks;
     lib_u8 cycle_begins;
@@ -56,7 +57,9 @@ static lib_status cpu_port_transfer(void *opaque, lib_u16 port, lib_u8 bytes,
         (cpu_port_instruction_fixture *)opaque;
     cpu_port_transfer_record *record;
 
-    if (fixture->fail_status != LIB_STATUS_OK) return fixture->fail_status;
+    if (fixture->fail_status != LIB_STATUS_OK &&
+        fixture->transfer_count >= fixture->transfers_before_failure)
+        return fixture->fail_status;
     if (fixture->transfer_count == 3u) return LIB_STATUS_LIMIT_EXCEEDED;
     if (!write) *value = fixture->input_value;
     record = &fixture->transfers[fixture->transfer_count++];

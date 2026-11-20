@@ -11,6 +11,7 @@ typedef struct span_fixture {
     lib_u8 sparse[8];
     lib_u8 sparse_bytes;
     lib_u32 first_gate;
+    x86_core_cpu_memory_access_provenance tracked_read;
 } span_fixture;
 
 static lib_status span_read(void *opaque, lib_u32 address, void *destination,
@@ -18,7 +19,7 @@ static lib_status span_read(void *opaque, lib_u32 address, void *destination,
     lib_bool observe_only, lib_bool reset_fetch, lib_u8 cache_control)
 {
     span_fixture *state = opaque;
-    if (!observe_only && provenance == X86_CORE_CPU_MEMORY_ACCESS_DATA &&
+    if (!observe_only && provenance == state->tracked_read &&
         address >= state->tracked_first && address <= state->tracked_last) {
         const lib_u32 index = state->reads++;
         if (index < 8u) {
@@ -44,8 +45,13 @@ static lib_status span_write(void *opaque, lib_u32 address, const void *source,
     lib_u8 bytes, x86_core_cpu_memory_access_provenance provenance, lib_u8 cache_control)
 {
     span_fixture *state = opaque;
-    if (address >= state->tracked_first && address <= state->tracked_last)
-        ++state->writes;
+    if (address >= state->tracked_first && address <= state->tracked_last) {
+        const lib_u32 index = state->writes++;
+        if (index < 8u) {
+            state->addresses[index] = address;
+            state->widths[index] = bytes;
+        }
+    }
     if (state->sparse_bytes && address >= state->sparse_address &&
         (lib_u64)address + bytes <= (lib_u64)state->sparse_address + state->sparse_bytes) {
         lib_memory_copy(state->sparse + address - state->sparse_address, source, bytes);
@@ -70,6 +76,7 @@ static void span_prepare(span_fixture *state, x86_core_cpu_profile profile)
     state->chip.cpu.data.sp = 0x700u;
     state->tracked_first = 0x10000u;
     state->tracked_last = 0x2ffffu;
+    state->tracked_read = X86_CORE_CPU_MEMORY_ACCESS_DATA;
     state->first_gate = LIB_UINT32_MAX;
     /* Code-owned real handlers let GP/SS report their actual vector without
      * inventing a firmware input. Protected rejection uses a zero IDT gate. */
@@ -415,11 +422,69 @@ static lib_i32 span_vm_and_cached_limits(x86_core_cpu_profile profile)
     return 0;
 }
 
+static lib_i32 span_sxlv_word_bus(void)
+{
+    static span_fixture state;
+    static const lib_u8 data[] = {0x12u, 0x34u, 0x56u, 0x78u};
+    static const struct {
+        lib_u8 size, odd, widths[3], count;
+    } cases[] = {
+        {1u, 0u, {1u}, 1u}, {1u, 1u, {1u}, 1u},
+        {2u, 0u, {2u}, 1u}, {2u, 1u, {1u, 1u}, 2u},
+        {4u, 0u, {2u, 2u}, 2u}, {4u, 1u, {1u, 2u, 1u}, 3u}
+    };
+    for (lib_size i = 0u; i < sizeof(cases) / sizeof(cases[0]); ++i) {
+        const lib_u32 address = 0x10100u + cases[i].odd;
+        const lib_u8 size = cases[i].size;
+        const lib_u8 count = cases[i].count;
+        for (lib_u8 write = 0u; write <= 1u; ++write) {
+            lib_u8 actual[sizeof(data)] = {0};
+            span_prepare(&state, X86_CORE_CPU_PROFILE_AM386SXLV);
+            if (write) {
+                if (x86_core_cpu_write_linear(&state.chip.execution, address,
+                    data, size) ||
+                    lib_memory_compare(state.chip.memory + address, data, size) != 0 ||
+                    state.writes != count)
+                    return 1;
+            } else {
+                lib_memory_copy(state.chip.memory + address, data, size);
+                if (x86_core_cpu_read_linear(&state.chip.execution, address,
+                    actual, size) ||
+                    lib_memory_compare(actual, data, size) != 0 ||
+                    state.reads != count)
+                    return 1;
+            }
+            lib_u32 next = address;
+            for (lib_u8 part = 0u; part < count; ++part) {
+                const lib_u8 width = cases[i].widths[part];
+                if (state.addresses[part] != next || state.widths[part] != width)
+                    return 1;
+                next += width;
+            }
+        }
+    }
+    /* An odd prefetch near the page end takes one byte plus one word. */
+    span_prepare(&state, X86_CORE_CPU_PROFILE_AM386SXLV);
+    state.tracked_read = X86_CORE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH;
+    state.tracked_first = 0xffdu;
+    state.tracked_last = 0xfffu;
+    state.chip.cpu.data.eip = 0xffdu;
+    state.chip.memory[0xffdu] = 0x90u;
+    x86_core_cpu_execution_refresh(&state.chip.execution);
+    if (state.chip.execution.stop_requested || state.chip.cpu.data.eip != 0xffeu ||
+        state.chip.execution.prefetch_count != 3u || state.reads != 2u ||
+        state.addresses[0] != 0xffdu || state.widths[0] != 1u ||
+        state.addresses[1] != 0xffeu || state.widths[1] != 2u)
+        return 1;
+    return 0;
+}
+
 lib_i32 main(void)
 {
     static const struct {const char *name; lib_i32 (*run)(void);} cases[] = {
         {"xlat",span_xlat}, {"real-limits",span_real_limits},
-        {"expand-down",span_expand_down}, {"composite-phases",span_composite_phases}
+        {"expand-down",span_expand_down}, {"composite-phases",span_composite_phases},
+        {"sxlv-word-bus",span_sxlv_word_bus}
     };
     static const x86_core_cpu_profile modern[] = {
         X86_CORE_CPU_PROFILE_80386, X86_CORE_CPU_PROFILE_80486SX

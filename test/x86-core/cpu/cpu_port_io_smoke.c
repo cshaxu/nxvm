@@ -284,6 +284,66 @@ static lib_i32 port_io_test_rejections(x86_core_cpu_profile modern)
     return 1;
 }
 
+static lib_bool port_io_sxlv_cycles(void)
+{
+    static const struct {
+        lib_u8 width, odd, parts[3], count;
+    } cases[] = {
+        {1u, 0u, {1u}, 1u}, {1u, 1u, {1u}, 1u},
+        {2u, 0u, {2u}, 1u}, {2u, 1u, {1u, 1u}, 2u},
+        {4u, 0u, {2u, 2u}, 2u}, {4u, 1u, {1u, 2u, 1u}, 3u}
+    };
+    static cpu_port_instruction_fixture state;
+    for (lib_size i = 0u; i < sizeof(cases) / sizeof(cases[0]); ++i) {
+        for (lib_u8 write = 0u; write < 2u; ++write) {
+            const lib_u8 width = cases[i].width;
+            const lib_u8 opcode = (lib_u8)((write ? 0xeeu : 0xecu) + (width != 1u));
+            const lib_u8 code[] = {width == 4u ? 0x66u : opcode, opcode};
+            const lib_u16 port = (lib_u16)(0x100u + cases[i].odd);
+            const lib_u32 original = 0x12345678u;
+            const lib_u32 mask = LIB_UINT32_MAX >> ((4u - width) * 8u);
+            for (lib_u8 fail = 0u; fail < cases[i].count; ++fail) {
+                t_cpu after;
+                lib_u8 offset = 0u;
+                lib_u32 read = 0u;
+                const lib_u8 accepted = fail ? fail : cases[i].count;
+                cpu_port_prepare(&state, X86_CORE_CPU_PROFILE_AM386SXLV);
+                state.instruction.cpu.data.dx = port;
+                state.instruction.cpu.data.eax = original;
+                state.input_value = 0xffa1b2c3u;
+                if (fail) {
+                    state.fail_status = LIB_STATUS_IO_ERROR;
+                    state.transfers_before_failure = fail;
+                }
+                x86_core_cpu_execution_context_bind_external_cycle_provider(
+                    &state.instruction.execution, cpu_port_cycle_wait, &state);
+                const lib_status result = cpu_instruction_run(&state.instruction,
+                    code, width == 4u ? 2u : 1u, &after);
+                if ((result == LIB_STATUS_OK) != !fail ||
+                    state.transfer_count != accepted || state.complete_count != accepted ||
+                    state.cycle_begins != accepted + (fail != 0u) ||
+                    state.cycle_commits != accepted || state.cycle_cancels != (fail != 0u) ||
+                    state.cycle_order_error)
+                    return LIB_FALSE;
+                for (lib_u8 part = 0u; part < accepted; ++part) {
+                    const lib_u8 bytes = cases[i].parts[part];
+                    const lib_u32 lane_mask = bytes == 1u ? 0xffu : 0xffffu;
+                    const cpu_port_transfer_record *record = &state.transfers[part];
+                    if (record->port != port + offset || record->bytes != bytes ||
+                        record->write != write || (write && record->value !=
+                            ((original >> (offset * 8u)) & lane_mask)))
+                        return LIB_FALSE;
+                    read |= (state.input_value & lane_mask) << (offset * 8u);
+                    offset += bytes;
+                }
+                if (after.data.eax != (write || fail ? original : (original & ~mask) | read))
+                    return LIB_FALSE;
+            }
+        }
+    }
+    return LIB_TRUE;
+}
+
 lib_i32 main(void)
 {
     static const x86_core_cpu_profile profiles[] = {
@@ -292,6 +352,10 @@ lib_i32 main(void)
 
     if (!port_io_test_default_forms() || !port_io_test_provider_failure()) {
         lib_c_printf("Scalar port I/O CPU default/failure semantics failed\n");
+        return 1;
+    }
+    if (!port_io_sxlv_cycles()) {
+        lib_c_printf("Am386SXLV scalar port cycles failed\n");
         return 1;
     }
     for (lib_size index = 0u; index < sizeof(profiles) / sizeof(profiles[0]); ++index) {
