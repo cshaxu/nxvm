@@ -1,7 +1,7 @@
 # M5 Candidate: OmniBook 300: real firmware and ROM DOS
 
-Owner queued this bounded T candidate on 2026-11-19. Numeric T/S identifiers
-are allocated only at admission. [Queue](../states/QUEUE.md) owns priority;
+Admitted as M5 T591 after T590 board qualification.
+[Queue](../states/QUEUE.md) owns priority;
 [family research and shared boundaries](m5-omnibook-emulator.md) apply.
 
 ## Objective and scope
@@ -48,3 +48,12 @@ owner/proof table, external System Card contract and numeric usability gates.
 The reset experiment reaches the first FBh write only; no hardware, DOS or
 Windows completion is inherited from design closure. Reconcile the complete
 receiving batch before selecting fixes, and reuse existing shared tests.
+
+
+## T591 work sequence
+
+| S | Scope and evidence |
+| --- | --- |
+| 1 | Receive the original E-region option, extended CMOS and 8042 self-test ordering. Reproduce board progress and classify the next BIOS diagnostic. |
+| 2 | Construct the external source and writable-media lifetime, then complete ROM/VGA and storage routes required by the observed POST and boot paths. |
+| 3 | Check the unchanged System ROM reaches interactive MS-DOS on both widths. Verify input, writable-media persistence, repeated lifecycle behavior, and timing baselines. |

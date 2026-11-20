@@ -1,29 +1,27 @@
-# M5 T590 S5 - Active: OmniBook board qualification
+# M5 T591 S1 - Active: OmniBook original ROM machine receiver
 
-[S4 is closed](../history/M5-T590-S4-ob300-system-card.md).
-The [card and refresh handoff](../etc/evidence/t590-s4-ob300-system-card.md)
-contains the production checkpoint and the separately identified board gaps.
-[S5 qualification evidence](../etc/evidence/t590-s5-ob300-board-qualification.md)
-tracks the active board checks.
+[T590 is closed](../history/M5-T590-S5-ob300-board-qualification.md).
+The [production and scratch verification](../etc/evidence/t590-s5-ob300-board-qualification.md)
+defines the real-card boundary and the next reproducible diagnostics.
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation M5 T590 S5 after S4 delivery at c5b773b80. |
+| Identifier Mode | M5 T591 S1 after T590 board qualification. |
 | Admission And Approval | Owner authorized ordered OmniBook implementation and single-session coordinator/executor operation. |
-| Objective | Qualify the combined board through the original chipset and memory probes. Reconcile matrix idle, guest-time refresh, installed RAM and unpopulated bus routes against the original 1.0 ABA path. |
-| Non-goals | No generic device framework, second guest clock, replacement firmware, complete DOS boot assertion or protected-media distribution. |
-| Reference Baseline | S1 through S4 accepted board results, HP 5965-0244, VL82C316 tables 10/50/64 and the identified original BIOS traces. |
-| Candidate Proposal | proposals/m5-ob300-board.md S5 and the O02–O08 board obligations. |
-| Files And ABI Surface | NXVM only under src/app-myob300, its tests and evidence. Existing Core/Board hardware APIs are reused. No Shared package or existing executable changes are expected. |
-| Applicable Rules | NXVM guide, Contributing, Roadmap, architecture/layout, source policy and shared Execution/Documentation/Architecture/Coding. |
-| Verification | Cached x64/x86 tests for actual refreshed Port B reads, matrix state, startup chipset semantics, and RAM visibility/bus behavior. Run the full unit inventory and compare the original-board boot paths and stop markers. |
-| Expected Markers | Original guest progresses through refresh detection and installed-RAM sizing using real board routing. Identify unsupported effects precisely and assign the allowed remainder to machine composition evidence. |
-| Asset Needs | NXVM owns build/t590-s5. Limit 64 MiB and 300 seconds per qualification run. External inputs are read only and any scratch copy is disposable. |
-| Reporting Requirements | Record exact register sources, derived model levels, App routing choices, both unit outcomes and reproducible real-ROM checkpoint. |
-| Stop Conditions | Report demonstrated Shared contract gaps before editing Shared. Never assert fully booted DOS from a diagnostic checkpoint. |
-| Exit Criteria | Board handoff has verified dual-width unit and owner-media integration evidence, documented scope and remaining machine-level wiring, pushed delivery and clean worktree. |
-| Original Owner Request | Implement the OmniBook 300 from basic hardware through board wiring, machine and product qualification. |
-| Similar-Issue Sweep | Guest-time cadence before PIT programming, sources of A20, matrix versus 8042, real RAM probes and card/ROM priority under the high alias. |
+| Objective | Wire the original E000 option code, CMOS address and 8042 reply timing into the App-owned machine configuration. Advance through the next reproducible BIOS checks. |
+| Non-goals | No protected firmware in the repository, host DOS shim, replacement ROM, other App or shared component changes without a demonstrated need. |
+| Reference Baseline | T590 board qualification and immutable owner System 1.0 ABA image. |
+| Candidate Proposal | proposals/m5-ob300-rom-dos.md T591 S1; architecture O02/O03/O05/O07/O08. |
+| Files And ABI Surface | NXVM only. App board/machine assembly and mirrored tests/evidence. Borrow the immutable image through the existing machine lifetime. |
+| Applicable Rules | NXVM README, architecture/layout, source policy and shared Execution/Documentation/Architecture/Coding. |
+| Verification | Stable cached x64/x86. Test E-region mapping and addressed CMOS/KBC behavior, then replay original BIOS on both widths. Full repository unit qualification for delivery. |
+| Expected Markers | Original E000:0003 call proceeds and original firmware sees the correct 8042 self-test reply. Explain the next remaining diagnostic from observed behavior. |
+| Asset Needs | Owner read-only System Card. Use build/t591-s1 for disposable probes and copies, at most 64 MiB and 300 seconds per run. |
+| Reporting Requirements | Exact source/diff and evidence limits. Keep owned board status separate from later machine and product acceptance. |
+| Stop Conditions | Report any required Shared ABI change before editing Shared. Preserve original inputs and fail explicitly for unavailable model effects. |
+| Exit Criteria | Native original-ROM checkpoints after the prior failures on both widths, cached unit passes, reviewed delivery pushed and clean worktree. |
+| Original Owner Request | Implement HP OmniBook 300 in ordered hardware, wiring, ROM machine and product stages. |
+| Similar-Issue Sweep | F and high reset aliases, E option entry, extended CMOS index masks, cancelled/early KBC replies. |
 
 # M5 T588 - Closed: OB300 hardware and execution design
 
