@@ -52,8 +52,21 @@ second execution route or an unreported transfer.
 | S3 | Minimal board design and implementation handoff | Reconcile every ledger row, freeze numeric usability budgets from the measurements and identify required public-contract reviews and receiving tasks. |
 
 [Convergence ledger](../etc/evidence/t588-ob300-convergence.md) is evidence,
-not a second queue. S1 is initially admitted; later batches require their
-packet before work. No new T is implied for each missing port. If S2 needs an
+not a second queue. The owner authorizes sequential autonomous S admission and review; each
+batch requires its current packet before work. No new T is implied for each missing port. If S2 needs an
 unapproved public change, give its exact minimal design and evidence before
 implementation. This T closes only when its design/proof/budget predicates
 are met; it cannot claim the later ROM DOS or Windows tasks completed.
+
+## App architecture direction
+
+Follow the flat `app-mypc110` pattern. Proposed `app-myob300` owns `main`,
+`product_binding`, `product_context`, `ob300_plan`, configuration, System Card,
+firmware mapping and HP display/input/power integration files as implemented.
+No empty scaffolding or copied PC110 devices. Matching App tests use unit and
+integration ownership, with external-ROM diagnostics outside shared tests.
+Reuse X86 Core execution/clock/memory, X86-NXVM board/driver/product mechanisms,
+X86-IBMPC interaction and X86 Debug. Emulator owns generic lifecycle/UI;
+Lib owns native presentation. Generic chip extraction needs an evidenced
+boundary, not a speculative framework. S3 resolves exact hardware/model and
+asset contracts. Documentation/tools/task numbering remain in the NXVM family.
