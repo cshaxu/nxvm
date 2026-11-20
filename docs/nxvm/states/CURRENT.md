@@ -1,4 +1,9 @@
-# M5 T588 S2 - Active: OB300 reset proof and execution baseline
+# M5 T588 S2 - Delivered: OB300 reset proof and execution baseline
+
+Dual-width reset proof and fixed-work results are retained in
+[the S2 evidence](../etc/evidence/t588-s2-reset-proof.md). Diagnostic processes
+have exited and the reviewed 1,697,489-byte scratch directory is removed.
+No source, Shared API or product artifacts changed.
 
 S1 is [closed](../history/M5-T588-S1-ob300-inventory.md) after coordinator review
 under owner-authorized autonomous progression. T588 remains a design/proof T;
