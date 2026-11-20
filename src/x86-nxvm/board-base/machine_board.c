@@ -118,6 +118,15 @@ static lib_status x86_nxvm_board_apply_a20(const x86_nxvm_board_state *board)
             0u : X86_NXVM_BOARD_A20_ADDRESS_BIT);
 }
 
+static lib_status x86_nxvm_board_set_fast_a20(void *owner, lib_bool enabled)
+{
+    x86_nxvm_board_state *board = owner;
+
+    board->system_control = (lib_u8)((board->system_control & ~X86_NXVM_BOARD_A20_BIT) |
+        (enabled ? X86_NXVM_BOARD_A20_BIT : 0u));
+    return x86_nxvm_board_apply_a20(board);
+}
+
 static void x86_nxvm_board_kbc_signal_a20(void *owner, lib_bool enabled)
 {
     x86_nxvm_board_state *board = owner;
@@ -688,9 +697,8 @@ static lib_status x86_nxvm_board_write_system_control(void *owner, lib_u16 port_
 
     (void)access_bytes;
     (void)port_id;
-    board->system_control = (lib_u8)(value &
-        (X86_NXVM_BOARD_A20_BIT | X86_NXVM_BOARD_SYSTEM_RESET_BIT));
-    status = x86_nxvm_board_apply_a20(board);
+    board->system_control = (lib_u8)(value & X86_NXVM_BOARD_SYSTEM_RESET_BIT);
+    status = x86_nxvm_board_set_fast_a20(board, (value & X86_NXVM_BOARD_A20_BIT) != 0u);
     if (status != LIB_STATUS_OK) return status;
     if ((board->system_control & X86_NXVM_BOARD_SYSTEM_RESET_BIT) != 0u &&
         (previous & X86_NXVM_BOARD_SYSTEM_RESET_BIT) == 0u)
@@ -849,7 +857,8 @@ lib_status x86_nxvm_board_construct_profile(x86_nxvm_board_state *board,
         board->core, board->shared_pit,
         board->auxiliary_pit_configured ? board->auxiliary_pit : LIB_NULL,
         x86_nxvm_board_at_speaker_output, board,
-        board->shared_pic_master, board->shared_pic_slave, board->shared_dma
+        board->shared_pic_master, board->shared_pic_slave, board->shared_dma,
+        x86_nxvm_board_set_fast_a20, board
     };
     status = factory(&services, context, &binding);
     if (status != LIB_STATUS_OK) return status;

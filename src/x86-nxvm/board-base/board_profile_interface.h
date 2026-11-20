@@ -60,6 +60,9 @@ typedef struct x86_nxvm_board_profile_services {
     x86_nxvm_board_pic_bus *pic_master;
     x86_nxvm_board_pic_bus *pic_slave;
     x86_nxvm_board_dma_bus *dma;
+    /* Update only Port A's fast A20 latch; the board combines it with KBC A20. */
+    lib_status (*set_fast_a20)(void *context, lib_bool enabled);
+    void *fast_a20_context;
 } x86_nxvm_board_profile_services;
 
 /* On failure leave out_binding empty and release the unpublished candidate.
