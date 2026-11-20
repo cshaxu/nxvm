@@ -18,8 +18,10 @@ aperture now passes the original ROM copy on both widths. Windows startup
 reports insufficient extended memory at the fixed 2 MiB configuration.
 Both host widths reach the ROM DOS prompt and persist a guest-created
 file on disposable C media with Windows autostart disabled in the
-fixture. The original-ROM interactive keyboard and repeated lifecycle
-checks remain open.
+fixture. Original DOS executes VER through the KBC on both widths with
+the new output-register latch enabled. The full unit sets pass on both
+widths and all fourteen receiving executables were rebuilt and
+verified. Repeated lifecycle and desktop qualification remain open.
 
 | Field | Required record |
 | --- | --- |
@@ -29,7 +31,7 @@ checks remain open.
 | Non-goals | No embedded Microsoft payload, alternate executor, replacement ROM/DOS, product UX or guessed port/geometry. |
 | Reference Baseline | S1 original guest evidence, S2 shared correction and the HP 5965-0244 service manual. |
 | Candidate Proposal | proposals/m5-ob300-rom-dos.md T591 S3; quantified obligations from m5-ob300-architecture.md. |
-| Files And ABI Surface | NXVM App board/Machine preparation, tests and evidence. Shared x86-nxvm Board profile services add one borrowed fast-A20 callback/context, using the existing Port A latch. The CRTC and ATA receivers use existing registers and the ATA config carries two power-on latch bytes. X86 Core retains the Am386SXLV real-address data-segment limit. Publish existing receivers in NXVM, MyNES and MyRaidenII scope. |
+| Files And ABI Surface | NXVM App board/Machine preparation, tests and evidence. Shared x86-nxvm Board profile services add one borrowed fast-A20 callback/context, using the existing Port A latch. The CRTC and ATA receivers use existing registers and the ATA config carries two power-on latch bytes. X86 Core retains the Am386SXLV real-address data-segment limit. MyOB300 selects optional empty 8042 data-port read retention at board construction. Publish existing receivers in NXVM, MyNES and MyRaidenII scope. |
 | Applicable Rules | NXVM guide, Contributing, Roadmap, Architecture/Layout and source policy, shared Execution/Documentation/Architecture/Coding. |
 | Verification | Cached x64/x86; cover card lifetime, VGA frame, CMOS export, and the EEh/92h/KBC latch relationship. Recheck the original card and protected-mode stop, identify the C medium route, run the full repository unit suites and verify fourteen cached Shared receiving artifacts. |
 | Expected Markers | Machine owns immutable card bytes until after Core teardown. Original-card execution progresses past the demonstrated stop with unchanged firmware. Writable guest media is distinct from the read-only card. |

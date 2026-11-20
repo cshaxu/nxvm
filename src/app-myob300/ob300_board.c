@@ -42,6 +42,7 @@ const x86_nxvm_board_config myob300_board_configuration = {
     /* The internal keyboard fuse sense is high on input-port bit 2. */
     .kbc_input_port_configured = LIB_TRUE,
     .kbc_input_port = 0x84u,
+    .kbc_retain_output_read = LIB_TRUE,
     /* L2: keep the self-test reply pending beyond POST's first data read. */
     .kbc_command_response_ticks = MYOB300_KBC_COMMAND_RESPONSE_TICKS,
     .display_topology = X86_NXVM_BOARD_DISPLAY_TOPOLOGY_NONE,

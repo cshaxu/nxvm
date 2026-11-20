@@ -461,6 +461,64 @@ remain open.
 | `ob300-sleep-irq-regression-x64.log` | `baffed36a4ea45e83d8d8d0a7f3cd2950da02cc4e8c1d42f6dbe1c6664b845bf` |
 | `ob300-sleep-irq-regression-x86.log` | `246f01cdd331de33538c856af7f42d0274a03f157a0708252463e4f56b1b2ad0` |
 
+## Original DOS keyboard handoff
+
+A paced replay used the keyboard's reported native Set 2 with a guest
+execution slice after every byte. The PIC allowed IRQ1 and the keyboard
+controller translated the codes. The BDA head and tail remained at 0020h.
+Instruction I/O tracing showed the original OBMGM driver at 27E53h reading
+port 60h with the correct translated byte. The chained BIOS handler at
+FD116h immediately read 60h again and got zero. The trace showed no
+intervening reinjection of the byte. The owner's original OBMGM.COM
+extraction independently identified the first read.
+
+A disposable 8042 experiment retained the most recently consumed output
+byte for reads with an empty output queue. The second read then returned
+the original scan code and the shell executed VER. QEMU provides a
+reference for this behavior. The MyOB300 profile selects the existing
+controller's new optional L2 read-retention behavior. The byte clears
+on reset and an empty read neither sets OBF nor raises or consumes an IRQ.
+The default remains zero for other profiles.
+[QEMU PS/2 implementation](https://github.com/qemu/qemu/blob/master/hw/input/ps2.c).
+
+Production replays on x64 and x86 reached C:\>, accepted VER through
+the real guest keyboard chain, printed Hewlett-Packard MS-DOS 5.00, and
+returned to the prompt. The two manifests, KBC chip and App board test
+passed on both architectures. These were headless Machine replays on
+the DOS-focused C fixture. The original Windows autostart and native
+desktop were not part of this input qualification.
+
+| Replay | SHA-256 |
+| --- | --- |
+| `ob300-native-dos-keyboard-irq-io-x64.log` | `9b1efc41ce9e528dd5207532261a7e4a57d8f082abcbe93eb35d1c712c1d240e` |
+| `ob300-native-dos-kbc-latch-x64.log` | `2e553f333dee6a69479e95ddcc4a6bf9949fdd6245074858d5261b33cd390a42` |
+| `ob300-output-latch-x64.log` | `814cf509ed870a41e136ce193d2731bd8e326e8ae7c9e3025f397b30615c3ed4` |
+| `ob300-output-latch-x86.log` | `7b057f228adc19324ee2f0e250eca3d42f91ffa982f83925b8e7d6f49986fb9d` |
+
+The full cached repository unit set passed 717/717 on each width with
+the 8042 change. Shared source and tests are in `bc513b769` (52 additions
+and nine deletions, including both manifests). The publisher rebuilt
+all fourteen existing executables. Their matched PE fields and publish
+digests are recorded below. The product-scoped commits are
+`12cf0c65c` (PC), `c3ccdbad0` (MyNES) and `f90397511` (MyRaidenII).
+
+| Artifact | PE machine | SHA-256 |
+| --- | --- | --- |
+| `assets/nxvm/nxvm_0_5_0582_x86.exe` | `014c` | `85fe28561d31745adb8e29984c7b24458f870ac9104ae23e930f21fc249acd64` |
+| `assets/my5160/my5160_0_5_0582_x86.exe` | `014c` | `90f6912828b0215f9e2a2361ce5a7dbc5a594d82f20cd1da710710e9f74a7035` |
+| `assets/my5170/my5170_0_5_0582_x86.exe` | `014c` | `562a2dfcac1d4c643cac6bd62c28f61aa2dff3e9fccc89259bd4cc047a1d5f6c` |
+| `assets/mydeskpro386/mydeskpro386_0_5_0582_x86.exe` | `014c` | `09afe1e2664b7c65e6c9f172f04569b80edbb4d593c7e36b5acd00e94cf6763f` |
+| `assets/mypc110/mypc110_x86.exe` | `014c` | `d7ec1f6a97642981c4fc1cb3bdb14009358a9f355ac402a430425b2f51344c26` |
+| `assets/mynes/mynes_0_0_0044_x86.exe` | `014c` | `fbebf03f68c70f1f8eea69d4e4ccd3a03a02cee3f41a439b831149ec8829179d` |
+| `assets/myraidenii/myraidenii_0_0_0007_x86.exe` | `014c` | `140d50ce1dc2ec64dffea989d2e946512c8da9507db438b46758aa6bcd33c13b` |
+| `assets/nxvm/nxvm_0_5_0582_x64.exe` | `8664` | `4184e798d83739976a6eae47c47557b096e6e6607c0c8f45a32a5bb6a8e91156` |
+| `assets/my5160/my5160_0_5_0582_x64.exe` | `8664` | `daa9faa8aa0d69abf2627a9923c4d3cf89fc7b94c4b13a3d82e4cc0625e28e3b` |
+| `assets/my5170/my5170_0_5_0582_x64.exe` | `8664` | `ab4c8c43a84a984d775e0d711fc76b0fb0c7e7433f62be6cfe306dee2510b43e` |
+| `assets/mydeskpro386/mydeskpro386_0_5_0582_x64.exe` | `8664` | `a4c4f785009afc6b3f377fb1d39d149363c2368fc8590f55b60ceaf49ff580b3` |
+| `assets/mypc110/mypc110_x64.exe` | `8664` | `8c4345c35b0a7eef574b9140d0497694a5487c594f8e5e23a31d135943b39ee0` |
+| `assets/mynes/mynes_0_0_0044_x64.exe` | `8664` | `b2a4f95e47a26de3e99082329ab0359fd09e9f00427a6beea419dd0b203c1b5b` |
+| `assets/myraidenii/myraidenii_0_0_0007_x64.exe` | `8664` | `632a89c24d2f3514a9d2d725f912825b6ec005099a64b42fec0139c90ef1dd81` |
+
 ## Receiver qualification and publication
 
 Shared production and test changes are in `c73e8898a` (13 files,
