@@ -9,7 +9,7 @@
 #include "x86-core/machine/debug_interface.h"
 #include "x86-core/machine/retirement_observation_interface.h"
 #include "x86-core/machine/trace_interface.h"
-#include "x86-nxvm/chips/f65535/f65535_interface.h"
+#include "x86-nxvm/chips/ct-vga/ct_vga_interface.h"
 #include "x86-nxvm/machine/machine_private.h"
 #include "x86-nxvm/machine/display.h"
 #include "x86-nxvm/machine/waiting.h"
@@ -1756,7 +1756,7 @@ int main(int argc, char **argv)
     }
     if (setup_resume_checkpoint && machine != LIB_NULL) {
         if (os_key_checkpoint && construction.display_snapshot_context != LIB_NULL) {
-            x86_f65535 *display = (x86_f65535 *)construction.display_snapshot_context;
+            x86_ct_vga *display = (x86_ct_vga *)construction.display_snapshot_context;
             const lib_u16 index_ports[] = {0x03d4u, 0x03ceu, 0x03c4u};
             const lib_u16 data_ports[] = {0x03d5u, 0x03cfu, 0x03c5u};
             const lib_u8 counts[] = {25u, 9u, 5u};
@@ -1764,9 +1764,9 @@ int main(int argc, char **argv)
                 lib_c_printf("PC110:OS:video-bank=%u", bank);
                 for (lib_u32 i = 0u; i < counts[bank]; ++i) {
                     lib_u8 value = 0u;
-                    lib_status read_status = x86_f65535_vga_write(display, index_ports[bank], (lib_u8)i);
+                    lib_status read_status = x86_ct_vga_vga_write(display, index_ports[bank], (lib_u8)i);
                     if (read_status == LIB_STATUS_OK)
-                        read_status = x86_f65535_vga_read(display, data_ports[bank], &value);
+                        read_status = x86_ct_vga_vga_read(display, data_ports[bank], &value);
                     lib_c_printf(" %02x/%d", value, read_status);
                 }
                 lib_c_printf("\n");

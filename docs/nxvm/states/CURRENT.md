@@ -1,8 +1,11 @@
-# M5 T589 S5 - Active: C&T 65510 display hardware
+# M5 T589 S5 - Delivered: C&T 65510 display hardware
 
 [S4 is closed](../history/M5-T589-S4-sxlv-management.md).
 The [display handoff](../etc/evidence/t589-s4-am386sxlv-management.md#display-handoff)
 records the 65510 option ROM and compared VGA paths.
+The [S5 display evidence](../etc/evidence/t589-s5-ct65510-display.md)
+records the device contract, 716 passing unit tests on each host width,
+MyPC110 integration and the fourteen qualified receiver artifacts.
 
 | Field | Required record |
 | --- | --- |

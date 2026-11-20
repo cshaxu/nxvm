@@ -9,7 +9,7 @@ static lib_status mypc110_display_port_read(void *owner, lib_u16 port,
 
     (void)tick;
     if (out_value == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
-    status = x86_f65535_vga_read(owner, port, &value);
+    status = x86_ct_vga_vga_read(owner, port, &value);
     if (status == LIB_STATUS_OK) *out_value = value;
     return status;
 }
@@ -19,13 +19,13 @@ static lib_status mypc110_display_port_write(void *owner, lib_u16 port,
 {
     (void)access_bytes;
     if (value > 0xffu) return LIB_STATUS_INVALID_ARGUMENT;
-    return x86_f65535_vga_write(owner, port, (lib_u8)value);
+    return x86_ct_vga_vga_write(owner, port, (lib_u8)value);
 }
 
 static lib_status mypc110_display_memory_query(void *owner, lib_u32 physical,
     lib_uptr bytes, x86_core_machine_memory_access access)
 {
-    return x86_f65535_memory_query(owner, physical, bytes,
+    return x86_ct_vga_memory_query(owner, physical, bytes,
         access == X86_CORE_MACHINE_MEMORY_ACCESS_WRITE ? LIB_TRUE : LIB_FALSE);
 }
 
@@ -35,7 +35,7 @@ static lib_status mypc110_display_memory_read(void *owner, lib_u32 physical,
     if (owner == LIB_NULL || destination == 0u || bytes == 0u) {
         return LIB_STATUS_UNSUPPORTED;
     }
-    return x86_f65535_memory_read(owner, physical, (void *)destination, bytes,
+    return x86_ct_vga_memory_read(owner, physical, (void *)destination, bytes,
         observe_only);
 }
 
@@ -45,11 +45,11 @@ static lib_status mypc110_display_memory_write(void *owner, lib_u32 physical,
     if (owner == LIB_NULL || source == 0u || bytes == 0u) {
         return LIB_STATUS_UNSUPPORTED;
     }
-    return x86_f65535_memory_write(owner, physical, (const void *)source, bytes);
+    return x86_ct_vga_memory_write(owner, physical, (const void *)source, bytes);
 }
 
 lib_status mypc110_display_install_routes(x86_core_machine *machine,
-    x86_f65535 *controller)
+    x86_ct_vga *controller)
 {
     const x86_core_machine_port_route ports[] = {
         {0x03c0u, mypc110_display_port_read,
@@ -80,10 +80,10 @@ lib_status mypc110_display_install_routes(x86_core_machine *machine,
             mypc110_display_port_write, controller, LIB_FALSE, 0x03d6u},
         {0x03d5u, mypc110_display_port_read,
             mypc110_display_port_write, controller, LIB_FALSE, 0u},
-        {X86_F65535_EXTENSION_INDEX_PORT, mypc110_display_port_read,
+        {X86_CT_VGA_EXTENSION_INDEX_PORT, mypc110_display_port_read,
             mypc110_display_port_write, controller, LIB_FALSE,
-            X86_F65535_EXTENSION_DATA_PORT + 1u},
-        {X86_F65535_EXTENSION_DATA_PORT, mypc110_display_port_read,
+            X86_CT_VGA_EXTENSION_DATA_PORT + 1u},
+        {X86_CT_VGA_EXTENSION_DATA_PORT, mypc110_display_port_read,
             mypc110_display_port_write, controller, LIB_FALSE, 0u},
         {0x03dau, mypc110_display_port_read,
             mypc110_display_port_write, controller, LIB_FALSE, 0u}

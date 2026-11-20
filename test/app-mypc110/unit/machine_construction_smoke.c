@@ -12,7 +12,7 @@
 #include "lib/kvm-console/frame_interface.h"
 #include "lib/kvm-window/frame_interface.h"
 #include "x86-nxvm/machine/machine_interface.h"
-#include "x86-nxvm/chips/f65535/f65535_interface.h"
+#include "x86-nxvm/chips/ct-vga/ct_vga_interface.h"
 #include "x86-core/machine/clock_interface.h"
 #include "x86-debug/product/protocol_interface.h"
 
@@ -288,9 +288,9 @@ static lib_bool mypc110_test_display_reset(emulator_machine_driver *driver)
     lib_u8 value = 0x60u;
 
     if (!mypc110_test_route_writes(driver, setup, sizeof(setup) / sizeof(setup[0])) ||
-        !mypc110_test_port(driver, LIB_TRUE, X86_F65535_EXTENSION_INDEX_PORT, &value)) goto done;
+        !mypc110_test_port(driver, LIB_TRUE, X86_CT_VGA_EXTENSION_INDEX_PORT, &value)) goto done;
     value = 0x81u;
-    if (!mypc110_test_port(driver, LIB_TRUE, X86_F65535_EXTENSION_DATA_PORT, &value)) goto done;
+    if (!mypc110_test_port(driver, LIB_TRUE, X86_CT_VGA_EXTENSION_DATA_PORT, &value)) goto done;
     base_sync_sleep_milliseconds(20u); /* Existing display publication cadence. */
     if (driver->copy_frame(driver->context, &frame, &console, &produced) != LIB_STATUS_OK ||
         !produced || frame.frame.text == LIB_NULL ||
@@ -302,8 +302,8 @@ static lib_bool mypc110_test_display_reset(emulator_machine_driver *driver)
         frame.frame.text->base.text_columns != 80u || frame.frame.text->base.text_rows != 25u)
         goto done;
     value = 0x60u;
-    if (!mypc110_test_port(driver, LIB_TRUE, X86_F65535_EXTENSION_INDEX_PORT, &value) ||
-        !mypc110_test_port(driver, LIB_FALSE, X86_F65535_EXTENSION_DATA_PORT, &value)) goto done;
+    if (!mypc110_test_port(driver, LIB_TRUE, X86_CT_VGA_EXTENSION_INDEX_PORT, &value) ||
+        !mypc110_test_port(driver, LIB_FALSE, X86_CT_VGA_EXTENSION_DATA_PORT, &value)) goto done;
     ok = value == 0x83u;
 done:
     kvm_window_frame_release(&frame);
@@ -378,9 +378,9 @@ static lib_bool mypc110_test_product_routes(emulator_machine_driver *driver,
         return LIB_FALSE;
 
     value = 0u;
-    if (!mypc110_test_port(driver, LIB_TRUE, X86_F65535_EXTENSION_INDEX_PORT, &value) ||
-        !mypc110_test_port(driver, LIB_FALSE, X86_F65535_EXTENSION_DATA_PORT, &value) ||
-        value != X86_F65535_PC110_CHIP_VERSION ||
+    if (!mypc110_test_port(driver, LIB_TRUE, X86_CT_VGA_EXTENSION_INDEX_PORT, &value) ||
+        !mypc110_test_port(driver, LIB_FALSE, X86_CT_VGA_EXTENSION_DATA_PORT, &value) ||
+        value != X86_CT_VGA_65535_CHIP_VERSION ||
         !mypc110_test_route_writes(driver, text_setup, sizeof(text_setup) / sizeof(text_setup[0])))
         return LIB_FALSE;
     value = 0x5au;

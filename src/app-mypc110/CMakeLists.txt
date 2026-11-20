@@ -7,7 +7,7 @@ add_library(mypc110-board STATIC pc110_audio.c pc110_cmos.c pc110_config.c pc110
 target_include_directories(mypc110-board PUBLIC "${CMAKE_SOURCE_DIR}/src")
 target_link_libraries(mypc110-board PUBLIC types x86-core-machine x86-core-vl82c420
     x86-nxvm-machine
-    x86-nxvm-board-base x86-nxvm-chip-f65535 x86-nxvm-chip-rb5c396 x86-nxvm-chip-uart16550)
+    x86-nxvm-board-base x86-nxvm-chip-ct-vga x86-nxvm-chip-rb5c396 x86-nxvm-chip-uart16550)
 target_link_libraries(mypc110-board PRIVATE storage audio-pcm)
 if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
     target_link_libraries(mypc110-board PRIVATE m)

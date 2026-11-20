@@ -33,7 +33,7 @@ typedef struct mypc110_machine_plan {
     mypc110_inking inking;
     mypc110_uart uart;
     x86_vl82c420 *configuration_chip;
-    x86_f65535 *display_controller;
+    x86_ct_vga *display_controller;
     x86_core_machine *core;
     x86_rb5c396 *pcic_controller;
     mypc110_pcic pcic;
@@ -272,7 +272,7 @@ static lib_status mypc110_machine_capture_display(void *context,
     if (plan == LIB_NULL || plan->core == LIB_NULL) return LIB_STATUS_INVALID_STATE;
     status = x86_core_machine_get_elapsed_ticks(plan->core, &ticks);
     if (status != LIB_STATUS_OK) return status;
-    return x86_f65535_capture_snapshot(plan->display_controller,
+    return x86_ct_vga_capture_snapshot(plan->display_controller,
         ticks / (MYPC110_CPU_CLOCK_HZ / MYPC110_VSYNC_HZ), out_snapshot);
 }
 
@@ -284,7 +284,7 @@ static void mypc110_machine_profile_reset(void *opaque,
     mypc110_machine_plan *plan = opaque;
 
     if (plan != LIB_NULL && phase == X86_NXVM_BOARD_RESET_BEFORE_DEVICES) {
-        x86_f65535_reset(plan->display_controller);
+        x86_ct_vga_reset(plan->display_controller);
         mypc110_pcic_reset(&plan->pcic);
         mypc110_inking_reset(&plan->inking);
         mypc110_es488_reset(&plan->es488);
@@ -428,7 +428,7 @@ static void mypc110_machine_release(void *opaque)
     if (mypc110_audio_close(&plan->audio) != LIB_STATUS_OK) return;
     if (plan->product != LIB_NULL) plan->product->plan = LIB_NULL;
     mypc110_uart_destroy(&plan->uart);
-    x86_f65535_destroy(plan->display_controller);
+    x86_ct_vga_destroy(plan->display_controller);
     x86_rb5c396_destroy(plan->pcic_controller);
     x86_vl82c420_destroy(plan->configuration_chip);
     mypc110_firmware_destroy(&plan->firmware);
@@ -532,7 +532,8 @@ lib_status mypc110_machine_construction_create(const x86_nxvm_machine_config *co
     if (status == LIB_STATUS_OK) status = x86_vl82c420_create(&plan->configuration_chip);
     if (status == LIB_STATUS_OK)
         status = mypc110_config_initialize_cold_image(plan->configuration_chip);
-    if (status == LIB_STATUS_OK) status = x86_f65535_create(&plan->display_controller);
+    if (status == LIB_STATUS_OK)
+        status = x86_ct_vga_create(X86_CT_VGA_65535, &plan->display_controller);
     if (status == LIB_STATUS_OK) status = x86_rb5c396_create(&plan->pcic_controller);
     if (status == LIB_STATUS_OK) status = mypc110_uart_create(&plan->uart);
     candidate = (x86_nxvm_machine_construction) {
