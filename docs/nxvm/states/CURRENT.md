@@ -1,29 +1,27 @@
-# M5 T590 S3 - Active: OmniBook 300 display and input wiring
+# M5 T590 S4 - Active: OmniBook System Card window decode
 
-[S2 is closed](../history/M5-T590-S2-ob300-board.md). The
-[board verification](../etc/evidence/t590-s2-ob300-board.md#display-and-input-handoff)
-records existing routes and the App ownership boundary.
-[S3 board evidence](../etc/evidence/t590-s3-ob300-display-input.md)
-records the App display and input paths.
+[S3 is closed](../history/M5-T590-S3-ob300-display-input.md).
+The [card-route handoff](../etc/evidence/t590-s3-ob300-display-input.md#system-card-handoff)
+contains the candidate decoder evidence from original execution.
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation M5 T590 S3 after S2 delivery at 52b0d4ca3. |
-| Admission And Approval | Owner authorized autonomous ordered OmniBook implementation and single-session coordinator/executor operation. |
-| Objective | Bind the board's C&T 65510 legacy VGA, display snapshot and 8042 keyboard/auxiliary paths. Verify the HP-relevant register, memory and interrupt connections. |
-| Non-goals | No Shared component changes, replacement BIOS, generic display path, host UI or System Card implementation. No production EXE before machine/product assembly. |
-| Reference Baseline | T589 S5/S6 device qualification, S2 App board plan, HP 5965-0244 Appendix A/B and C&T 65510 rev 0.7. |
-| Candidate Proposal | proposals/m5-ob300-board.md S3; architecture O06 and O07. |
-| Files And ABI Surface | NXVM only. src/app-myob300 and mirrored unit tests, with product-local evidence. Use the existing Core route, 65510 and Board/8042 interfaces. |
+| Identifier Mode | Continuation M5 T590 S4 after S3 delivery at c6859eae8. |
+| Admission And Approval | Owner authorized ordered OmniBook implementation and single-session coordinator/executor operation. |
+| Objective | Implement App-owned immutable System Card reset, guest window selection, common and attribute memory separation, and prove both decoded window reads and instruction fetch. |
+| Non-goals | Reuse existing Core provider and timing. No generic PCMCIA framework, host DOS loader, full POST claim, firmware substitution or firmware payload distribution. |
+| Reference Baseline | S2 and S3 original BIOS traces, the owner 1.0 ABA common dump and HP 5965-0244 memory map, VL82C316 register table and original descriptor evidence. |
+| Candidate Proposal | proposals/m5-ob300-board.md S4; architecture O02/O03/O04. |
+| Files And ABI Surface | NXVM only, under src/app-myob300, mirrored tests and NXVM evidence. Owner System Card inputs stay external. No public package changes or existing artifact refresh for this App board batch. |
 | Applicable Rules | NXVM guide, Contributing, Roadmap, architecture/layout, source policy and shared Execution/Documentation/Architecture/Coding. |
-| Verification | Cached x64/x86 board tests for paired indexed I/O, aperture visibility and decline behavior, copied display data, IRQ1/12 delivery, keyboard and auxiliary bytes. Run the full unit inventories before delivery. |
-| Expected Markers | One chip instance for VGA port, memory and capture routes. One Core clock. One 8042 keyboard/auxiliary owner through existing board wiring. |
-| Asset Needs | Local manuals and original ROM as read-only evidence. Synthetic fixtures for tests. NXVM owns build/t590-s3, 64 MiB maximum and 300 seconds per qualification run. Apply safe cleanup upon task exit. |
-| Reporting Requirements | Record file changes, exact register/memory/IRQ evidence, model fidelity, unit outcomes and routes not yet exercised by original firmware. |
-| Stop Conditions | Report a demonstrated Shared interface gap before implementing it. Preserve existing model paths and external owner assets. |
-| Exit Criteria | App-owned VGA and 8042 board paths pass on both widths, existing unit regressions pass, scope and evidence reviewed, delivery pushed and worktree clean. |
+| Verification | Cached x64/x86 with synthetic immutable inputs. Verify reset window, correct pages, word spans, disabled routing and common versus attribute. Compare original BIOS checkpoints on both widths using read-only owner media. |
+| Expected Markers | F000:7FF0 discovery, observed page selection, read and fetch of the selected real card span, and truthful reporting of the next unsupported firmware path. |
+| Asset Needs | NXVM owns build/t590-s4 for synthetic fixtures and disposable external input copies. Limit 64 MiB total and 300 seconds per qualification run. Apply safe cleanup after workers exit. |
+| Reporting Requirements | Record exact register facts, explicit L1 assumptions, routes and declined cases, actual test outcomes and remaining POST work. |
+| Stop Conditions | Report demonstrated Shared interface gaps before implementation. Keep unsupported board behavior visible. |
+| Exit Criteria | App-owned System Card windows verified on both host widths, original checkpoint recorded, required regressions passed, scope reviewed, delivery pushed, worktree clean. |
 | Original Owner Request | Implement the OmniBook 300 from basic hardware through board wiring, machine and product qualification. |
-| Similar-Issue Sweep | Paired byte lanes, aperture selection, display reset and ownership, keyboard/AUX acknowledgements and interrupt routing. |
+| Similar-Issue Sweep | Stale instruction fetch after bank writes, ROM alias bounds, priority if two windows select the same span, attribute/common separation and absent or read-only data. |
 
 # M5 T588 - Closed: OB300 hardware and execution design
 
