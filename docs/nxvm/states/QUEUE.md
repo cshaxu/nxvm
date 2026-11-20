@@ -103,10 +103,10 @@ is closed as T586 after owner acceptance; retained limitations remain recorded.
 
 On 2026-11-19 the owner promoted OB300 as five sequential candidates below.
 They replace the former single OmniBook-family candidate; 425/430 remain
-research references, not duplicate pending work. T587 is owner-closed. The first candidate is admitted as T588; the others
+research references, not duplicate pending work. T587 is owner-closed. The first candidate completed as T588; the four implementation receivers
 remain unnumbered and unadmitted.
 
-Active: [T588: OmniBook 300 hardware, ROM and execution design](../proposals/m5-ob300-design.md).
+Completed: [T588 design/proof review](../history/M5-T588-ob300-design-closure.md).
 
 1. [OmniBook 300: real firmware and ROM DOS](../proposals/m5-ob300-rom-dos.md)
 2. [OmniBook 300: execution and interaction performance](../proposals/m5-ob300-performance.md)

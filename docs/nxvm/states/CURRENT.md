@@ -1,27 +1,12 @@
-# M5 T588 S3 - Delivered for coordinator review: OB300 design and implementation handoff
+# M5 T588 - Closed: OB300 hardware and execution design
 
-S1/S2 are closed. [S3 design](../proposals/m5-ob300-architecture.md) and all four
-receiving proposals are updated. Twelve ledger domains retain their actual
-proof limits. Documentation-only delivery: no source, Shared or EXE changes.
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation M5 T588 S3; S1/S2 closed under autonomous coordinator review. |
-| Admission And Approval | Owner authorized autonomous goals and S execution on 2026-11-19, with app-mypc110 structure. |
-| Objective | Resolve O01-O12 into a minimal App architecture, explicit hardware/model research receivers and numeric usability acceptance; reconcile T588 design closure. |
-| Non-goals | No production implementation, claimed DOS/Windows boot, Shared ABI modification, protected asset publication or new release. |
-| Reference Baseline | 031bb4dc2; S1 input hashes, S2 actual reset/first-port proof and both-width fixed-work baseline. |
-| Candidate Proposal | proposals/m5-ob300-design.md and its four existing implementation receivers. |
-| Files And ABI Surface | NXVM proposal, ledger, design evidence, current and history only; no ABI. |
-| Applicable Rules | NXVM guide, architecture/layout, Roadmap, Contributing, shared Execution/Documentation/Architecture/Coding and source policy. |
-| Verification | Map all twelve ledger domains to a named owner, model limit and finite receiving test; review dependency and lifecycle boundaries, ROM publication, performance criteria, actual diff/local links/docs/LF. |
-| Expected Markers | One flat app-myob300 design, one executor/clock/lifecycle path, no pretend chip equivalence, explicit DOS/Windows/performance receivers. |
-| Asset Needs | Use retained S1/S2 facts; no new scratch or external asset writes. |
-| Reporting Requirements | State design completed versus hardware still unimplemented, exact Shared change admission boundaries, budget rationale and receiving task order. |
-| Stop Conditions | Do not turn unproved registers into hardware facts or claim synthetic loop latency measures guest interaction; no speculative API changes. |
-| Exit Criteria | All twelve rows have explicit design dispositions and receiving tests, numeric usability gates frozen, actual diff reviewed, docs checks pass and complete P pushed; T closure audit distinguishes design from full product. |
-| Original Owner Request | Plan S sequence and goals and execute this T autonomously, following PC110 App architecture. |
-| Similar-Issue Sweep | No shared App identity branches, no duplicated parser/worker/clock, no copied PC110 silicon, no disk-image claim from file backup, no unmeasured boot-performance claim. |
+S1-S3 completed under the owner's autonomous planning/execution direction.
+[Closure review](../history/M5-T588-ob300-design-closure.md) reconciles all
+predicates against actual commits and the finite ledger. The final
+[architecture](../proposals/m5-ob300-architecture.md) follows app-mypc110.
+Dual-width real reset proof and synthetic execution baseline are delivered;
+full ROM DOS/Windows implementation and usability are not claimed.
+No active S. [Queue](QUEUE.md) begins with OB300 real firmware and ROM DOS.
 
 # M5 Td S186 - Completed: OmniBook 300 queue planning
 
