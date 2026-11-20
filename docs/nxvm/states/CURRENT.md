@@ -1,31 +1,27 @@
-# M5 T589 S4 - Delivered: Am386SXLV system management
+# M5 T589 S5 - Active: C&T 65510 display hardware
 
-[S3 is closed](../history/M5-T589-S3-sxlv-word-bus.md).
-The [S4 firmware handoff](../etc/evidence/t589-s3-am386sxlv-word-bus.md#s4-firmware-handoff)
-records the verified RES3 consumer and separates silicon contracts from
-HP decode facts that still belong to the board receiver.
-The [S4 implementation record](../etc/evidence/t589-s4-am386sxlv-management.md)
-records the CPU-to-Machine route proof, 716/716 unit outcomes on both
-host widths, and all fourteen verified receiver artifacts.
+[S4 is closed](../history/M5-T589-S4-sxlv-management.md).
+The [display handoff](../etc/evidence/t589-s4-am386sxlv-management.md#display-handoff)
+records the 65510 option ROM and compared VGA paths.
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation M5 T589 S4. S3 accepted and closed. |
-| Admission And Approval | Owner authorized independent sequential admission and basic hardware implementation in single-session dual-role mode on 2026-11-19. |
-| Objective | Implement Am386SXLV SMI entry, distinct management memory, RES3, UMOV and software SMI on the existing CPU/Machine execution path. |
-| Non-goals | No HP board port or address decode, ROM boot claim, independent CPU executor, per-product SMM branching, or precise undocumented silicon timing. |
-| Reference Baseline | Shared 01d60a30e and receiver baseline 420529dc9; AMD 21020 Rev A and 16305; ROM evidence in the S3 handoff. |
-| Candidate Proposal | proposals/m5-ob300-hardware.md S4. |
-| Files And ABI Surface | Shared src/test x86-core CPU, Machine and manifests. Specify a minimal distinct memory-space contract at the existing bus/provider boundary. Update two x86-nxvm test fixtures that assert the Core opcode and profile metadata inventory, with their test manifest. NXVM evidence and required NXVM, MyNES and MyRaidenII receiver publication. |
-| Applicable Rules | NXVM guide, Contributing, Roadmap, architecture/layout, source policy, and shared Execution/Documentation/Architecture/Coding. |
-| Verification | Extend existing CPU SMM and Machine bus fixtures to prove entry priority, 16-bit save cycles, same-address separation, I/O and UMOV routing, guest-edited restore, reset/failure and retained 486 behavior on x86/x64. Apply full Shared receiver build, test and publication requirements before delivery. |
-| Expected Markers | One execution and transaction path. CPU owns architectural state and space selection. Board attachment owns backing and decode. Verified spans and modeled fields are distinguished. |
-| Asset Needs | Stable Ninja trees, synthetic SMM fixtures and read-only hash-verified System ROM analysis. S4 owns build/t589-s4 up to 64 MiB with deletion after exit. Publication allows 40 minutes; unit aggregates retain 300-second deadlines. |
-| Reporting Requirements | Integration boundary, per-field evidence status, delta, test and artifact results, remaining HP board decode obligations. |
-| Stop Conditions | Do not publish vendor ROM bytes, silently route AMD management accesses to ordinary RAM, or represent a modeled save-area offset as a primary-source fact. Resolve documented and ROM-evidenced requirements before delivery. |
-| Exit Criteria | SMM entry/restore, memory space and intended I/O paths qualified with real-opcode synthetic fixtures, retained profiles pass, required artifacts published, scoped delivery reviewed and pushed. |
+| Identifier Mode | Continuation M5 T589 S5. S4 accepted and closed. |
+| Admission And Approval | Owner authorized basic hardware work and sequential single-session dual-role admission on 2026-11-19. |
+| Objective | Establish the OB300 display identity and implement the C&T 65510 register, VRAM and frame contract for later HP board and ROM assembly. |
+| Non-goals | No motherboard address decode, complete firmware boot, second host renderer, invented panel timing or 65535/65536 relabeling. |
+| Reference Baseline | Shared 4d9a248a3 and receiver baseline 1cf01a0ab; C&T 65510 preliminary data sheet rev 0.7 and HP 5965-0244; verified System ROM 1.0 option image. |
+| Candidate Proposal | proposals/m5-ob300-hardware.md S5 and proposals/m5-ob300-architecture.md O06. |
+| Files And ABI Surface | X86-NXVM display chip code, tests/build/manifests. Share proven standard VGA mechanics with the existing C&T receiver while keeping variant-specific extensions. Limit any receiving MyPC110 changes to wiring needed by the common interface. Required receiving product releases and NXVM evidence. |
+| Applicable Rules | NXVM guide, Contributing, Roadmap, architecture/layout, source policy and shared Execution/Documentation/Architecture/Coding. |
+| Verification | Check variant identity, indexed register ownership and reset, standard latches/write modes, extended single/dual VRAM mapping and address boundaries, font/text and graphics capture, panel blanking and 640x480 grayscale output as supported. Cached dual-width chip and MyPC110 regressions, full Shared unit and receiving release requirements. |
+| Expected Markers | One standard VGA backing and rendering owner, separate 65510 and 65535 extension semantics, evidence-classed 65510 register and frame output. |
+| Asset Needs | Hash-verified readonly System ROM option window, C&T and HP manuals, synthetic tests. S5 owns build/t589-s5 up to 64 MiB, cleaned after process exit. Publication allows 40 minutes; each unit aggregate retains the 300-second deadline. |
+| Reporting Requirements | Evidence supporting 65510 versus the 65536 lead, actual diff, preserved MyPC110 behavior, artifact hashes and bounded remaining panel/board work. |
+| Stop Conditions | Do not silently substitute an unrelated VGA chip, retain a duplicate VGA backing, treat undocumented board straps as exact, or publish raw option ROM bytes. |
+| Exit Criteria | Correct documented/firmware-observed C&T behavior verified independently on both host widths, retained PC110 paths tested, and required receiving delivery reviewed and pushed. |
 | Original Owner Request | Implement MyOB300 in hardware, wiring, machine and product stages. |
-| Similar-Issue Sweep | CPU fetch/preview, data, ordinary I/O, reset/fault paths, and management-memory routing across the existing bus contract. |
+| Similar-Issue Sweep | VGA storage routes, latches, bank crossing, text font/CRTC ownership, presentation and obsolete duplicate paths. |
 
 # M5 T588 - Closed: OB300 hardware and execution design
 
