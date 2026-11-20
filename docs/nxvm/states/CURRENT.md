@@ -3,6 +3,8 @@
 [S2 is closed](../history/M5-T590-S2-ob300-board.md). The
 [board verification](../etc/evidence/t590-s2-ob300-board.md#display-and-input-handoff)
 records existing routes and the App ownership boundary.
+[S3 board evidence](../etc/evidence/t590-s3-ob300-display-input.md)
+records the App display and input paths.
 
 | Field | Required record |
 | --- | --- |

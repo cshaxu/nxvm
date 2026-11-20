@@ -1,5 +1,6 @@
 #include "app-myob300/ob300_board_interface.h"
 #include "app-myob300/ob300_chipset.h"
+#include "app-myob300/ob300_display.h"
 #include "x86-core/machine/memory_interface.h"
 
 #define MYOB300_CPU_CLOCK_HZ 20000000u
@@ -9,13 +10,15 @@
 #define MYOB300_SYSTEM_ROM_RESET_ALIAS 0x00ff8000u
 #define MYOB300_MANAGEMENT_WINDOW_BASE 0x00060000u
 #define MYOB300_MANAGEMENT_MEMORY_BYTES 0x20000u
+#define MYOB300_PANEL_DEFAULT_VSYNC_HZ 60u
 
-typedef struct myob300_board {
+struct myob300_board {
     myob300_chipset chipset;
+    x86_ct_vga *display;
     lib_u8 management_memory[MYOB300_MANAGEMENT_MEMORY_BYTES];
     lib_u8 reset_image[MYOB300_SYSTEM_ROM_BYTES];
     lib_bool reset_image_present;
-} myob300_board;
+};
 
 const x86_nxvm_board_config myob300_board_configuration = {
     .memory_bytes = 2u * 1024u * 1024u,
@@ -42,6 +45,7 @@ static void myob300_board_reset(void *owner, x86_nxvm_board_reset_phase phase)
 
     if (phase == X86_NXVM_BOARD_RESET_BEFORE_DEVICES) {
         myob300_chipset_reset(&board->chipset);
+        x86_ct_vga_reset(board->display);
         lib_memory_set(board->management_memory, 0, sizeof(board->management_memory));
     }
 }
@@ -120,17 +124,41 @@ static lib_bool myob300_board_no_deadline(void *owner, lib_u64 now, lib_u64 *dea
     return LIB_FALSE;
 }
 
+lib_status myob300_board_capture_display(void *context, x86_video_snapshot *out_snapshot)
+{
+    myob300_board *board = context;
+    lib_u64 ticks;
+    lib_u64 vsync;
+    lib_status status;
+
+    if (board == LIB_NULL || out_snapshot == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
+    status = x86_core_machine_get_elapsed_ticks(board->chipset.core, &ticks);
+    if (status != LIB_STATUS_OK) return status;
+    /* L2 nominal panel rate on the existing guest time axis. */
+    vsync = (ticks / MYOB300_CPU_CLOCK_HZ) * MYOB300_PANEL_DEFAULT_VSYNC_HZ +
+        (ticks % MYOB300_CPU_CLOCK_HZ) * MYOB300_PANEL_DEFAULT_VSYNC_HZ / MYOB300_CPU_CLOCK_HZ;
+    return x86_ct_vga_capture_snapshot(board->display, vsync, out_snapshot);
+}
+
+static void myob300_board_finalize(void *owner)
+{
+    myob300_board *board = owner;
+    x86_ct_vga_destroy(board->display);
+    lib_release(board);
+}
+
 static lib_status myob300_board_bind(
     const x86_nxvm_board_profile_services *services, void *owner,
     x86_nxvm_board_profile_binding *out_binding)
 {
+    myob300_board_setup *setup = owner;
     myob300_board *board = lib_allocate_zero(1u, sizeof(*board));
     lib_status status;
 
     if (board == LIB_NULL) return LIB_STATUS_NO_MEMORY;
     status = LIB_STATUS_OK;
-    if (owner != LIB_NULL) {
-        lib_memory_copy(board->reset_image, owner, sizeof(board->reset_image));
+    if (setup->reset_image != LIB_NULL) {
+        lib_memory_copy(board->reset_image, setup->reset_image, sizeof(board->reset_image));
         board->reset_image_present = LIB_TRUE;
         status = x86_core_machine_register_immutable_rom_mapping(services->core,
             MYOB300_SYSTEM_ROM_BASE, board->reset_image, sizeof(board->reset_image));
@@ -139,9 +167,15 @@ static lib_status myob300_board_bind(
                 MYOB300_SYSTEM_ROM_BASE, MYOB300_SYSTEM_ROM_RESET_ALIAS,
                 sizeof(board->reset_image));
     }
+    if (status == LIB_STATUS_OK) status = x86_ct_vga_create(X86_CT_VGA_65510, &board->display);
     if (status == LIB_STATUS_OK) status = myob300_chipset_install(&board->chipset, services->core);
+    if (status == LIB_STATUS_OK) {
+        status = myob300_display_install(services->core, board->display);
+        if (status != LIB_STATUS_OK)
+            (void)x86_core_machine_remove_port_routes(services->core, &board->chipset);
+    }
     if (status != LIB_STATUS_OK) {
-        lib_release(board);
+        myob300_board_finalize(board);
         return status;
     }
     *out_binding = (x86_nxvm_board_profile_binding){
@@ -151,16 +185,16 @@ static lib_status myob300_board_bind(
         .refresh_request = myob300_board_no_refresh,
         .refresh_complete = myob300_board_no_action,
         .next_deadline = myob300_board_no_deadline,
-        .finalize = lib_release,
+        .finalize = myob300_board_finalize,
         .system_management_active = myob300_board_management_active,
         .read_smm_memory = myob300_board_management_read,
         .write_smm_memory = myob300_board_management_write
     };
+    setup->profile = board;
     return LIB_STATUS_OK;
 }
 
-lib_status myob300_board_configure(x86_nxvm_board_plan *plan,
-    const lib_u8 *reset_image, lib_size bytes)
+lib_status myob300_board_configure(x86_nxvm_board_plan *plan, myob300_board_setup *setup)
 {
     const x86_nxvm_board_plan_topology topology = {
         .dma_present = LIB_TRUE,
@@ -177,11 +211,13 @@ lib_status myob300_board_configure(x86_nxvm_board_plan *plan,
     };
     lib_status status;
 
-    if (reset_image == LIB_NULL ? bytes != 0u : bytes != MYOB300_SYSTEM_ROM_BYTES)
+    if (setup == LIB_NULL || (setup->reset_image == LIB_NULL ?
+        setup->reset_image_bytes != 0u : setup->reset_image_bytes != MYOB300_SYSTEM_ROM_BYTES))
         return LIB_STATUS_INVALID_ARGUMENT;
+    setup->profile = LIB_NULL;
     status = x86_nxvm_board_plan_set_topology(plan, &topology);
     if (status == LIB_STATUS_OK)
         status = x86_nxvm_board_plan_bind_profile_factory(plan,
-            myob300_board_bind, (void *)reset_image);
+            myob300_board_bind, setup);
     return status;
 }

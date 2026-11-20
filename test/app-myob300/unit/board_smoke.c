@@ -1,11 +1,19 @@
 #include "app-myob300/ob300_board_interface.h"
 #include "lib/types/file.h"
 #include "lib/types/test.h"
+#include "x86-core/machine/debug_interface.h"
 #include "x86-core/machine/memory_interface.h"
 
 static void write_port(x86_core_machine *core, lib_u16 port, lib_u8 value)
 {
     lib_test_assert(x86_core_machine_bus_write(core, port, value) == LIB_STATUS_OK);
+}
+
+static void write_indexed(x86_core_machine *core, lib_u16 port, lib_u16 data_port,
+    lib_u8 index, lib_u8 value)
+{
+    write_port(core, port, index);
+    write_port(core, data_port, value);
 }
 
 static void expect_port(x86_core_machine *core, lib_u16 port, lib_u8 expected)
@@ -41,10 +49,10 @@ static void test_chipset(x86_core_machine *core)
     write_port(core, 0xecu, 0xffu);
     lib_test_assert(x86_core_machine_bus_read(core, 0xedu, &value) == LIB_STATUS_UNSUPPORTED);
     lib_test_assert(x86_core_machine_bus_write(core, 0xedu, 0u) == LIB_STATUS_UNSUPPORTED);
-    lib_test_assert(x86_core_machine_bus_read(core, 0x3d6u, &value) == LIB_STATUS_UNSUPPORTED);
+    lib_test_assert(x86_core_machine_bus_read(core, 0x3d8u, &value) == LIB_STATUS_UNSUPPORTED);
 }
 
-static void test_support_devices(x86_core_machine *core, x86_nxvm_board_state *board)
+static void configure_pic(x86_core_machine *core)
 {
     const struct {
         lib_u16 port;
@@ -53,11 +61,16 @@ static void test_support_devices(x86_core_machine *core, x86_nxvm_board_state *b
         {0x20u, 0x11u}, {0x21u, 0x08u}, {0x21u, 0x04u}, {0x21u, 0x01u},
         {0xa0u, 0x11u}, {0xa1u, 0x70u}, {0xa1u, 0x02u}, {0xa1u, 0x01u}
     };
-    lib_bool enabled = LIB_FALSE;
-
     for (lib_size index = 0u; index < sizeof(pic_initialization) / sizeof(pic_initialization[0]);
          ++index)
         write_port(core, pic_initialization[index].port, pic_initialization[index].value);
+}
+
+static void test_support_devices(x86_core_machine *core, x86_nxvm_board_state *board)
+{
+    lib_bool enabled = LIB_FALSE;
+
+    configure_pic(core);
     write_port(core, 0x21u, 0xf1u);
     write_port(core, 0xa1u, 0x1fu);
     expect_port(core, 0x21u, 0xf1u);
@@ -80,6 +93,129 @@ static void test_support_devices(x86_core_machine *core, x86_nxvm_board_state *b
     lib_test_assert(x86_nxvm_board_observe_a20(board, &enabled) == LIB_STATUS_OK && enabled);
     write_port(core, 0x92u, 0u);
     lib_test_assert(x86_nxvm_board_observe_a20(board, &enabled) == LIB_STATUS_OK && !enabled);
+}
+
+static void expect_input(x86_core_machine *core, lib_u32 address, lib_u8 expected)
+{
+    x86_core_machine_run_result result;
+    lib_u8 actual = 0u;
+
+    for (lib_u32 step = 0u; step < 4000u; ++step) {
+        lib_test_assert(x86_core_machine_run(core, (x86_core_machine_run_budget){1u, 0u},
+            &result) == LIB_STATUS_OK);
+        lib_test_assert(x86_core_machine_memory_read(core, address, &actual, 1u) == LIB_STATUS_OK);
+        if (actual == expected) return;
+    }
+    lib_c_fprintf(lib_c_stderr, "input at %04x: expected %02x, received %02x\n",
+        address, (lib_u32)expected, (lib_u32)actual);
+    lib_test_assert(actual == expected);
+}
+
+static void test_input(x86_core_machine *core, x86_nxvm_board_state *board)
+{
+    const lib_u8 keyboard_vector[] = {0x00u, 0x03u, 0u, 0u};
+    const lib_u8 mouse_vector[] = {0x10u, 0x03u, 0u, 0u};
+    const lib_u8 idle[] = {0xfbu, 0xf4u, 0xebu, 0xfdu};
+    const lib_u8 keyboard_irq[] = {
+        0xe4u, 0x60u, 0xa2u, 0x00u, 0x05u, 0xb0u, 0x20u, 0xe6u, 0x20u, 0xcfu
+    };
+    const lib_u8 mouse_irq[] = {
+        0xe4u, 0x60u, 0xa2u, 0x01u, 0x05u, 0xb0u, 0x20u,
+        0xe6u, 0xa0u, 0xe6u, 0x20u, 0xcfu
+    };
+    const x86_core_cpu_debug_register_patch entry = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_SS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_ESP),
+        .values = {[X86_CORE_CPU_DEBUG_EIP] = 0x200u, [X86_CORE_CPU_DEBUG_ESP] = 0x800u}
+    };
+
+    lib_test_assert(x86_core_machine_reset(core) == LIB_STATUS_OK);
+    configure_pic(core);
+    write_port(core, 0x21u, 0xf9u);
+    write_port(core, 0xa1u, 0xefu);
+    write_port(core, 0x64u, 0x60u);
+    write_port(core, 0x60u, 0x03u);
+    lib_test_assert(x86_core_machine_memory_write(core, 0x24u,
+        keyboard_vector, sizeof(keyboard_vector)) == LIB_STATUS_OK);
+    lib_test_assert(x86_core_machine_memory_write(core, 0x1d0u,
+        mouse_vector, sizeof(mouse_vector)) == LIB_STATUS_OK);
+    lib_test_assert(x86_core_machine_memory_write(core, 0x200u, idle, sizeof(idle)) == LIB_STATUS_OK);
+    lib_test_assert(x86_core_machine_memory_write(core, 0x300u,
+        keyboard_irq, sizeof(keyboard_irq)) == LIB_STATUS_OK);
+    lib_test_assert(x86_core_machine_memory_write(core, 0x310u,
+        mouse_irq, sizeof(mouse_irq)) == LIB_STATUS_OK);
+    lib_test_assert(x86_core_machine_debug_patch_registers(core, &entry) == LIB_STATUS_OK);
+    lib_test_assert(x86_nxvm_board_keyboard_receive_native_byte(board, 0x1cu) == LIB_STATUS_OK);
+    expect_input(core, 0x500u, 0x1cu);
+    write_port(core, 0x64u, 0xd4u);
+    write_port(core, 0x60u, 0xf4u);
+    expect_input(core, 0x501u, 0xfau);
+    lib_test_assert(x86_nxvm_board_mouse_receive_relative(board, 5, 3, 1u) == LIB_STATUS_OK);
+    expect_input(core, 0x501u, 0x09u);
+    expect_input(core, 0x501u, 0x05u);
+    expect_input(core, 0x501u, 0x03u);
+}
+
+static void test_display(x86_core_machine *core, myob300_board *board)
+{
+    static x86_video_snapshot snapshot;
+    /* Exercise the firmware's word access to the extension index/data pair. */
+    const lib_u8 program[] = {
+        0xbau, 0xd6u, 0x03u, 0xb8u, 0x10u, 0x20u, 0xefu, 0xedu, 0xf4u
+    };
+    const x86_core_cpu_debug_register_patch entry = {
+        .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
+            X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_EIP)
+    };
+    const lib_u8 pixel = 0x80u;
+    const lib_u8 hidden_write = 0x40u;
+    lib_u32 eax;
+    x86_core_machine_run_result result;
+    x86_core_machine_memory_route route;
+
+    lib_test_assert(x86_core_machine_memory_write(core, 0u, program,
+        sizeof(program)) == LIB_STATUS_OK);
+    lib_test_assert(x86_core_machine_debug_patch_registers(core, &entry) == LIB_STATUS_OK);
+    lib_test_assert(x86_core_machine_run(core, (x86_core_machine_run_budget){16u, 0u},
+        &result) == LIB_STATUS_OK);
+    lib_test_assert(x86_core_machine_debug_read_register(core, X86_CORE_CPU_DEBUG_EAX,
+        &eax) == LIB_STATUS_OK && (eax & 0xffffu) == 0x2010u);
+
+    write_port(core, 0x3d6u, 0u);
+    expect_port(core, 0x3d7u, 0x90u);
+    lib_test_assert(myob300_board_capture_display(board, &snapshot) == LIB_STATUS_UNSUPPORTED);
+
+    /* Enable 640x480 planar scanout and write a pixel via the guest aperture. */
+    write_indexed(core, 0x3d4u, 0x3d5u, 1u, 79u);
+    write_indexed(core, 0x3d4u, 0x3d5u, 7u, 2u);
+    write_indexed(core, 0x3d4u, 0x3d5u, 18u, 0xdfu);
+    write_indexed(core, 0x3d4u, 0x3d5u, 19u, 40u);
+    write_indexed(core, 0x3d4u, 0x3d5u, 0x17u, 0x80u);
+    write_indexed(core, 0x3c4u, 0x3c5u, 2u, 1u);
+    write_indexed(core, 0x3c4u, 0x3c5u, 4u, 4u);
+    write_indexed(core, 0x3ceu, 0x3cfu, 6u, 5u);
+    write_indexed(core, 0x3ceu, 0x3cfu, 8u, 0xffu);
+    write_indexed(core, 0x3c0u, 0x3c0u, 0x12u, 15u);
+    write_indexed(core, 0x3c0u, 0x3c0u, 1u, 1u);
+    lib_test_assert(x86_core_machine_memory_query(core, 0xa0000u, 1u,
+        X86_CORE_MACHINE_MEMORY_ACCESS_WRITE, &route) == LIB_STATUS_OK &&
+        route == X86_CORE_MACHINE_MEMORY_ROUTE_PROVIDER);
+    lib_test_assert(x86_core_machine_memory_write(core, 0xa0000u, &pixel,
+        sizeof(pixel)) == LIB_STATUS_OK);
+    lib_test_assert(myob300_board_capture_display(board, &snapshot) == LIB_STATUS_OK &&
+        snapshot.pixel_width == 640u && snapshot.pixel_height == 480u &&
+        snapshot.pixels[0] == 1u && snapshot.pixels[1] == 0u);
+    write_indexed(core, 0x3d6u, 0x3d7u, 0x0bu, 0x10u);
+    lib_test_assert(x86_core_machine_memory_query(core, 0xa0000u, 1u,
+        X86_CORE_MACHINE_MEMORY_ACCESS_WRITE, &route) == LIB_STATUS_OK &&
+        route == X86_CORE_MACHINE_MEMORY_ROUTE_ORDINARY_RAM);
+    lib_test_assert(x86_core_machine_memory_write(core, 0xa0000u, &hidden_write,
+        sizeof(hidden_write)) == LIB_STATUS_OK);
+    write_port(core, 0x3d7u, 0u);
+    lib_test_assert(myob300_board_capture_display(board, &snapshot) == LIB_STATUS_OK &&
+        snapshot.pixels[0] == 1u && snapshot.pixels[1] == 0u);
 }
 
 static void test_management_memory(x86_core_machine *core)
@@ -129,10 +265,11 @@ int main(void)
     x86_nxvm_board_state *board = LIB_NULL;
     x86_core_machine *core = LIB_NULL;
     x86_core_cpu_profile profile = X86_CORE_CPU_PROFILE_DEFAULT;
+    myob300_board_setup setup = {image, sizeof(image), LIB_NULL};
     lib_size memory = 0u;
 
     lib_test_assert(x86_nxvm_board_plan_create(&myob300_board_configuration, &plan) == LIB_STATUS_OK);
-    lib_test_assert(myob300_board_configure(plan, image, sizeof(image)) == LIB_STATUS_OK);
+    lib_test_assert(myob300_board_configure(plan, &setup) == LIB_STATUS_OK);
     lib_test_assert(x86_nxvm_board_create_from_plan(plan, &core, &board) == LIB_STATUS_OK);
     x86_nxvm_board_plan_destroy(plan);
     lib_test_assert(x86_core_machine_get_cpu_profile(core, &profile) == LIB_STATUS_OK &&
@@ -143,6 +280,8 @@ int main(void)
     lib_test_assert(x86_core_machine_reset(core) == LIB_STATUS_OK);
     test_chipset(core);
     test_support_devices(core, board);
+    test_display(core, setup.profile);
+    test_input(core, board);
     test_management_memory(core);
     lib_test_assert(x86_core_machine_reset(core) == LIB_STATUS_OK);
     expect_port(core, 0xecu, 0u);
