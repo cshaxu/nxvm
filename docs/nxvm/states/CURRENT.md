@@ -1,8 +1,10 @@
-# M5 T589 S6 - Active: OmniBook keyboard and pointing device
+# M5 T589 S6 - Delivered: OmniBook keyboard and pointing device
 
 [S5 is closed](../history/M5-T589-S5-ct65510-display.md).
 The [S5 input handoff](../etc/evidence/t589-s5-ct65510-display.md#input-handoff)
 records the HP service evidence and original System 1.0 driver behavior.
+The [S6 qualification](../etc/evidence/t589-s6-ob300-input.md) records the
+two-width test results and the HP board handoff.
 
 | Field | Required record |
 | --- | --- |
