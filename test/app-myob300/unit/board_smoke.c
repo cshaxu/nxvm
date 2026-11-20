@@ -100,6 +100,12 @@ static void test_support_devices(x86_core_machine *core, x86_nxvm_board_state *b
     write_port(core, 0x70u, 0x20u);
     write_port(core, 0x71u, 0x65u);
     expect_port(core, 0x71u, 0x65u);
+    write_port(core, 0x70u, 0xf8u);
+    write_port(core, 0x71u, 0x5cu);
+    write_port(core, 0x70u, 0x38u);
+    expect_port(core, 0x71u, 0u);
+    write_port(core, 0x70u, 0x78u);
+    expect_port(core, 0x71u, 0x5cu);
 
     lib_test_assert(x86_nxvm_board_observe_a20(board, &enabled) == LIB_STATUS_OK && !enabled);
     write_port(core, 0x92u, 2u);
@@ -120,6 +126,7 @@ static void test_refresh_and_ram(x86_core_machine *core)
     lib_bool refresh_low = LIB_FALSE;
     lib_bool refresh_high = LIB_FALSE;
     lib_u8 actual;
+    lib_u32 kbc_status;
 
     lib_test_assert(x86_core_machine_reset(core) == LIB_STATUS_OK);
     write_port(core, 0x92u, 2u);
@@ -141,6 +148,16 @@ static void test_refresh_and_ram(x86_core_machine *core)
             &result) == LIB_STATUS_OK);
     }
     lib_test_assert(refresh_low && refresh_high);
+    write_port(core, 0x64u, 0xaau);
+    lib_test_assert(x86_core_machine_bus_read(core, 0x64u, &kbc_status) == LIB_STATUS_OK &&
+        (kbc_status & 1u) == 0u);
+    for (lib_u32 step = 0u; step < 1000u && (kbc_status & 1u) == 0u; ++step) {
+        lib_test_assert(x86_core_machine_run(core, (x86_core_machine_run_budget){1u, 0u},
+            &result) == LIB_STATUS_OK);
+        lib_test_assert(x86_core_machine_bus_read(core, 0x64u, &kbc_status) == LIB_STATUS_OK);
+    }
+    lib_test_assert((kbc_status & 1u) != 0u);
+    expect_port(core, 0x60u, 0x55u);
     lib_test_assert(x86_core_machine_reset(core) == LIB_STATUS_OK);
 }
 
@@ -170,9 +187,14 @@ static void expect_input(x86_core_machine *core, lib_u32 address, lib_u8 expecte
             &result) == LIB_STATUS_OK);
         lib_test_assert(x86_core_machine_memory_read(core, address, &actual, 1u) == LIB_STATUS_OK);
         if (actual == expected) return;
+        if (result.reason == X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
+            lib_u8 advanced;
+            lib_test_assert(x86_core_machine_advance_to_next_deadline(core, &advanced) ==
+                LIB_STATUS_OK);
+        }
     }
-    lib_c_fprintf(lib_c_stderr, "input at %04x: expected %02x, received %02x\n",
-        address, (lib_u32)expected, (lib_u32)actual);
+    lib_c_fprintf(lib_c_stderr, "input at %04x: expected %02x, received %02x, PC=%08x stop=%u\n",
+        address, (lib_u32)expected, (lib_u32)actual, result.linear_pc, (lib_u32)result.reason);
     lib_test_assert(actual == expected);
 }
 
@@ -304,6 +326,9 @@ static void test_card(x86_core_machine *core)
     lib_u32 eax;
 
     expect_memory_pair(core, 0xf7ff0u, 0xa1u, 0x1au);
+    expect_memory_pair(core, 0xe0000u, 0x55u, 0xaau);
+    lib_test_assert(x86_core_machine_memory_write(core, 0xe0000u, &write, 1u) == LIB_STATUS_OK);
+    expect_memory_pair(core, 0xe0000u, 0x55u, 0xaau);
     write_port(core, 0xfbu, 0u);
     write_indexed(core, 0xecu, 0xedu, 0x2cu, 0xbcu);
     write_indexed(core, 0xecu, 0xedu, 0x2du, 0xc2u);
@@ -392,6 +417,8 @@ int main(void)
         reset_program, sizeof(reset_program));
     lib_memory_copy(image + MYOB300_CARD_BOOT_BYTES - 16u, reset_vector, sizeof(reset_vector));
     image[0x7f7ff0u] = 0xa1u;
+    image[0x7e8000u] = 0x55u;
+    image[0x7e8001u] = 0xaau;
     image[0x7f7ff1u] = 0x1au;
     image[0x803fffu] = 0x11u;
     image[0x804000u] = 0x22u;

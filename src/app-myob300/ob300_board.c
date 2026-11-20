@@ -8,9 +8,11 @@
 #define MYOB300_RAM_PROBE_LIMIT 0x800000u
 #define MYOB300_PIT_INPUT_HZ 1193182u
 #define MYOB300_RTC_INPUT_HZ 32768u
+#define MYOB300_KBC_COMMAND_RESPONSE_TICKS 256u
 #define MYOB300_REFRESH_HZ 64000u
 #define MYOB300_REFRESH_TICKS ((MYOB300_CPU_CLOCK_HZ + MYOB300_REFRESH_HZ / 2u) / MYOB300_REFRESH_HZ)
 #define MYOB300_SYSTEM_ROM_BASE 0x000f8000u
+#define MYOB300_E_ROM_BASE 0x000e0000u
 #define MYOB300_SYSTEM_ROM_RESET_ALIAS 0x00ff8000u
 #define MYOB300_MANAGEMENT_WINDOW_BASE 0x00060000u
 #define MYOB300_MANAGEMENT_MEMORY_BYTES 0x20000u
@@ -36,6 +38,8 @@ const x86_nxvm_board_config myob300_board_configuration = {
     .pic_topology = X86_NXVM_BOARD_PIC_TOPOLOGY_CASCADED,
     .dma_controller_count = X86_NXVM_BOARD_DMA_CONTROLLER_COUNT,
     .keyboard_topology = X86_NXVM_BOARD_KEYBOARD_TOPOLOGY_8042,
+    /* L2: keep the self-test reply pending beyond POST's first data read. */
+    .kbc_command_response_ticks = MYOB300_KBC_COMMAND_RESPONSE_TICKS,
     .display_topology = X86_NXVM_BOARD_DISPLAY_TOPOLOGY_NONE,
     .system_facade = X86_NXVM_BOARD_SYSTEM_FACADE_NONE,
     .system_control_port_present = LIB_TRUE
@@ -182,6 +186,10 @@ static lib_status myob300_board_bind(
             status = x86_core_machine_register_immutable_rom_mapping_reset_alias(services->core,
                 MYOB300_SYSTEM_ROM_BASE, MYOB300_SYSTEM_ROM_RESET_ALIAS,
                 MYOB300_CARD_RESET_BYTES);
+        if (status == LIB_STATUS_OK)
+            status = x86_core_machine_register_immutable_rom_mapping(services->core,
+                MYOB300_E_ROM_BASE, setup->common.data + MYOB300_CARD_E_ROM_OFFSET,
+                MYOB300_CARD_E_ROM_BYTES);
     }
     if (status == LIB_STATUS_OK) status = x86_ct_vga_create(X86_CT_VGA_65510, &board->display);
     if (status == LIB_STATUS_OK) status = myob300_chipset_install(&board->chipset, services->core);
@@ -242,6 +250,7 @@ lib_status myob300_board_configure(x86_nxvm_board_plan *plan, myob300_board_setu
             .data_port = 0x71u,
             .irq = 8u,
             .nmi_mask_bit = 0x80u,
+            .extended_registers = LIB_TRUE,
             .ticks_per_second = MYOB300_RTC_INPUT_HZ
         }
     };
