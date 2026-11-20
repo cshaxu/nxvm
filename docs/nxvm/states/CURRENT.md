@@ -6,10 +6,9 @@ ROM Windows/applications and final product qualification. The former broad
 family candidate is a research umbrella, not a duplicate task. Existing
 pending candidates retain their relative order at positions 6-9.
 [Governance record](../history/M5-Td-S186-ob300-planning.md) preserves the
-packet and review. No numeric implementation T/S was allocated. T587 remains
-open with S1-S5 closed and no active implementation S.
+packet and review. No numeric implementation T/S was allocated. T587 was subsequently owner-closed; the current task is recorded above.
 
-# M5 T587 - Open; S5 accepted and closed
+# M5 T587 - Closed after owner acceptance
 
 The owner accepted S5 and explicitly approved closure after delivery through
 `b11e2c266`. Coordinator review reconciled the exact eight-tree import,
@@ -17,8 +16,9 @@ receiving adapters, fourteen published EXEs and full qualification with the
 approved packet. [S5 history](../history/M5-T587-token-import.md) retains the
 verification evidence and archived packet.
 
-S1-S5 are accepted and closed. T587 remains open with no active S; wait for
-the owner's next implementation instruction. Queue registration above does not admit implementation.
+The owner approved T587 closure on 2026-11-19. S1-S5 are accepted and closed;
+[final review](../history/M5-T587-closure.md) reconciles their deliveries.
+No unfinished implementation is transferred from T587.
 
 | Task | Status |
 | --- | --- |
@@ -36,7 +36,7 @@ The owner accepted S2 and authorized closure on 2026-11-11.
 The selectable CMD build/publication entry and receiving artifacts were
 delivered through 544e51f5c; [S2 history](../history/M5-T587-build-entry.md)
 records verification, artifact hashes and the archived packet.
-T587 remains open; S1-S5 are accepted and closed as recorded above.
+T587 and S1-S5 are closed as recorded above.
 
 # M5 T587 S1 — Closed after owner acceptance
 
