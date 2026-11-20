@@ -1,7 +1,6 @@
-# M5 Candidate: OmniBook 300: hardware, ROM and execution design
+# M5 T588: OmniBook 300 hardware, ROM and execution design
 
-Owner queued this bounded T candidate on 2026-11-19. Numeric T/S identifiers
-are allocated only at admission. [Queue](../states/QUEUE.md) owns priority;
+Owner admitted this first OB300 T on 2026-11-19 after T587 closure. [Queue](../states/QUEUE.md) owns priority;
 [family research and shared boundaries](m5-omnibook-emulator.md) apply.
 
 ## Objective and scope
@@ -43,3 +42,18 @@ L2 reference models or L3 explicit manual formulas/constants honestly. Public
 interface changes follow the applicable review rules. New evidence that
 invalidates a prerequisite requires a recorded design/scope decision, not a
 second execution route or an unreported transfer.
+
+## Admitted execution sequence
+
+| S | Bounded batch | Completion evidence |
+| --- | --- | --- |
+| S1 | ROM identity, current hardware/owner inventory and gaps | Verified archive metadata plus finite convergence ledger; no boot claim. |
+| S2 | Reset/card mapping proof and execution baseline | Run the actual reset bytes through the existing executor using explicitly labeled mapping hypotheses; identify the first unsupported route and measure fixed-work costs. |
+| S3 | Minimal board design and implementation handoff | Reconcile every ledger row, freeze numeric usability budgets from the measurements and identify required public-contract reviews and receiving tasks. |
+
+[Convergence ledger](../etc/evidence/t588-ob300-convergence.md) is evidence,
+not a second queue. S1 is initially admitted; later batches require their
+packet before work. No new T is implied for each missing port. If S2 needs an
+unapproved public change, give its exact minimal design and evidence before
+implementation. This T closes only when its design/proof/budget predicates
+are met; it cannot claim the later ROM DOS or Windows tasks completed.

@@ -103,18 +103,19 @@ is closed as T586 after owner acceptance; retained limitations remain recorded.
 
 On 2026-11-19 the owner promoted OB300 as five sequential candidates below.
 They replace the former single OmniBook-family candidate; 425/430 remain
-research references, not duplicate pending work. T587 remains open and none
-of these candidates has a numeric T allocated or implementation admitted.
+research references, not duplicate pending work. T587 is owner-closed. The first candidate is admitted as T588; the others
+remain unnumbered and unadmitted.
 
-1. [OmniBook 300: hardware, ROM and execution design](../proposals/m5-ob300-design.md)
-2. [OmniBook 300: real firmware and ROM DOS](../proposals/m5-ob300-rom-dos.md)
-3. [OmniBook 300: execution and interaction performance](../proposals/m5-ob300-performance.md)
-4. [OmniBook 300: ROM Windows, Word and Excel](../proposals/m5-ob300-rom-windows.md)
-5. [OmniBook 300: complete product qualification](../proposals/m5-ob300-product-qualification.md)
-6. [MyNeoGeo: Metal Slug 2](../proposals/myneogeo-metal-slug2.md)
-7. [CPU differential tools and specification tests](../proposals/m5-differential-and-unit-evidence.md)
-8. [Retained-machine DOS and Windows qualification](../proposals/m5-retained-guest-qualification.md)
-9. [x87 coprocessor execution](../proposals/m5-x87-coprocessor-execution.md)
+Active: [T588: OmniBook 300 hardware, ROM and execution design](../proposals/m5-ob300-design.md).
+
+1. [OmniBook 300: real firmware and ROM DOS](../proposals/m5-ob300-rom-dos.md)
+2. [OmniBook 300: execution and interaction performance](../proposals/m5-ob300-performance.md)
+3. [OmniBook 300: ROM Windows, Word and Excel](../proposals/m5-ob300-rom-windows.md)
+4. [OmniBook 300: complete product qualification](../proposals/m5-ob300-product-qualification.md)
+5. [MyNeoGeo: Metal Slug 2](../proposals/myneogeo-metal-slug2.md)
+6. [CPU differential tools and specification tests](../proposals/m5-differential-and-unit-evidence.md)
+7. [Retained-machine DOS and Windows qualification](../proposals/m5-retained-guest-qualification.md)
+8. [x87 coprocessor execution](../proposals/m5-x87-coprocessor-execution.md)
 
 The former PC App test adapter candidate was transferred into T564 S13 by
 owner direction; its [proposal](../proposals/m5-pc-app-test-encapsulation.md)

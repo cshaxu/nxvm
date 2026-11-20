@@ -1,5 +1,9 @@
 # Supporting Documentation Index
 
+T588 S1: [OB300 identity and convergence ledger](evidence/t588-ob300-convergence.md)
+records external archive verification, current implementation owners and the
+remaining reset-mapping, execution and performance design proofs.
+
 T581 S1: [PC110 stopped-state display selection](evidence/t581-s1-vdisplay-design.md)
 records ownership, shared contracts, per-variant CMOS, media retention and
 dual-architecture release qualification.
