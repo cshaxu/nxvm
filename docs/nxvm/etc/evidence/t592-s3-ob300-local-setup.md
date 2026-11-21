@@ -1215,7 +1215,7 @@ the formal original Windows installation/persistence gate are separate.
 
 ### Product obligation review
 
-| Design row | Evidence at P39 | Remaining boundary |
+| Design row | Evidence at P40 | Remaining boundary |
 | --- | --- | --- |
 | O07 input | Product DOS make/break, native monitor handoff, owner-tested Windows keyboard and built-in pointer, and original guest File selection through native Window messages on both widths. | Formal Windows interaction and redraw are queued. Physical Window input focus and RDP are unverified by the isolated automation. |
 | O08 power | Original DOS and original Windows resume via F13 have direct dual-width replay. Clean Product exit and restart preserve RTC/CMOS. Windows Power Standard and Off both initiate a fresh POST with valid configuration on both widths. | x64 reaches the DOS driver in both modes. On x86 the 300-second probe cap expires after the configuration check and before the visible driver. See the original Windows Power control path below. |
@@ -1413,3 +1413,28 @@ or meet a performance threshold. The 300-second outer budget is unchanged.
 | Standard POST RTC trace | `eb42bb5776277aeab229d6673bbd2689c5f664134f3d2e2324df7ce37567c404` |
 | Off UI and wake | `af8d4f4f0aa54431f82f49956540ff85cf7c5df075af58d627579352e120ff17` |
 | Off POST RTC trace | `d364d36ab912e7e08aff275077c0ad6cbc1efbb7f5e4b360c595cdf92f6acd97` |
+
+A follow-up x86 Standard replay kept the same one-icon control panel,
+original System Card, Windows Power driver, HP OptionsDLL and DOS
+configuration. It omitted the startup calls to OBSETUP and SHARE from
+AUTOEXEC.BAT in a restored throwaway C copy. This tests the power path of
+an already configured C image. The original Windows launcher was still
+used. The probe also checked the DOS driver text independently of whether
+the BIOS banner was still visible on the same screen.
+
+The Power icon was selected at 242.367 s, Standard was visible and
+confirmed, and the second F13 was sent at 265.587 s. The original
+firmware sampled the key at tick 525556759. A fresh firmware POST again
+read the ordinary extended CMOS sum and stored checksum as 003Ch,
+leaving diagnostic index 78h clear. No F1 was sent. The 286-second guest
+observation ended before the original DOS driver was visible and the
+probe returned 1. Both the original C hash and the disposable disk hash
+were unchanged. These timings did not improve on the previous one-icon
+Standard replay. Omission of those DOS calls provided no measured route
+to the missing x86 terminal within the current cap.
+
+| Shorter DOS startup, x86 Standard | SHA-256 |
+| --- | --- |
+| Disposable C image | 1ef6d59a30e81d6054f3c6227e62cc489b31981deb3b1ed383e6ec6806ed530b |
+| Actual Power dialog selections and F13 output | a1a815878aa67d88957bd35eac5776efc28beb63c30154865ad01b2aa8882b94 |
+| New POST RTC trace | 1b5e4e8c7e47e6b84ae7188817191fb44a5271d8048614302ce73b7f7dd0cda5 |

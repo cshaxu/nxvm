@@ -55,7 +55,8 @@ The [original
 Power control replay](../etc/evidence/t592-s3-ob300-local-setup.md#original-windows-power-control-path)
 confirms that x64 Standard and Off both run POST and load DOS after two F13
 presses without needing F1. On x86, both modes enter a new POST and pass the
-extended CMOS check. The x86 probes end before the DOS driver is visible.
+extended CMOS check. A shorter disposable x86 Standard startup again
+verified POST but did not reach the DOS driver under the existing cap.
 The queued performance and Windows gates remain in force.
 
 | Field | Required record |
