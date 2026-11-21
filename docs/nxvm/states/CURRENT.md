@@ -1,35 +1,32 @@
-# M5 T593 S1 - Active: OmniBook execution and interaction baseline
+# M5 T593 S2 - Active: Exact CPU timing and clock hot paths
 
-The owner closed [T592](../history/M5-T592-ob300-product-qualification.md)
-and admitted [OmniBook performance](../proposals/m5-ob300-performance.md).
-MyOB300 retains the published 0.5.0592 x64/x86 pair during the baseline.
-Original ROM Windows qualification remains queued behind performance.
+[S1 is closed](../history/M5-T593-S1-ob300-performance-baseline.md).
+The [performance proposal](../proposals/m5-ob300-performance.md) owns
+the original usability goals. The 0.5.0592 release is the measurement baseline.
 
 | Task | Status |
 | --- | --- |
-| T592 | Closed by owner on 2026-11-21. S1 through S3 are archived with the product verification and explicit receiving limits. |
-| T593 S1 | Active. Establish the controlled baseline and rank measurable causes. |
-
-## S1 brief
+| T592 | Closed. [Product-stage verification](../history/M5-T592-ob300-product-qualification.md). |
+| T593 S2 | Active. Replace fixed timing searches and verify the exact clock optimization independently. |
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | New M5 T593 S1 after T592 closure. |
-| Admission And Approval | Owner on 2026-11-21 directed closure of the product stage and admission of the queue-head performance investigation. |
-| Objective | Measure actual OB300 startup and interaction, and locate where elapsed time accumulates before proposing changes. |
-| Non-goals | No production, timing-model or ABI changes in S1, no target relaxation, no Windows installation or RDP qualification claim. |
-| Reference Baseline | Git 597aad29d, current 0.5.0592 release pair, T591 S4 controlled DOS baseline, and T592 S3 native DOS and Program Manager observations. |
-| Candidate Proposal | [Performance scope and S sequence](../proposals/m5-ob300-performance.md). |
-| Files And ABI Surface | NXVM evidence and disposable profiling probes only. No runtime, build or artifact changes in S1. |
-| Applicable Rules | NXVM guide and Contributing, Roadmap, design architecture/layout, source policy, shared Execution/Documentation/Architecture/Coding. |
-| Verification | Reuse cached GCC Release configurations. Sequence fixed-input x64 and x86 runs. Measure cold ROM DOS, ten key echoes and DIR-to-ready, plus separate Windows first-draw, interaction-ready and switch-response checkpoints where observable. Compare guest progress and attributable host cost before choosing changes. |
-| Expected Markers | Timestamped guest endpoints, both-width baseline, ranked cost observations with measurement limits, and one justified next batch. |
-| Asset Needs | Read-only external System Card and C master; disposable overlay or copy. NXVM executor owns build/t593-s1, capped at 200 MiB and 300 seconds per native probe. Stop after 120 seconds without measurable progress, wait for owned processes, archive evidence and clean disposable data before closure. |
-| Reporting Requirements | Separate actual guest observations, sampling estimates, real desktop/RDP coverage, and unresolved waits. |
-| Stop Conditions | Preserve the single execution and clock path. Stop a probe at its budget or if it risks owner media. Do not infer a hotkey or performance root cause from first paint or a synthetic loop alone. |
-| Exit Criteria | Reproducible both-width measurements, a ranked cost ledger, explicit gaps, and required governance/closure checks. No new EXE for evidence-only changes. |
-| Original Owner Request | Close the product stage and start the OmniBook performance investigation. |
-| Similar-Issue Sweep | Compare guest polling, device scheduling, instruction/timing work and output delivery across the measured workloads. S1 applies no defect fix. |
+| Identifier Mode | Continuation M5 T593 S2 after S1. |
+| Admission And Approval | The owner authorized the proposed fixed timing table and exact clock investigation on 2026-11-21. |
+| Objective | Directly index fixed source timing by the existing form. Check the independently justified exact fractional conversion. Measure both against unchanged guest outcomes. |
+| Non-goals | No new dispatch path, preview cache, timing downgrade, phase approximation, or public ABI. |
+| Reference Baseline | S1 evidence at f45c34b85 and current 0.5.0592 releases. |
+| Candidate Proposal | [Performance scope and S sequence](../proposals/m5-ob300-performance.md), S2. |
+| Files And ABI Surface | Shared X86 Core timing and clock internals, their manifest, relevant existing tests, NXVM static test and evidence. Shared sources trigger 16 release EXEs with one target per P. |
+| Applicable Rules | NXVM reading set, shared Execution/Architecture/Coding/Documentation, X86 Core local guidance and source policy. |
+| Verification | Check all old table cells and missing forms; reuse both-width timing/clock coverage and compare isolated changes on original DOS. Build, unit, integration and 16-artifact qualification through the cached graphs if changes are retained. |
+| Expected Markers | O(1) fixed lookup with identical ticks and attribution, exact clock phase and tick delivery, measured guest performance and no material regression. |
+| Asset Needs | build/t593-s2, owned by NXVM. Use disposable read-only DOS fixture and copied System Card, max 200 MiB and 300 s per replay, 120 s no progress. Remove disposable media after probes exit. |
+| Reporting Requirements | Give per-change timing and actual diff, quantitative limits and unverified native paths. |
+| Stop Conditions | Reject known guest regressions and report timing classification evidence before expanding scope. |
+| Exit Criteria | Reviewed production diff and evidence, unchanged timing contracts, required repository tests and verified releases. |
+| Original Owner Request | Apply the S1 optimization recommendation after reviewing use of timing and decode tables. |
+| Similar-Issue Sweep | Check fixed lookup callers, related repeat rows, source-form checks and existing clock coverage. |
 
 # M5 T588 - Closed: OB300 hardware and execution design
 
