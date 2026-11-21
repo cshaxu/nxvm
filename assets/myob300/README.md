@@ -47,9 +47,11 @@ If the file is damaged, move it aside while MyOB300 is closed to return to
 the first-boot configuration. Forced termination can lose the latest state.
 The original C backup starts Windows from the System Card. Both x86 and x64
 have drawn Program Manager in a replay. The owner confirmed menu navigation,
-exit to DOS and usable mouse input. For a DOS-only check, use a disposable image
-with the original CONFIG.SYS and a copy of AUTOEXEC.BAT with Windows
-autostart removed.
+exit to DOS and usable mouse input. Use the default overlay mode when
+starting Windows. A readonly C image can show the original Windows
+Cannot write to drive C. message before Program Manager appears.
+For a DOS-only check, use a disposable image with the original CONFIG.SYS
+and a copy of AUTOEXEC.BAT with Windows autostart removed.
 
 In the guest display, press and release F13 to request firmware suspend.
 After the guest enters suspend, press and release F13 again to wake it.

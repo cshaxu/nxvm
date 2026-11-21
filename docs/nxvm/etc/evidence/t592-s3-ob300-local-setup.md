@@ -1091,13 +1091,35 @@ monitor, so the successful trials use its lifecycle commands. The
 fixture does not exercise foreground Window keyboard/mouse focus,
 real RDP transport or the full Windows desktop.
 
+#### Original Windows readonly failure on the published Window path
+
+The exact MyOB300 0.5.0592 x64 release started original System 1.0 ABA with a
+copy of guest-saved CMOS, a local private desktop and the restored original C
+image mounted readonly. Firmware text gave way to a 640 x 480 graphical
+client. A native PrintWindow capture showed the original HP wallpaper and
+the Windows System Error dialog, Cannot write to drive C., with Cancel
+and Retry. The dialog remained visible through the bounded observation.
+The fixture terminated its own disposable process after the window remained
+at the dialog. It neither changed the mounted image nor exercised either
+dialog button.
+
+The product's shipped INI uses overlay, allowing guest writes in memory.
+The readonly run proves a real guest write rejection in the native Window
+route. The accepted Windows path and C-drive persistence still have their
+own gates.
+
+| Exact native capture | SHA-256 |
+| --- | --- |
+| x64 guest write-error dialog | e9449ffdf7fe2007dd0ea63f355a6d624c2be6d921120ebac2ae7231c3efff07 |
+| Bounded x64 release replay output | 77726b1fcc3906dfef0212dc875991d68befbc9a33bbfcd57468764e7bf56855 |
+
 ### Product obligation review
 
-| Design row | Evidence at P34 | Remaining boundary |
+| Design row | Evidence at P35 | Remaining boundary |
 | --- | --- | --- |
 | O07 input | Product DOS make/break, native monitor handoff and owner-tested original Windows keyboard and built-in pointer | Formal Windows interaction and redraw are part of the Windows receiver. |
 | O08 power | Original DOS and original Windows resume via F13 have direct dual-width replay. Clean Product exit and restart preserve RTC/CMOS. Windows Power Standard and Off both initiate a fresh POST with valid configuration on both widths. | x64 reaches the DOS driver in both modes. On x86 the 300-second probe cap expires after the configuration check and before the visible driver. See the original Windows Power control path below. |
-| O09 storage | T591 verifies DOS C/D access and writable readback. Original DOS returns to its prompt on a readonly write failure. Both published widths refuse a competing exclusive open and release all three media modes on exit. | Windows installation and file persistence remain queued. Host-storage disconnection is unverified. Guest PCMCIA hot removal has no product route. |
+| O09 storage | T591 verifies DOS C/D access and writable readback. Original DOS returns to its prompt on a readonly write failure. The published x64 Window also shows original Windows rejecting a readonly C write. Both published widths refuse a competing exclusive open and release all three media modes on exit. | Windows installation and file persistence remain queued. Host-storage disconnection is unverified. Guest PCMCIA hot removal has no product route. |
 | O12 product | S2 and P23 cover native Console, DOS lifecycle and CMOS persistence. Both released EXEs also paint, freeze, resume and exit their native Window on a private desktop. | Usability remains queued. Foreground input focus and RDP were outside this replay. |
 
 ### Original Windows Power control path
