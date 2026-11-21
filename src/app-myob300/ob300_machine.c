@@ -43,10 +43,7 @@ static lib_bool myob300_machine_handle_input(void *owner, const kvm_input_event 
 {
     const myob300_board_setup *setup = owner;
 
-    if (event->type == KVM_EVENT_KEY && event->data.key.key == BASE_KEY_F13) {
-        myob300_board_set_power_key(setup->profile, event->data.key.pressed);
-        return LIB_TRUE;
-    }
+    if (myob300_board_handle_power_input(setup->profile, event)) return LIB_TRUE;
     if (event->type != KVM_EVENT_MOUSE) return LIB_FALSE;
     myob300_board_receive_mouse(setup->profile, event->data.mouse.delta_x,
         event->data.mouse.delta_y, event->data.mouse.buttons);

@@ -606,6 +606,39 @@ No Shared source or receiver executable changed in this App delivery.
 | myob300_0_5_0592_x64.exe | 8664h | `188a5d262237a16983b0d331c98fc73d40226933591d8277ce8a30c29b5de53c` |
 | myob300_0_5_0592_x86.exe | 014Ch | `93c55bd0e8a73333dc00687092e83a5e02f65b040219d0e36e8d5b0f52bd6db6` |
 
+### Ctrl+Alt+O power switch binding
+
+The new MyOB300 input binding replaces F13 and preserves the existing
+guest power-switch level and rising-edge SMI route. The initial O make
+selects the switch only when Ctrl and Alt are down. Repeats and release
+keep that selection, even if the modifiers are released first. The
+machine uses its existing input source identity to pair the release.
+Other Apps and Shared packages are unchanged.
+
+The existing MyOB300 board test passed on x64 and x86. It checks port
+EDh for press and release, holds the level when the modifier state
+changes, and verifies that ordinary O held before the modifiers and
+F13 leave the switch inactive. Both widths also passed the repository LF
+check and cached publication.
+
+A hidden native Console ran each exact published executable with the
+original System 1.0 ABA Card and a read-only C fixture that requests
+original ROM APM suspend through INT 15h. The guest had not printed
+APM-END before the test injected the actual Ctrl, Alt and O sequence
+with separate make/break events. It then printed APM-END on both
+widths, accepted a new VER command and exited through the monitor with
+code 0. The read-only C fixture hash remained unchanged. Window focus,
+RDP and the original Windows Standard/Off sequence remain to be tested
+with the replacement binding.
+
+| Published width | PE machine | EXE SHA-256 | Native replay transcript SHA-256 |
+| --- | --- | --- | --- |
+| x64 | 8664h | `71f9c0b2363a25df6191418e27085500c1dae71d9a385910c3f51b1466b42459` | `22b8215a081989498206f393b09273b0c00732c59e624fb0970a70cf5aaee4e4` |
+| x86 | 014Ch | `61c0baf1fc9fe284558b035045662c30f5d0bc6d7b889f9dcaa8b79be2568082` | `b4bb088a38ae1856c2d7eaa4a51463949135f8797b6fd087f2ab30862675c5b5` |
+
+The disposable APM C fixture SHA-256 was
+`eeb4a0d8590a00aa9d571c31d48d8ec70149e75743028c16bd6e1f6ed909e769`.
+
 ## Original Windows power checkpoint
 
 An x64 replay used the published P17 source graph, the original System 1.0
@@ -1593,14 +1626,14 @@ confused with initial configuration.
 1. Start MyOB300 and wait for the original Program Manager to respond.
    Open Main, Control Panel, then Power.
 2. Select Standard and apply it. Confirm that the Power dialog closes.
-   Give focus back to the guest and press and release F13. Wait for
-   firmware power-off, then press and release F13 a second time. Leave
+   Give focus back to the guest and press and release Ctrl+Alt+O. Wait for
+   firmware power-off, then press and release Ctrl+Alt+O a second time. Leave
    the emulator running throughout.
 3. Record whether a fresh OmniBook ROM BIOS 1.0 POST and the original
    Microsoft Device Driver for BIOS Services appear without an F1
    prompt or keypress. The DOS driver is transient because the original
    startup continues into Windows. Record time separately from the
-   second F13 to POST and from that F13 to the DOS driver.
+   second Ctrl+Alt+O to POST and from that press to the DOS driver.
 4. Repeat with Off from a fresh Windows session. Record host width,
    release hash, local or RDP session, and each mode's last visible
    checkpoint. A DOS-only replay, monitor pause or a return to the

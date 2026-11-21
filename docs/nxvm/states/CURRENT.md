@@ -17,7 +17,9 @@ records the fixed OEM input path and an original guest frame after motion.
 The owner removed Word and Excel from the later [ROM Windows acceptance
 scope](../proposals/m5-ob300-rom-windows.md).
 
-Both host widths now pass the original DOS power cycle through production F13
+Both published widths now wake original DOS APM through Ctrl+Alt+O.
+The [replacement binding evidence](../etc/evidence/t592-s3-ob300-local-setup.md#ctrlalto-power-switch-binding)
+records the native Console input route. The prior release proved the original DOS power cycle through F13
 input. The [power evidence](../etc/evidence/t592-s3-ob300-local-setup.md#production-f13-suspend-and-wake)
 records new DOS command execution after wake and the remaining power limits.
 Both widths also restore the original Windows Program Manager in the same
@@ -77,7 +79,7 @@ The queued performance and Windows gates remain in force.
 | --- | --- |
 | Identifier Mode | M5 T592 S3 after ordered S2 publication. |
 | Admission And Approval | Continue the owner's ordered OmniBook implementation and single-session coordinator/executor review. Necessary X86-NXVM and X86 Core changes are owner-approved. |
-| Objective | Reconcile remaining power, peripheral, storage failure, desktop and documented setup obligations against the original Machine and released Product. Close confirmed gaps within scope and record explicit acceptance limits. |
+| Objective | Reconcile remaining power, peripheral, storage failure, desktop and documented setup obligations against the original Machine and released Product. Close confirmed gaps within scope and record explicit acceptance limits. Owner requests replacing the MyOB300 F13 power binding with Ctrl+Alt+O for manual acceptance. |
 | Non-goals | No firmware bytes in Git, duplicate release or input route, speculative Windows fix, or claim of unobserved power behavior. |
 | Reference Baseline | S2 published 0.5.0592 and S3/S4 of T591 for Machine lifecycle, C persistence and timing. |
 | Candidate Proposal | proposals/m5-ob300-product-qualification.md and m5-ob300-architecture.md, especially O07-O09 and O12. |
@@ -86,7 +88,7 @@ The queued performance and Windows gates remain in force.
 | Verification | Review the product/device ledger, repeat actual DOS lifecycle across both widths where not already covered, cover detectable storage failures and collect native Window and power evidence when supported. Keep performance and Windows qualification separate. |
 | Expected Markers | Proven supported behavior, explicit unsupported capabilities and a repeatable setup. No unnecessary receiver rebuild if only evidence changes. |
 | Asset Needs | Read-only owner card/backup and disposable C medium. build/t592-s3 owns transient probes, capped at 200 MiB and 300 seconds per probe. |
-| Reporting Requirements | Separate compiled, observed, limited and unverified capabilities. Record any scope decision required for T592 acceptance. |
+| Reporting Requirements | Separate compiled, observed, limited and unverified capabilities. Record any scope decision required for T592 acceptance. For the replacement binding verify neutral input, guest-visible switch levels, both published widths, and existing App regressions. |
 | Stop Conditions | Do not deem original guest suspend, native desktop UX or Windows qualified by monitor pause or raw Console alone. |
 | Exit Criteria | Every T592 product obligation has direct evidence or an explicitly accepted limitation, with application and build instructions agreeing with the released pair. |
 | Original Owner Request | Complete the OmniBook in hardware, board, Machine, Product and verification order. |

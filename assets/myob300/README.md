@@ -53,8 +53,8 @@ Cannot write to drive C. message before Program Manager appears.
 For a DOS-only check, use a disposable image with the original CONFIG.SYS
 and a copy of AUTOEXEC.BAT with Windows autostart removed.
 
-In the guest display, press and release F13 to request firmware suspend.
-After the guest enters suspend, press and release F13 again to wake it.
-F13 also wakes a guest that entered HP firmware APM suspend on its own.
-Leave the emulator running so the guest firmware can observe the key.
-The power-key model was verified with original ROM DOS.
+With the guest display focused, press and release Ctrl+Alt+O to operate the
+OmniBook power switch. Press it again to wake or restart the guest, according
+to its power mode. Hold O briefly if needed so the firmware can sample the
+switch. This also wakes a guest that entered HP firmware APM suspend on its
+own. Leave the emulator running so the firmware can observe the switch.

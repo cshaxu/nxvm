@@ -695,16 +695,32 @@ static void test_machine(const lib_u8 *card)
         .port = 0xfbu, .bytes = 1u});
     (void)machine_debug(&driver, (x86_debug_request){.operation = X86_DEBUG_WRITE_PORT,
         .port = 0xecu, .address = 0x02u, .bytes = 1u});
+    const x86_debug_request power_sense = {.operation = X86_DEBUG_READ_PORT,
+        .port = 0xedu, .bytes = 1u};
+    kvm_input_event power = {.type = KVM_EVENT_KEY, .source_identity = 1u,
+        .data.key = {.key = 'O', .scan_code = 0x18u, .pressed = LIB_TRUE}};
+    const lib_u8 chord = BASE_KEY_MODIFIER_CONTROL | BASE_KEY_MODIFIER_ALT;
+
+    driver.deliver_input(driver.context, &power);
+    power.data.key.modifiers = chord;
+    driver.deliver_input(driver.context, &power);
+    lib_test_assert(machine_debug(&driver, power_sense).value == 0u);
+    power.data.key.pressed = LIB_FALSE;
+    driver.deliver_input(driver.context, &power);
+
+    power.data.key.pressed = LIB_TRUE;
+    driver.deliver_input(driver.context, &power);
+    lib_test_assert(machine_debug(&driver, power_sense).value == 0x10u);
+    power.data.key.modifiers = 0u;
+    driver.deliver_input(driver.context, &power);
+    lib_test_assert(machine_debug(&driver, power_sense).value == 0x10u);
+    power.data.key.pressed = LIB_FALSE;
+    driver.deliver_input(driver.context, &power);
+    lib_test_assert(machine_debug(&driver, power_sense).value == 0u);
+
     driver.deliver_input(driver.context, &(kvm_input_event){.type = KVM_EVENT_KEY,
         .data.key = {.key = BASE_KEY_F13, .pressed = LIB_TRUE}});
-    response = machine_debug(&driver, (x86_debug_request){.operation = X86_DEBUG_READ_PORT,
-        .port = 0xedu, .bytes = 1u});
-    lib_test_assert(response.value == 0x10u);
-    driver.deliver_input(driver.context, &(kvm_input_event){.type = KVM_EVENT_KEY,
-        .data.key = {.key = BASE_KEY_F13, .pressed = LIB_FALSE}});
-    response = machine_debug(&driver, (x86_debug_request){.operation = X86_DEBUG_READ_PORT,
-        .port = 0xedu, .bytes = 1u});
-    lib_test_assert(response.value == 0u);
+    lib_test_assert(machine_debug(&driver, power_sense).value == 0u);
     (void)machine_debug(&driver, (x86_debug_request){.operation = X86_DEBUG_WRITE_PORT,
         .port = 0xecu, .address = 0x35u, .bytes = 1u});
     response = machine_debug(&driver, (x86_debug_request){.operation = X86_DEBUG_READ_PORT,

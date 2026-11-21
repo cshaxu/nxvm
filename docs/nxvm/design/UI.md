@@ -64,7 +64,9 @@ MyOB300 loads `myob300.ini` beside its executable. Its fixed profile uses
 2 MiB and the original System 1.0 ABA System Card. The raw System Card and
 C medium stay external. The [asset guide](../../../assets/myob300/README.md)
 specifies their identity and placement, including the original ROM's first
-startup prompt.
+startup prompt. Ctrl+Alt+O in the guest display operates the OmniBook power
+switch. The guest firmware and its power setting determine whether the next
+press resumes the session or starts a fresh boot.
 
 ## Presentation And Debugging
 

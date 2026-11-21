@@ -24,7 +24,15 @@
 #define MYOB300_PANEL_DEFAULT_VSYNC_HZ 60u
 #define MYOB300_PARALLEL_DATA_PORT 0x378u
 
+typedef enum myob300_power_binding {
+    MYOB300_POWER_BINDING_UP,
+    MYOB300_POWER_BINDING_ORDINARY,
+    MYOB300_POWER_BINDING_SWITCH
+} myob300_power_binding;
+
 struct myob300_board {
+    myob300_power_binding power_binding;
+    lib_u64 power_binding_source;
     myob300_chipset chipset;
     lib_u8 power_cmos[MYOB300_POWER_CMOS_END - MYOB300_POWER_CMOS_BASE];
     myob300_mouse mouse;
@@ -64,6 +72,7 @@ static void myob300_board_reset(void *owner, x86_nxvm_board_reset_phase phase)
 
     if (phase == X86_NXVM_BOARD_RESET_BEFORE_DEVICES) {
         myob300_chipset_reset(&board->chipset);
+        board->power_binding = MYOB300_POWER_BINDING_UP;
         myob300_mouse_reset(&board->mouse);
         x86_ct_vga_reset(board->display);
         board->parallel_data = 0u;
@@ -233,6 +242,29 @@ void myob300_board_set_power_key(myob300_board *board, lib_bool pressed)
         (chipset->management_control & MYOB300_CHIPSET_SMM_ENABLED) != 0u &&
         x86_core_machine_set_smi(chipset->core, LIB_TRUE) == LIB_STATUS_OK)
         (void)x86_core_machine_set_smi(chipset->core, LIB_FALSE);
+}
+
+lib_bool myob300_board_handle_power_input(myob300_board *board, const kvm_input_event *event)
+{
+    lib_bool power;
+
+    if (event->type != KVM_EVENT_KEY || event->data.key.key != 'O') return LIB_FALSE;
+
+    if (board->power_binding == MYOB300_POWER_BINDING_UP) {
+        if (!event->data.key.pressed) return LIB_FALSE;
+        /* The first make decides the whole key lifetime, including repeats and
+         * releases after the modifiers have changed. */
+        board->power_binding =
+            event->data.key.modifiers == (BASE_KEY_MODIFIER_CONTROL | BASE_KEY_MODIFIER_ALT)
+                ? MYOB300_POWER_BINDING_SWITCH : MYOB300_POWER_BINDING_ORDINARY;
+        board->power_binding_source = event->source_identity;
+    }
+    if (board->power_binding_source != event->source_identity) return LIB_FALSE;
+
+    power = board->power_binding == MYOB300_POWER_BINDING_SWITCH;
+    if (!event->data.key.pressed) board->power_binding = MYOB300_POWER_BINDING_UP;
+    if (power) myob300_board_set_power_key(board, event->data.key.pressed);
+    return power;
 }
 
 void myob300_board_receive_mouse(myob300_board *board, lib_i32 dx, lib_i32 dy, lib_u32 buttons)

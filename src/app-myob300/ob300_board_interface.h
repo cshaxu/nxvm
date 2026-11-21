@@ -1,6 +1,7 @@
 #ifndef MYOB300_BOARD_INTERFACE_H
 #define MYOB300_BOARD_INTERFACE_H
 
+#include "lib/kvm-base/event_interface.h"
 #include "x86-nxvm/board-base/machine_board_interface.h"
 
 extern const x86_nxvm_board_config myob300_board_configuration;
@@ -30,6 +31,7 @@ lib_status myob300_board_capture_display(void *context, x86_video_snapshot *out_
 lib_status myob300_board_set_matrix_key(myob300_board *board, lib_u8 row,
     lib_u8 column, lib_bool pressed);
 void myob300_board_set_power_key(myob300_board *board, lib_bool pressed);
+lib_bool myob300_board_handle_power_input(myob300_board *board, const kvm_input_event *event);
 void myob300_board_receive_mouse(myob300_board *board, lib_i32 dx, lib_i32 dy, lib_u32 buttons);
 
 #endif
