@@ -675,6 +675,15 @@ All eight Apps were rebuilt and published in both widths through
 the cached Release graphs. Independently read PE headers and
 SHA-256 hashes matched all publication receipts.
 
+The full integration runs exercised 48 cases per width. On the first
+pass x64 passed 47 and x86 passed 46. An isolated retry passed the x64
+MyPC110 TFT CMOS monitor-prompt case and the x86 native MIDI output and
+MyNES native Console cases. All registered cases therefore passed
+across the initial runs and targeted retries. No timeout, assertion or
+test suppression changed. The x86 integration build refreshed the
+default NXVM artifact. Its PE machine and SHA-256 match the built
+executable, and the table records that final deployed file.
+
 | Artifact under assets | PE machine | SHA-256 |
 | --- | --- | --- |
 | my5160/my5160_0_5_0592_x64.exe | 8664h | `02d42449c0de93fd09fdf7dccccab6375e3da15441a0335cbc7b12b580c317e8` |
@@ -692,7 +701,7 @@ SHA-256 hashes matched all publication receipts.
 | myraidenii/myraidenii_0_0_0007_x64.exe | 8664h | `fa47c5459e592e7e77bb73839091aa7adf7f664e6c08145416cad083edc2a939` |
 | myraidenii/myraidenii_0_0_0007_x86.exe | 014Ch | `262a7ef3c0e7d62f62781584400a1c03f4c93deec6f4ea93d6c5b4b93b992a2a` |
 | nxvm/nxvm_0_5_0592_x64.exe | 8664h | `1b7ab55b7556c5a69d30ab87c271a2557da800e3fe59c77ea56565d1738233ba` |
-| nxvm/nxvm_0_5_0592_x86.exe | 014Ch | `ce0c42a1753fdc00bc9886437e525af2d21557d10e61fa41496ed710334b8526` |
+| nxvm/nxvm_0_5_0592_x86.exe | 014Ch | `9e2a9952480ce17dba49bc4ef7a200cb99114adc118aa20945e38cf309a13817` |
 
 #### Native DOS switch press and wake
 
