@@ -605,3 +605,89 @@ No Shared source or receiver executable changed in this App delivery.
 | --- | --- | --- |
 | myob300_0_5_0592_x64.exe | 8664h | `188a5d262237a16983b0d331c98fc73d40226933591d8277ce8a30c29b5de53c` |
 | myob300_0_5_0592_x86.exe | 014Ch | `93c55bd0e8a73333dc00687092e83a5e02f65b040219d0e36e8d5b0f52bd6db6` |
+
+## Original Windows power checkpoint
+
+An x64 replay used the published P17 source graph, the original System 1.0
+ABA card and the unmodified restored C backup in overlay mode. The runner
+entered Program Manager, observed a broad on-screen region change after
+Alt+F and then requested suspend through production F13 input. The App emitted exactly
+one SMI pulse and the original handler executed. The original firmware power
+poll at F000:A337h appeared about 65 seconds after the suspend request.
+
+The runner then sent F13 to wake the guest. The replay ended without seeing
+the expected fresh frame with the original menu, so it never sent its
+planned post-wake Escape. The run generation stayed at 1 and the backing
+C image hash was unchanged. This proves the Windows suspend entry and
+guest wake-poll checkpoint. It leaves wake-key recognition, SMM exit and
+preservation of interactive Windows state to separate checks.
+
+| Original Windows x64 diagnostic | SHA-256 |
+| --- | --- |
+| Program Manager, F13 requests and terminal predicate | `729c6e51133948ddef66faf52143ba0ac737c30b031eb79b719c6d3775e65ddf` |
+| Original firmware wake-poll observations | `c5d9b61fa2bfceb8cf88b8471e0ec1b6e3d36fc82e8d9ae83681f7176f179cf` |
+
+The second x64 trace observed the first F13's SMM entry at tick 433793030
+and its exit back to the protected-mode Windows execution address at tick
+433798527. Later, the firmware read the second F13 as 10h at the original
+F000:A337h poll. The resumed Program Manager title reappeared in generation
+1. After a new Escape event, Windows published another graphical update.
+The earlier checksum covered a changing part of the Main group beneath the
+menu, so the differing full-region values do not decide whether the File
+menu was preserved or whether Escape closed it. The next probe uses only
+the File menu label and requires a fresh Alt+F and Escape round trip.
+
+| Traced Windows x64 diagnostic | SHA-256 |
+| --- | --- |
+| Windows frame, Escape and terminal predicate | `575bfea22d5c20296b52c7f840e8805325d59c616a7fb73a736013e9701ab52e` |
+| CPU SMM execution edges | `117314a90354393e6bb1a4e70c53ece89a428adeb7977b8f47cf919713a0a0cf` |
+| Firmware wake check, including the pressed key bit | `0227b51ebf935c42afc663b7ccac041cb7291b765dd9c1d6f608dc79506a590e` |
+
+The File-label replay established the closed label fingerprint from
+an earlier captured desktop, then observed a new value after Alt+F.
+The original BIOS read F13 at tick 579559059. On returning to the same
+generation, the title and File-label pixels matched their pre-suspend
+state. The first graphical output appeared about 1.5 seconds after
+delivery of the wake key. The label did not return to the expected
+closed fingerprint after Escape, so the post-wake input round trip
+remains unverified. This run did not change the backing C image.
+
+| File-label Windows x64 diagnostic | SHA-256 |
+| --- | --- |
+| Observed label restoration and Escape attempt | `097eacf3d64f8a79aafbfca5063c4234dd0be0513857c7e7e553ec93874efa07` |
+| CPU SMM execution edges | `551cc6b4ce2cbc824dbed107d6f4be362c49e45a822df40475e6f658d78e88f5` |
+| Original firmware wake check | `9531017de3ee6ef06c77170719ca728f139051daf00d84dc8471c888431c54e9` |
+
+A lower-overhead replay omitted the per-instruction timing probes and
+started the F13 cycle with the File menu closed. The original BIOS sampled
+the second F13 at tick 580628866. Program Manager republished its original
+closed File label (`d317880c`) in the same run generation 1 about 1.3 s
+after the wake input. The probe then sent a new Alt+F sequence. The File
+label changed to its active value (`3aa68941`) about 1.6 s later. This
+establishes new Windows keyboard interaction after wake. The subsequent
+Escape did not satisfy the expected closed-label predicate, so the probe
+returned 1 and does not establish that additional interaction. The backing
+C image remained byte-identical.
+
+| Low-overhead Windows x64 diagnostic | SHA-256 |
+| --- | --- |
+| Guest frames and new Alt+F after wake | `0c1efb5a7356dfdf7a57dfc1c40e5ea509534c986087484f0a08595190c9ee0f` |
+| Original firmware wake sampling | `1e5b16569d828eddf36cc409b076b108bedb3b1e5a417d66e57c5473169b4979` |
+| CPU SMM execution edges | `2a2320f23368e4236a458fa627219d3021656a84c0b9b5bf6e1605df4a2376f3` |
+
+The x86 low-overhead replay also ran the original card and C backup in
+overlay mode. The BIOS sampled the second F13 at tick 580587724. Program
+Manager restored the closed File label in generation 1 about 2.0 s after
+wake input. A new Alt+F changed the label about 2.5 s after delivery.
+The next frame had the same active label fingerprint (`3aa68941`) as
+x64. The 280-second observation ended 235 ms after that frame, before
+the separate Escape predicate completed. The backing C image remained
+byte-identical. The Windows wake and new input checkpoint has direct
+evidence on both widths. This is a guest frame/input check and its short
+post-wake intervals are diagnostic, outside the controlled performance gate.
+
+| Low-overhead Windows x86 diagnostic | SHA-256 |
+| --- | --- |
+| Guest frames and new Alt+F after wake | `b97f183209ed3f64eccd7f8cc855358fe7f5563fb3241a681d561dad63daf732` |
+| Original firmware wake sampling | `7a9653326da239592e8e9da4c105c3bcd545cf7ef80fe44db2be416b2afcac4f` |
+| CPU SMM execution edges | `b86fb9dc3ac5671018042be8585e07e00e4e015aa4fb77bb14f9ed696e479270` |

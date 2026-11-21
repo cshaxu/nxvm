@@ -20,6 +20,11 @@ scope](../proposals/m5-ob300-rom-windows.md).
 Both host widths now pass the original DOS power cycle through production F13
 input. The [power evidence](../etc/evidence/t592-s3-ob300-local-setup.md#production-f13-suspend-and-wake)
 records new DOS command execution after wake and the remaining power limits.
+Both widths also restore the original Windows Program Manager in the same
+run generation and respond to a fresh Alt+F after F13 wake. See the [original
+Windows power checkpoint](../etc/evidence/t592-s3-ob300-local-setup.md#original-windows-power-checkpoint)
+for the replay limits. Final Windows installation, persistence and performance
+qualification remain with their queued receivers.
 
 | Field | Required record |
 | --- | --- |
