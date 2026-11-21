@@ -152,15 +152,18 @@ static void rtc_increment_second(x86_rtc *rtc)
         (lib_u8)(rtc->calendar.year + 1u);
 }
 
+static lib_bool rtc_alarm_field_matches(lib_u8 alarm, lib_u8 current)
+{
+    return (alarm & 0xc0u) == 0xc0u || alarm == current;
+}
+
 static lib_bool rtc_alarm_matches(const x86_rtc *rtc)
 {
-    lib_u8 second = rtc->registers[X86_RTC_SECOND_ALARM];
-    lib_u8 minute = rtc->registers[X86_RTC_MINUTE_ALARM];
-    lib_u8 hour = rtc->registers[X86_RTC_HOUR_ALARM];
-
-    return ((second & 0xc0u) == 0xc0u || second == rtc_encode(rtc, rtc->calendar.second)) &&
-        ((minute & 0xc0u) == 0xc0u || minute == rtc_encode(rtc, rtc->calendar.minute)) &&
-        ((hour & 0xc0u) == 0xc0u || hour == rtc_hour_encode(rtc));
+    return rtc_alarm_field_matches(rtc->registers[X86_RTC_SECOND_ALARM],
+            rtc_encode(rtc, rtc->calendar.second)) &&
+        rtc_alarm_field_matches(rtc->registers[X86_RTC_MINUTE_ALARM],
+            rtc_encode(rtc, rtc->calendar.minute)) &&
+        rtc_alarm_field_matches(rtc->registers[X86_RTC_HOUR_ALARM], rtc_hour_encode(rtc));
 }
 
 static lib_status rtc_ticks_until_alarm(const x86_rtc *rtc,
@@ -177,16 +180,36 @@ static lib_status rtc_ticks_until_alarm(const x86_rtc *rtc,
     candidate = *rtc;
     /* A civil day may contain the one-hour autumn DSE repeat. */
     for (second = 1u; second <= 25u * 60u * 60u; ++second) {
+        lib_u8 last_second = 59u;
+
         rtc_increment_second(&candidate);
-        if (!rtc_alarm_matches(&candidate)) continue;
-        ticks = rtc->ticks_per_second - rtc->calendar.second_ticks;
-        if (second - 1u > (LIB_UINT64_MAX - ticks) / rtc->ticks_per_second) {
-            return LIB_STATUS_INVALID_STATE;
+        if (rtc_alarm_matches(&candidate)) break;
+
+        /* Skip only times that cannot match. The next increment still
+         * owns each hour rollover and its daylight-saving transition. */
+        if (!rtc_alarm_field_matches(candidate.registers[X86_RTC_HOUR_ALARM],
+                rtc_hour_encode(&candidate))) {
+            if (candidate.calendar.minute < 59u) {
+                second += 60u * (59u - candidate.calendar.minute);
+                candidate.calendar.minute = 59u;
+            }
+        } else if (rtc_alarm_field_matches(candidate.registers[X86_RTC_MINUTE_ALARM],
+                rtc_encode(&candidate, candidate.calendar.minute))) {
+            const lib_u8 target = rtc_decode(&candidate,
+                candidate.registers[X86_RTC_SECOND_ALARM]);
+            if (target > candidate.calendar.second && target < 60u)
+                last_second = (lib_u8)(target - 1u);
         }
-        *out_ticks = ticks + (second - 1u) * rtc->ticks_per_second;
-        return LIB_STATUS_OK;
+        second += last_second - candidate.calendar.second;
+        candidate.calendar.second = last_second;
     }
-    return LIB_STATUS_INVALID_STATE;
+    if (second > 25u * 60u * 60u) return LIB_STATUS_INVALID_STATE;
+    ticks = rtc->ticks_per_second - rtc->calendar.second_ticks;
+    if (second - 1u > (LIB_UINT64_MAX - ticks) / rtc->ticks_per_second) {
+        return LIB_STATUS_INVALID_STATE;
+    }
+    *out_ticks = ticks + (second - 1u) * rtc->ticks_per_second;
+    return LIB_STATUS_OK;
 }
 
 static lib_bool rtc_uip_active(const x86_rtc *rtc)

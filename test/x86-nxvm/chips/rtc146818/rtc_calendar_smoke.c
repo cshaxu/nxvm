@@ -116,6 +116,13 @@ static lib_i32 rtc_cmos_test_alarm_deadline(void)
         (X86_RTC_REG_C_IRQF | X86_RTC_REG_C_AF)) !=
         (X86_RTC_REG_C_IRQF | X86_RTC_REG_C_AF) ||
         fixture.irq;
+    x86_rtc_write_register(fixture.rtc, X86_RTC_HOUR_ALARM, 0x12u);
+    x86_rtc_write_register(fixture.rtc, X86_RTC_MINUTE_ALARM, 0x34u);
+    x86_rtc_write_register(fixture.rtc, X86_RTC_SECOND_ALARM, 0x56u);
+    failed |= x86_rtc_ticks_until_irq(fixture.rtc, &ticks) != LIB_STATUS_OK ||
+        ticks != (12u * 3600u + 34u * 60u + 56u - 2u) * 4u;
+    x86_rtc_write_register(fixture.rtc, X86_RTC_SECOND_ALARM, 0x5au);
+    failed |= x86_rtc_ticks_until_irq(fixture.rtc, &ticks) != LIB_STATUS_INVALID_STATE;
     x86_rtc_destroy(fixture.rtc);
     return failed;
 }

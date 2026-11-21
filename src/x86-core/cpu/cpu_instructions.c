@@ -4861,7 +4861,7 @@ static void _ser_int_protected_16(x86_core_cpu_execution_context *context,
         CPU_TRACE_CHECK_RETURN(_SetExcept_GP(_ser_idt_error_code(intid)));
     }
     newcs = X86_CPU_MASK_U16(_GetDescGate_Selector(gate_desc));
-    if (_IsSelectorNull(newcs) || _GetSelector_TI(newcs)) {
+    if (_IsSelectorNull(newcs)) {
         CPU_TRACE_CHECK_RETURN(_SetExcept_GP(newcs & 0xfffcu));
     }
     CPU_TRACE_CHECK_RETURN(_s_read_xdt(context, newcs,
@@ -5020,8 +5020,6 @@ static void _ser_int_protected_32_outer(x86_core_cpu_execution_context *context,
     if (software_origin && _GetDesc_DPL(gate_desc) < oldcpl)
         CPU_TRACE_CHECK_RETURN(_SetExcept_GP(_ser_idt_error_code(intid)));
     newcs = X86_CPU_MASK_U16(_GetDescGate_Selector(gate_desc));
-    if (_IsSelectorNull(newcs) || _GetSelector_TI(newcs))
-        CPU_TRACE_CHECK_RETURN(_SetExcept_GP(newcs & 0xfffcu));
     if (!_IsDescCodeNonConform(code_desc) || _GetDesc_DPL(code_desc) > oldcpl)
         CPU_TRACE_CHECK_RETURN(_SetExcept_GP(newcs & 0xfffcu));
     target_cpl = (lib_u8)_GetDesc_DPL(code_desc);
@@ -5132,7 +5130,7 @@ static void _ser_int_protected_32_same(x86_core_cpu_execution_context *context,
     if (software_origin && _GetDesc_DPL(gate_desc) < oldcpl)
         CPU_TRACE_CHECK_RETURN(_SetExcept_GP(_ser_idt_error_code(intid)));
     newcs = X86_CPU_MASK_U16(_GetDescGate_Selector(gate_desc));
-    if (_IsSelectorNull(newcs) || _GetSelector_TI(newcs))
+    if (_IsSelectorNull(newcs))
         CPU_TRACE_CHECK_RETURN(_SetExcept_GP(newcs & 0xfffcu));
     CPU_TRACE_CHECK_RETURN(_s_read_xdt(context, newcs,
         X86_CPU_REFERENCE_OF(code_desc)));
@@ -5316,7 +5314,7 @@ static void _ser_ret_far_outer(x86_core_cpu_execution_context *context,
         break;
     }
     newss = X86_CPU_MASK_U16(xs_sel);
-    if (_IsSelectorNull(newss) || _GetSelector_TI(newss) ||
+    if (_IsSelectorNull(newss) ||
         _GetSelector_RPL(newss) != target_cpl) {
         CPU_TRACE_CHECK_RETURN(_SetExcept_GP(newss & 0xfffcu));
     }
@@ -6658,7 +6656,7 @@ static void _ser_iret_protected_outer(x86_core_cpu_execution_context *context,
         CPU_TRACE_CHECK_RETURN(_SetExcept_CE(byte));
         break;
     }
-    if (_IsSelectorNull(newcs) || _GetSelector_TI(newcs)) {
+    if (_IsSelectorNull(newcs)) {
         CPU_TRACE_CHECK_RETURN(_SetExcept_GP(newcs & 0xfffcu));
     }
     CPU_TRACE_CHECK_RETURN(_s_read_xdt(context, newcs,
@@ -6699,7 +6697,7 @@ static void _ser_iret_protected_outer(x86_core_cpu_execution_context *context,
         break;
     }
     newss = X86_CPU_MASK_U16(selector);
-    if (_IsSelectorNull(newss) || _GetSelector_TI(newss) ||
+    if (_IsSelectorNull(newss) ||
         _GetSelector_RPL(newss) != newcpl) {
         CPU_TRACE_CHECK_RETURN(_SetExcept_GP(newss & 0xfffcu));
     }

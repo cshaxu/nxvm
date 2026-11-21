@@ -268,6 +268,97 @@ static lib_bool cpu_outer_retf_immediate(x86_core_cpu_profile profile)
         cpu_outer_user_code(&after.data.cs) && cpu_outer_user_stack(&after.data.ss);
 }
 
+static void cpu_outer_seed_ldt(cpu_instruction_fixture *state)
+{
+    const lib_u16 ldt_base = 0x500u;
+
+    state->cpu.data.ldtr = (t_cpu_data_sreg){
+        .flagValid = LIB_TRUE, .sregtype = SREG_LDTR, .selector = 0x50u,
+        .base = ldt_base, .limit = 39u
+    };
+    state->cpu.data.ldtr.sys.type = VCPU_DESC_SYS_TYPE_LDT;
+    lib_memory_copy(state->memory + ldt_base + 8u,
+        state->memory + CPU_OUTER_GDT_BASE + 8u, 32u);
+}
+
+static lib_bool cpu_outer_ldt_returns(void)
+{
+    static const struct {
+        lib_u8 opcode;
+        lib_u16 cs;
+        lib_u16 ss;
+    } cases[] = {
+        {0xcbu, 0x1bu, 0x27u},
+        {0xcfu, 0x1bu, 0x27u},
+        {0xcfu, 0x1fu, 0x23u}
+    };
+    for (lib_size index = 0u; index < sizeof(cases) / sizeof(cases[0]); ++index) {
+        cpu_instruction_fixture state;
+        t_cpu after;
+        const lib_bool iret = cases[index].opcode == 0xcfu;
+        const lib_u16 frame[] = {
+            0x10u, cases[index].cs, iret ? 0x203u : 0x1000u,
+            iret ? 0x1000u : cases[index].ss, cases[index].ss
+        };
+
+        cpu_outer_return_prepare(&state, X86_CORE_CPU_PROFILE_80386);
+        cpu_outer_seed_ldt(&state);
+        lib_memory_copy(state.memory + CPU_OUTER_KERNEL_STACK_BASE + 0x8000u,
+            frame, (iret ? 5u : 4u) * sizeof(frame[0]));
+
+        if (!cpu_outer_return_step(&state, &cases[index].opcode, 1u, &after) ||
+            state.delivered_exception.valid || after.data.eip != 0x10u ||
+            after.data.cs.selector != cases[index].cs ||
+            after.data.cs.base != CPU_OUTER_USER_CODE_BASE ||
+            after.data.ss.selector != cases[index].ss ||
+            after.data.ss.base != CPU_OUTER_USER_STACK_BASE || after.data.esp != 0x1000u) {
+            lib_c_printf("Outer return rejected opcode=%x CS=%x SS=%x\n",
+                cases[index].opcode, cases[index].cs, cases[index].ss);
+            lib_c_printf("Observed: eip=%x cs=%x/%x ss=%x/%x esp=%x fault=%x/%x delivered=%x/%x\n",
+                after.data.eip, after.data.cs.selector, after.data.cs.base, after.data.ss.selector,
+                after.data.ss.base, after.data.esp, state.fault.exception_mask, state.fault.exception_code,
+                state.delivered_exception.exception_mask, state.delivered_exception.exception_code);
+            return LIB_FALSE;
+        }
+    }
+    return LIB_TRUE;
+}
+
+static lib_bool cpu_outer_int_ldt_target(void)
+{
+    static const lib_u8 code[] = {0xcdu, 0x2fu};
+    const lib_u8 vector = code[1];
+
+    for (lib_u8 wide = 0u; wide <= 1u; ++wide) {
+        cpu_instruction_fixture state;
+        t_cpu after;
+        const lib_u8 gate[] = {
+            0x10u, 0u, 0x0cu, 0u, 0u, wide ? 0xeeu : 0xe6u, 0u, 0u
+        };
+
+        cpu_outer_return_prepare(&state, X86_CORE_CPU_PROFILE_80386);
+        cpu_outer_seed_ldt(&state);
+        state.cpu.data.idtr.limit = (lib_u16)(vector * sizeof(gate) + sizeof(gate) - 1u);
+        lib_memory_copy(state.memory + CPU_OUTER_IDT_BASE + vector * sizeof(gate),
+            gate, sizeof(gate));
+        state.cpu.data.cs.selector = 0x1bu;
+        state.cpu.data.cs.base = CPU_OUTER_USER_CODE_BASE;
+        state.cpu.data.cs.dpl = 3u;
+        state.cpu.data.ss.selector = 0x23u;
+        state.cpu.data.ss.base = CPU_OUTER_USER_STACK_BASE;
+        state.cpu.data.ss.dpl = 3u;
+        if (!cpu_outer_return_step(&state, code, sizeof(code), &after) ||
+            state.delivered_exception.valid || after.data.cs.selector != 0x0cu ||
+            after.data.cs.base != CPU_OUTER_KERNEL_BASE || after.data.eip != 0x10u ||
+            after.data.ss.selector != 0x10u ||
+            after.data.esp != 0x9000u - (wide ? 20u : 10u)) {
+            lib_c_printf("INT 2Fh rejected LDT target, gate width=%u\n", wide ? 32u : 16u);
+            return LIB_FALSE;
+        }
+    }
+    return LIB_TRUE;
+}
+
 static lib_bool cpu_outer_iret_nonpresent_stack(x86_core_cpu_profile profile)
 {
     static const lib_u8 iret[] = {0xcfu};
@@ -494,6 +585,8 @@ int main(void)
         if (!cpu_outer_error_delivery(profile)) return 5;
     }
     if (!cpu_outer_call_gate_stack()) return 9;
+    if (!cpu_outer_ldt_returns()) return 10;
+    if (!cpu_outer_int_ldt_target()) return 11;
     if (!cpu_outer_error_delivery(X86_CORE_CPU_PROFILE_80286)) return 5;
     if (!cpu_outer_iret_rejections()) return 6;
     if (!cpu_outer_conforming_returns()) return 7;
