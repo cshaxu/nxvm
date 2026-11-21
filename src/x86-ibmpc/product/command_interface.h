@@ -5,6 +5,7 @@
 #include "emulator/session/session_interface.h"
 #include "emulator/machine/machine_interface.h"
 #include "x86-debug/product/debug_interface.h"
+#include "lib/kvm-base/hotkey_interface.h"
 
 #define X86_IBMPC_PRODUCT_COMMAND_TEXT_CAPACITY 2048u
 #define X86_IBMPC_PRODUCT_COMMAND_PATH_CAPACITY 1024u
@@ -25,6 +26,16 @@ typedef lib_bool (*x86_ibmpc_product_command_snapshot_submit)(void *context,
     emulator_session_machine_state state, const emulator_product_monitor_arguments *arguments,
     emulator_session_command_result *out);
 
+typedef struct x86_ibmpc_product_hotkey {
+    emulator_product_help_row help;
+    /* A zero key describes an existing App-owned input path. */
+    kvm_hotkey_registration registration;
+} x86_ibmpc_product_hotkey;
+
+typedef lib_bool (*x86_ibmpc_product_hotkey_submit)(void *context,
+    emulator_machine *machine, emulator_session_machine_state state,
+    const char *identifier, emulator_session_command_result *out);
+
 typedef struct x86_ibmpc_product_command_extensions {
     void *context;
     x86_ibmpc_product_command_extension_submit submit;
@@ -32,6 +43,10 @@ typedef struct x86_ibmpc_product_command_extensions {
     /* Command rows only: Product supplies the title, canonical rows, blank
      * separators and shared hotkey section around this App-owned middle. */
     emulator_product_help_map help;
+    /* Borrowed until the Product run finishes. */
+    const x86_ibmpc_product_hotkey *hotkeys;
+    lib_size hotkey_count;
+    x86_ibmpc_product_hotkey_submit submit_hotkey;
 } x86_ibmpc_product_command_extensions;
 
 /* Product CLI state and callbacks; composition installs these directly. */
@@ -42,6 +57,8 @@ typedef struct x86_ibmpc_product_command_context {
     lib_bool debug_active;
     char debug_prompt[X86_DEBUG_PROMPT_CAPACITY];
     emulator_product_monitor_provider monitor;
+    kvm_hotkey_registry hotkey_registry;
+    emulator_product_help_row hotkey_help[KVM_HOTKEY_CAPACITY];
     x86_ibmpc_product_command_extensions extensions;
 } x86_ibmpc_product_command_context;
 

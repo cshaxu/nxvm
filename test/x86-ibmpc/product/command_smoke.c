@@ -4,6 +4,29 @@
 
 static lib_u32 extension_submissions;
 static lib_u32 snapshot_submissions;
+static lib_u32 hotkey_submissions;
+
+static lib_bool fixture_hotkey(void *context, emulator_machine *machine,
+    emulator_session_machine_state state, const char *identifier,
+    emulator_session_command_result *out)
+{
+    if (context != machine || state != EMULATOR_SESSION_MACHINE_RUNNING ||
+        lib_text_compare(identifier, "fixture-action") != 0) return LIB_FALSE;
+    ++hotkey_submissions;
+    out->release_window_mouse = LIB_TRUE;
+    return LIB_TRUE;
+}
+
+static lib_bool fixture_dispatch_hotkey(void *context, const kvm_input_event *event)
+{
+    const emulator_session_command_provider *provider = context;
+    emulator_session_command_result result = {0};
+
+    return event->type == KVM_EVENT_HOTKEY &&
+        provider->handle_hotkey(provider->context, EMULATOR_SESSION_MACHINE_RUNNING,
+            event->data.hotkey.identifier, &result) &&
+        result.release_window_mouse;
+}
 
 static lib_bool fixture_extension(void *context, emulator_machine *machine,
     emulator_session_machine_state state, const char *name,
@@ -54,14 +77,26 @@ lib_i32 main(void)
     static const emulator_product_help_row help_rows[] = {
         {"info", "fixture information"},
         {"floppy eject", "fixture media command"}};
+    static const x86_ibmpc_product_hotkey hotkeys[] = {
+        {{"Ctrl+Alt+W", "fixture action"},
+            {'W', BASE_KEY_MODIFIER_CONTROL | BASE_KEY_MODIFIER_ALT, "fixture-action"}},
+        {.help = {"Ctrl+Alt+O", "fixture App input"}}
+    };
     x86_ibmpc_product_command_context command = {0};
+    kvm_hotkey_matcher matcher;
+    x86_ibmpc_product_hotkey conflict = hotkeys[0];
+    x86_ibmpc_product_command_extensions conflicting;
     x86_ibmpc_product_command_context unsupported = {0};
     emulator_session_command_result result = {0};
     emulator_session_command_provider provider;
     const x86_ibmpc_product_command_extensions extensions = {
+        .context = &command,
         .submit = fixture_extension,
         .submit_snapshot = fixture_snapshot,
-        .help = {help_rows, sizeof(help_rows) / sizeof(help_rows[0])}
+        .help = {help_rows, sizeof(help_rows) / sizeof(help_rows[0])},
+        .hotkeys = hotkeys,
+        .hotkey_count = sizeof(hotkeys) / sizeof(hotkeys[0]),
+        .submit_hotkey = fixture_hotkey
     };
 
     if (x86_ibmpc_product_command_provider_initialize(&unsupported,
@@ -71,10 +106,35 @@ lib_i32 main(void)
         "load \"state file.bin\"", &result);
     if (lib_text_find_substring(result.text, "Feature not implemented.") == LIB_NULL ||
         !result.arm_prompt) return 15;
+    provider.open(provider.context, &result);
+    if (lib_text_find_substring(result.text, "Ctrl+Alt+W") != LIB_NULL ||
+        lib_text_find_substring(result.text, "Ctrl+Alt+O") != LIB_NULL) return 19;
     x86_ibmpc_product_command_dispose(&unsupported);
     if (x86_ibmpc_product_command_provider_initialize(&command, (emulator_machine *)&command,
             EMULATOR_SESSION_DISPLAY_CONSOLE,
             &extensions, &provider) != LIB_STATUS_OK) return 16;
+    kvm_hotkey_matcher_initialize(&matcher, &command.hotkey_registry);
+    const lib_bool delivered = kvm_hotkey_matcher_submit(&matcher,
+        &(kvm_input_event){.type = KVM_EVENT_KEY, .data.key = {.key = 'W',
+            .modifiers = BASE_KEY_MODIFIER_CONTROL | BASE_KEY_MODIFIER_ALT, .pressed = LIB_TRUE}},
+        fixture_dispatch_hotkey, &provider, LIB_TRUE);
+    kvm_hotkey_matcher_discard(&matcher);
+    if (!delivered || hotkey_submissions != 1u || command.hotkey_registry.count != 6u) return 20;
+
+    conflicting = extensions;
+    conflicting.hotkeys = &conflict;
+    conflicting.hotkey_count = 1u;
+    conflict.registration.key = 'D';
+    if (x86_ibmpc_product_command_initialize(&unsupported, (emulator_machine *)&unsupported,
+            EMULATOR_SESSION_DISPLAY_CONSOLE, &conflicting) != LIB_STATUS_INVALID_STATE) return 21;
+    conflict.registration = (kvm_hotkey_registration){
+        'W', BASE_KEY_MODIFIER_CONTROL | BASE_KEY_MODIFIER_ALT, "pause-toggle"};
+    if (x86_ibmpc_product_command_initialize(&unsupported, (emulator_machine *)&unsupported,
+            EMULATOR_SESSION_DISPLAY_CONSOLE, &conflicting) != LIB_STATUS_INVALID_STATE) return 22;
+
+    provider.submit_line(provider.context, EMULATOR_SESSION_MACHINE_STOPPED, "help", &result);
+    if (lib_text_find_substring(result.text, "fixture action") == LIB_NULL ||
+        lib_text_find_substring(result.text, "fixture App input") == LIB_NULL) return 23;
     provider.open(provider.context, &result);
     if (lib_text_find_substring(result.text,
             "Control your virtual machine:") == LIB_NULL ||

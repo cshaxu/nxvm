@@ -1,7 +1,7 @@
 #ifndef X86_IBMPC_PRODUCT_KEYBOARD_H
 #define X86_IBMPC_PRODUCT_KEYBOARD_H
 
-#include "emulator/product/monitor_interface.h"
+#include "x86-ibmpc/product/command_interface.h"
 #include "emulator/session/session_interface.h"
 #include "lib/kvm-base/event_interface.h"
 #include "lib/kvm-base/hotkey_interface.h"
@@ -9,8 +9,7 @@
 /* Product hotkey registration and neutral key-sequence policy. */
 lib_bool x86_ibmpc_product_keyboard_deliver_input(void *context,
     const kvm_input_event *event);
-lib_bool x86_ibmpc_product_keyboard_hotkeys(kvm_hotkey_registry *registry);
-emulator_product_help_map x86_ibmpc_product_keyboard_hotkey_help(void);
+lib_status x86_ibmpc_product_keyboard_configure(x86_ibmpc_product_command_context *command);
 lib_bool x86_ibmpc_product_keyboard_release_ctrl_alt(void *context, kvm_input_sink sink);
 lib_bool x86_ibmpc_product_keyboard_submit_ctrl_alt_del(void *context, kvm_input_sink sink);
 

@@ -12,6 +12,7 @@ static lib_u32 created;
 static lib_u32 destroyed;
 static lib_u32 disposed, title_calls, status_calls;
 static const char *received_banner;
+static const emulator_product_help_row fixture_hotkey = {"Ctrl+Alt+W", "fixture hotkey"};
 
 static lib_status fixture_bind(void *machine, emulator_machine *emulator)
 {
@@ -40,18 +41,16 @@ lib_status x86_ibmpc_product_command_provider_initialize(x86_ibmpc_product_comma
     const x86_ibmpc_product_command_extensions *extensions,
     emulator_session_command_provider *provider)
 {
-    (void)command;
     (void)machine;
     (void)display;
     (void)extensions;
     (void)provider;
-    return failure == 3u ? LIB_STATUS_INTERNAL_ERROR : LIB_STATUS_OK;
-}
-
-lib_bool x86_ibmpc_product_keyboard_hotkeys(kvm_hotkey_registry *registry)
-{
-    (void)registry;
-    return failure == 4u ? LIB_FALSE : LIB_TRUE;
+    command->monitor.hotkeys = (emulator_product_help_map){&fixture_hotkey, 1u};
+    command->hotkey_registry.count = 1u;
+    command->hotkey_registry.entries[0].key = 'W';
+    if (failure == 3u) return LIB_STATUS_INTERNAL_ERROR;
+    if (failure == 4u) return LIB_STATUS_INVALID_STATE;
+    return LIB_STATUS_OK;
 }
 
 lib_bool emulator_session_run(emulator_session *session)
@@ -83,14 +82,12 @@ lib_i32 emulator_product_run(const emulator_product_definition *definition)
         return 1;
     }
     fixture.live = LIB_FALSE;
-    return failure == 6u ? 1 : 0;
+    return failure == 6u || ui_options.hotkeys.count != 1u ||
+        ui_options.hotkeys.entries[0].key != 'W' ? 1 : 0;
 }
 
 void x86_ibmpc_product_command_dispose(x86_ibmpc_product_command_context *command)
 { (void)command; ++disposed; }
-
-emulator_product_help_map x86_ibmpc_product_keyboard_hotkey_help(void)
-{ return (emulator_product_help_map){LIB_NULL, 0u}; }
 
 lib_i32 main(void)
 {
@@ -140,7 +137,7 @@ lib_status emulator_product_monitor_format_window_status(const char *name,
 {
     ++status_calls;
     if (lib_text_compare(name, "PC") != 0 || out_text == LIB_NULL ||
-        capacity == 0u || hotkeys.rows != LIB_NULL || hotkeys.count != 0u)
+        capacity == 0u || hotkeys.rows != &fixture_hotkey || hotkeys.count != 1u)
         return LIB_STATUS_INVALID_ARGUMENT;
     if (failure == 8u) return LIB_STATUS_LIMIT_EXCEEDED;
     out_text[0] = '\0';

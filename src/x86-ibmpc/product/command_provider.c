@@ -18,6 +18,16 @@ static lib_bool x86_ibmpc_product_command_provider_hotkey(void *opaque,
                 EMULATOR_PRODUCT_MONITOR_COMMAND_RESUME :
                 EMULATOR_PRODUCT_MONITOR_COMMAND_PAUSE, state, out);
     }
+    for (lib_size index = 0u; index < command->extensions.hotkey_count; ++index) {
+        const kvm_hotkey_registration *binding = &command->extensions.hotkeys[index].registration;
+
+        if (binding->key != 0u &&
+            lib_text_compare((const char *)identifier, (const char *)binding->identifier) == 0) {
+            *out = (emulator_session_command_result){0};
+            return command->extensions.submit_hotkey(command->extensions.context,
+                command->machine, state, (const char *)identifier, out);
+        }
+    }
     return x86_ibmpc_product_keyboard_handle_hotkey(command->machine, state,
         identifier, out);
 }

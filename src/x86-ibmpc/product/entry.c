@@ -5,7 +5,6 @@
 #include "x86-ibmpc/product/command_provider_interface.h"
 #include "emulator/product/composition_interface.h"
 #include "emulator/product/monitor_interface.h"
-#include "x86-ibmpc/product/keyboard_interface.h"
 
 #define X86_IBMPC_PRODUCT_WINDOW_TEXT_CAPACITY 256u
 
@@ -14,7 +13,6 @@ typedef struct x86_ibmpc_product_run_context {
     emulator_product_machine machine;
     x86_ibmpc_product_command_context command;
     x86_ibmpc_product_command_extensions extensions;
-    kvm_hotkey_registry hotkeys;
     char running_title[X86_IBMPC_PRODUCT_WINDOW_TEXT_CAPACITY];
     char paused_title[X86_IBMPC_PRODUCT_WINDOW_TEXT_CAPACITY];
     char graphics_status[EMULATOR_SESSION_TEXT_CAPACITY];
@@ -37,7 +35,6 @@ static lib_status x86_ibmpc_product_configure_control(void *opaque,
         machine, context->definition->ui.display,
         &context->extensions, &out_options->command);
     if (status != LIB_STATUS_OK) return status;
-    if (!x86_ibmpc_product_keyboard_hotkeys(&context->hotkeys)) return LIB_STATUS_INTERNAL_ERROR;
     out_options->display = context->definition->ui.display;
     out_options->console_control = context->definition->ui.console_control != 0 ?
         LIB_TRUE : LIB_FALSE;
@@ -53,11 +50,11 @@ static lib_status x86_ibmpc_product_configure_ui(void *opaque,
             context->running_title, sizeof(context->running_title),
             context->paused_title, sizeof(context->paused_title)) != LIB_STATUS_OK ||
         emulator_product_monitor_format_window_status(context->definition->name,
-            x86_ibmpc_product_keyboard_hotkey_help(), context->graphics_status,
+            context->command.monitor.hotkeys, context->graphics_status,
             sizeof(context->graphics_status)) != LIB_STATUS_OK) {
         return LIB_STATUS_LIMIT_EXCEEDED;
     }
-    out_options->hotkeys = context->hotkeys;
+    out_options->hotkeys = context->command.hotkey_registry;
     out_options->running_window_title = context->running_title;
     out_options->paused_window_title = context->paused_title;
     out_options->graphics_console_status_text = context->graphics_status;

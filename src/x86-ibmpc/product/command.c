@@ -140,6 +140,8 @@ lib_status x86_ibmpc_product_command_initialize(x86_ibmpc_product_command_contex
                                   emulator_machine *machine, emulator_session_display display,
                                   const x86_ibmpc_product_command_extensions *extensions)
 {
+    lib_status status;
+
     if (command == LIB_NULL || machine == LIB_NULL)
         return LIB_STATUS_INVALID_ARGUMENT;
     lib_memory_set(command, 0, sizeof(*command));
@@ -148,10 +150,11 @@ lib_status x86_ibmpc_product_command_initialize(x86_ibmpc_product_command_contex
     command->monitor = (emulator_product_monitor_provider){
         .context = command,
         .extension_commands = command->extensions.help,
-        .hotkeys = x86_ibmpc_product_keyboard_hotkey_help(),
         .submit_fixed = x86_ibmpc_product_command_submit_fixed,
         .submit_extension = x86_ibmpc_product_command_submit_extension};
     (void)display;
+    status = x86_ibmpc_product_keyboard_configure(command);
+    if (status != LIB_STATUS_OK) return status;
     return x86_debug_create(&command->debug);
 }
 
