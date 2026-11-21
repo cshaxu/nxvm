@@ -36,6 +36,10 @@ The [disk-sharing replay](../etc/evidence/t592-s3-ob300-local-setup.md#published
 confirms dual-width Windows denial of conflicting C-image access and release
 at monitor exit in readonly, overlay and direct modes.
 
+The [native Window replay](../etc/evidence/t592-s3-ob300-local-setup.md#published-native-window-lifecycle)
+verifies paint, pause freeze, resume in the same window and normal exit of
+both releases on a private local desktop. It leaves foreground/RDP input unverified.
+
 The [published DOS handoff](../etc/evidence/t592-s3-ob300-local-setup.md#published-dos-performance-handoff)
 measures current native startup and directory response on both widths.
 Direct dual-width sampling places branch-target decode and board deadline

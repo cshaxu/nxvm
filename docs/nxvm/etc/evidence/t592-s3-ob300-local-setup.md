@@ -1057,14 +1057,48 @@ emulated card insertion and removal.
 | Dual-width replay and readonly backing-image result | 01030485cdf3cb0ef8ba8f5834fea0251e1bcb750cb248ade0f049d8493d00a5 |
 | Native handle and monitor fixture | 25a802490b48d12688fb6e34f48c8609a7d839abee575b4b2a324169e60443fd |
 
+#### Published native Window lifecycle
+
+The exact x64 and x86 0.5.0592 executables ran serially on a separate
+Windows desktop that was never switched to the foreground. Each run used
+the original System Card, a readonly restored C image and a private copy
+of the previously guest-saved 128-byte CMOS image. The INI selected
+Window display with console_control=1. The host was in its local Console
+session.
+
+The fixture waited for the monitor prompt before starting the guest,
+then captured a nonuniform native client frame with Win32 PrintWindow.
+It issued pause through the separate cooked monitor and checked both the
+new Paused title and the Machine paused completion text. It checked the
+paused client twice, 700 ms apart. The two captures matched byte-for-byte
+on each width. Resume restored the Running title on the same HWND. A
+second pause and monitor exit closed the real process with exit code 0.
+The saved CMOS passed its extended checksum and the source disk and card
+hashes were unchanged.
+
+| Native observation | x64 | x86 |
+| --- | --- | --- |
+| First captured running client | 640 x 350 | 640 x 350 |
+| Paused client | 640 x 400 | 640 x 350 |
+| Paused capture SHA-256 | 2aa0445cdf6ef36b78f85df90b92d5d83732f11a4de5ddba6eb8494ed6fbfde7 | 8cc88b441a04929ab3422e312c82b7e233894f36c3075aefb923700f7d84d3f5 |
+| Complete probe output SHA-256 | d954efc1f7408e178dbfa3dc99b1bbef948b092d1ca9513f4791f80319bcf4d4 | 7caed128f184fc07510342022b0cabee2d76e973d976ff17452e2af5d98d48fe |
+
+Running and paused captures were taken at different stages of FW boot.
+This is a freeze and stable-window-identity check, not a comparison
+at matched firmware frames. An initial x64 attempt sent Ctrl+Alt+P as
+Console input and did not pause. Static Window mode retains a cooked
+monitor, so the successful trials use its lifecycle commands. The
+fixture does not exercise foreground Window keyboard/mouse focus,
+real RDP transport or the full Windows desktop.
+
 ### Product obligation review
 
-| Design row | Evidence at P33 | Remaining boundary |
+| Design row | Evidence at P34 | Remaining boundary |
 | --- | --- | --- |
 | O07 input | Product DOS make/break, native monitor handoff and owner-tested original Windows keyboard and built-in pointer | Formal Windows interaction and redraw are part of the Windows receiver. |
 | O08 power | Original DOS and original Windows resume via F13 have direct dual-width replay. Clean Product exit and restart preserve RTC/CMOS. Windows Power Standard and Off both initiate a fresh POST with valid configuration on both widths. | x64 reaches the DOS driver in both modes. On x86 the 300-second probe cap expires after the configuration check and before the visible driver. See the original Windows Power control path below. |
 | O09 storage | T591 verifies DOS C/D access and writable readback. Original DOS returns to its prompt on a readonly write failure. Both published widths refuse a competing exclusive open and release all three media modes on exit. | Windows installation and file persistence remain queued. Host-storage disconnection is unverified. Guest PCMCIA hot removal has no product route. |
-| O12 product | Native Console release startup, monitor lifecycle and packaging are recorded in S2. P23 passed fresh real DOS startup, clean exit and CMOS reload. | Usability thresholds remain open in the performance receiver. No new independent desktop/RDP qualification was run. |
+| O12 product | S2 and P23 cover native Console, DOS lifecycle and CMOS persistence. Both released EXEs also paint, freeze, resume and exit their native Window on a private desktop. | Usability remains queued. Foreground input focus and RDP were outside this replay. |
 
 ### Original Windows Power control path
 
