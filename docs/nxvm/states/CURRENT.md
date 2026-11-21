@@ -33,8 +33,10 @@ file and reaches original ROM DOS without F1. The evidence also covers
 malformed input and a refused save.
 
 The [published DOS handoff](../etc/evidence/t592-s3-ob300-local-setup.md#published-dos-performance-handoff)
-measures current native startup and directory response on both widths. The
-[original Power control replay](../etc/evidence/t592-s3-ob300-local-setup.md#original-windows-power-control-path)
+measures current native startup and directory response on both widths.
+Its original-DOS worker sample identifies CPU refresh as the largest
+measured region and records the device scheduler contribution. The [original
+Power control replay](../etc/evidence/t592-s3-ob300-local-setup.md#original-windows-power-control-path)
 confirms that x64 Standard and Off both run POST and load DOS after two F13
 presses without needing F1. On x86, both modes enter a new POST and pass the
 extended CMOS check. The x86 probes end before the DOS driver is visible.

@@ -902,7 +902,49 @@ instruction cost in isolation. Core's Turbo runner skips wall-clock pacing
 and still advances the guest scheduler at instruction retirement. A useful
 first split for the receiver is CPU execution versus elapsed-time publication,
 then board deadline observation versus device advance inside that publication.
-The read-through identified the calls, but their relative costs are unmeasured.
+The following worker sampling measures those paths as a diagnostic.
+
+#### Original DOS execution-cost sample
+
+The probes linked the same Release production libraries as P27 and used the
+same original card, CONFIG.SYS and readonly C fixture as the native handoff.
+A host-only observer measured each Core quantum and one call in every 257
+for the nested routines, with the monotonic performance counter. The
+observer queued normal KVM input and succeeded only after the real DOS
+prompt and a new `CONFIG.SYS` directory entry followed by a ready prompt.
+Cold-stage counters include the time while typing `DIR`, up to submission
+of Enter. The probes did not modify the storage image or advance guest time.
+
+| Measured on the worker | x64 cold | x86 cold | x64 DIR | x86 DIR |
+| --- | ---: | ---: | ---: | ---: |
+| Complete Core calls, directly timed | 89.31 s | 98.23 s | 6.88 s | 8.36 s |
+| CPU refresh, estimated | 66.87 s | 70.40 s | 5.48 s | 6.20 s |
+| Elapsed-time publication, estimated | 23.71 s | 31.29 s | 1.70 s | 2.45 s |
+| Board deadline observation inside publication, estimated | 9.66 s | 11.23 s | 0.68 s | 0.89 s |
+| Retired instructions | 45.31 M | 45.06 M | 3.29 M | 3.27 M |
+| Guest ticks in Core results | 251.13 M | 249.65 M | 14.20 M | 14.09 M |
+
+The sampling estimates are inclusive and approximate. The sums slightly
+exceed the direct Core durations because of measurement and extrapolation
+error. Use the observed ranking without treating estimates as exact
+percentages. The ordinary release runs above remain the performance
+comparison. A higher-overhead preliminary x86 probe also reached DOS and
+DIR and was excluded from the table.
+
+The CPU refresh path is the largest measured region in both workloads.
+It includes decode, instruction boundary handling and memory bus work.
+The result does not yet assign time among those subpaths. Clock publication
+is the next measured region, with a material part inside the Board deadline
+scan. The DIR results show that removing only the measured clock publication
+cost would still leave the observed command well above the one-second goal.
+The next causal measurement should separate the actual guest's retirement
+work from decode/fetch, memory routing and boundary bookkeeping. Preserve
+existing retirement, device wake and fault semantics in any comparison.
+
+| Sampled replay | SHA-256 |
+| --- | --- |
+| x64 worker and guest output | `f35412b06c505f64c9c34439a0db708c823a3dc62d357758ad33913e70233ef8` |
+| x86 worker and guest output | `5832d602aa81930ef8eb1549775fb515c2fdd8a6dca314629106a81baf7b5eb9` |
 
 ### Product obligation review
 
