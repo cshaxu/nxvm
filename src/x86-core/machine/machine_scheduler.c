@@ -302,24 +302,28 @@ static void x86_core_machine_advance_scheduler(x86_core_machine *machine,
     }
     target_tick = machine->elapsed_ticks + elapsed_ticks;
     while (machine->elapsed_ticks < target_tick) {
-        x86_core_machine_time_observation observation;
-        x86_core_machine_attachment_deadline_observation board;
         lib_u64 due_tick = target_tick;
         lib_u64 source_ticks;
 
         if (machine->transaction_contract.refresh_cycle_source_ticks != 0u)
             x86_core_machine_refresh_hold_advance(machine, 0u);
-        x86_core_machine_capture_time_with_board(machine, &observation, &board);
-        if (board.l1_compatibility) {
-            due_tick = machine->elapsed_ticks + 1u;
-        } else if (observation.next_deadline_valid &&
-            observation.next_deadline_tick > machine->elapsed_ticks &&
-            observation.next_deadline_tick < due_tick) {
-            due_tick = observation.next_deadline_tick;
-        } else if (board.fast_advance_blocked) {
-            /* An active L1 owner blocks fast advance, but a successful CPU
-             * retirement still advances its existing causal route one tick. */
-            due_tick = machine->elapsed_ticks + 1u;
+        /* No reported deadline can shorten a one-tick advance. */
+        if (due_tick - machine->elapsed_ticks > 1u) {
+            x86_core_machine_time_observation observation;
+            x86_core_machine_attachment_deadline_observation board;
+
+            x86_core_machine_capture_time_with_board(machine, &observation, &board);
+            if (board.l1_compatibility) {
+                due_tick = machine->elapsed_ticks + 1u;
+            } else if (observation.next_deadline_valid &&
+                observation.next_deadline_tick > machine->elapsed_ticks &&
+                observation.next_deadline_tick < due_tick) {
+                due_tick = observation.next_deadline_tick;
+            } else if (board.fast_advance_blocked) {
+                /* An active L1 owner blocks fast advance, but a successful CPU
+                 * retirement still advances its existing causal route one tick. */
+                due_tick = machine->elapsed_ticks + 1u;
+            }
         }
         source_ticks = due_tick - machine->elapsed_ticks;
         machine->elapsed_ticks = due_tick;

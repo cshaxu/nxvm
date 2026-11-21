@@ -177,12 +177,5 @@ lib_status x86_core_machine_timeline_next_due(const x86_core_machine_timeline *t
 lib_u32 x86_core_machine_timeline_pending_count(
     const x86_core_machine_timeline *timeline)
 {
-    lib_u32 count = 0u;
-    lib_u32 index;
-
-    if (timeline == LIB_NULL) return 0u;
-    for (index = 0u; index < X86_CORE_MACHINE_TIMELINE_EVENT_CAPACITY; ++index) {
-        if (timeline->events[index].active) ++count;
-    }
-    return count;
+    return timeline == LIB_NULL ? 0u : timeline->heap_size;
 }

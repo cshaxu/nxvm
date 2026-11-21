@@ -16,6 +16,7 @@ typedef struct x86_core_machine_attachment_deadline_observation {
     lib_u8 l1_compatibility;
     lib_u8 fast_advance_blocked;
 } x86_core_machine_attachment_deadline_observation;
+/* Observes pending work. Progress and notifications belong to advance callbacks. */
 typedef void (*x86_core_machine_attachment_deadline_provider)(void *owner, lib_u64 now,
     x86_core_machine_attachment_deadline_observation *out_observation);
 typedef void (*x86_core_machine_attachment_advance_provider)(void *owner,

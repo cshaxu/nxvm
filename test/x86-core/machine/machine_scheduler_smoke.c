@@ -64,9 +64,9 @@ static void scheduler_finalize(void *owner)
     ++((scheduler_attachment_probe *)owner)->finalized;
 }
 
-static void scheduler_count_event(void *context, lib_u64 due_tick)
+static void scheduler_record_event_tick(void *context, lib_u64 due_tick)
 {
-    if (due_tick == 4u) ++*(lib_u32 *)context;
+    *(lib_u64 *)context = due_tick;
 }
 
 static lib_i32 scheduler_source_before_timeline(void)
@@ -84,7 +84,7 @@ static lib_i32 scheduler_source_before_timeline(void)
     x86_core_machine *machine = LIB_NULL;
     x86_core_machine_timeline_token token;
     x86_core_machine_time_observation time = {0};
-    lib_u32 count = 0u;
+    lib_u64 event_tick = 0u;
     lib_u8 advanced = LIB_FALSE;
     lib_i32 failed = x86_core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK;
 
@@ -93,15 +93,31 @@ static lib_i32 scheduler_source_before_timeline(void)
         x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
         x86_core_machine_reset(machine) != LIB_STATUS_OK ||
         x86_core_machine_timeline_schedule(&machine->timeline, 4u,
-            scheduler_count_event, &count, &token) != LIB_STATUS_OK ||
+            scheduler_record_event_tick, &event_tick, &token) != LIB_STATUS_OK ||
         x86_core_machine_capture_time_observation(machine, &time) != LIB_STATUS_OK ||
         !time.next_deadline_valid || time.next_deadline_tick != 1u ||
         x86_core_machine_advance_to_next_deadline(machine, &advanced) != LIB_STATUS_OK ||
-        !advanced || machine->elapsed_ticks != 1u || count != 0u ||
+        !advanced || machine->elapsed_ticks != 1u || event_tick != 0u ||
         x86_core_machine_capture_time_observation(machine, &time) != LIB_STATUS_OK ||
         !time.next_deadline_valid || time.next_deadline_tick != 4u ||
         x86_core_machine_advance_to_next_deadline(machine, &advanced) != LIB_STATUS_OK ||
-        !advanced || machine->elapsed_ticks != 4u || count != 1u;
+        !advanced || machine->elapsed_ticks != 4u || event_tick != 4u;
+    if (!failed) {
+        /* A known one-tick step still delivers events and device callbacks,
+         * even with each conservative deadline flag asserted. */
+        const lib_u32 observations = probe.deadline_calls;
+        const lib_u32 after_calls = probe.after_calls;
+
+        probe.deadline.immediate_due = LIB_TRUE;
+        probe.deadline.l1_compatibility = LIB_TRUE;
+        probe.deadline.fast_advance_blocked = LIB_TRUE;
+        failed = x86_core_machine_timeline_schedule(&machine->timeline, 5u,
+                scheduler_record_event_tick, &event_tick, &token) != LIB_STATUS_OK ||
+            x86_core_machine_publish_elapsed_ticks(machine, 1u,
+                X86_CORE_MACHINE_TIME_PUBLICATION_DEADLINE) != LIB_STATUS_OK ||
+            machine->elapsed_ticks != 5u || event_tick != 5u ||
+            probe.deadline_calls != observations || probe.after_calls != after_calls + 1u;
+    }
     x86_core_machine_destroy(machine);
     return failed || probe.finalized != 1u;
 }

@@ -123,9 +123,10 @@ lib_status x86_nxvm_machine_pacing_wait(x86_nxvm_machine *session)
     if (session == LIB_NULL || session->x86_core_machine == LIB_NULL) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
-    if (x86_core_machine_capture_time_observation(session->x86_core_machine,
-            &observation) != LIB_STATUS_OK || !observation.pacing_time_available ||
-        session->speed != X86_NXVM_MACHINE_SPEED_STANDARD) return LIB_STATUS_OK;
+    if (session->speed != X86_NXVM_MACHINE_SPEED_STANDARD ||
+        x86_core_machine_capture_time_observation(session->x86_core_machine,
+            &observation) != LIB_STATUS_OK || !observation.pacing_time_available)
+        return LIB_STATUS_OK;
     (void)x86_nxvm_machine_pacing_target_due(session, &observation,
         observation.elapsed_ticks);
     return LIB_STATUS_OK;

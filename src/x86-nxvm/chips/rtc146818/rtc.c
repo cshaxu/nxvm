@@ -332,29 +332,37 @@ void x86_rtc_reset(x86_rtc *rtc)
 
 void x86_rtc_advance(x86_rtc *rtc, lib_u64 elapsed_ticks)
 {
-    lib_u32 periodic_hz;
+    lib_u64 seconds = 0u;
+    lib_u64 partial = elapsed_ticks;
+    lib_u64 phase;
+    lib_u32 ticks_per_second;
 
     if (rtc == LIB_NULL || elapsed_ticks == 0u || !rtc_divider_running(rtc)) return;
-    periodic_hz = rtc_periodic_hz(rtc);
-    {
-        lib_u64 seconds = elapsed_ticks / rtc->ticks_per_second;
-        lib_u64 partial = elapsed_ticks % rtc->ticks_per_second;
-        lib_u64 phase = rtc->calendar.periodic_ticks + partial;
-        lib_u64 edges = phase * periodic_hz / rtc->ticks_per_second -
-            rtc->calendar.periodic_ticks * periodic_hz / rtc->ticks_per_second;
-
-        rtc->calendar.periodic_ticks = phase % rtc->ticks_per_second;
-        if (periodic_hz != 0u && (seconds != 0u || edges != 0u)) {
-            rtc->registers[X86_RTC_REG_C] |= X86_RTC_REG_C_PF;
-        }
+    ticks_per_second = rtc->ticks_per_second;
+    if (elapsed_ticks >= ticks_per_second) {
+        seconds = elapsed_ticks / ticks_per_second;
+        partial = elapsed_ticks % ticks_per_second;
     }
-    {
-        lib_u64 seconds = elapsed_ticks / rtc->ticks_per_second;
-        lib_u64 phase = rtc->calendar.second_ticks + elapsed_ticks % rtc->ticks_per_second;
+    /* Both saved phases are already below ticks_per_second. */
+    phase = rtc->calendar.periodic_ticks + partial;
+    if ((rtc->registers[X86_RTC_REG_C] & X86_RTC_REG_C_PF) == 0u) {
+        const lib_u32 periodic_hz = rtc_periodic_hz(rtc);
 
-        seconds += phase / rtc->ticks_per_second;
-        rtc->calendar.second_ticks = phase % rtc->ticks_per_second;
-        if ((rtc->registers[X86_RTC_REG_B] & X86_RTC_REG_B_SET) != 0u) seconds = 0u;
+        if (periodic_hz != 0u && (seconds != 0u ||
+            phase * periodic_hz / ticks_per_second !=
+            rtc->calendar.periodic_ticks * periodic_hz / ticks_per_second))
+            rtc->registers[X86_RTC_REG_C] |= X86_RTC_REG_C_PF;
+    }
+    rtc->calendar.periodic_ticks =
+        phase >= ticks_per_second ? phase - ticks_per_second : phase;
+
+    phase = rtc->calendar.second_ticks + partial;
+    if (phase >= ticks_per_second) {
+        phase -= ticks_per_second;
+        ++seconds;
+    }
+    rtc->calendar.second_ticks = phase;
+    if ((rtc->registers[X86_RTC_REG_B] & X86_RTC_REG_B_SET) == 0u) {
         while (seconds != 0u) {
             --seconds;
             rtc_increment_second(rtc);
