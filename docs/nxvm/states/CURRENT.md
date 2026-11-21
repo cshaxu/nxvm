@@ -35,10 +35,9 @@ malformed input and a refused save.
 The [published DOS handoff](../etc/evidence/t592-s3-ob300-local-setup.md#published-dos-performance-handoff)
 measures current native startup and directory response on both widths. The
 [original Power control replay](../etc/evidence/t592-s3-ob300-local-setup.md#original-windows-power-control-path)
-confirms that x64 Standard mode runs POST and loads DOS after two F13 presses.
-Separating the firmware's full SCAMP-selected power record now lets that POST
-complete without F1. Off was selected and both presses reached the BIOS in
-an earlier run, but its terminal and x86 Windows checks still need evidence.
+confirms that x64 Standard and Off both run POST and load DOS after two F13
+presses without needing F1. On x86, both modes enter a new POST and pass the
+extended CMOS check. The x86 probes end before the DOS driver is visible.
 The queued performance and Windows gates remain in force.
 
 | Field | Required record |

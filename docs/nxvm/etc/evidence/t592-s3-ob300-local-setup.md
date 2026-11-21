@@ -1031,3 +1031,45 @@ board test diff is +13/-1. The existing INI and external inputs were preserved.
 | --- | --- | --- |
 | MyOB300 x64 | 8664h | `44ed3a49c0cbe740854b6bf8072340cb619027dde5592a827599d4e7e4218971` |
 | MyOB300 x86 | 014Ch | `974f1553a28fcf496753ed73624879b871c7a237eacc4adf07402cd37c62a5d2` |
+
+An x64 replay on the same production revision independently confirmed Off.
+The original dialog displayed Off and closed after confirmation. The first
+F13 was sent at 192.430 s and the second at 205.713 s after the original
+wake poll. Both switch levels were observed. The firmware drew fresh
+OmniBook ROM BIOS POST at 248.846 s and loaded the original DOS BIOS
+Services driver. No F1 was sent and the probe completed successfully.
+This qualifies the cold-boot behavior in both Standard and Off on x64 using
+the controlled Control Panel startup. The media hashes stayed unchanged.
+
+| Off after bank separation, x64 | SHA-256 |
+| --- | --- |
+| Original dialog Off selection | `2e386b2a3cc165de5e680a29695b52c198baf8a106858a418df4fd04bdb1406f` |
+| Original POST and fresh DOS driver | `f585669cf41b1423ecd3466bebb3b7d8e7748db5063d4808961fda1ff3e82102` |
+| Actual wake switch levels | `0fda059204381356df4c3b921a51133f0f2b435deeada167c7de8b6f088d884b` |
+
+On x86, the first Standard replay reached the actual original BIOS wake
+poll and read the switch after the second F13 at 256.113 s. Before the
+288-second terminal, the new POST routine read 003Ch from the ordinary
+CMOS data and the same stored 003Ch, and cleared the index 78h diagnostic
+flag. The probe had no time to reach its visible DOS driver terminal.
+This is direct evidence of POST and the corrected configuration check,
+with the remainder of DOS startup still unobserved in that run.
+
+A second pair of x86 runs used the same original Control Panel shell with
+the optional `WIN.INI` desktop startup programs omitted from a disposable
+copy. The original DOS startup, Power driver and HP OptionsDLL remained in
+use. The unmodified C backup and test disk did not change. In Standard and
+Off, the actual mode was observed in the dialog, F13 reached the original
+BIOS wake poll, and a new POST read the extended data sum and stored value
+as 003Ch. Index 78h stayed clear. The visible DOS driver terminal lay beyond
+the probe limit on both runs. These tests establish x86 reboot and the
+configuration check, while x64 alone reached the visible DOS driver in
+these Windows power flows. The general probe cap and performance gates
+remain unchanged.
+
+| x86 Windows power diagnostic | SHA-256 |
+| --- | --- |
+| Original-shell-variation Standard RTC trace | `5c82424f325098a583762ea3004dfaaaf0ce863823743fa09e78b16c6051c4d6` |
+| Shorter x86 test disk before and after both runs | `0b79d2caf21ad4a424b609e69dbb4c0cdcda53e2be89230b526e36ac4c5a52c3` |
+| Shorter Standard RTC trace | `9e8d70ec07cd3baaa867925eaacf2a1c673df6c55f0568c2b259029344d1222e` |
+| Shorter Off RTC trace | `66a712b0d63120ba9c6187d591cec4b4f63ef3e1124c0ec316b42465d9c94f4f` |
