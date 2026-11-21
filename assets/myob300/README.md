@@ -37,13 +37,13 @@ The current model selects 2 MiB RAM. Enter `start` at the monitor.
 On the first boot, the original ROM may report invalid configuration
 information and ask for F1. Press F1 in the guest display to continue.
 The original C backup starts Windows from the System Card. Both x86 and x64
-have drawn Program Manager in a replay. Menu interaction, Word and Excel
-remain under qualification. For a DOS-only check, use a disposable image
+have drawn Program Manager in a replay. The owner confirmed menu navigation,
+exit to DOS and usable mouse input. For a DOS-only check, use a disposable image
 with the original CONFIG.SYS and a copy of AUTOEXEC.BAT with Windows
 autostart removed.
 
-To wake a guest that has already entered HP firmware APM suspend,
-press and release F13 in the guest display. Leave the emulator running
-so the guest firmware can observe both key transitions. F13 currently
-supplies the wake key level. Entering suspend from normal execution by
-pressing the power key is still under investigation.
+In the guest display, press and release F13 to request firmware suspend.
+After the guest enters suspend, press and release F13 again to wake it.
+F13 also wakes a guest that entered HP firmware APM suspend on its own.
+Leave the emulator running so the guest firmware can observe the key.
+The power-key model was verified with original ROM DOS.

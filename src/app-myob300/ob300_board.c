@@ -100,6 +100,7 @@ static void myob300_board_management_active(void *owner, lib_bool active)
 static lib_status myob300_board_management_range(myob300_board *board, lib_u32 address,
     lib_u8 bytes, lib_u8 **mapping)
 {
+    const lib_u8 translation = MYOB300_CHIPSET_SMM_ENABLED | MYOB300_CHIPSET_SMM_TRANSLATED;
     const lib_u8 control = board->chipset.management_control;
     const lib_u8 selection = control & 7u;
     const lib_size capacity = selection == 7u ? sizeof(board->chipset.ab_shadow) :
@@ -108,7 +109,7 @@ static lib_status myob300_board_management_range(myob300_board *board, lib_u32 a
     const lib_u64 access_end = (lib_u64)address + bytes;
 
     if (bytes == 0u) return LIB_STATUS_INVALID_ARGUMENT;
-    if ((control & 0xa0u) != 0xa0u || address >= window_end ||
+    if ((control & translation) != translation || address >= window_end ||
         access_end <= MYOB300_MANAGEMENT_WINDOW_BASE)
         return X86_CORE_MACHINE_SMM_ROUTE_ORDINARY;
     if (address < MYOB300_MANAGEMENT_WINDOW_BASE || access_end > window_end)
@@ -207,7 +208,16 @@ lib_status myob300_board_set_matrix_key(myob300_board *board, lib_u8 row,
 
 void myob300_board_set_power_key(myob300_board *board, lib_bool pressed)
 {
-    board->chipset.power_key_pressed = pressed;
+    myob300_chipset *chipset = &board->chipset;
+    const lib_bool rising_edge = pressed && !chipset->power_key_pressed;
+
+    chipset->power_key_pressed = pressed;
+    /* L2: the awake switch pulses external SMI through SCAMP SMMEN. The
+     * held level remains available to the firmware's wake poll in either mode. */
+    if (rising_edge && !chipset->management_active &&
+        (chipset->management_control & MYOB300_CHIPSET_SMM_ENABLED) != 0u &&
+        x86_core_machine_set_smi(chipset->core, LIB_TRUE) == LIB_STATUS_OK)
+        (void)x86_core_machine_set_smi(chipset->core, LIB_FALSE);
 }
 
 void myob300_board_receive_mouse(myob300_board *board, lib_i32 dx, lib_i32 dy, lib_u32 buttons)

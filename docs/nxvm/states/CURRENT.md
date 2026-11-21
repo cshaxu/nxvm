@@ -17,6 +17,10 @@ records the fixed OEM input path and an original guest frame after motion.
 The owner removed Word and Excel from the later [ROM Windows acceptance
 scope](../proposals/m5-ob300-rom-windows.md).
 
+Both host widths now pass the original DOS power cycle through production F13
+input. The [power evidence](../etc/evidence/t592-s3-ob300-local-setup.md#production-f13-suspend-and-wake)
+records new DOS command execution after wake and the remaining power limits.
+
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | M5 T592 S3 after ordered S2 publication. |

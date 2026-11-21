@@ -492,7 +492,8 @@ static void test_card(x86_core_machine *core)
     expect_memory_pair(core, 0xf0000u, 0u, 0u);
 }
 
-static void test_management_memory(x86_core_machine *core, lib_u8 control)
+static void test_management_memory(x86_core_machine *core, myob300_board *profile,
+    lib_u8 control)
 {
     const lib_u8 ordinary = 0xa5u;
     x86_core_machine_run_result result = {0};
@@ -505,17 +506,22 @@ static void test_management_memory(x86_core_machine *core, lib_u8 control)
     lib_test_assert(x86_core_machine_run(core, (x86_core_machine_run_budget){32u, 0u},
         &result) == LIB_STATUS_OK && result.reason == X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT);
     expect_port(core, 0xecu, 0x18u);
+    myob300_board_set_power_key(profile, LIB_TRUE);
+    lib_test_assert(x86_core_machine_run(core, (x86_core_machine_run_budget){1u, 0u},
+        &result) == LIB_STATUS_OK && result.reason == X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT);
+    myob300_board_set_power_key(profile, LIB_FALSE);
     if (control == 0xa7u) {
         write_indexed(core, 0xecu, 0xedu, 0x0eu, 0x03u);
         lib_test_assert(x86_core_machine_memory_write(core, 0xa0210u,
             &ordinary, sizeof(ordinary)) == LIB_STATUS_OK);
     }
     write_indexed(core, 0xecu, 0xedu, 0x18u, control);
-    lib_test_assert(x86_core_machine_set_smi(core, LIB_TRUE) == LIB_STATUS_OK);
+    myob300_board_set_power_key(profile, LIB_TRUE);
     lib_test_assert(x86_core_machine_run(core, (x86_core_machine_run_budget){1u, 0u},
         &result) == LIB_STATUS_OK && result.linear_pc == 0x00fffff0u);
     expect_port(core, 0xedu, (lib_u8)(control | 0x08u));
-    lib_test_assert(x86_core_machine_set_smi(core, LIB_FALSE) == LIB_STATUS_OK);
+    myob300_board_set_power_key(profile, LIB_FALSE);
+    myob300_board_set_power_key(profile, LIB_TRUE);
     status = x86_core_machine_run(core, (x86_core_machine_run_budget){64u, 0u}, &result);
     if (status != LIB_STATUS_OK || result.linear_pc != 0x000f800fu)
         lib_c_fprintf(lib_c_stderr, "SMM: status=%u stop=%u pc=%08x detail=%08x\n",
@@ -530,6 +536,10 @@ static void test_management_memory(x86_core_machine *core, lib_u8 control)
     if (control == 0xa7u)
         lib_test_assert(x86_core_machine_memory_read(core, 0xa0210u,
             &value, sizeof(value)) == LIB_STATUS_OK && value == 0x5au);
+    myob300_board_set_power_key(profile, LIB_TRUE);
+    lib_test_assert(x86_core_machine_run(core, (x86_core_machine_run_budget){1u, 0u},
+        &result) == LIB_STATUS_OK && result.reason == X86_CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT);
+    myob300_board_set_power_key(profile, LIB_FALSE);
 }
 
 static x86_debug_response machine_debug(const emulator_machine_driver *driver,
@@ -755,8 +765,8 @@ int main(void)
     test_display(core, setup.profile);
     test_input(core, board, setup.profile);
     test_card(core);
-    test_management_memory(core, 0xa0u);
-    test_management_memory(core, 0xa7u);
+    test_management_memory(core, setup.profile, 0xa0u);
+    test_management_memory(core, setup.profile, 0xa7u);
     lib_test_assert(x86_core_machine_reset(core) == LIB_STATUS_OK);
     expect_port(core, 0xecu, 0u);
     expect_port(core, 0x378u, 0u);

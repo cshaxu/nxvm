@@ -511,6 +511,16 @@ OmniBook's actual PMU wiring.
 | SCAMP writes and last SMMCTL value at the diagnostic SMI | `6962f0e204d6004a64193471d0798cf68059f3a00c17de7d68049fcab127ab09` |
 | Guest output and completion | `80f4add1e3c1c43b466a9e2afe76c33375e31c366feddb01dab7a74539dd09a7` |
 
+A paired observation read the firmware's power poll at F000:A337h before
+the first APM wake. The last SMMCTL write was 27h during software suspend
+(tick 255000410) and A7h at the later diagnostic SMI from awake DOS
+(tick 269044619). The trace SHA-256 is
+`9d5add30d29e7e287b8d5d9175bcc6820fb178f274f3840c856d91a1d2dbb283`.
+SMMEN can therefore gate the new App-local F13 rising-edge signal for
+this firmware. The board keeps the existing power sense level, suppresses
+new SMI requests inside SMM and uses Core's existing SMI input. The model
+is L2 based on the chipset reference and on the observed ROM behavior.
+
 ## SMM release qualification
 
 The Core receiver is Shared commit `f9b5eab867ad840262ba8bb31ab45ee20581f724`.
@@ -555,3 +565,43 @@ Window; the original DOS wake observations above use the Machine input FIFO.
 | mynes_0_0_0044_x64.exe | 8664h | `697d63cda216948a5e1fd6f6e121c6da951f5940d0b314971315c658772458b7` |
 | myraidenii_0_0_0007_x86.exe | 014Ch | `4e0d1ce0b939d0632d4d83f2c03e630c344298b12e8b0cbae7b34a9ea1f39d64` |
 | myraidenii_0_0_0007_x64.exe | 8664h | `30e671e17800906a8454536abc04c8331e4b73a24d27ea2ff2f2024cff96a1bd` |
+
+## Production F13 suspend and wake
+
+Both original System 1.0 ABA runs used the production App board and
+normal Machine input FIFO. The DOS diagnostic first entered software
+APM suspend. F13 resumed it and the original BIOS reported event 0003h.
+A later F13 from awake DOS caused exactly one production SMI assertion
+and its paired deassertion. The observer forwarded the real signal and
+did not inject an SMI. At the subsequent original wake poll, a new F13
+resumed the original session. Typed `VER` produced the HP DOS version
+string on both widths. Both probes exited successfully and the
+read-only C image retained its SHA-256. The guest executes its original
+power handler throughout.
+
+The pre-existing board smoke passed on both architectures with the
+power input in place of its diagnostic SMI call. It checks disabled SMI,
+entry on an enabled rising edge, no nesting on a new press in SMM and
+no retrigger while the key remains held after RES3. It also preserves
+the existing private and ordinary memory assertions. The production
+change is confined to MyOB300. This qualifies the original DOS power
+cycle under the L2 model. Windows session preservation and the physical
+machine's complete power modes remain separate evidence.
+
+| Production power diagnostic | SHA-256 |
+| --- | --- |
+| x64 guest output | `e22b28fc4305c7778ee3ef0d974d311d28df7baf21187d9f1a35f67ee653fe52` |
+| x64 production SMI edge | `3b5fba67d3621ee9e83a37400ac4b8158de71558bd8c7ea3f092d91bdfd1c6a5` |
+| x86 guest output | `c933c00981d73c41f1b59fe7cc9b524bed390494dac5b3ce1f9c7a9de7477e0c` |
+| x86 production SMI edge | `05264d955f41e32d7303617a2f4d10f6c517d1ddf61a63e86cba56595996b737` |
+
+The cached MyOB300 publication built both widths. Each exact release
+started as an isolated native process, attached the external System Card
+and read-only C image, and completed monitor `info` and `exit`. The
+published INI and the external source hashes matched before and after.
+No Shared source or receiver executable changed in this App delivery.
+
+| Released MyOB300 executable | PE machine | SHA-256 |
+| --- | --- | --- |
+| myob300_0_5_0592_x64.exe | 8664h | `188a5d262237a16983b0d331c98fc73d40226933591d8277ce8a30c29b5de53c` |
+| myob300_0_5_0592_x86.exe | 014Ch | `93c55bd0e8a73333dc00687092e83a5e02f65b040219d0e36e8d5b0f52bd6db6` |

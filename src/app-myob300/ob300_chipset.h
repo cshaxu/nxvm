@@ -7,6 +7,8 @@
 #define MYOB300_KEYBOARD_ROWS 8u
 #define MYOB300_KEYBOARD_COLUMNS 16u
 #define MYOB300_CHIPSET_AB_SHADOW_BYTES 0x20000u
+#define MYOB300_CHIPSET_SMM_ENABLED 0x80u
+#define MYOB300_CHIPSET_SMM_TRANSLATED 0x20u
 
 typedef struct myob300_chipset {
     x86_core_machine *core;
