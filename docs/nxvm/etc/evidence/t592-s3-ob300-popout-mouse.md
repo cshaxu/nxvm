@@ -36,9 +36,19 @@ Published-frame capture showed the guest pointer displaced to the right
 and down in Program Manager. Native host capture and physical clicking
 were not exercised by the background replay.
 
+The x86 original Windows replay also programmed the OEM ports. An
+isolated input sequence sent one motion, left press/release and right
+press/release through the Machine queue. The guest read counters
+`FD8` and `018`, then successive last-port values `C0`, `40`, `C0`,
+`80`, `C0`. Coordinates stayed constant through the button changes.
+This verifies both buttons on the original guest IRQ route. It does not
+establish a Win32 capture gesture or application activation by click.
+
 | Verified observation | SHA-256 |
 | --- | --- |
 | Prior build rejects real mouse motions on the auxiliary path | `61b47c504aff089edbf607ea7e65323eb574713124d7f39695af7d0387ed4288` |
 | Original driver's OEM port programming and coordinate reads | `ce9841ce2532338700c18a9c6a8762e80d466111882bbe1a44a176ee344a7888` |
 | Original Program Manager frame after movement | `c40fa490c676d484dbfed803f3b84535480df44551a16966b75d6d6ade8f09c5` |
 | Published dual-width PE and exact native launch checks | `9c92cebee8cbff44704a13e8abedfe60acac33c12b6c3d53cff363ee7196e3ed` |
+| x86 original driver motion and button port reads | `eb0e6267b55929beb788736eedb6dd5027abb195b609d91072f2cf8ab70157a5` |
+| x86 guest-visible desktop and input replay | `28de305783c38fd56280692f1574d046a1efdf9394babbbe845d23d243ef5595` |
