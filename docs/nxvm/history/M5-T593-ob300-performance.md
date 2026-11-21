@@ -21,3 +21,11 @@ Windows power replay. CPU execution and timing dominate the DOS profile.
 The next largest region is time publication, including the board scan and
 device advance. The x64 probe separately observed the original BIOS wait
 after Ctrl+Alt+O and left the actual panel/RDP feedback unresolved.
+
+## S2 evidence
+
+[Indexed timing and exact clock qualification](../etc/evidence/t593-s2-ob300-indexed-timing.md)
+records the two retained changes, their isolated and guest timings, the
+dual-width test matrix and all 16 artifact identities. The 0.5.0593 PC
+releases are the S2 delivery. The original performance thresholds remain
+open for the rest of T593.
