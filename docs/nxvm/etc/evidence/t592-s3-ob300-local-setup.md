@@ -76,3 +76,38 @@ PIC wake and the SMI memory route. The physical On/Off key sequence,
 Advanced suspend and resume, and the Standard/Off transition remain
 open product evidence. Monitor pause and resume are already qualified
 as a separate lifecycle path.
+
+## Original APM BIOS query
+
+The HP guide names APM and the Advanced mode, and the original System
+Card file inventory ties the Windows Power panel to the OEM manager.
+The Win16 OBPOWER module imports OBMGM. The original DOS OBMGM module
+directly calls INT 15h with AX=530Ah and BX=0001h. This identifies the
+guest interface to probe without intercepting it in the emulator.
+
+A disposable startup variant kept the original CONFIG.SYS, HP resident
+programs and DOS. After SHARE it ran a small project-authored DOS query
+instead of launching Windows. C was mounted read-only and both runs
+completed with the same disk hash. The x64 and x86 logs agree:
+
+| Original ROM request | Observed return |
+| --- | --- |
+| Installation check, 5300h | Carry clear, AX=0101h, BX=504Dh, CX=0000h |
+| Real-mode connect, 5301h | Carry set, AH=08h |
+| System power status, 530Ah | Carry clear, BX=0000h, CX=013Ch |
+| Next event, 530Bh | Carry set, AH=80h |
+
+The installation signature advertises APM 1.1. The no-event response
+matches the [Intel and Microsoft APM interface specification](https://intel-vintage-developer.eu5.org/IAL/POWERMGM/APMV12.PDF).
+The connect result is kept raw because the later specification does
+not list AH=08h as a real-mode connection result. The diagnostic also
+issued a disconnect before returning to DOS. This run establishes
+working stock BIOS query and event polling under idle conditions, not
+a suspend request, switch event, or resume.
+
+| Item | SHA-256 |
+| --- | --- |
+| Query program | `d49b652b141d6168d68687581f7ceda219295aa694187429bacd7543e8c9b714` |
+| Disposable C image | `1fd14d4126d1ad5cf85caa711db261317eb4f4ab1ad62cb59767fec3b6818ed0` |
+| x64 guest output | `133eaf08b4d85b6b5ea6318dc830edf322e3a8d5e377c61723ae16c8b1c1276f` |
+| x86 guest output | `caa26ad48a6ebb3395cc65f2dce8188bf9558a35f586b6db17a4e83f07069234` |
