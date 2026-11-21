@@ -691,3 +691,133 @@ post-wake intervals are diagnostic, outside the controlled performance gate.
 | Guest frames and new Alt+F after wake | `b97f183209ed3f64eccd7f8cc855358fe7f5563fb3241a681d561dad63daf732` |
 | Original firmware wake sampling | `7a9653326da239592e8e9da4c105c3bcd545cf7ef80fe44db2be416b2afcac4f` |
 | CPU SMM execution edges | `b86fb9dc3ac5671018042be8585e07e00e4e015aa4fb77bb14f9ed696e479270` |
+
+## Configuration warning after process restart
+
+The original x64 BIOS displayed `Invalid configuration information` on
+an unseeded process and continued to original DOS startup after F1. The
+probe captured all 128 CMOS bytes through the existing Machine interface
+after shutdown and unbind. The standard checksum was valid (`00E7h`). A
+new process seeded with those exact guest-written bytes still requested F1.
+Both processes used the matching original C backup in overlay mode and
+left its backing image unchanged.
+
+An observational port trace of the seeded process identified the separate
+HP check. The original code at F000:B98Ah sums indices 40h through 64h.
+The observed bytes sum to 023Ch, while the saved value at 7Eh/7Fh was
+003Ch. During POST the firmware sets bit 6 at index 78h. The later
+configuration-validation path reads 40h from index 78h and prints the
+warning even though the preceding ordinary checks reach that point. Raw
+CMOS persistence at this capture boundary would preserve the warning.
+The probe used no fabricated checksum or production NVRAM file.
+
+| Configuration-restart diagnostic | SHA-256 |
+| --- | --- |
+| First-run CMOS bytes captured after unbind | `66e94142ee67b587e0b78ffc742772d20de8a59b9dfcbff02e2d11175fb6a1be` |
+| Unseeded POST, F1 and original DOS startup | `88fc93e05e1641f730f47c8bcda09c555ee425c34552a7e0f7cbe4c859c57dec` |
+| Seeded POST still requests F1 | `00890526fc13f3f08e67e490d56e7503ef65a1f101acbb00d0d573185318dd7d` |
+| Seeded POST CMOS port trace | `725ae7b73a059ba815a88525e5fa9e327e2fc1ffd4df132a33c9ad2f3ab72331` |
+
+Repeating the capture at the original Windows Program Manager, with the
+File menu label visible, produced the same extended sum (023Ch) and
+stored checksum (003Ch). The next process again requested F1.
+
+A separate cold trace identified how the inconsistency first appears.
+The BIOS writes the extended checksum 003Ch before the later writes to
+indices 40h–43h from F000:A031h through A04Dh. Those four bytes were all
+zero during the earlier checksum calculation. The later writes contribute
+0200h. The ROM wraps that record's writes in an index-14h bit-3 set/clear
+pair. Its earlier read of that same four-byte record follows the same
+switch sequence and verifies the signature and an eight-bit sum. The POST
+checksum reader accesses the same indices without that switch. This
+supports testing distinct storage for the four-byte record as an App board
+model. The generic SCAMP II manual calls bit 3 CACHEN, so the original
+OmniBook electrical decode remains a model inference.
+[VLSI SCAMP II technical reference, Table 51](https://www.bitsavers.org/components/vti/pc/VTI_VL82C316_VL82C323_SCAMP_II_199210.pdf).
+
+| Later configuration diagnostics | SHA-256 |
+| --- | --- |
+| CMOS captured at original Windows Program Manager | `fc2a766324d75cc12ebb39d88dbf6b8418c444131edbbf1a3c6028dd8dc6316b` |
+| Seeded POST with Windows-captured CMOS | `6435f6694308d7647fcb39b830e0b3633dce16833ce1afbeaa3bba915700cb58` |
+| Unseeded boot writes through original DOS startup | `0602b32ede5b9fba0b437393b7fa884b37d3b127730f97ee25d320812658afe7` |
+
+An isolated I/O experiment separated the four selected bytes. The unseeded
+guest still requested F1 on first boot. At DOS startup the captured extended
+sum and the stored checksum both read 003Ch. A second process seeded with
+that unmodified capture reached original DOS startup without receiving F1.
+The backing C image hash remained unchanged.
+
+| Isolated separation experiment | SHA-256 |
+| --- | --- |
+| Guest-written CMOS after first startup | `81d8ea2a0c20fa62dc502771dc5ab0575c0a8264571b0e7b40ca2fe62dabdcf9` |
+| Unseeded first startup | `ff8a984b9cfffb41d74ede05afcc9001b0f915fd389e7ae9a0b9318241e96a5c` |
+| Seeded second startup | `9eb543a624444eaa1ce53c7a29317e64d9828e8d6a8e5ee43d59e5e1dadabf9e` |
+
+The production MyOB300 binding now selects the record's storage on the
+existing Board-Base RTC data route. The existing MyOB300 board test exercises
+both directions, selection changes, and an adjacent ordinary CMOS location.
+The record belongs to the board instance. Cross-process CMOS storage remains
+a separate product persistence obligation.
+
+An x64 replay linked to the production board code repeated the result
+without replacing the RTC port handlers. The first process reached original
+DOS startup at 79.454 s after one F1. Its guest-written image was identical
+to the isolated result. The second process reached the original DOS
+checkpoint at 78.210 s without F1. These times identify the replay events
+and do not replace the controlled DOS performance baseline.
+
+| Production-path x64 replay | SHA-256 |
+| --- | --- |
+| Unseeded first startup | `200a2fb6570cf7a5b962ced25514d27d98926cacfaa59e489097b8fd07fd3581` |
+| Seeded second startup | `ea61387fa8f9a51628c9b1abdd4476a4e23735af5b7bf2704accb608994a29da` |
+
+The production-path x86 replay also reached DOS in two separate processes.
+The first reached the checkpoint at 103.344 s after F1 and produced the
+same 128 bytes as x64. The second used those bytes unchanged and reached
+the checkpoint at 103.844 s without F1. Both widths matched the backing
+C image hash before and after replay. The successful second boot on each
+width was a diagnostic seed injection through the production construction
+contract. The release launcher still starts without a persisted seed.
+
+| Production-path x86 replay | SHA-256 |
+| --- | --- |
+| Unseeded first startup | `3da9876903a16816c69e0225c2d5d430eb8cacc6c8c3a5286edbd6a0965efe68` |
+| Seeded second startup | `3c032c71a8fc0f8b8d9481feab58caf43d62b442359eaa3a109e017f85a47c1d` |
+
+### Configuration-routing qualification and artifact identities
+
+Cached Release rebuilt and deployed both widths for all eight applications
+from the same reviewed source changes. An independent read verified PE
+014Ch for x86 and 8664h for x64. When the test graph relinked the default
+NXVM, MyPC110 or MyNES executable, its deployed copy matched the final
+build-tree bytes. The production changes are +33/-4 and the existing
+MyOB300 board test is +14/-0. Manifest entries were refreshed.
+
+| App | Width | Final SHA-256 |
+| --- | --- | --- |
+| nxvm | x86 | `80b59aad64ede7457e3c30d01fd8a3a096d836add665f2082481a566e735e3f3` |
+| my5160 | x86 | `8666de36662334b22bc8ac67a7d0d671140d3cfa9d3df657d2cbb9a79a7fd4ba` |
+| my5170 | x86 | `d2190d001e35ec2d47091bcb65b525e8fa9dc04915595eb21f5af8b6b3187357` |
+| mydeskpro386 | x86 | `6fd6312f1ad25fad816f057b64610a0269d472c7cadc357e8cd55b71434e78cc` |
+| mypc110 | x86 | `9680851f7a2c79fc1876fd63dc5912b10e3ab11b155fa341f9a43867e01e4397` |
+| mynes | x86 | `30f564d6a328cd56f491071598e48944ec4ad4618191e353789fae6494b35bf5` |
+| myraidenii | x86 | `b9cb1ce7a054f05c9ec6c5233be2b21a66934177124c468fc162f0f26aec00f3` |
+| myob300 | x86 | `2d79cf8dd7033347f7e131f354ff225802d6f26f75b9b99608a243198fe0a22b` |
+| nxvm | x64 | `a9614a44650b3c843a157944c433b02cd815a302ab0df27347a27417c518de1a` |
+| my5160 | x64 | `aa90db86ae4acac27a1b288832c29e397d488f2022566e9e9ff02ba1ebc8de16` |
+| my5170 | x64 | `c72ba86560ed1f72cc8b01621334f753f0f4c62af66481aff4840cf574166f18` |
+| mydeskpro386 | x64 | `e8edb9fe748bd0fd6495bfe512caee58226a60eaae923778d07851432bb86a3f` |
+| mypc110 | x64 | `6be3d4a8051fed49d09cf8c5a196eba5a198a54be54ae90eb002d17b072f00d0` |
+| mynes | x64 | `6a7c32b8b2ded1f6295805de65173fe4096c4fe370eb23ed8a09570b377395cd` |
+| myraidenii | x64 | `082951fd0a414b48d916805d1065d42e48eea05098a5ed72b89d5f7b90a7edf3` |
+| myob300 | x64 | `10f695a9f1fa44dabdaf5637e8b09dcb4d80a2be4fbf8e7b1d8a7da85e9e14d3` |
+
+- x64 and x86 unit runs passed 717/717 each.
+- x64 integration passed 48/48 in the registered aggregate.
+- x86 integration passed 35 before the 300-second aggregate deadline
+  interrupted PC110 cold boot. The exact remaining 13 passed in a bounded
+  run, including PC110 cold boot at 77.28 s. No test budget was changed.
+- Both published MyOB300 files accepted native Console `info` and `exit`
+  against an isolated card copy and readonly C image. Original inputs and
+  the tracked INI were unchanged. No new MyOB300 interactive Window/RDP
+  test was run for this routing change.

@@ -106,6 +106,20 @@ static void test_chipset(x86_core_machine *core, myob300_board *profile)
     expect_port(core, 0xedu, 0x81u);
     write_port(core, 0xecu, 0x45u);
     expect_port(core, 0xedu, 0x41u);
+
+    write_indexed(core, 0x70u, 0x71u, 0x42u, 0x68u);
+    write_indexed(core, 0xecu, 0xedu, 0x14u, 0x19u);
+    expect_port(core, 0x71u, 0u);
+    write_port(core, 0x71u, 0x55u);
+    expect_port(core, 0x71u, 0x55u);
+    write_indexed(core, 0x70u, 0x71u, 0x44u, 0x5au);
+    write_port(core, 0xedu, 0x11u);
+    expect_port(core, 0x71u, 0x5au);
+    write_port(core, 0x70u, 0x42u);
+    expect_port(core, 0x71u, 0x68u);
+    write_port(core, 0xedu, 0x19u);
+    expect_port(core, 0x71u, 0x55u);
+    write_port(core, 0xedu, 0x11u);
 }
 
 static void configure_pic(x86_core_machine *core)

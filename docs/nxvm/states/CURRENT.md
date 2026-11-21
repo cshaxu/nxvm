@@ -26,6 +26,11 @@ Windows power checkpoint](../etc/evidence/t592-s3-ob300-local-setup.md#original-
 for the replay limits. Final Windows installation, persistence and performance
 qualification remain with their queued receivers.
 
+The [configuration restart replay](../etc/evidence/t592-s3-ob300-local-setup.md#configuration-warning-after-process-restart)
+now passes on both widths when a new process receives the firmware's exact
+CMOS capture. The product still needs to save and reload that state for
+ordinary launches without repeated F1.
+
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | M5 T592 S3 after ordered S2 publication. |

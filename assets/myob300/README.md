@@ -34,8 +34,9 @@ boot code. The default `overlay` mode keeps writes off the C image.
 Use `direct` on a disposable copy when you intend to persist guest writes.
 
 The current model selects 2 MiB RAM. Enter `start` at the monitor.
-On the first boot, the original ROM may report invalid configuration
-information and ask for F1. Press F1 in the guest display to continue.
+A new emulator process starts with the model's CMOS defaults. The original
+ROM may report invalid configuration information and ask for F1 at that
+startup. Press F1 in the guest display to continue.
 The original C backup starts Windows from the System Card. Both x86 and x64
 have drawn Program Manager in a replay. The owner confirmed menu navigation,
 exit to DOS and usable mouse input. For a DOS-only check, use a disposable image

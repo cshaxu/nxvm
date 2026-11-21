@@ -18,11 +18,14 @@
 #define MYOB300_MANAGEMENT_WINDOW_BASE 0x00060000u
 #define MYOB300_MANAGEMENT_MEMORY_BYTES 0x10000u
 #define MYOB300_MANAGEMENT_HALF_AB_BYTES 0x10000u
+#define MYOB300_CONTROL_RECORD_SELECT 0x08u
+#define MYOB300_CONTROL_RECORD_BASE 0x40u
 #define MYOB300_PANEL_DEFAULT_VSYNC_HZ 60u
 #define MYOB300_PARALLEL_DATA_PORT 0x378u
 
 struct myob300_board {
     myob300_chipset chipset;
+    lib_u8 control_record[4];
     myob300_mouse mouse;
     x86_ct_vga *display;
     lib_u8 parallel_data;
@@ -95,6 +98,17 @@ static void myob300_board_management_active(void *owner, lib_bool active)
     myob300_board *board = owner;
 
     board->chipset.management_active = active;
+}
+
+static lib_u8 *myob300_board_rtc_cmos_override(void *owner, lib_u8 index)
+{
+    myob300_board *board = owner;
+    const lib_size offset = (lib_size)index - MYOB300_CONTROL_RECORD_BASE;
+
+    /* L2: the System 1.0 ROM brackets both access directions with the
+     * same SCAMP selection bit. Keep the record out of the RTC checksum. */
+    return (board->chipset.miscellaneous & MYOB300_CONTROL_RECORD_SELECT) != 0u &&
+        offset < sizeof(board->control_record) ? &board->control_record[offset] : LIB_NULL;
 }
 
 static lib_status myob300_board_management_range(myob300_board *board, lib_u32 address,
@@ -308,7 +322,8 @@ static lib_status myob300_board_bind(
         .finalize = myob300_board_finalize,
         .system_management_active = myob300_board_management_active,
         .read_smm_memory = myob300_board_management_read,
-        .write_smm_memory = myob300_board_management_write
+        .write_smm_memory = myob300_board_management_write,
+        .rtc_cmos_override = myob300_board_rtc_cmos_override
     };
     setup->profile = board;
     return LIB_STATUS_OK;
