@@ -1113,14 +1113,33 @@ own gates.
 | x64 guest write-error dialog | e9449ffdf7fe2007dd0ea63f355a6d624c2be6d921120ebac2ae7231c3efff07 |
 | Bounded x64 release replay output | 77726b1fcc3906dfef0212dc875991d68befbc9a33bbfcd57468764e7bf56855 |
 
+#### Original Program Manager on the published Window path
+
+Both exact 0.5.0592 binaries used the original System Card and restored C
+backup, private copies of guest-saved CMOS, and the shipped overlay media
+mode. The host probes used separate private local desktops. Native
+PrintWindow captures from both processes show the same 640 x 480 image,
+including the HP wallpaper, Program Manager title, File menu label and
+Main group window. Both captures still have a busy cursor. Their shared
+SHA-256 is 125e192821ac91652a515e5bf79ca4b2ff0f119b5f99bee2bfa3215723d32fed.
+The base image SHA-256 remained unchanged.
+
+The automatic check reused pixel signatures from a later guest-only frame.
+It did not reach that marker within 249 seconds on either width. The
+independently captured earlier frame proves the published native Window
+painted Program Manager. The probes did not establish input readiness,
+perform a clean exit from that Windows session, or measure a serial
+performance baseline. P34 separately checks clean exit from the actual
+native Window monitor flow.
+
 ### Product obligation review
 
-| Design row | Evidence at P35 | Remaining boundary |
+| Design row | Evidence at P36 | Remaining boundary |
 | --- | --- | --- |
 | O07 input | Product DOS make/break, native monitor handoff and owner-tested original Windows keyboard and built-in pointer | Formal Windows interaction and redraw are part of the Windows receiver. |
 | O08 power | Original DOS and original Windows resume via F13 have direct dual-width replay. Clean Product exit and restart preserve RTC/CMOS. Windows Power Standard and Off both initiate a fresh POST with valid configuration on both widths. | x64 reaches the DOS driver in both modes. On x86 the 300-second probe cap expires after the configuration check and before the visible driver. See the original Windows Power control path below. |
 | O09 storage | T591 verifies DOS C/D access and writable readback. Original DOS returns to its prompt on a readonly write failure. The published x64 Window also shows original Windows rejecting a readonly C write. Both published widths refuse a competing exclusive open and release all three media modes on exit. | Windows installation and file persistence remain queued. Host-storage disconnection is unverified. Guest PCMCIA hot removal has no product route. |
-| O12 product | S2 and P23 cover native Console, DOS lifecycle and CMOS persistence. Both released EXEs also paint, freeze, resume and exit their native Window on a private desktop. | Usability remains queued. Foreground input focus and RDP were outside this replay. |
+| O12 product | S2 and P23 cover native Console, DOS lifecycle and CMOS persistence. Both released EXEs paint, freeze, resume and exit their native Window on a private desktop. The original Windows Program Manager also paints through that route on both widths. | Usability remains queued. Foreground input focus and RDP were outside this replay. |
 
 ### Original Windows Power control path
 

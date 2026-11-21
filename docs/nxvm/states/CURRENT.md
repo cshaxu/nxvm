@@ -38,7 +38,10 @@ at monitor exit in readonly, overlay and direct modes.
 
 The [native Window replay](../etc/evidence/t592-s3-ob300-local-setup.md#published-native-window-lifecycle)
 verifies paint, pause freeze, resume in the same window and normal exit of
-both releases on a private local desktop. It leaves foreground/RDP input unverified.
+both releases on a private local desktop. The [published Program Manager
+captures](../etc/evidence/t592-s3-ob300-local-setup.md#original-program-manager-on-the-published-window-path)
+also show original Windows drawing through that route on both widths.
+Input readiness, foreground focus and RDP remain outside that proof.
 
 The [published DOS handoff](../etc/evidence/t592-s3-ob300-local-setup.md#published-dos-performance-handoff)
 measures current native startup and directory response on both widths.
