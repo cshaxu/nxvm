@@ -29,3 +29,12 @@ records the two retained changes, their isolated and guest timings, the
 dual-width test matrix and all 16 artifact identities. The 0.5.0593 PC
 releases are the S2 delivery. The original performance thresholds remain
 open for the rest of T593.
+
+## S3 evidence
+
+[Clock and routing microbenchmarks](../etc/evidence/t593-s3-clock-microbench.md)
+and [release qualification](../etc/evidence/t593-s3-release-qualification.md)
+record the four retained simplifications, the rejected routing variants,
+all sixteen deployed identities and the dual-width results. Functional
+qualification passed. The MyOB300 probes still miss the original DIR gate
+on both widths. S3 is delivered for review, with the usability target open.

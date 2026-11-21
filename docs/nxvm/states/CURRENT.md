@@ -8,19 +8,19 @@ the original usability goals. The 0.5.0592 release is the measurement baseline.
 | Task | Status |
 | --- | --- |
 | T593 S2 | Closed after coordinator review of the fixed timing and clock delivery through 168f253bc. |
-| T593 S3 | Active. Reduce repeated physical routing and unnecessary board clock work. |
+| T593 S3 | Delivered for review. [Release qualification](../etc/evidence/t593-s3-release-qualification.md) passed the dual-width software matrix. MyOB300 DIR still exceeds its target on both widths. |
 
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation M5 T593 S3 after S2. |
 | Admission And Approval | Owner authorized architectural and algorithmic X86 Core and X86 NXVM optimizations. |
-| Objective | Reduce duplicate byte-route checks and skip unnecessary optional-device and Turbo host pacing work. Independently compare both changes on original DOS. |
+| Objective | Reduce duplicate byte-route checks and skip unnecessary optional-device and Turbo host pacing work. Prove exact chip and scheduler behavior with focused Release benchmarks. Batch retained changes before original DOS qualification. |
 | Non-goals | Preserve guest cycles, provider precedence and faults, the scheduler, timing levels and public ABI. No dynamic cache or OB300-specific branch. |
 | Reference Baseline | 168f253bc and the [S2 measurements](../etc/evidence/t593-s2-ob300-indexed-timing.md). |
 | Candidate Proposal | [Performance S sequence](../proposals/m5-ob300-performance.md), S3. |
-| Files And ABI Surface | Private Core memory routing, X86 NXVM board advance/deadline and pacing, applicable manifests, existing regressions and NXVM evidence. |
+| Files And ABI Surface | Private Core memory routing, scheduler and timeline, X86 NXVM RTC clock arithmetic, board advance/deadline and pacing, applicable manifests, existing regressions and NXVM evidence. |
 | Applicable Rules | NXVM reading set, shared Execution/Architecture/Coding/Documentation, NXVM source policy and component contracts. |
-| Verification | Both widths: route precedence, partial overlap, faults, aliases and board deadline contracts; serial original DOS comparison. Retained production changes require cached repository build, units, integrations and sixteen verified releases. |
+| Verification | Both widths: route precedence, partial overlap, faults, aliases and board deadline contracts; RTC phase and IRQ, followed by one original DOS replay per width for the accepted batch. Retained production changes require cached repository build, units, integrations and sixteen verified releases. |
 | Expected Markers | Identical route and guest outcomes with less repeated work and no material regression. Separate wall time and work counts. |
 | Asset Needs | NXVM-owned build/t593-s3. Disposable readonly guest media, 250 MiB and 300 s wall per replay, 120 s no progress. Remove temporary copies after processes exit. |
 | Reporting Requirements | Explain each owner, actual diff and workload, quantified limits and unavailable native paths. |
