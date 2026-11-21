@@ -12,7 +12,7 @@ if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
 endif()
 
 add_executable(myob300 main.c ob300_card_identity.c)
-target_link_libraries(myob300 PRIVATE myob300-machine x86-nxvm-product)
+target_link_libraries(myob300 PRIVATE myob300-machine x86-nxvm-product storage)
 if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(myob300 PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_link_options(myob300 PRIVATE -Wl,--strip-debug)

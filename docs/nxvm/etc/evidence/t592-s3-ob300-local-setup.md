@@ -821,3 +821,45 @@ MyOB300 board test is +14/-0. Manifest entries were refreshed.
   against an isolated card copy and readonly C image. Original inputs and
   the tracked INI were unchanged. No new MyOB300 interactive Window/RDP
   test was run for this routing change.
+
+### Product CMOS persistence
+
+MyOB300 now loads `myob300.cmos` beside the executable and captures the
+ordinary CMOS and guest RTC on clean monitor exit, after the worker has
+shut down and the Machine is unbound. The file holds 128 bytes and is
+independent of the storage attachment mode. The first missing or empty
+file uses the board defaults. Invalid lengths and I/O failures are reported.
+The implementation uses the existing storage writer. A single instance owns
+this file while running. Save is a clean-exit guarantee, without an atomic
+replacement or power-loss guarantee.
+
+The native replay drives the actual published EXE from a different working
+directory. It starts with an absent CMOS file, sends F1 only after the
+original warning appears, observes the original DOS HP Card Installation
+Client, pauses the guest, and sends `exit`. A second process starts with
+the unchanged file from that exit and must reach the same DOS checkpoint
+without seeing or receiving F1. Each run uses the original System 1.0 ABA
+ROM and a readonly disposable C disk. No diagnostic wrapper supplies the
+seed to either process.
+
+Both widths produced the same 128-byte CMOS image on the first clean exit,
+including the original extended checksum 003Ch. Both started a second
+process, reached the DOS checkpoint without F1, and exited successfully.
+Both rejected a short existing file before startup and left its contents
+unchanged. In a separate x64 check the existing CMOS file was made readonly
+after the monitor prompt. The save failed with process exit code 1 and the
+previous file remained byte-identical.
+
+| Verified output | SHA-256 |
+| --- | --- |
+| MyOB300 0.5.0592 x64, PE 8664h | `476e3113c372c31d15f3267bc33a02d1ea223cbb4b8f9b24e270311881854b2a` |
+| MyOB300 0.5.0592 x86, PE 014Ch | `1bd3c62e7f97dd5472424d5ef5480c5bbbbfa35c804a34d7dfc9259ef9941206` |
+| First clean exit CMOS, both widths | `81d8ea2a0c20fa62dc502771dc5ab0575c0a8264571b0e7b40ca2fe62dabdcf9` |
+| Second clean exit CMOS, both widths | `090696bb0f7121116cb66948c271fa47db1e445de8c2fed2534cac049d07cb3e` |
+| Readonly C disk before and after replay | `24f235b0955949fc2c1d9a353a7a97e9483d1adf6268239012164d42750c03ff` |
+
+The cached MyOB300 board unit test passed on both widths. The diff is
+App-local, +71/-6 production lines including the storage link declaration,
+with no shared-corpus source change. The original card, owner configuration
+and unrelated product artifacts were unchanged. No new Windows or RDP run
+was performed for this persistence change.

@@ -33,10 +33,14 @@ The System Card supplies DOS
 boot code. The default `overlay` mode keeps writes off the C image.
 Use `direct` on a disposable copy when you intend to persist guest writes.
 
-The current model selects 2 MiB RAM. Enter `start` at the monitor.
-A new emulator process starts with the model's CMOS defaults. The original
-ROM may report invalid configuration information and ask for F1 at that
-startup. Press F1 in the guest display to continue.
+The current model selects 2 MiB RAM. Enter `start` at the monitor. On first
+boot, the original ROM may report invalid configuration information and
+ask for F1. Press F1 in the guest display to continue. When done, use the
+monitor's `exit` to save the guest RTC and CMOS to `myob300.cmos` beside
+the EXE. The next launch loads that file, independently of the C disk's
+access mode. Keep the directory writable and run one instance per directory.
+If the file is damaged, move it aside while MyOB300 is closed to return to
+the first-boot configuration. Forced termination can lose the latest state.
 The original C backup starts Windows from the System Card. Both x86 and x64
 have drawn Program Manager in a replay. The owner confirmed menu navigation,
 exit to DOS and usable mouse input. For a DOS-only check, use a disposable image
