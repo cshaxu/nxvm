@@ -1160,11 +1160,32 @@ passed its extended checksum, and the backing C image was unchanged.
 | Guest File label highlighted | 108df568caa2b9c16a9906babb329c759c3acf9e082705fa5290af95c92f7f34 |
 | Probe output and verified exit | c6d6e478edbcc80cd655a0f645d49e82fd0d55eb30cdd4d1d789d460c602bbf7 |
 
+#### Published x86 Window keyboard endpoint
+
+A serial x86 replay used the same exact-release Window fixture and original
+overlay startup as the x64 keyboard run. It drew Program Manager at
+218.594 s. The fixture posted four F10 and Down sequences from 225.781 to
+251.812 s. The guest File label stayed at its baseline value through the
+266-second endpoint. The last frame still showed the busy cursor and was
+byte-identical to P36's earlier x86 desktop capture.
+
+The native monitor paused the machine and the published x86 process
+returned 0 on exit. The saved CMOS passed its extended checksum and the
+base C image stayed unchanged. This verifies clean exit after entering
+original Windows in both published widths. The x86 replay observed no guest
+keyboard response before its bound. It does not determine whether the
+guest would have handled input once it finished startup.
+
+| x86 native evidence | SHA-256 |
+| --- | --- |
+| Original guest still displaying a busy cursor at the endpoint | 125e192821ac91652a515e5bf79ca4b2ff0f119b5f99bee2bfa3215723d32fed |
+| Probe output and verified exit | 66638edee43c0dcb85a0c04031a96cc622e9fce4a1b76b5f362799d0bc34feb2 |
+
 ### Product obligation review
 
-| Design row | Evidence at P37 | Remaining boundary |
+| Design row | Evidence at P38 | Remaining boundary |
 | --- | --- | --- |
-| O07 input | Product DOS make/break, native monitor handoff, owner-tested Windows keyboard and built-in pointer, and a visible x64 guest File selection through its native Window messages. | Formal Windows interaction and redraw are queued. x86 Window-message input and RDP were outside the x64 replay. |
+| O07 input | Product DOS make/break, native monitor handoff, owner-tested Windows keyboard and built-in pointer, and a visible x64 guest File selection through its native Window messages. | Formal Windows interaction and redraw are queued. The published x86 guest stayed busy through the input observation. RDP is unverified. |
 | O08 power | Original DOS and original Windows resume via F13 have direct dual-width replay. Clean Product exit and restart preserve RTC/CMOS. Windows Power Standard and Off both initiate a fresh POST with valid configuration on both widths. | x64 reaches the DOS driver in both modes. On x86 the 300-second probe cap expires after the configuration check and before the visible driver. See the original Windows Power control path below. |
 | O09 storage | T591 verifies DOS C/D access and writable readback. Original DOS returns to its prompt on a readonly write failure. The published x64 Window also shows original Windows rejecting a readonly C write. Both published widths refuse a competing exclusive open and release all three media modes on exit. | Windows installation and file persistence remain queued. Host-storage disconnection is unverified. Guest PCMCIA hot removal has no product route. |
 | O12 product | S2 and P23 cover native Console, DOS lifecycle and CMOS persistence. Both released EXEs paint, freeze, resume and exit their native Window on a private desktop. The original Windows Program Manager also paints through that route on both widths. | Usability remains queued. Foreground input focus and RDP were outside this replay. |
