@@ -60,7 +60,11 @@ second execution route or an unreported transfer.
    reductions in repeated work, algorithms or production code when behavior
    and measured performance do not materially regress. Split only if evidence
    identifies independent changes with different verification needs.
-3. **S3: Qualify the selected changes.** Compare both widths against the
+3. **S3: Reduce Core routing and board clock work.** Integrate a narrower
+   routing proof into existing provider selection. Independently measure
+   skipping work that cannot affect absent devices or Turbo host pacing.
+   Preserve access priorities, faults and deadline flags.
+4. **S4: Qualify the selected changes.** Compare both widths against the
    original budgets, run the required cached checks and publish only as
    required by the actual change surface. If the targets remain unmet,
    document the measured limits for the owner's scope decision.

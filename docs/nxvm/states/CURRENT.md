@@ -1,32 +1,33 @@
-# M5 T593 S2 - Active: Exact CPU timing and clock hot paths
+# M5 T593 S3 - Active: Core routing and board clock work
 
 [S1 is closed](../history/M5-T593-S1-ob300-performance-baseline.md).
+[S2 is closed](../history/M5-T593-S2-ob300-indexed-timing.md).
 The [performance proposal](../proposals/m5-ob300-performance.md) owns
 the original usability goals. The 0.5.0592 release is the measurement baseline.
 
 | Task | Status |
 | --- | --- |
-| T592 | Closed. [Product-stage verification](../history/M5-T592-ob300-product-qualification.md). |
-| T593 S2 | Active. Replace fixed timing searches and verify the exact clock optimization independently. |
+| T593 S2 | Closed after coordinator review of the fixed timing and clock delivery through 168f253bc. |
+| T593 S3 | Active. Reduce repeated physical routing and unnecessary board clock work. |
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation M5 T593 S2 after S1. |
-| Admission And Approval | The owner authorized the proposed fixed timing table and exact clock investigation on 2026-11-21. |
-| Objective | Directly index fixed source timing by the existing form. Check the independently justified exact fractional conversion. Measure both against unchanged guest outcomes. |
-| Non-goals | No new dispatch path, preview cache, timing downgrade, phase approximation, or public ABI. |
-| Reference Baseline | S1 evidence at f45c34b85 and current 0.5.0592 releases. |
-| Candidate Proposal | [Performance scope and S sequence](../proposals/m5-ob300-performance.md), S2. |
-| Files And ABI Surface | Shared X86 Core timing and clock internals, their manifest, relevant existing tests, NXVM static test and evidence. Shared sources trigger 16 release EXEs with one target per P. |
-| Applicable Rules | NXVM reading set, shared Execution/Architecture/Coding/Documentation, X86 Core local guidance and source policy. |
-| Verification | Check all old table cells and missing forms; reuse both-width timing/clock coverage and compare isolated changes on original DOS. Build, unit, integration and 16-artifact qualification through the cached graphs if changes are retained. |
-| Expected Markers | O(1) fixed lookup with identical ticks and attribution, exact clock phase and tick delivery, measured guest performance and no material regression. |
-| Asset Needs | build/t593-s2, owned by NXVM. Use disposable read-only DOS fixture and copied System Card, max 200 MiB and 300 s per replay, 120 s no progress. Remove disposable media after probes exit. |
-| Reporting Requirements | Give per-change timing and actual diff, quantitative limits and unverified native paths. |
-| Stop Conditions | Reject known guest regressions and report timing classification evidence before expanding scope. |
-| Exit Criteria | Reviewed production diff and evidence, unchanged timing contracts, required repository tests and verified releases. |
-| Original Owner Request | Apply the S1 optimization recommendation after reviewing use of timing and decode tables. |
-| Similar-Issue Sweep | Check fixed lookup callers, related repeat rows, source-form checks and existing clock coverage. |
+| Identifier Mode | Continuation M5 T593 S3 after S2. |
+| Admission And Approval | Owner authorized architectural and algorithmic X86 Core and X86 NXVM optimizations. |
+| Objective | Reduce duplicate byte-route checks and skip unnecessary optional-device and Turbo host pacing work. Independently compare both changes on original DOS. |
+| Non-goals | Preserve guest cycles, provider precedence and faults, the scheduler, timing levels and public ABI. No dynamic cache or OB300-specific branch. |
+| Reference Baseline | 168f253bc and the [S2 measurements](../etc/evidence/t593-s2-ob300-indexed-timing.md). |
+| Candidate Proposal | [Performance S sequence](../proposals/m5-ob300-performance.md), S3. |
+| Files And ABI Surface | Private Core memory routing, X86 NXVM board advance/deadline and pacing, applicable manifests, existing regressions and NXVM evidence. |
+| Applicable Rules | NXVM reading set, shared Execution/Architecture/Coding/Documentation, NXVM source policy and component contracts. |
+| Verification | Both widths: route precedence, partial overlap, faults, aliases and board deadline contracts; serial original DOS comparison. Retained production changes require cached repository build, units, integrations and sixteen verified releases. |
+| Expected Markers | Identical route and guest outcomes with less repeated work and no material regression. Separate wall time and work counts. |
+| Asset Needs | NXVM-owned build/t593-s3. Disposable readonly guest media, 250 MiB and 300 s wall per replay, 120 s no progress. Remove temporary copies after processes exit. |
+| Reporting Requirements | Explain each owner, actual diff and workload, quantified limits and unavailable native paths. |
+| Stop Conditions | Reject material regressions and preserve evidence. Do not change the usability targets. |
+| Exit Criteria | Actual-diff review or evidence-backed rejection per candidate. Retained changes pass required tests and are published. Carry unresolved usability evidence to S4. |
+| Original Owner Request | Investigate shared Core and board performance. Accept bounded architectural, time and space reductions. |
+| Similar-Issue Sweep | Raw/decoded priority, instruction/data routing, optional PIT, deadline flags and Standard/Turbo pacing. |
 
 # M5 T588 - Closed: OB300 hardware and execution design
 
