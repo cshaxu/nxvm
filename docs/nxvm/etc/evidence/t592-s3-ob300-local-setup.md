@@ -912,3 +912,30 @@ The read-through identified the calls, but their relative costs are unmeasured.
 | O08 power | Original DOS and original Windows resume via F13 have direct dual-width replay. Clean Product exit and restart preserve RTC/CMOS. | The original Windows Power control's Standard/Off cold-boot behavior has not been directly observed. The HP Operating Guide, page 9-8, specifies session loss and a reboot on power-on in both settings. |
 | O09 storage | DOS C/D access and writable readback are recorded in T591. An original DOS readonly write fails and returns to DOS on both widths. | Windows installation and file persistence remain with the Windows receiver. Live backing-file loss and card hot removal are unverified. |
 | O12 product | Native Console release startup, monitor lifecycle and packaging are recorded in S2. P23 passed fresh real DOS startup, clean exit and CMOS reload. | Usability thresholds remain open in the performance receiver. No new independent desktop/RDP qualification was run. |
+
+### Original Windows Power control path
+
+The original restored SYSTEM.INI identifies `POWER.DRV` and selects the HP
+`D:\OMNIBOOK\OBPOWER.DLL` OptionsDLL. The original Main group names Control
+Panel and `C:\WINDOWS\CONTROL.EXE`. An x64 replay with the unmodified guest
+startup saw the Program Manager title at 176.456 s and the original File
+menu respond to Alt+F at 231.974 s. The first desktop frame alone did not
+establish input readiness.
+
+A second x64 probe used a disposable C image with only `shell=progman.exe`
+changed to `shell=control.exe`. It loaded the same original System Card and
+production Machine. The guest displayed the stock Control Panel and its
+Power icon. Existing neutral key input moved focus from Color to Keyboard
+and across to Power. The sampled frame after Enter showed Power selected,
+its status description and the busy cursor. The replay reached its budget
+before the Power dialog could be observed. Neither setting was changed, and
+no power switch was injected in this run. The next observable milestone is
+an opened Power dialog, followed by choosing a setting and checking the
+actual F13 power-off and reset sequence.
+
+| Power control diagnostic | SHA-256 |
+| --- | --- |
+| Disposable Control Panel startup disk, before and after | `790340b8f294a5a0e61b80a7481b9767bec395c0a2f2cdef26c3bf51fb8ffa68` |
+| Stock Control Panel and Power icon | `4a9f04339fafb34525ff16cba904e51f05635fe4cd751085c99254ca7ac9abf8` |
+| Selected Power after Enter | `c2d2c79cabb9baf5cf16fc08a3bcf2630ba18481733a8ceba3e66a2b3d75a1c1` |
+| Control Panel replay | `3046b699ed3981edbc01e5aadd96ed2bc2544ad7fdec8e556d28c8c049fc4134` |
