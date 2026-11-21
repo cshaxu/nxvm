@@ -1175,6 +1175,31 @@ emulated card insertion and removal.
 | Dual-width replay and readonly backing-image result | 01030485cdf3cb0ef8ba8f5834fea0251e1bcb750cb248ade0f049d8493d00a5 |
 | Native handle and monitor fixture | 25a802490b48d12688fb6e34f48c8609a7d839abee575b4b2a324169e60443fd |
 
+#### Published DOS writes in overlay and direct modes
+
+The exact 0.5.0592 x64 and x86 releases booted original System 1.0 ABA
+in a hidden native Console. A disposable copy of the original C backup
+used the DOS-only startup fixture from the performance handoff. Each
+case began with the same C image and a copy of valid guest-saved CMOS.
+The guest executed `MD ZZMODE` followed by `DIR ZZMODE`, displayed
+`<DIR>`, paused through the product hotkey and exited normally.
+
+| Host width | Overlay after exit | Direct after exit |
+| --- | --- | --- |
+| x64 | Exact original image hash, no ZZMODE entry | ZZMODE at FAT16 cluster 1945 |
+| x86 | Exact original image hash, no ZZMODE entry | ZZMODE at FAT16 cluster 1945 |
+
+An independent host read verified the FAT16 root entry, directory
+attribute and the on-disk dot entries for direct mode. Both direct
+images had the same final SHA-256
+`31d60d9ad9a502d1fb75c1f5fb66d676718c3cf63ea7a8e3040c05ad103fcda3`.
+The source C archive and System Card retained their original hashes.
+This covers actual DOS writes and clean exit. Windows file persistence
+and involuntary host device removal remain separate.
+
+- Host disk and application identity transcript SHA-256: `139f801581ef802f28fff63135e81837655bd7486cc021062326306c31c9343b`
+- Console transcript SHA-256: `00654fa694e54d41ce3daea2875b0020dedcd815429183337d629915d58144a1`
+
 #### Published native Window lifecycle
 
 The exact x64 and x86 0.5.0592 executables ran serially on a separate
@@ -1337,7 +1362,7 @@ the formal original Windows installation/persistence gate are separate.
 | --- | --- | --- |
 | O07 input | Product DOS make/break, native monitor handoff, owner-tested Windows keyboard and built-in pointer, and original guest File selection through native Window messages on both widths. | Formal Windows interaction and redraw are queued. Physical Window input focus and RDP are unverified by the isolated automation. |
 | O08 power | Original DOS and original Windows resume via F13 have direct dual-width replay. Clean Product exit and restart preserve RTC/CMOS. Windows Power Standard and Off both initiate a fresh POST with valid configuration on both widths. | x64 reaches the DOS driver in both modes. The x86 probes match the captured ordinary POST RTC prefix but end before showing the DOS driver. See the cross-width restart trace comparison below. |
-| O09 storage | T591 verifies DOS C/D access and writable readback. Original DOS returns to its prompt on a readonly write failure. The published x64 Window also shows original Windows rejecting a readonly C write. Both published widths refuse a competing exclusive open and release all three media modes on exit. | Windows installation and file persistence remain queued. Host-storage disconnection is unverified. Guest PCMCIA hot removal has no product route. |
+| O09 storage | T591 verifies DOS C/D access and writable readback. Original DOS returns to its prompt on a readonly write failure. The published x64 Window also shows original Windows rejecting a readonly C write. Both published widths refuse a competing exclusive open and release all three media modes on exit. Both also verify native DOS directory creation with correct overlay isolation and direct persistence. | Windows installation and file persistence remain queued. Host-storage disconnection is unverified. Guest PCMCIA hot removal has no product route. |
 | O12 product | S2 and P23 cover native Console, DOS lifecycle and CMOS persistence. Both released EXEs paint, freeze, resume and exit their native Window on a private desktop. The original Windows Program Manager also paints through that route on both widths. | Usability remains queued. Foreground input focus and RDP were outside this replay. |
 
 ### Original Windows Power control path
