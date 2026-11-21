@@ -1676,6 +1676,24 @@ This verifies x64 Off at the guest input boundary.
 - BIOS wake poll SHA-256: `8b4cec322cfb531d4fdc1ed6168cf028e6d7cbc91f5172fdaf5849504703f286`
 - CMOS trace SHA-256: `22359d6ff6ce4dfd5ad962238ee405a7d443e26084e6f8e738a36b025273f9ff`
 
+#### x86 Windows Standard with the replacement power chord
+
+The x86 P48 replay used the same disposable one-icon Control Panel
+fixture and staged input as x64. It confirmed Standard in the original
+dialog. After the first Ctrl+Alt+O, original BIOS entered its wake poll.
+The second chord was sent at 268.909 s, and the BIOS read 10h after 00h.
+The restarted firmware read ordinary CMOS 40h–64h with a recomputed
+sum of 003Ch and a stored checksum of 003Ch. The 286 s observation
+ended before new POST text or DOS driver output. No F1 was sent.
+The remaining 17.091 s after the wake chord is shorter than the x64
+Standard interval of 61.691 s from the chord to the DOS driver. This
+establishes x86 key admission and the early firmware restart, with the
+published x86 DOS endpoint and RDP still open.
+
+- Guest and input transcript SHA-256: `7ec68ceeb271d4b142c85f66c43cf7b1945373a0169a0db2c4582ce1abe9b9d3`
+- BIOS wake poll SHA-256: `2da015af1926af64068801175961ad7b90df2b3e0151f24c7ed879a849aaca73`
+- CMOS trace SHA-256: `90a16c5de986cabf283581913605497c6f2ecf5d308cda1bf50863d6748e95ab`
+
 #### Published x86 Windows power acceptance procedure
 
 Use the published x86 MyOB300 EXE, the original System 1.0 ABA card,

@@ -78,6 +78,8 @@ specifies the observable Standard and Off endpoints and RDP evidence.
 The replacement chord passes x64 Windows [Standard](../etc/evidence/t592-s3-ob300-local-setup.md#windows-standard-with-the-replacement-power-chord)
 and [Off](../etc/evidence/t592-s3-ob300-local-setup.md#windows-off-with-the-replacement-power-chord)
 through fresh POST and DOS driver load in the instrumented guest replays.
+The [x86 Standard replay](../etc/evidence/t592-s3-ob300-local-setup.md#x86-windows-standard-with-the-replacement-power-chord)
+confirmed the new keyboard chord and restarted firmware CMOS reads.
 The queued performance and Windows gates remain in force.
 
 | Field | Required record |
