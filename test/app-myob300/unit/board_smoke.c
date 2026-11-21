@@ -648,6 +648,18 @@ static void test_machine(const lib_u8 *card)
     (void)machine_debug(&driver, (x86_debug_request){.operation = X86_DEBUG_WRITE_PORT,
         .port = 0xfbu, .bytes = 1u});
     (void)machine_debug(&driver, (x86_debug_request){.operation = X86_DEBUG_WRITE_PORT,
+        .port = 0xecu, .address = 0x02u, .bytes = 1u});
+    driver.deliver_input(driver.context, &(kvm_input_event){.type = KVM_EVENT_KEY,
+        .data.key = {.key = BASE_KEY_F13, .pressed = LIB_TRUE}});
+    response = machine_debug(&driver, (x86_debug_request){.operation = X86_DEBUG_READ_PORT,
+        .port = 0xedu, .bytes = 1u});
+    lib_test_assert(response.value == 0x10u);
+    driver.deliver_input(driver.context, &(kvm_input_event){.type = KVM_EVENT_KEY,
+        .data.key = {.key = BASE_KEY_F13, .pressed = LIB_FALSE}});
+    response = machine_debug(&driver, (x86_debug_request){.operation = X86_DEBUG_READ_PORT,
+        .port = 0xedu, .bytes = 1u});
+    lib_test_assert(response.value == 0u);
+    (void)machine_debug(&driver, (x86_debug_request){.operation = X86_DEBUG_WRITE_PORT,
         .port = 0xecu, .address = 0x35u, .bytes = 1u});
     response = machine_debug(&driver, (x86_debug_request){.operation = X86_DEBUG_READ_PORT,
         .port = 0xedu, .bytes = 1u});

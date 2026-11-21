@@ -41,3 +41,9 @@ have drawn Program Manager in a replay. Menu interaction, Word and Excel
 remain under qualification. For a DOS-only check, use a disposable image
 with the original CONFIG.SYS and a copy of AUTOEXEC.BAT with Windows
 autostart removed.
+
+To wake a guest that has already entered HP firmware APM suspend,
+press and release F13 in the guest display. Leave the emulator running
+so the guest firmware can observe both key transitions. F13 currently
+supplies the wake key level. Entering suspend from normal execution by
+pressing the power key is still under investigation.

@@ -175,6 +175,11 @@ lib_status myob300_board_set_matrix_key(myob300_board *board, lib_u8 row,
     return LIB_STATUS_OK;
 }
 
+void myob300_board_set_power_key(myob300_board *board, lib_bool pressed)
+{
+    board->chipset.power_key_pressed = pressed;
+}
+
 void myob300_board_receive_mouse(myob300_board *board, lib_i32 dx, lib_i32 dy, lib_u32 buttons)
 {
     myob300_mouse_receive(&board->mouse, dx, dy, buttons);

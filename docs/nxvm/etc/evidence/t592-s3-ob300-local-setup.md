@@ -276,6 +276,11 @@ returned from the original 5307h call with carry clear, and the next
 The DOS diagnostic printed its completion marker. The read-only disk
 retained its recorded SHA-256.
 
+The x86 replay completed the same diagnostic from the same read-only
+disk. Both runs sampled RI at the same two guest ticks and returned
+the same APM registers, including BX=0003h from 530Bh. This checks
+the original firmware behavior across the two host widths.
+
 The injection targeted the observed modem-status I/O reads in the
 diagnostic executable. It demonstrates original guest continuation
 after a known wake cause. The production App still has no modem ring
@@ -288,3 +293,57 @@ an open Windows session or Standard/Off cold start.
 | Continuous RI sample window | `dac3ed5f1c0cdcba0555006728733bdd25985360b58a34c96fca25f2a36a2621` |
 | Continuous RI indexed and interrupt trace | `8d40e5a1a43770e0a551aee33f99d56ac365851f52e3514d4b77508042085b00` |
 | Continuous RI DOS BIOS results and completion marker | `7565ef70cb75617566d99d7ac692865f805d693bd447fc7b2d6ef5499c917295` |
+| x86 continuous RI BIOS results and completion marker | `6b16a2d087e8687f6e73b66e76b0582d9b7da38a77426692efd7cda46cf5219c` |
+
+## HP power-key sense candidate
+
+A separate x64 diagnostic asserted index 02h bit 4 for 1,000,000
+guest ticks, then released it. The original firmware read the active
+level at F000:A337h and A43Ch, selected keyboard matrix row 0 and
+observed the relevant column released. It repeatedly checked bit 4
+until the level cleared. It then returned to DOS with carry clear and
+reported the normal APM resume event 0003h. This identifies a
+guest-visible press-and-release contract for a wake key independently
+of the serial ring path. The HP troubleshooting bulletin bpi01075
+documents the separate Esc plus On/Off diagnostic combination.
+
+The current candidate maps neutral F13 down/up to this App-local
+level. The existing Machine input queue still owns delivery, and
+the indexed port observes the level without a BIOS address check.
+The cached board fixture passed on x86 and x64, including delivery
+through the real Machine driver and the resulting 02h values.
+Cold reset clears the pressed level. This is an L1 sense model.
+The exact physical decode and behavior that initiates suspend
+when the system is awake remain open.
+
+| Item | SHA-256 |
+| --- | --- |
+| Diagnostic switch level and hold interval | `3e023a646a8f8fb7f29c959d24ad1f2488bd20cce907ce6c5170764ccfa0da40` |
+| Firmware polling, matrix scan and release trace | `b8b35cfbf4b272a81bb77c5585728237e48bfb62f12dc9c2975cb6f71c509dd1` |
+| DOS completion after diagnostic release | `78531e5c54f2ca80e0c10f74791ede80135c90008b89f8c258357a3c92797a01` |
+
+The x64 original-DOS replay then used the production board and Machine
+input path. The I/O observer only marked that the guest was waiting at
+F000:A337h. The runner sent neutral F13 press and release through
+emulator_machine_enqueue_input, at 88,822 and 89,077 ms respectively.
+No port values were injected. The original BIOS returned carry clear
+from 5307h, reported the normal 0003h resume event, and the DOS program
+continued to its completion marker. The read-only disk was unchanged.
+The x64 output SHA-256 is `da2d04633d930cce0a9b2b8edc5530d19e6f9b19cf37e28dda64f4e481d36d37`.
+
+The x86 run sent the same production FIFO transitions at 97,252 and
+97,508 ms. The original DOS diagnostic returned carry clear from
+5307h, reported 0003h and reached its completion marker. The read-only
+C image remained unchanged. Its output SHA-256 is
+`c5035e270e54ea75005293c4a636fcce920e0af126fdb24ef95f12133b47c1e3`.
+
+The published pair passed native launch, external card and read-only
+disk attachment, monitor info and exit. The App source and its
+existing board fixture are the only implementation diff. Shared
+sources, other Apps, external media and owner INI are unchanged.
+The native monitor launch check did not simulate a desktop F13 press.
+
+| Release | PE machine | SHA-256 |
+| --- | --- | --- |
+| myob300_0_5_0592_x64.exe | 8664h | `dacf14d52b78168345dafbdff695ce898a218970cea69f0954e39c8fa3fc3d3d` |
+| myob300_0_5_0592_x86.exe | 014Ch | `02fb6921da05410f2c6f5cfd529eaedaa6ed820edb04bd30c57a935c14786cbe` |

@@ -27,6 +27,7 @@ typedef struct myob300_chipset {
     lib_u8 ab_shadow[MYOB300_CHIPSET_AB_SHADOW_BYTES];
     lib_bool configuration_enabled;
     lib_bool management_active;
+    lib_bool power_key_pressed;
 } myob300_chipset;
 
 /* The board retains chip storage until Core releases its routes. */

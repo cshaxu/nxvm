@@ -11,6 +11,8 @@
 #define MYOB300_CHIPSET_LOCK_PORT 0xf9u
 #define MYOB300_CHIPSET_UNLOCK_PORT 0xfbu
 #define MYOB300_CHIPSET_VERSION 0x00u
+#define MYOB300_CHIPSET_SLOT_POINTER 0x02u
+#define MYOB300_CHIPSET_POWER_KEY_SENSE 0x10u
 #define MYOB300_CHIPSET_SLEEP_CONTROL 0x13u
 #define MYOB300_CHIPSET_SLEEP_CONTROL_WRITABLE 0xf9u
 #define MYOB300_CHIPSET_SLEEP_REQUESTED 0x80u
@@ -45,7 +47,7 @@ static const struct {
     lib_u8 index;
     lib_u8 reset;
 } myob300_chipset_startup[MYOB300_CHIPSET_STARTUP_REGISTER_COUNT] = {
-    {0x02u, 0x00u}, {0x03u, 0x03u}, {0x05u, 0x00u}, {0x07u, 0x10u},
+    {MYOB300_CHIPSET_SLOT_POINTER, 0x00u}, {0x03u, 0x03u}, {0x05u, 0x00u}, {0x07u, 0x10u},
     {0x0au, 0x00u}, {0x0fu, 0x00u}, {0x10u, 0x00u},
     {0x11u, 0x00u}, {0x15u, 0x00u},
     {0x1eu, 0x00u}, {0x1fu, 0x00u}, {0x20u, 0x00u}, {0x21u, 0x00u},
@@ -124,6 +126,7 @@ void myob300_chipset_reset(myob300_chipset *chipset)
     chipset->management_control = 0x20u;
     chipset->configuration_enabled = LIB_FALSE;
     chipset->management_active = LIB_FALSE;
+    chipset->power_key_pressed = LIB_FALSE;
     chipset->ab_access = 0u;
     lib_memory_set(chipset->ab_shadow, 0, sizeof(chipset->ab_shadow));
     chipset->keyboard_row_select = 0u;
@@ -204,7 +207,11 @@ static lib_status myob300_chipset_read(void *owner, lib_u16 port,
             return myob300_card_register_read(&chipset->card,
                 chipset->configuration_index, out_value);
         *out_value = *startup;
-        if (chipset->configuration_index == MYOB300_CHIPSET_SYSTEM_SOCKET_STATUS) {
+        if (chipset->configuration_index == MYOB300_CHIPSET_SLOT_POINTER &&
+            chipset->power_key_pressed) {
+            /* L1: System 1.0 tests this level and waits for release on wake. */
+            *out_value |= MYOB300_CHIPSET_POWER_KEY_SENSE;
+        } else if (chipset->configuration_index == MYOB300_CHIPSET_SYSTEM_SOCKET_STATUS) {
             /* The installed immutable System Card is ready without a power-up delay. */
             *out_value &= ~MYOB300_CHIPSET_SYSTEM_SOCKET_READY;
             if (chipset->card.common.data != LIB_NULL)
