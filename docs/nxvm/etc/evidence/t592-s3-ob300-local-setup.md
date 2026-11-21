@@ -1640,6 +1640,26 @@ to the missing x86 terminal within the current cap.
 | Actual Power dialog selections and F13 output | a1a815878aa67d88957bd35eac5776efc28beb63c30154865ad01b2aa8882b94 |
 | New POST RTC trace | 1b5e4e8c7e47e6b84ae7188817191fb44a5271d8048614302ce73b7f7dd0cda5 |
 
+#### Windows Standard with the replacement power chord
+
+An x64 diagnostic linked the P48 production Machine and used the same
+controlled one-icon Windows Control Panel fixture. It selected Standard
+in the original Power dialog and sent staged Ctrl, Alt and O make/break
+events through the existing Machine input queue. The original firmware
+entered its wake poll after the first chord. The second chord was sent
+at 212.978 s. The poll sampled the pressed power bit, fresh OmniBook
+ROM BIOS 1.0 POST appeared at 258.268 s, and the original DOS BIOS
+Services driver appeared at 274.669 s. The probe exited 0 and did not
+send F1. The recovered and disposable C images retained their hashes.
+
+The probe observed the guest input and reset route. The host Window
+focus and RDP path, Off with the replacement chord, and the complete
+x86 restart remain open.
+
+- Guest UI and DOS transcript SHA-256: `e2b7dc9130c9bac608437a7a14f4b5c39ec72be0753bde88df21d15e9074a0fa`
+- BIOS wake poll SHA-256: `aa599b995cce97ecca8654aefc0844ce3aa12fb9cd2e9280c7fe7bc88b739d16`
+- CMOS trace SHA-256: `7d6a93a2354075efd3d33c65cae5bf10f7fa0e53ead8af8995c5d247fa628fed`
+
 #### Published x86 Windows power acceptance procedure
 
 Use the published x86 MyOB300 EXE, the original System 1.0 ABA card,

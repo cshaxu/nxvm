@@ -75,6 +75,8 @@ match through every captured x86 ordinary POST CMOS operation. The
 later x86 DOS endpoint still lacks direct evidence.
 The [published x86 acceptance procedure](../etc/evidence/t592-s3-ob300-local-setup.md#published-x86-windows-power-acceptance-procedure)
 specifies the observable Standard and Off endpoints and RDP evidence.
+The [replacement chord also passes x64 Windows Standard](../etc/evidence/t592-s3-ob300-local-setup.md#windows-standard-with-the-replacement-power-chord)
+through fresh POST and DOS driver load in the instrumented guest replay.
 The queued performance and Windows gates remain in force.
 
 | Field | Required record |
