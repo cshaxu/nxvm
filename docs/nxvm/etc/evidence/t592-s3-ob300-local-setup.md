@@ -1652,13 +1652,29 @@ ROM BIOS 1.0 POST appeared at 258.268 s, and the original DOS BIOS
 Services driver appeared at 274.669 s. The probe exited 0 and did not
 send F1. The recovered and disposable C images retained their hashes.
 
-The probe observed the guest input and reset route. The host Window
-focus and RDP path, Off with the replacement chord, and the complete
-x86 restart remain open.
+The probe observed the guest input and reset route. Host Window focus,
+RDP input and the complete x86 restart remain open.
 
 - Guest UI and DOS transcript SHA-256: `e2b7dc9130c9bac608437a7a14f4b5c39ec72be0753bde88df21d15e9074a0fa`
 - BIOS wake poll SHA-256: `aa599b995cce97ecca8654aefc0844ce3aa12fb9cd2e9280c7fe7bc88b739d16`
 - CMOS trace SHA-256: `7d6a93a2354075efd3d33c65cae5bf10f7fa0e53ead8af8995c5d247fa628fed`
+
+#### Windows Off with the replacement power chord
+
+The x64 counterpart replay used the same P48 production code and
+one-icon Windows Control Panel fixture. The original Power dialog
+visibly selected Off and closed after confirmation. It received
+the first Ctrl+Alt+O at 199.481 s. The second chord was sent at
+the original BIOS wake poll at 213.829 s. The firmware sampled the
+wake switch, displayed fresh ROM BIOS 1.0 POST at 256.336 s and
+loaded the original DOS BIOS Services driver at 268.937 s. No F1
+was sent, both C images retained their hashes and the probe exited 0.
+This verifies x64 Off at the guest input boundary.
+
+- Off selection capture SHA-256: `6768f2800fb4d10dff76c426a56bd3f483b1e397c3d63f6a4ced099fe1da3e89`
+- Guest UI and DOS transcript SHA-256: `af33559ba08e9ae0e36687b9a8e0625264c186d6d0dfd5b3f00048e08aad8c52`
+- BIOS wake poll SHA-256: `8b4cec322cfb531d4fdc1ed6168cf028e6d7cbc91f5172fdaf5849504703f286`
+- CMOS trace SHA-256: `22359d6ff6ce4dfd5ad962238ee405a7d443e26084e6f8e738a36b025273f9ff`
 
 #### Published x86 Windows power acceptance procedure
 
