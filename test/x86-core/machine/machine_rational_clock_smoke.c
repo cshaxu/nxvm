@@ -172,6 +172,7 @@ lib_i32 main(void)
 {
     x86_core_machine_clock_domain domain;
     x86_core_machine_clock_ratio ratio = { 3u, 2u, 1u };
+    x86_core_machine_clock_ratio narrow_boundary = { LIB_UINT32_MAX, 2u, 0u };
     x86_core_machine_clock_ratio invalid_phase = { 1u, 2u, 2u };
     x86_core_machine_clock_ratio invalid_zero = { 1u, 0u, 0u };
     x86_core_machine_clock_ratio identity = { 0u, 0u, 0u };
@@ -190,6 +191,13 @@ lib_i32 main(void)
     failed |= x86_core_machine_clock_domain_advance(&domain, 1u) != 2u;
     failed |= x86_core_machine_clock_domain_initialize(&domain, &identity) !=
         LIB_STATUS_OK || x86_core_machine_clock_domain_advance(&domain, 5u) != 5u;
+    /* The second tick crosses the narrow limit solely from the saved phase. */
+    failed |= x86_core_machine_clock_domain_initialize(&domain, &narrow_boundary) !=
+        LIB_STATUS_OK;
+    failed |= x86_core_machine_clock_domain_advance(&domain, 1u) != LIB_UINT32_MAX / 2u ||
+        domain.phase != 1u;
+    failed |= x86_core_machine_clock_domain_advance(&domain, 1u) != LIB_UINT32_MAX / 2u + 1u ||
+        domain.phase != 0u || domain.delivered_ticks != LIB_UINT32_MAX;
     failed |= x86_core_machine_clock_domain_initialize(&domain, &invalid_phase) !=
         LIB_STATUS_INVALID_ARGUMENT;
     failed |= x86_core_machine_clock_domain_initialize(&domain, &invalid_zero) !=

@@ -54,6 +54,18 @@ lib_u64 x86_core_machine_clock_domain_advance(x86_core_machine_clock_domain *dom
         domain->delivered_ticks += elapsed_ticks;
         return elapsed_ticks;
     }
+    /* The complete sum fits in 64 bits when elapsed_ticks is a lib_u32.
+     * A narrow quotient and remainder are exact if the sum also fits. */
+    if (elapsed_ticks <= LIB_UINT32_MAX) {
+        const lib_u64 scaled = elapsed_ticks * domain->numerator + domain->phase;
+        if (scaled <= LIB_UINT32_MAX) {
+            const lib_u32 narrow = (lib_u32)scaled;
+            converted = narrow / domain->denominator;
+            domain->phase = narrow % domain->denominator;
+            domain->delivered_ticks += converted;
+            return converted;
+        }
+    }
     ticks = (elapsed_ticks / domain->denominator) * domain->numerator;
     remainder = (elapsed_ticks % domain->denominator) * domain->numerator +
         domain->phase;

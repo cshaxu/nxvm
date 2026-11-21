@@ -192,13 +192,9 @@ typedef enum x86_core_cpu_source_timing_form {
     X86_CORE_CPU_SOURCE_TIMING_8086_LOOP,
     X86_CORE_CPU_SOURCE_TIMING_8086_INTO,
     X86_CORE_CPU_SOURCE_TIMING_8086_XLAT,
-    X86_CORE_CPU_SOURCE_TIMING_MOV_SREG_STORE_MEMORY
+    X86_CORE_CPU_SOURCE_TIMING_MOV_SREG_STORE_MEMORY,
+    X86_CORE_CPU_SOURCE_TIMING_FORM_COUNT
 } x86_core_cpu_source_timing_form;
-
-typedef struct x86_core_cpu_source_timing_entry {
-    x86_core_cpu_source_timing_form form;
-    lib_u8 ticks;
-} x86_core_cpu_source_timing_entry;
 
 typedef struct x86_core_cpu_source_repeat_timing_entry {
     x86_core_cpu_source_timing_form form;
@@ -222,224 +218,224 @@ typedef struct x86_core_cpu_source_transfer_plan {
 /* Intel 8086 Family User's Manual, Tables 2-20 and 2-21.  The selected
  * memory rows receive the table's EA, segment-override, and odd-word
  * additions below; prefetch and bus availability remain outside this owner. */
-static const x86_core_cpu_source_timing_entry
-    x86_core_cpu_8086_source_timing_ledger[] = {
-    { X86_CORE_CPU_SOURCE_TIMING_NOP, 3u },
-    { X86_CORE_CPU_SOURCE_TIMING_CLC, 2u },
-    { X86_CORE_CPU_SOURCE_TIMING_MOV_IMMEDIATE, 4u },
-    { X86_CORE_CPU_SOURCE_TIMING_MOV_REGISTER_REGISTER, 2u },
-    { X86_CORE_CPU_SOURCE_TIMING_MOV_RM_REGISTER, 9u },
-    { X86_CORE_CPU_SOURCE_TIMING_MOV_REGISTER_RM, 8u },
-    { X86_CORE_CPU_SOURCE_TIMING_MOV_MOFFS_READ, 10u },
-    { X86_CORE_CPU_SOURCE_TIMING_MOV_MOFFS_WRITE, 10u },
-    { X86_CORE_CPU_SOURCE_TIMING_IN_IMMEDIATE, 10u },
-    { X86_CORE_CPU_SOURCE_TIMING_IN_DX, 8u },
-    { X86_CORE_CPU_SOURCE_TIMING_OUT_IMMEDIATE, 10u },
-    { X86_CORE_CPU_SOURCE_TIMING_OUT_DX, 8u },
-    { X86_CORE_CPU_SOURCE_TIMING_CALL_NEAR_DIRECT, 19u },
-    { X86_CORE_CPU_SOURCE_TIMING_CALL_NEAR_REGISTER, 16u },
-    { X86_CORE_CPU_SOURCE_TIMING_CALL_NEAR_MEMORY, 21u },
-    { X86_CORE_CPU_SOURCE_TIMING_CALL_FAR_DIRECT, 28u },
-    { X86_CORE_CPU_SOURCE_TIMING_CALL_FAR_MEMORY, 37u },
-    { X86_CORE_CPU_SOURCE_TIMING_JMP_DIRECT, 15u },
-    { X86_CORE_CPU_SOURCE_TIMING_JMP_REGISTER, 11u },
-    { X86_CORE_CPU_SOURCE_TIMING_JMP_MEMORY, 18u },
-    { X86_CORE_CPU_SOURCE_TIMING_JMP_FAR_DIRECT, 15u },
-    { X86_CORE_CPU_SOURCE_TIMING_JMP_FAR_MEMORY, 24u },
-    { X86_CORE_CPU_SOURCE_TIMING_RET_NEAR, 8u },
-    { X86_CORE_CPU_SOURCE_TIMING_RET_NEAR_IMMEDIATE, 12u },
-    { X86_CORE_CPU_SOURCE_TIMING_RET_FAR, 18u },
-    { X86_CORE_CPU_SOURCE_TIMING_RET_FAR_IMMEDIATE, 17u },
-    { X86_CORE_CPU_SOURCE_TIMING_PUSH_REGISTER, 11u },
-    { X86_CORE_CPU_SOURCE_TIMING_PUSH_MEMORY, 16u },
-    { X86_CORE_CPU_SOURCE_TIMING_POP_REGISTER, 8u },
-    { X86_CORE_CPU_SOURCE_TIMING_POP_MEMORY, 17u },
-    { X86_CORE_CPU_SOURCE_TIMING_PUSHF, 10u },
-    { X86_CORE_CPU_SOURCE_TIMING_POPF, 8u },
-    { X86_CORE_CPU_SOURCE_TIMING_HLT, 2u },
-    { X86_CORE_CPU_SOURCE_TIMING_INT3, 52u },
-    { X86_CORE_CPU_SOURCE_TIMING_INT_IMMEDIATE, 51u },
-    { X86_CORE_CPU_SOURCE_TIMING_INTO, 53u },
-    { X86_CORE_CPU_SOURCE_TIMING_IRET, 24u }
+static const lib_u8
+    x86_core_cpu_8086_source_timing_ledger[X86_CORE_CPU_SOURCE_TIMING_FORM_COUNT] = {
+    [X86_CORE_CPU_SOURCE_TIMING_NOP] = 3u,
+    [X86_CORE_CPU_SOURCE_TIMING_CLC] = 2u,
+    [X86_CORE_CPU_SOURCE_TIMING_MOV_IMMEDIATE] = 4u,
+    [X86_CORE_CPU_SOURCE_TIMING_MOV_REGISTER_REGISTER] = 2u,
+    [X86_CORE_CPU_SOURCE_TIMING_MOV_RM_REGISTER] = 9u,
+    [X86_CORE_CPU_SOURCE_TIMING_MOV_REGISTER_RM] = 8u,
+    [X86_CORE_CPU_SOURCE_TIMING_MOV_MOFFS_READ] = 10u,
+    [X86_CORE_CPU_SOURCE_TIMING_MOV_MOFFS_WRITE] = 10u,
+    [X86_CORE_CPU_SOURCE_TIMING_IN_IMMEDIATE] = 10u,
+    [X86_CORE_CPU_SOURCE_TIMING_IN_DX] = 8u,
+    [X86_CORE_CPU_SOURCE_TIMING_OUT_IMMEDIATE] = 10u,
+    [X86_CORE_CPU_SOURCE_TIMING_OUT_DX] = 8u,
+    [X86_CORE_CPU_SOURCE_TIMING_CALL_NEAR_DIRECT] = 19u,
+    [X86_CORE_CPU_SOURCE_TIMING_CALL_NEAR_REGISTER] = 16u,
+    [X86_CORE_CPU_SOURCE_TIMING_CALL_NEAR_MEMORY] = 21u,
+    [X86_CORE_CPU_SOURCE_TIMING_CALL_FAR_DIRECT] = 28u,
+    [X86_CORE_CPU_SOURCE_TIMING_CALL_FAR_MEMORY] = 37u,
+    [X86_CORE_CPU_SOURCE_TIMING_JMP_DIRECT] = 15u,
+    [X86_CORE_CPU_SOURCE_TIMING_JMP_REGISTER] = 11u,
+    [X86_CORE_CPU_SOURCE_TIMING_JMP_MEMORY] = 18u,
+    [X86_CORE_CPU_SOURCE_TIMING_JMP_FAR_DIRECT] = 15u,
+    [X86_CORE_CPU_SOURCE_TIMING_JMP_FAR_MEMORY] = 24u,
+    [X86_CORE_CPU_SOURCE_TIMING_RET_NEAR] = 8u,
+    [X86_CORE_CPU_SOURCE_TIMING_RET_NEAR_IMMEDIATE] = 12u,
+    [X86_CORE_CPU_SOURCE_TIMING_RET_FAR] = 18u,
+    [X86_CORE_CPU_SOURCE_TIMING_RET_FAR_IMMEDIATE] = 17u,
+    [X86_CORE_CPU_SOURCE_TIMING_PUSH_REGISTER] = 11u,
+    [X86_CORE_CPU_SOURCE_TIMING_PUSH_MEMORY] = 16u,
+    [X86_CORE_CPU_SOURCE_TIMING_POP_REGISTER] = 8u,
+    [X86_CORE_CPU_SOURCE_TIMING_POP_MEMORY] = 17u,
+    [X86_CORE_CPU_SOURCE_TIMING_PUSHF] = 10u,
+    [X86_CORE_CPU_SOURCE_TIMING_POPF] = 8u,
+    [X86_CORE_CPU_SOURCE_TIMING_HLT] = 2u,
+    [X86_CORE_CPU_SOURCE_TIMING_INT3] = 52u,
+    [X86_CORE_CPU_SOURCE_TIMING_INT_IMMEDIATE] = 51u,
+    [X86_CORE_CPU_SOURCE_TIMING_INTO] = 53u,
+    [X86_CORE_CPU_SOURCE_TIMING_IRET] = 24u
 };
 
 /* Intel iAPX 86/88/186/188 User's Manual, Table 2-9 gives the primary
  * 80186 instruction values.  Its prefetch/no-wait and even-word assumptions
  * remain an explicit later bus/cycle-exact transfer. */
-static const x86_core_cpu_source_timing_entry
-    x86_core_cpu_80186_source_timing_ledger[] = {
-    { X86_CORE_CPU_SOURCE_TIMING_NOP, 3u },
-    { X86_CORE_CPU_SOURCE_TIMING_CLC, 2u },
-    { X86_CORE_CPU_SOURCE_TIMING_MOV_IMMEDIATE, 4u },
-    { X86_CORE_CPU_SOURCE_TIMING_MOV_REGISTER_REGISTER, 2u },
-    { X86_CORE_CPU_SOURCE_TIMING_MOV_RM_REGISTER, 12u },
-    { X86_CORE_CPU_SOURCE_TIMING_MOV_REGISTER_RM, 9u },
-    { X86_CORE_CPU_SOURCE_TIMING_MOV_MOFFS_READ, 9u },
-    { X86_CORE_CPU_SOURCE_TIMING_MOV_MOFFS_WRITE, 8u },
-    { X86_CORE_CPU_SOURCE_TIMING_IN_IMMEDIATE, 10u },
-    { X86_CORE_CPU_SOURCE_TIMING_IN_DX, 8u },
-    { X86_CORE_CPU_SOURCE_TIMING_OUT_IMMEDIATE, 9u },
-    { X86_CORE_CPU_SOURCE_TIMING_OUT_DX, 7u },
-    { X86_CORE_CPU_SOURCE_TIMING_CALL_NEAR_DIRECT, 15u },
-    { X86_CORE_CPU_SOURCE_TIMING_CALL_NEAR_REGISTER, 13u },
-    { X86_CORE_CPU_SOURCE_TIMING_CALL_NEAR_MEMORY, 19u },
-    { X86_CORE_CPU_SOURCE_TIMING_CALL_FAR_DIRECT, 23u },
-    { X86_CORE_CPU_SOURCE_TIMING_CALL_FAR_MEMORY, 38u },
-    { X86_CORE_CPU_SOURCE_TIMING_JMP_DIRECT, 14u },
-    { X86_CORE_CPU_SOURCE_TIMING_JMP_REGISTER, 11u },
-    { X86_CORE_CPU_SOURCE_TIMING_JMP_MEMORY, 17u },
-    { X86_CORE_CPU_SOURCE_TIMING_JMP_FAR_DIRECT, 14u },
-    { X86_CORE_CPU_SOURCE_TIMING_JMP_FAR_MEMORY, 26u },
-    { X86_CORE_CPU_SOURCE_TIMING_RET_NEAR, 16u },
-    { X86_CORE_CPU_SOURCE_TIMING_RET_NEAR_IMMEDIATE, 18u },
-    { X86_CORE_CPU_SOURCE_TIMING_RET_FAR, 22u },
-    { X86_CORE_CPU_SOURCE_TIMING_RET_FAR_IMMEDIATE, 25u },
-    { X86_CORE_CPU_SOURCE_TIMING_PUSH_REGISTER, 10u },
-    { X86_CORE_CPU_SOURCE_TIMING_PUSH_MEMORY, 16u },
-    { X86_CORE_CPU_SOURCE_TIMING_PUSH_IMMEDIATE, 10u },
-    { X86_CORE_CPU_SOURCE_TIMING_POP_REGISTER, 10u },
-    { X86_CORE_CPU_SOURCE_TIMING_POP_MEMORY, 20u },
-    { X86_CORE_CPU_SOURCE_TIMING_PUSHA, 36u },
-    { X86_CORE_CPU_SOURCE_TIMING_POPA, 51u },
-    { X86_CORE_CPU_SOURCE_TIMING_PUSHF, 9u },
-    { X86_CORE_CPU_SOURCE_TIMING_POPF, 8u },
-    { X86_CORE_CPU_SOURCE_TIMING_ENTER_LEVEL_ZERO, 15u },
-    { X86_CORE_CPU_SOURCE_TIMING_ENTER_LEVEL_ONE, 25u },
-    { X86_CORE_CPU_SOURCE_TIMING_BOUND, 34u },
-    { X86_CORE_CPU_SOURCE_TIMING_LEAVE, 8u },
-    { X86_CORE_CPU_SOURCE_TIMING_HLT, 2u },
-    { X86_CORE_CPU_SOURCE_TIMING_INT3, 45u },
-    { X86_CORE_CPU_SOURCE_TIMING_INT_IMMEDIATE, 47u },
-    { X86_CORE_CPU_SOURCE_TIMING_IRET, 28u }
+static const lib_u8
+    x86_core_cpu_80186_source_timing_ledger[X86_CORE_CPU_SOURCE_TIMING_FORM_COUNT] = {
+    [X86_CORE_CPU_SOURCE_TIMING_NOP] = 3u,
+    [X86_CORE_CPU_SOURCE_TIMING_CLC] = 2u,
+    [X86_CORE_CPU_SOURCE_TIMING_MOV_IMMEDIATE] = 4u,
+    [X86_CORE_CPU_SOURCE_TIMING_MOV_REGISTER_REGISTER] = 2u,
+    [X86_CORE_CPU_SOURCE_TIMING_MOV_RM_REGISTER] = 12u,
+    [X86_CORE_CPU_SOURCE_TIMING_MOV_REGISTER_RM] = 9u,
+    [X86_CORE_CPU_SOURCE_TIMING_MOV_MOFFS_READ] = 9u,
+    [X86_CORE_CPU_SOURCE_TIMING_MOV_MOFFS_WRITE] = 8u,
+    [X86_CORE_CPU_SOURCE_TIMING_IN_IMMEDIATE] = 10u,
+    [X86_CORE_CPU_SOURCE_TIMING_IN_DX] = 8u,
+    [X86_CORE_CPU_SOURCE_TIMING_OUT_IMMEDIATE] = 9u,
+    [X86_CORE_CPU_SOURCE_TIMING_OUT_DX] = 7u,
+    [X86_CORE_CPU_SOURCE_TIMING_CALL_NEAR_DIRECT] = 15u,
+    [X86_CORE_CPU_SOURCE_TIMING_CALL_NEAR_REGISTER] = 13u,
+    [X86_CORE_CPU_SOURCE_TIMING_CALL_NEAR_MEMORY] = 19u,
+    [X86_CORE_CPU_SOURCE_TIMING_CALL_FAR_DIRECT] = 23u,
+    [X86_CORE_CPU_SOURCE_TIMING_CALL_FAR_MEMORY] = 38u,
+    [X86_CORE_CPU_SOURCE_TIMING_JMP_DIRECT] = 14u,
+    [X86_CORE_CPU_SOURCE_TIMING_JMP_REGISTER] = 11u,
+    [X86_CORE_CPU_SOURCE_TIMING_JMP_MEMORY] = 17u,
+    [X86_CORE_CPU_SOURCE_TIMING_JMP_FAR_DIRECT] = 14u,
+    [X86_CORE_CPU_SOURCE_TIMING_JMP_FAR_MEMORY] = 26u,
+    [X86_CORE_CPU_SOURCE_TIMING_RET_NEAR] = 16u,
+    [X86_CORE_CPU_SOURCE_TIMING_RET_NEAR_IMMEDIATE] = 18u,
+    [X86_CORE_CPU_SOURCE_TIMING_RET_FAR] = 22u,
+    [X86_CORE_CPU_SOURCE_TIMING_RET_FAR_IMMEDIATE] = 25u,
+    [X86_CORE_CPU_SOURCE_TIMING_PUSH_REGISTER] = 10u,
+    [X86_CORE_CPU_SOURCE_TIMING_PUSH_MEMORY] = 16u,
+    [X86_CORE_CPU_SOURCE_TIMING_PUSH_IMMEDIATE] = 10u,
+    [X86_CORE_CPU_SOURCE_TIMING_POP_REGISTER] = 10u,
+    [X86_CORE_CPU_SOURCE_TIMING_POP_MEMORY] = 20u,
+    [X86_CORE_CPU_SOURCE_TIMING_PUSHA] = 36u,
+    [X86_CORE_CPU_SOURCE_TIMING_POPA] = 51u,
+    [X86_CORE_CPU_SOURCE_TIMING_PUSHF] = 9u,
+    [X86_CORE_CPU_SOURCE_TIMING_POPF] = 8u,
+    [X86_CORE_CPU_SOURCE_TIMING_ENTER_LEVEL_ZERO] = 15u,
+    [X86_CORE_CPU_SOURCE_TIMING_ENTER_LEVEL_ONE] = 25u,
+    [X86_CORE_CPU_SOURCE_TIMING_BOUND] = 34u,
+    [X86_CORE_CPU_SOURCE_TIMING_LEAVE] = 8u,
+    [X86_CORE_CPU_SOURCE_TIMING_HLT] = 2u,
+    [X86_CORE_CPU_SOURCE_TIMING_INT3] = 45u,
+    [X86_CORE_CPU_SOURCE_TIMING_INT_IMMEDIATE] = 47u,
+    [X86_CORE_CPU_SOURCE_TIMING_IRET] = 28u
 };
 
 /* Intel 210498-005, Appendix B p. B-78: the per-instruction NOP row is three
  * clocks.  Chapter 3 p. 3-15 has a two-clock overview example; T361 S4
  * records that distinct context without making it a second runtime owner. */
-static const x86_core_cpu_source_timing_entry
-    x86_core_cpu_80286_source_timing_ledger[] = {
-    { X86_CORE_CPU_SOURCE_TIMING_NOP, 3u },
-    { X86_CORE_CPU_SOURCE_TIMING_CLC, 2u },
-    { X86_CORE_CPU_SOURCE_TIMING_MOV_IMMEDIATE, 2u },
-    { X86_CORE_CPU_SOURCE_TIMING_MOV_REGISTER_REGISTER, 2u },
-    { X86_CORE_CPU_SOURCE_TIMING_MOV_RM_REGISTER, 3u },
-    { X86_CORE_CPU_SOURCE_TIMING_MOV_REGISTER_RM, 5u },
-    { X86_CORE_CPU_SOURCE_TIMING_MOV_MOFFS_READ, 5u },
-    { X86_CORE_CPU_SOURCE_TIMING_MOV_MOFFS_WRITE, 3u },
-    { X86_CORE_CPU_SOURCE_TIMING_IN_IMMEDIATE, 5u },
-    { X86_CORE_CPU_SOURCE_TIMING_IN_DX, 5u },
-    { X86_CORE_CPU_SOURCE_TIMING_OUT_IMMEDIATE, 3u },
-    { X86_CORE_CPU_SOURCE_TIMING_OUT_DX, 3u },
-    { X86_CORE_CPU_SOURCE_TIMING_CALL_NEAR_DIRECT, 7u },
-    { X86_CORE_CPU_SOURCE_TIMING_CALL_NEAR_REGISTER, 7u },
-    { X86_CORE_CPU_SOURCE_TIMING_CALL_NEAR_MEMORY, 11u },
-    { X86_CORE_CPU_SOURCE_TIMING_CALL_FAR_DIRECT, 13u },
-    { X86_CORE_CPU_SOURCE_TIMING_CALL_FAR_MEMORY, 16u },
-    { X86_CORE_CPU_SOURCE_TIMING_JMP_DIRECT, 7u },
-    { X86_CORE_CPU_SOURCE_TIMING_JMP_REGISTER, 7u },
-    { X86_CORE_CPU_SOURCE_TIMING_JMP_MEMORY, 11u },
-    { X86_CORE_CPU_SOURCE_TIMING_JMP_FAR_DIRECT, 11u },
-    { X86_CORE_CPU_SOURCE_TIMING_JMP_FAR_MEMORY, 15u },
-    { X86_CORE_CPU_SOURCE_TIMING_RET_NEAR, 11u },
-    { X86_CORE_CPU_SOURCE_TIMING_RET_NEAR_IMMEDIATE, 11u },
-    { X86_CORE_CPU_SOURCE_TIMING_RET_FAR, 15u },
-    { X86_CORE_CPU_SOURCE_TIMING_RET_FAR_IMMEDIATE, 15u },
-    { X86_CORE_CPU_SOURCE_TIMING_PUSH_REGISTER, 3u },
-    { X86_CORE_CPU_SOURCE_TIMING_PUSH_MEMORY, 5u },
-    { X86_CORE_CPU_SOURCE_TIMING_PUSH_IMMEDIATE, 3u },
-    { X86_CORE_CPU_SOURCE_TIMING_POP_REGISTER, 5u },
-    { X86_CORE_CPU_SOURCE_TIMING_POP_MEMORY, 5u },
-    { X86_CORE_CPU_SOURCE_TIMING_PUSHA, 17u },
-    { X86_CORE_CPU_SOURCE_TIMING_POPA, 19u },
-    { X86_CORE_CPU_SOURCE_TIMING_PUSHF, 3u },
-    { X86_CORE_CPU_SOURCE_TIMING_POPF, 5u },
-    { X86_CORE_CPU_SOURCE_TIMING_ENTER_LEVEL_ZERO, 11u },
-    { X86_CORE_CPU_SOURCE_TIMING_ENTER_LEVEL_ONE, 15u },
-    { X86_CORE_CPU_SOURCE_TIMING_LEAVE, 5u },
-    { X86_CORE_CPU_SOURCE_TIMING_HLT, 2u },
-    { X86_CORE_CPU_SOURCE_TIMING_INT3, 23u },
-    { X86_CORE_CPU_SOURCE_TIMING_INT_IMMEDIATE, 23u },
-    { X86_CORE_CPU_SOURCE_TIMING_IRET, 17u }
+static const lib_u8
+    x86_core_cpu_80286_source_timing_ledger[X86_CORE_CPU_SOURCE_TIMING_FORM_COUNT] = {
+    [X86_CORE_CPU_SOURCE_TIMING_NOP] = 3u,
+    [X86_CORE_CPU_SOURCE_TIMING_CLC] = 2u,
+    [X86_CORE_CPU_SOURCE_TIMING_MOV_IMMEDIATE] = 2u,
+    [X86_CORE_CPU_SOURCE_TIMING_MOV_REGISTER_REGISTER] = 2u,
+    [X86_CORE_CPU_SOURCE_TIMING_MOV_RM_REGISTER] = 3u,
+    [X86_CORE_CPU_SOURCE_TIMING_MOV_REGISTER_RM] = 5u,
+    [X86_CORE_CPU_SOURCE_TIMING_MOV_MOFFS_READ] = 5u,
+    [X86_CORE_CPU_SOURCE_TIMING_MOV_MOFFS_WRITE] = 3u,
+    [X86_CORE_CPU_SOURCE_TIMING_IN_IMMEDIATE] = 5u,
+    [X86_CORE_CPU_SOURCE_TIMING_IN_DX] = 5u,
+    [X86_CORE_CPU_SOURCE_TIMING_OUT_IMMEDIATE] = 3u,
+    [X86_CORE_CPU_SOURCE_TIMING_OUT_DX] = 3u,
+    [X86_CORE_CPU_SOURCE_TIMING_CALL_NEAR_DIRECT] = 7u,
+    [X86_CORE_CPU_SOURCE_TIMING_CALL_NEAR_REGISTER] = 7u,
+    [X86_CORE_CPU_SOURCE_TIMING_CALL_NEAR_MEMORY] = 11u,
+    [X86_CORE_CPU_SOURCE_TIMING_CALL_FAR_DIRECT] = 13u,
+    [X86_CORE_CPU_SOURCE_TIMING_CALL_FAR_MEMORY] = 16u,
+    [X86_CORE_CPU_SOURCE_TIMING_JMP_DIRECT] = 7u,
+    [X86_CORE_CPU_SOURCE_TIMING_JMP_REGISTER] = 7u,
+    [X86_CORE_CPU_SOURCE_TIMING_JMP_MEMORY] = 11u,
+    [X86_CORE_CPU_SOURCE_TIMING_JMP_FAR_DIRECT] = 11u,
+    [X86_CORE_CPU_SOURCE_TIMING_JMP_FAR_MEMORY] = 15u,
+    [X86_CORE_CPU_SOURCE_TIMING_RET_NEAR] = 11u,
+    [X86_CORE_CPU_SOURCE_TIMING_RET_NEAR_IMMEDIATE] = 11u,
+    [X86_CORE_CPU_SOURCE_TIMING_RET_FAR] = 15u,
+    [X86_CORE_CPU_SOURCE_TIMING_RET_FAR_IMMEDIATE] = 15u,
+    [X86_CORE_CPU_SOURCE_TIMING_PUSH_REGISTER] = 3u,
+    [X86_CORE_CPU_SOURCE_TIMING_PUSH_MEMORY] = 5u,
+    [X86_CORE_CPU_SOURCE_TIMING_PUSH_IMMEDIATE] = 3u,
+    [X86_CORE_CPU_SOURCE_TIMING_POP_REGISTER] = 5u,
+    [X86_CORE_CPU_SOURCE_TIMING_POP_MEMORY] = 5u,
+    [X86_CORE_CPU_SOURCE_TIMING_PUSHA] = 17u,
+    [X86_CORE_CPU_SOURCE_TIMING_POPA] = 19u,
+    [X86_CORE_CPU_SOURCE_TIMING_PUSHF] = 3u,
+    [X86_CORE_CPU_SOURCE_TIMING_POPF] = 5u,
+    [X86_CORE_CPU_SOURCE_TIMING_ENTER_LEVEL_ZERO] = 11u,
+    [X86_CORE_CPU_SOURCE_TIMING_ENTER_LEVEL_ONE] = 15u,
+    [X86_CORE_CPU_SOURCE_TIMING_LEAVE] = 5u,
+    [X86_CORE_CPU_SOURCE_TIMING_HLT] = 2u,
+    [X86_CORE_CPU_SOURCE_TIMING_INT3] = 23u,
+    [X86_CORE_CPU_SOURCE_TIMING_INT_IMMEDIATE] = 23u,
+    [X86_CORE_CPU_SOURCE_TIMING_IRET] = 17u
 };
 
 /* Intel 80386 Programmer's Reference Manual selected timing rows.  These are
  * Core clocks under the manual's prefetched/no-wait/no-HOLD assumptions; they
  * are not device service, bus arbitration, or host-time values. */
-static const x86_core_cpu_source_timing_entry
-    x86_core_cpu_80386_source_timing_ledger[] = {
-    { X86_CORE_CPU_SOURCE_TIMING_NOP, 3u },
-    { X86_CORE_CPU_SOURCE_TIMING_CLC, 2u },
-    { X86_CORE_CPU_SOURCE_TIMING_CLD, 2u },
-    { X86_CORE_CPU_SOURCE_TIMING_CMC, 2u },
-    { X86_CORE_CPU_SOURCE_TIMING_STC, 2u },
-    { X86_CORE_CPU_SOURCE_TIMING_STD, 2u },
-    { X86_CORE_CPU_SOURCE_TIMING_STI, 3u },
-    { X86_CORE_CPU_SOURCE_TIMING_GROUP2_ROTATE_REGISTER, 3u },
-    { X86_CORE_CPU_SOURCE_TIMING_GROUP2_ROTATE_MEMORY, 7u },
-    { X86_CORE_CPU_SOURCE_TIMING_GROUP2_CARRY_REGISTER, 9u },
-    { X86_CORE_CPU_SOURCE_TIMING_GROUP2_CARRY_MEMORY, 10u },
-    { X86_CORE_CPU_SOURCE_TIMING_MOV_EXTEND_REGISTER, 3u },
-    { X86_CORE_CPU_SOURCE_TIMING_MOV_EXTEND_MEMORY, 6u },
-    { X86_CORE_CPU_SOURCE_TIMING_MOV_POINTER_REAL, 7u },
-    { X86_CORE_CPU_SOURCE_TIMING_BOUND, 10u },
-    { X86_CORE_CPU_SOURCE_TIMING_CLI, 3u },
-    { X86_CORE_CPU_SOURCE_TIMING_SAHF, 3u },
-    { X86_CORE_CPU_SOURCE_TIMING_LAHF, 2u },
-    { X86_CORE_CPU_SOURCE_TIMING_MOV_SREG_REGISTER, 2u },
-    { X86_CORE_CPU_SOURCE_TIMING_MOV_SREG_LOAD_MEMORY, 5u },
-    { X86_CORE_CPU_SOURCE_TIMING_MOV_SREG_REGISTER_PROTECTED, 18u },
-    { X86_CORE_CPU_SOURCE_TIMING_MOV_SREG_LOAD_MEMORY_PROTECTED, 19u },
-    { X86_CORE_CPU_SOURCE_TIMING_MOV_SREG_STORE_MEMORY, 2u },
-    { X86_CORE_CPU_SOURCE_TIMING_MOV_IMMEDIATE, 2u },
-    { X86_CORE_CPU_SOURCE_TIMING_MOV_REGISTER_REGISTER, 2u },
-    { X86_CORE_CPU_SOURCE_TIMING_MOV_RM_REGISTER, 2u },
-    { X86_CORE_CPU_SOURCE_TIMING_MOV_REGISTER_RM, 4u },
-    { X86_CORE_CPU_SOURCE_TIMING_MOV_MOFFS_READ, 4u },
-    { X86_CORE_CPU_SOURCE_TIMING_MOV_MOFFS_WRITE, 2u },
-    { X86_CORE_CPU_SOURCE_TIMING_IN_IMMEDIATE, 12u },
-    { X86_CORE_CPU_SOURCE_TIMING_IN_DX, 13u },
-    { X86_CORE_CPU_SOURCE_TIMING_OUT_IMMEDIATE, 10u },
-    { X86_CORE_CPU_SOURCE_TIMING_OUT_DX, 11u },
-    { X86_CORE_CPU_SOURCE_TIMING_IN_IMMEDIATE_PROTECTED, 6u },
-    { X86_CORE_CPU_SOURCE_TIMING_IN_IMMEDIATE_PERMISSION, 26u },
-    { X86_CORE_CPU_SOURCE_TIMING_IN_DX_PROTECTED, 7u },
-    { X86_CORE_CPU_SOURCE_TIMING_IN_DX_PERMISSION, 27u },
-    { X86_CORE_CPU_SOURCE_TIMING_OUT_IMMEDIATE_PROTECTED, 4u },
-    { X86_CORE_CPU_SOURCE_TIMING_OUT_IMMEDIATE_PERMISSION, 24u },
-    { X86_CORE_CPU_SOURCE_TIMING_OUT_DX_PROTECTED, 5u },
-    { X86_CORE_CPU_SOURCE_TIMING_OUT_DX_PERMISSION, 25u },
-    { X86_CORE_CPU_SOURCE_TIMING_CALL_NEAR_DIRECT, 7u },
-    { X86_CORE_CPU_SOURCE_TIMING_CALL_NEAR_REGISTER, 7u },
-    { X86_CORE_CPU_SOURCE_TIMING_CALL_NEAR_MEMORY, 10u },
-    { X86_CORE_CPU_SOURCE_TIMING_CALL_FAR_DIRECT, 17u },
-    { X86_CORE_CPU_SOURCE_TIMING_CALL_FAR_MEMORY, 22u },
-    { X86_CORE_CPU_SOURCE_TIMING_JMP_DIRECT, 7u },
-    { X86_CORE_CPU_SOURCE_TIMING_JMP_REGISTER, 7u },
-    { X86_CORE_CPU_SOURCE_TIMING_JMP_MEMORY, 10u },
-    { X86_CORE_CPU_SOURCE_TIMING_JMP_FAR_DIRECT, 12u },
-    { X86_CORE_CPU_SOURCE_TIMING_JMP_FAR_MEMORY, 43u },
-    { X86_CORE_CPU_SOURCE_TIMING_JMP_FAR_MEMORY_PROTECTED, 31u },
-    { X86_CORE_CPU_SOURCE_TIMING_RET_NEAR, 10u },
-    { X86_CORE_CPU_SOURCE_TIMING_RET_NEAR_IMMEDIATE, 10u },
-    { X86_CORE_CPU_SOURCE_TIMING_RET_FAR, 18u },
-    { X86_CORE_CPU_SOURCE_TIMING_RET_FAR_IMMEDIATE, 18u },
-    { X86_CORE_CPU_SOURCE_TIMING_PUSH_REGISTER, 2u },
-    { X86_CORE_CPU_SOURCE_TIMING_PUSH_MEMORY, 5u },
-    { X86_CORE_CPU_SOURCE_TIMING_PUSH_IMMEDIATE, 2u },
-    { X86_CORE_CPU_SOURCE_TIMING_POP_REGISTER, 4u },
-    { X86_CORE_CPU_SOURCE_TIMING_POP_MEMORY, 5u },
-    { X86_CORE_CPU_SOURCE_TIMING_PUSHA, 18u },
-    { X86_CORE_CPU_SOURCE_TIMING_POPA, 24u },
-    { X86_CORE_CPU_SOURCE_TIMING_PUSHF, 4u },
-    { X86_CORE_CPU_SOURCE_TIMING_POPF, 5u },
-    { X86_CORE_CPU_SOURCE_TIMING_ENTER_LEVEL_ZERO, 10u },
-    { X86_CORE_CPU_SOURCE_TIMING_ENTER_LEVEL_ONE, 12u },
-    { X86_CORE_CPU_SOURCE_TIMING_LEAVE, 4u },
-    { X86_CORE_CPU_SOURCE_TIMING_HLT, 5u },
-    { X86_CORE_CPU_SOURCE_TIMING_WAIT, 7u },
-    { X86_CORE_CPU_SOURCE_TIMING_INT3, 33u },
-    { X86_CORE_CPU_SOURCE_TIMING_INT_IMMEDIATE, 37u },
-    { X86_CORE_CPU_SOURCE_TIMING_IRET, 22u }
+static const lib_u8
+    x86_core_cpu_80386_source_timing_ledger[X86_CORE_CPU_SOURCE_TIMING_FORM_COUNT] = {
+    [X86_CORE_CPU_SOURCE_TIMING_NOP] = 3u,
+    [X86_CORE_CPU_SOURCE_TIMING_CLC] = 2u,
+    [X86_CORE_CPU_SOURCE_TIMING_CLD] = 2u,
+    [X86_CORE_CPU_SOURCE_TIMING_CMC] = 2u,
+    [X86_CORE_CPU_SOURCE_TIMING_STC] = 2u,
+    [X86_CORE_CPU_SOURCE_TIMING_STD] = 2u,
+    [X86_CORE_CPU_SOURCE_TIMING_STI] = 3u,
+    [X86_CORE_CPU_SOURCE_TIMING_GROUP2_ROTATE_REGISTER] = 3u,
+    [X86_CORE_CPU_SOURCE_TIMING_GROUP2_ROTATE_MEMORY] = 7u,
+    [X86_CORE_CPU_SOURCE_TIMING_GROUP2_CARRY_REGISTER] = 9u,
+    [X86_CORE_CPU_SOURCE_TIMING_GROUP2_CARRY_MEMORY] = 10u,
+    [X86_CORE_CPU_SOURCE_TIMING_MOV_EXTEND_REGISTER] = 3u,
+    [X86_CORE_CPU_SOURCE_TIMING_MOV_EXTEND_MEMORY] = 6u,
+    [X86_CORE_CPU_SOURCE_TIMING_MOV_POINTER_REAL] = 7u,
+    [X86_CORE_CPU_SOURCE_TIMING_BOUND] = 10u,
+    [X86_CORE_CPU_SOURCE_TIMING_CLI] = 3u,
+    [X86_CORE_CPU_SOURCE_TIMING_SAHF] = 3u,
+    [X86_CORE_CPU_SOURCE_TIMING_LAHF] = 2u,
+    [X86_CORE_CPU_SOURCE_TIMING_MOV_SREG_REGISTER] = 2u,
+    [X86_CORE_CPU_SOURCE_TIMING_MOV_SREG_LOAD_MEMORY] = 5u,
+    [X86_CORE_CPU_SOURCE_TIMING_MOV_SREG_REGISTER_PROTECTED] = 18u,
+    [X86_CORE_CPU_SOURCE_TIMING_MOV_SREG_LOAD_MEMORY_PROTECTED] = 19u,
+    [X86_CORE_CPU_SOURCE_TIMING_MOV_SREG_STORE_MEMORY] = 2u,
+    [X86_CORE_CPU_SOURCE_TIMING_MOV_IMMEDIATE] = 2u,
+    [X86_CORE_CPU_SOURCE_TIMING_MOV_REGISTER_REGISTER] = 2u,
+    [X86_CORE_CPU_SOURCE_TIMING_MOV_RM_REGISTER] = 2u,
+    [X86_CORE_CPU_SOURCE_TIMING_MOV_REGISTER_RM] = 4u,
+    [X86_CORE_CPU_SOURCE_TIMING_MOV_MOFFS_READ] = 4u,
+    [X86_CORE_CPU_SOURCE_TIMING_MOV_MOFFS_WRITE] = 2u,
+    [X86_CORE_CPU_SOURCE_TIMING_IN_IMMEDIATE] = 12u,
+    [X86_CORE_CPU_SOURCE_TIMING_IN_DX] = 13u,
+    [X86_CORE_CPU_SOURCE_TIMING_OUT_IMMEDIATE] = 10u,
+    [X86_CORE_CPU_SOURCE_TIMING_OUT_DX] = 11u,
+    [X86_CORE_CPU_SOURCE_TIMING_IN_IMMEDIATE_PROTECTED] = 6u,
+    [X86_CORE_CPU_SOURCE_TIMING_IN_IMMEDIATE_PERMISSION] = 26u,
+    [X86_CORE_CPU_SOURCE_TIMING_IN_DX_PROTECTED] = 7u,
+    [X86_CORE_CPU_SOURCE_TIMING_IN_DX_PERMISSION] = 27u,
+    [X86_CORE_CPU_SOURCE_TIMING_OUT_IMMEDIATE_PROTECTED] = 4u,
+    [X86_CORE_CPU_SOURCE_TIMING_OUT_IMMEDIATE_PERMISSION] = 24u,
+    [X86_CORE_CPU_SOURCE_TIMING_OUT_DX_PROTECTED] = 5u,
+    [X86_CORE_CPU_SOURCE_TIMING_OUT_DX_PERMISSION] = 25u,
+    [X86_CORE_CPU_SOURCE_TIMING_CALL_NEAR_DIRECT] = 7u,
+    [X86_CORE_CPU_SOURCE_TIMING_CALL_NEAR_REGISTER] = 7u,
+    [X86_CORE_CPU_SOURCE_TIMING_CALL_NEAR_MEMORY] = 10u,
+    [X86_CORE_CPU_SOURCE_TIMING_CALL_FAR_DIRECT] = 17u,
+    [X86_CORE_CPU_SOURCE_TIMING_CALL_FAR_MEMORY] = 22u,
+    [X86_CORE_CPU_SOURCE_TIMING_JMP_DIRECT] = 7u,
+    [X86_CORE_CPU_SOURCE_TIMING_JMP_REGISTER] = 7u,
+    [X86_CORE_CPU_SOURCE_TIMING_JMP_MEMORY] = 10u,
+    [X86_CORE_CPU_SOURCE_TIMING_JMP_FAR_DIRECT] = 12u,
+    [X86_CORE_CPU_SOURCE_TIMING_JMP_FAR_MEMORY] = 43u,
+    [X86_CORE_CPU_SOURCE_TIMING_JMP_FAR_MEMORY_PROTECTED] = 31u,
+    [X86_CORE_CPU_SOURCE_TIMING_RET_NEAR] = 10u,
+    [X86_CORE_CPU_SOURCE_TIMING_RET_NEAR_IMMEDIATE] = 10u,
+    [X86_CORE_CPU_SOURCE_TIMING_RET_FAR] = 18u,
+    [X86_CORE_CPU_SOURCE_TIMING_RET_FAR_IMMEDIATE] = 18u,
+    [X86_CORE_CPU_SOURCE_TIMING_PUSH_REGISTER] = 2u,
+    [X86_CORE_CPU_SOURCE_TIMING_PUSH_MEMORY] = 5u,
+    [X86_CORE_CPU_SOURCE_TIMING_PUSH_IMMEDIATE] = 2u,
+    [X86_CORE_CPU_SOURCE_TIMING_POP_REGISTER] = 4u,
+    [X86_CORE_CPU_SOURCE_TIMING_POP_MEMORY] = 5u,
+    [X86_CORE_CPU_SOURCE_TIMING_PUSHA] = 18u,
+    [X86_CORE_CPU_SOURCE_TIMING_POPA] = 24u,
+    [X86_CORE_CPU_SOURCE_TIMING_PUSHF] = 4u,
+    [X86_CORE_CPU_SOURCE_TIMING_POPF] = 5u,
+    [X86_CORE_CPU_SOURCE_TIMING_ENTER_LEVEL_ZERO] = 10u,
+    [X86_CORE_CPU_SOURCE_TIMING_ENTER_LEVEL_ONE] = 12u,
+    [X86_CORE_CPU_SOURCE_TIMING_LEAVE] = 4u,
+    [X86_CORE_CPU_SOURCE_TIMING_HLT] = 5u,
+    [X86_CORE_CPU_SOURCE_TIMING_WAIT] = 7u,
+    [X86_CORE_CPU_SOURCE_TIMING_INT3] = 33u,
+    [X86_CORE_CPU_SOURCE_TIMING_INT_IMMEDIATE] = 37u,
+    [X86_CORE_CPU_SOURCE_TIMING_IRET] = 22u
 };
 
 /* The string rows are intentionally distinct from the ordinary instruction
@@ -541,8 +537,7 @@ static void x86_core_cpu_source_timing_mark_unallocated(x86_core_cpu_execution_c
 #define X86_CORE_CPU_80286_SOURCE_MAXIMUM_TICKS 28u
 
 typedef struct x86_core_cpu_legacy_source_timing_contract {
-    const x86_core_cpu_source_timing_entry *ledger;
-    lib_size ledger_entries;
+    const lib_u8 *ledger;
     lib_u64 jcc_not_taken_ticks;
     lib_u64 jcc_taken_ticks;
 } x86_core_cpu_legacy_source_timing_contract;
@@ -550,8 +545,6 @@ typedef struct x86_core_cpu_legacy_source_timing_contract {
 static const x86_core_cpu_legacy_source_timing_contract
     x86_core_cpu_8086_source_timing_contract = {
     x86_core_cpu_8086_source_timing_ledger,
-    sizeof(x86_core_cpu_8086_source_timing_ledger) /
-        sizeof(x86_core_cpu_8086_source_timing_ledger[0]),
     X86_CORE_CPU_8086_JCC_NOT_TAKEN_TICKS,
     X86_CORE_CPU_8086_JCC_TAKEN_TICKS
 };
@@ -559,23 +552,17 @@ static const x86_core_cpu_legacy_source_timing_contract
 static const x86_core_cpu_legacy_source_timing_contract
     x86_core_cpu_80186_source_timing_contract = {
     x86_core_cpu_80186_source_timing_ledger,
-    sizeof(x86_core_cpu_80186_source_timing_ledger) /
-        sizeof(x86_core_cpu_80186_source_timing_ledger[0]),
     X86_CORE_CPU_80186_JCC_NOT_TAKEN_TICKS,
     X86_CORE_CPU_80186_JCC_TAKEN_TICKS
 };
 
 static lib_u64 x86_core_cpu_source_timing_lookup(x86_core_cpu_execution_context *context,
-    const x86_core_cpu_source_timing_entry *ledger, lib_size ledger_entries,
-    x86_core_cpu_source_timing_form form)
+    const lib_u8 *ledger, x86_core_cpu_source_timing_form form)
 {
-    lib_size index;
-
-    for (index = 0u; index < ledger_entries; ++index) {
-        if (ledger[index].form == form) {
-            if (context != LIB_NULL) context->timing_result.form_id = (lib_u32)form;
-            return ledger[index].ticks;
-        }
+    /* Zero-filled entries have no source-backed timing. */
+    if ((lib_u32)form < X86_CORE_CPU_SOURCE_TIMING_FORM_COUNT && ledger[form] != 0u) {
+        if (context != LIB_NULL) context->timing_result.form_id = (lib_u32)form;
+        return ledger[form];
     }
     if (context != LIB_NULL) context->timing_result.source_timing_unallocated = LIB_TRUE;
     return X86_CORE_CPU_SOURCE_UNALLOCATED_TICKS;
@@ -585,9 +572,7 @@ static lib_u64 x86_core_cpu_80386_source_timing_lookup(
     x86_core_cpu_execution_context *context, x86_core_cpu_source_timing_form form)
 {
     return x86_core_cpu_source_timing_lookup(context,
-        x86_core_cpu_80386_source_timing_ledger,
-        sizeof(x86_core_cpu_80386_source_timing_ledger) /
-        sizeof(x86_core_cpu_80386_source_timing_ledger[0]), form);
+        x86_core_cpu_80386_source_timing_ledger, form);
 }
 
 static lib_u64 x86_core_cpu_80286_source_timing_lookup(
@@ -810,9 +795,7 @@ lib_i32 x86_core_cpu_string_io_source_instruction_cost(
     }
     if (context->cpu_profile == X86_CORE_CPU_PROFILE_8086) {
         *out_ticks = x86_core_cpu_source_timing_lookup(context,
-            x86_core_cpu_8086_source_timing_ledger,
-            sizeof(x86_core_cpu_8086_source_timing_ledger) /
-                sizeof(x86_core_cpu_8086_source_timing_ledger[0]), form);
+            x86_core_cpu_8086_source_timing_ledger, form);
         return 1;
     }
     if (context->cpu_profile == X86_CORE_CPU_PROFILE_8088) {
@@ -820,18 +803,14 @@ lib_i32 x86_core_cpu_string_io_source_instruction_cost(
         transfer_plan.word_transfers = opcode & 1u;
         transfer_plan.complete = LIB_TRUE;
         *out_ticks = x86_core_cpu_source_timing_lookup(context,
-            x86_core_cpu_8086_source_timing_ledger,
-            sizeof(x86_core_cpu_8086_source_timing_ledger) /
-                sizeof(x86_core_cpu_8086_source_timing_ledger[0]), form);
+            x86_core_cpu_8086_source_timing_ledger, form);
         return x86_core_cpu_timing_add_ticks(out_ticks,
             (lib_u64)transfer_plan.word_transfers *
                 X86_CORE_CPU_8086_ODD_WORD_TICKS);
     }
     if (context->cpu_profile == X86_CORE_CPU_PROFILE_80186) {
         *out_ticks = x86_core_cpu_source_timing_lookup(context,
-            x86_core_cpu_80186_source_timing_ledger,
-            sizeof(x86_core_cpu_80186_source_timing_ledger) /
-                sizeof(x86_core_cpu_80186_source_timing_ledger[0]), form);
+            x86_core_cpu_80186_source_timing_ledger, form);
         return 1;
     }
     if (context->cpu_profile == X86_CORE_CPU_PROFILE_80286) {
@@ -1636,7 +1615,6 @@ static lib_i32 x86_core_cpu_legacy_source_instruction_cost(x86_core_cpu_executio
     case 0x90u:
         if (prefixes != 0u && !lock_prefix) break;
         *out_ticks = x86_core_cpu_source_timing_lookup(context, contract->ledger,
-            contract->ledger_entries,
             X86_CORE_CPU_SOURCE_TIMING_NOP);
         return 1;
     case 0xf8u:
@@ -1647,19 +1625,16 @@ static lib_i32 x86_core_cpu_legacy_source_instruction_cost(x86_core_cpu_executio
             return 1;
         }
         *out_ticks = x86_core_cpu_source_timing_lookup(context, contract->ledger,
-            contract->ledger_entries,
             X86_CORE_CPU_SOURCE_TIMING_CLC);
         return 1;
     case 0x88u: case 0x89u: case 0x8au: case 0x8bu:
         if (!data->flagMem) {
             if (prefixes != 0u && !lock_prefix) break;
             *out_ticks = x86_core_cpu_source_timing_lookup(context, contract->ledger,
-                contract->ledger_entries,
                 X86_CORE_CPU_SOURCE_TIMING_MOV_REGISTER_REGISTER);
             return 1;
         }
         *out_ticks = x86_core_cpu_source_timing_lookup(context, contract->ledger,
-            contract->ledger_entries,
             opcode == 0x88u || opcode == 0x89u ?
             X86_CORE_CPU_SOURCE_TIMING_MOV_RM_REGISTER :
             X86_CORE_CPU_SOURCE_TIMING_MOV_REGISTER_RM) +
@@ -1673,7 +1648,6 @@ static lib_i32 x86_core_cpu_legacy_source_instruction_cost(x86_core_cpu_executio
         return 1;
     case 0xa0u: case 0xa1u: case 0xa2u: case 0xa3u:
         *out_ticks = x86_core_cpu_source_timing_lookup(context, contract->ledger,
-            contract->ledger_entries,
             opcode == 0xa0u || opcode == 0xa1u ?
             X86_CORE_CPU_SOURCE_TIMING_MOV_MOFFS_READ :
             X86_CORE_CPU_SOURCE_TIMING_MOV_MOFFS_WRITE) +
@@ -1863,7 +1837,6 @@ static lib_i32 x86_core_cpu_legacy_source_instruction_cost(x86_core_cpu_executio
         if (opcode >= 0xb0u && opcode <= 0xbfu &&
             (prefixes == 0u || lock_prefix)) {
             *out_ticks = x86_core_cpu_source_timing_lookup(context, contract->ledger,
-                contract->ledger_entries,
                 X86_CORE_CPU_SOURCE_TIMING_MOV_IMMEDIATE);
             return 1;
         }
@@ -1891,9 +1864,7 @@ static lib_u64 x86_core_cpu_80286_source_timing_lookup(
     x86_core_cpu_execution_context *context, x86_core_cpu_source_timing_form form)
 {
     return x86_core_cpu_source_timing_lookup(context,
-        x86_core_cpu_80286_source_timing_ledger,
-        sizeof(x86_core_cpu_80286_source_timing_ledger) /
-            sizeof(x86_core_cpu_80286_source_timing_ledger[0]), form);
+        x86_core_cpu_80286_source_timing_ledger, form);
 }
 
 static lib_u64 x86_core_cpu_80286_timing_effective_address(
@@ -2635,14 +2606,10 @@ static lib_u64 x86_core_cpu_control_stack_source_lookup(
     case X86_CORE_CPU_PROFILE_8086:
     case X86_CORE_CPU_PROFILE_8088:
         return x86_core_cpu_source_timing_lookup(context,
-            x86_core_cpu_8086_source_timing_ledger,
-            sizeof(x86_core_cpu_8086_source_timing_ledger) /
-                sizeof(x86_core_cpu_8086_source_timing_ledger[0]), form);
+            x86_core_cpu_8086_source_timing_ledger, form);
     case X86_CORE_CPU_PROFILE_80186:
         return x86_core_cpu_source_timing_lookup(context,
-            x86_core_cpu_80186_source_timing_ledger,
-            sizeof(x86_core_cpu_80186_source_timing_ledger) /
-                sizeof(x86_core_cpu_80186_source_timing_ledger[0]), form);
+            x86_core_cpu_80186_source_timing_ledger, form);
     case X86_CORE_CPU_PROFILE_80286:
         return x86_core_cpu_80286_source_timing_lookup(context, form);
     case X86_CORE_CPU_PROFILE_AM386SXLV:
