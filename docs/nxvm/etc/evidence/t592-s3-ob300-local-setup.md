@@ -1860,3 +1860,27 @@ only executable input change was the App path literal.
 | --- | --- |
 | x86 | `42b0549c5221b5a968cb76eaf9e56d4d8eb5808e3f632d591ac81ff37bc626a6` |
 | x64 | `8ae6ee269d4553a8f95dce308ed336ff329e0f9782ba39cc934df3adf9648ae8` |
+
+### Reported no response in Program Manager
+
+The owner observed no visible response to Ctrl+Alt+O in original
+Windows Program Manager. The x64 cold DOS control used an ordinary
+boot with Windows autostart removed and no preparatory APM call.
+The first chord reached the board with modifiers 03h. It was accepted
+with SMMCTL A7h, delivered one SMI and led original firmware into
+its power wait. A subsequent DOS command without a wake did not run.
+
+A separate private Window probe showed original Program Manager at
+153.610 s. It first observed the File label respond at 203.766 s.
+The probe then directed Ctrl+Alt+O to the real Window with Ctrl and
+Alt in its private keyboard state. Both O transitions retained
+modifiers 03h and reached the power switch. The press delivered
+one SMI, and the probe closed the Window and exited normally.
+The test checks the native Window and board path after Windows is
+responsive. It does not show how the owner's RDP client delivered
+the keys or when the Windows display goes dark after the switch.
+
+- Native Window checkpoint transcript SHA-256: `e223cf7aa1e19abf7201926b5ee9aded5cf4765f4f421d064595d1159aafba11`
+- Window power input transcript SHA-256: `b04fdf97dfadd59b563a1e68296f7e46a2f9744c987eca27d34bc45e0de3ef90`
+- Window SMI transcript SHA-256: `d007ebc142bef179eba3b2391d596ce27042dbe113907c05e8d21e4bcdc51336`
+- Cold DOS firmware wake poll transcript SHA-256: `3caa04fd4f204897772fae9240de8da4c6c57c3a32801ee4cc5f4e2520e26902`
