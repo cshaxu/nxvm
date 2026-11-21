@@ -3,6 +3,10 @@
 The owner verified that Alt navigates Windows menus and that closing
 Windows returns to DOS. The guest showed a pointer but it did not move.
 
+After delivery, the owner confirmed that the mouse is usable. This is the
+owner's interactive acceptance of the reported pointer problem. The report
+did not specify the host width or enumerate individual capture gestures.
+
 The original `SYSTEM.INI` selects `D:\OBMOUSE.DRV` and the matching
 `MOUSE.INI` selects `OEMMOUSE`. The OEM branch of the original driver
 programs `0x238` and `0x23B`, reads four consecutive bytes starting at

@@ -103,7 +103,7 @@ is closed as T586 after owner acceptance; retained limitations remain recorded.
 
 The owner reordered OB300 on 2026-11-19: hardware first, then board wiring,
 real-ROM machine assembly and product integration. Performance and ROM
-Windows/Office remain follow-up qualification stages. 425/430 remain reference
+Windows remain follow-up qualification stages. 425/430 remain reference
 machines.
 
 Completed: [T588 design and reset proof](../history/M5-T588-ob300-design-closure.md).
@@ -113,7 +113,7 @@ Completed: [T591 machine composition and real ROM DOS](../history/M5-T591-S4-ob3
 Active: [T592 OmniBook 300 product assembly and verification](../proposals/m5-ob300-product-qualification.md).
 
 1. [OmniBook 300: execution and interaction performance](../proposals/m5-ob300-performance.md)
-2. [OmniBook 300: ROM Windows, Word and Excel](../proposals/m5-ob300-rom-windows.md)
+2. [OmniBook 300: original ROM Windows](../proposals/m5-ob300-rom-windows.md)
 3. [MyNeoGeo: Metal Slug 2](../proposals/myneogeo-metal-slug2.md)
 4. [CPU differential tools and specification tests](../proposals/m5-differential-and-unit-evidence.md)
 5. [Retained-machine DOS and Windows qualification](../proposals/m5-retained-guest-qualification.md)

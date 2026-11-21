@@ -8,7 +8,7 @@ boundaries; it is not an additional queued T or an implementation admission.
 ## Objective
 
 Deliver a usable OmniBook 300 with System ROM 1.0 ABA: original firmware,
-ROM DOS, original OBSETUP/ROM Windows, Word and Excel, with persistent writable
+ROM DOS and original OBSETUP/ROM Windows, with persistent writable
 storage and measured responsiveness. OB425/430 and cards 1.1s/2.0s remain
 research references and possible future scope, not prerequisites or currently
 queued implementations. HP's service manual identifies OB300 as 20 MHz
@@ -58,7 +58,7 @@ authorize embedding the combined Microsoft-bearing card into published EXEs.
 1. [Hardware, ROM and execution design](m5-ob300-design.md).
 2. [Real firmware and ROM DOS](m5-ob300-rom-dos.md).
 3. [Execution and interaction performance](m5-ob300-performance.md).
-4. [ROM Windows, Word and Excel](m5-ob300-rom-windows.md).
+4. [Original ROM Windows](m5-ob300-rom-windows.md).
 5. [Complete product qualification](m5-ob300-product-qualification.md).
 
 This replaces the earlier suggestion to start with OB430. The existing family
@@ -77,7 +77,7 @@ host-side Windows loader or unproved ordinary-AT substitute is planned.
 Each admitted machine/card pair must have named, reproducible checkpoints:
 real reset/POST, correct display, working input, ROM DOS or the intended C-drive
 boot, persistent writable storage, and working reset/stop/start. The 1.x pairs
-also require ROM Windows startup and basic Word/Excel interaction. A 2.0s DOS
+also require ROM Windows startup and desktop interaction. A 2.0s DOS
 boot does not qualify ROM Windows or Windows 95. Decide any Windows 95 target
 and installation/driver matrix explicitly at admission.
 

@@ -73,7 +73,7 @@ existing accurate shared device or silently call a generic CPU SXLV-exact.
 | O07 input | App connects compatible keyboard/mouse mechanisms after tracing HP routes; use existing neutral KVM events and Machine admission | ROM DOS: real make/break and pause/reset; Windows: pointer and application interaction |
 | O08 power | HP control/power registers App-local; one guest-time model, explicit L1/L2 where necessary | ROM DOS: boot readiness and reset; product qualification: suspend/resume and persistence, with any unsupported mode explicit |
 | O09 C storage | Model guest-visible PCMCIA storage, not host files. Select a supported disk/controller route from actual firmware; use the matching C-file backup to populate disposable media | ROM DOS: partition/boot setup documented, C/D directory and read/write/readback; no claim file ZIP is bootable raw media |
-| O10 software | Execute original ROM DOS and split ROM Windows plus OBSETUP/C files, no replacement system | Windows: original loader reaches Program Manager, Word/Excel open/save/reopen; matching backup preserved |
+| O10 software | Execute original ROM DOS and split ROM Windows plus OBSETUP/C files, no replacement system | Windows: original loader reaches interactive Program Manager, with persistent C-drive operations; matching backup preserved |
 | O11 performance | Preserve one timing path; profile actual workload after missing hardware waits are resolved | Performance: numeric gates below; any Shared optimization requires existing consumers' qualification |
 | O12 product | Reuse family Product, Emulator lifecycle and existing artifact conventions | Product qualification: both widths, clean launch/error, reset/resume, stop/start, media safety and reproducible BYOB release |
 
@@ -126,7 +126,7 @@ desktop/RDP effects rather than calling either measurement the other. One
 complete run per width is the qualification baseline; repeat only on new
 evidence, not automatically three times. Fixed-work synthetic CPU tests do not
 substitute for these guest tests. Windows budgets are frozen by its receiving
-task before qualification, including launch and real Word/Excel interaction.
+task before qualification, including Windows launch and desktop interaction.
 
 ROM DOS first proves correctness and records any budget shortfall. The next
 performance T must meet these gates or seek an explicit scope/budget decision

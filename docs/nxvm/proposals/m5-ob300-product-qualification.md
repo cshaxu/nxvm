@@ -36,7 +36,7 @@ No implicit full-family support, unsupported peripheral fidelity claim or redist
 A repeatable new-user setup reaches interactive ROM DOS on both widths.
 Release identity, artifact hashes, test coverage and provenance are recorded.
 Record responsiveness against the existing budgets and hand verified results
-to the next performance stage. Original Windows, Word and Excel qualification
+to the next performance stage. Original ROM Windows qualification
 remains the final stage.
 Manual checks and environment limitations are reported separately. Obtain
 owner acceptance of the usable product and each explicit remaining limitation.

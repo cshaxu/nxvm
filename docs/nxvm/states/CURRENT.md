@@ -11,9 +11,11 @@ captured desktop from input and application qualification. The
 [external media record](../etc/evidence/t592-s3-ob300-local-setup.md)
 covers repeatable C-drive preparation and native process entry.
 
-The owner verified Windows menu navigation and exit to DOS. The
+The owner verified Windows menu navigation, exit to DOS and usable mouse input. The
 [pop-out mouse evidence](../etc/evidence/t592-s3-ob300-popout-mouse.md)
 records the fixed OEM input path and an original guest frame after motion.
+The owner removed Word and Excel from the later [ROM Windows acceptance
+scope](../proposals/m5-ob300-rom-windows.md).
 
 | Field | Required record |
 | --- | --- |

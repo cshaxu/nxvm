@@ -1,4 +1,4 @@
-# M5 Candidate: OmniBook 300: ROM Windows, Word and Excel
+# M5 Candidate: OmniBook 300: original ROM Windows
 
 Owner queued this bounded T candidate on 2026-11-19. Numeric T/S identifiers
 are allocated only at admission. [Queue](../states/QUEUE.md) owns priority;
@@ -12,11 +12,10 @@ video, mouse and power interfaces. The file ZIP is a verification/reference
 view, not a substitute for the original ROM memory mapping.
 
 Complete the required HP input/display behavior and fixes revealed by Windows.
-Run Word and Excel supplied by the card environment; exercise text entry,
-editing, window repaint, document/workbook save and reload. Verify persistence
-across guest and emulator restarts, including expected write failures.
-Measure application launch, input response and redraw using explicit budgets
-set before qualification; a Windows desktop alone is insufficient.
+Exercise input, window repaint and file operations in the original Windows
+environment. Verify persistence across guest and emulator restarts, including
+expected write failures. Measure Windows startup, input response and redraw
+using explicit budgets set before qualification.
 
 ## Dependencies
 
@@ -25,13 +24,14 @@ Accepted ROM DOS and performance usability gate.
 ## Non-goals
 
 No host Windows loader, replacement Windows installation or 425/430 qualification.
+The owner explicitly removed Word and Excel from the qualification scope.
 
 ## Completion and stop conditions
 
 Both widths reproducibly initialize C, enter original ROM Windows and
-complete the named Word/Excel interaction and persistence scenarios. Record
-software identities, device coverage and responsiveness. Preserve original
-media and evidence-backed models; no claim of Windows 95 or every Office feature.
+complete the Windows interaction and persistence scenarios. Record software
+identities, device coverage and responsiveness. Preserve original media and
+evidence-backed models.
 
 At admission, plan bounded numeric S batches from the convergence ledger rather
 than one S per symptom. Reuse existing tests where they cover the contract.
