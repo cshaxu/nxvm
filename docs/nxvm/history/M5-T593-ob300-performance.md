@@ -12,3 +12,12 @@ The admission makes no new timing or hotkey claim. The retained T592 scratch
 includes prior probe inputs and output. Review their ownership before cleanup
 and copy only the needed diagnostic source into the S1 scratch. Use current
 external masters and private disposable media for any new replay.
+
+## S1 evidence
+
+[Execution-cost baseline](../etc/evidence/t593-s1-ob300-execution-baseline.md)
+records the repeated dual-width ROM DOS measurements and the x64 original
+Windows power replay. CPU execution and timing dominate the DOS profile.
+The next largest region is time publication, including the board scan and
+device advance. The x64 probe separately observed the original BIOS wait
+after Ctrl+Alt+O and left the actual panel/RDP feedback unresolved.
