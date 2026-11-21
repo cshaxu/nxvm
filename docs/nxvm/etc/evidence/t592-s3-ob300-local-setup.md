@@ -39,3 +39,40 @@ The local setup verification reaches the monitor with attached media. The
 original, unmodified C backup proceeds into a separate ROM Windows path after
 `start`. The original-C Windows boot, Window/RDP interaction and guest power
 qualification remain outside this launch result.
+
+## Original DOS write rejection after startup
+
+The x64 and x86 replays used the original ROM and a disposable variant of
+the restored C image. The variant kept the original `CONFIG.SYS` and
+replaced the `AUTOEXEC.BAT` Windows launch with a DOS file creation
+attempt. The Machine attached that disk in `readonly` mode.
+
+After POST and the original DOS startup, both guests reached the write
+attempt and displayed `Seek error writing drive C`. A neutral key event
+selected Fail at the DOS prompt. DOS reported `File creation error` and
+displayed the subsequent batch marker, confirming recovery to guest
+command execution. Both runs completed with the disk and backup unchanged.
+
+| Item | SHA-256 |
+| --- | --- |
+| Disposable readonly C image | `020de47933a0d1845f827889ea77530b53c055eb42b38f9bfe25a27ba94d5588` |
+| Owner C archive | `4d3f6fbadfabfb056ad42d1dc82007f9d7ca57026fffb648903ae6135bf5715d` |
+| x64 guest output | `2de405256ce38c7dcfc4944a3db23ed98cea628e98addb92edd14a76b8fc67bf` |
+| x86 guest output | `dad05be11bd3a8abed4c2c7c17ab710460c70c4eeaa8779eff2fc99aa81caeb4` |
+
+These instrumented runs establish the original DOS and ATA read-only
+path. The earlier guest write/readback verification covers writable
+media separately. Hot removal and backing-file loss were not tested.
+
+## Guest power qualification boundary
+
+The original *HP OmniBook Operating Guide* (`OmnibookOperatingGuide.pdf`,
+pages 1-6 and 9-8) describes an On/Off key and distinct power modes.
+Advanced mode preserves the working session on ordinary power-off.
+Standard and Off discard it and boot again at the next power-on.
+The HP Windows package includes `OBPOWER.DLL` and the `OBMGM` management
+program. The current board models the SCAMP idle request clearing on
+PIC wake and the SMI memory route. The physical On/Off key sequence,
+Advanced suspend and resume, and the Standard/Off transition remain
+open product evidence. Monitor pause and resume are already qualified
+as a separate lifecycle path.
