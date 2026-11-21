@@ -1,6 +1,7 @@
 #include "app-myob300/ob300_board_interface.h"
 #include "app-myob300/ob300_chipset.h"
 #include "app-myob300/ob300_display.h"
+#include "app-myob300/ob300_mouse.h"
 #include "x86-core/machine/memory_interface.h"
 
 #define MYOB300_CPU_CLOCK_HZ 20000000u
@@ -20,6 +21,7 @@
 
 struct myob300_board {
     myob300_chipset chipset;
+    myob300_mouse mouse;
     x86_ct_vga *display;
     lib_u8 parallel_data;
     lib_u8 management_memory[MYOB300_MANAGEMENT_MEMORY_BYTES];
@@ -56,6 +58,7 @@ static void myob300_board_reset(void *owner, x86_nxvm_board_reset_phase phase)
 
     if (phase == X86_NXVM_BOARD_RESET_BEFORE_DEVICES) {
         myob300_chipset_reset(&board->chipset);
+        myob300_mouse_reset(&board->mouse);
         x86_ct_vga_reset(board->display);
         board->parallel_data = 0u;
         lib_memory_set(board->management_memory, 0, sizeof(board->management_memory));
@@ -172,6 +175,11 @@ lib_status myob300_board_set_matrix_key(myob300_board *board, lib_u8 row,
     return LIB_STATUS_OK;
 }
 
+void myob300_board_receive_mouse(myob300_board *board, lib_i32 dx, lib_i32 dy, lib_u32 buttons)
+{
+    myob300_mouse_receive(&board->mouse, dx, dy, buttons);
+}
+
 lib_status myob300_board_capture_display(void *context, x86_video_snapshot *out_snapshot)
 {
     myob300_board *board = context;
@@ -224,7 +232,9 @@ static lib_status myob300_board_bind(
     if (status == LIB_STATUS_OK) status = x86_ct_vga_create(X86_CT_VGA_65510, &board->display);
     if (status == LIB_STATUS_OK) status = myob300_chipset_install(&board->chipset, services);
     if (status == LIB_STATUS_OK) {
-        status = x86_core_machine_install_port_routes(services->core, &parallel, 1u);
+        status = myob300_mouse_install(&board->mouse, services);
+        if (status == LIB_STATUS_OK)
+            status = x86_core_machine_install_port_routes(services->core, &parallel, 1u);
         if (status == LIB_STATUS_OK)
             status = myob300_card_install(&board->chipset.card, services->core);
         if (status == LIB_STATUS_OK) {
@@ -233,6 +243,7 @@ static lib_status myob300_board_bind(
                 (void)x86_core_machine_remove_memory_device_routes(services->core, &board->chipset.card);
         }
         if (status != LIB_STATUS_OK) {
+            (void)x86_core_machine_remove_port_routes(services->core, &board->mouse);
             (void)x86_core_machine_remove_port_routes(services->core, board);
             (void)x86_core_machine_remove_memory_device_routes(services->core, &board->chipset);
             (void)x86_core_machine_remove_port_routes(services->core, &board->chipset);

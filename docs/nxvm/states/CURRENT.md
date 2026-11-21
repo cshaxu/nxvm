@@ -11,6 +11,10 @@ captured desktop from input and application qualification. The
 [external media record](../etc/evidence/t592-s3-ob300-local-setup.md)
 covers repeatable C-drive preparation and native process entry.
 
+The owner verified Windows menu navigation and exit to DOS. The
+[pop-out mouse evidence](../etc/evidence/t592-s3-ob300-popout-mouse.md)
+records the fixed OEM input path and an original guest frame after motion.
+
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | M5 T592 S3 after ordered S2 publication. |

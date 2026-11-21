@@ -1,4 +1,4 @@
-add_library(myob300-board STATIC ob300_board.c ob300_card.c ob300_chipset.c ob300_display.c)
+add_library(myob300-board STATIC ob300_board.c ob300_card.c ob300_chipset.c ob300_display.c ob300_mouse.c)
 target_include_directories(myob300-board PUBLIC "${CMAKE_SOURCE_DIR}/src")
 target_link_libraries(myob300-board PUBLIC x86-nxvm-board-base PRIVATE x86-nxvm-chip-ct-vga)
 if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")

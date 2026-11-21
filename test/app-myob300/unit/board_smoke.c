@@ -258,10 +258,12 @@ static void expect_input(x86_core_machine *core, lib_u32 address, lib_u8 expecte
     lib_test_assert(actual == expected);
 }
 
-static void test_input(x86_core_machine *core, x86_nxvm_board_state *board)
+static void test_input(x86_core_machine *core, x86_nxvm_board_state *board,
+    myob300_board *profile)
 {
     const lib_u8 keyboard_vector[] = {0x00u, 0x03u, 0u, 0u};
     const lib_u8 mouse_vector[] = {0x10u, 0x03u, 0u, 0u};
+    const lib_u8 oem_mouse_vector[] = {0x20u, 0x03u, 0u, 0u};
     /* Match the BIOS order: poll SLP with IF clear, then service IRQ. */
     const lib_u8 idle[] = {
         0xe4u, 0xedu, 0xa8u, 0x80u, 0x75u, 0xfau, 0xfbu, 0xf4u, 0xebu, 0xfdu
@@ -272,6 +274,10 @@ static void test_input(x86_core_machine *core, x86_nxvm_board_state *board)
     const lib_u8 mouse_irq[] = {
         0xe4u, 0x60u, 0xa2u, 0x01u, 0x05u, 0xb0u, 0x20u,
         0xe6u, 0xa0u, 0xe6u, 0x20u, 0xcfu
+    };
+    const lib_u8 oem_mouse_irq[] = {
+        0xbau, 0x38u, 0x02u, 0xecu, 0xa2u, 0x02u, 0x05u,
+        0xb0u, 0x20u, 0xe6u, 0xa0u, 0xe6u, 0x20u, 0xcfu
     };
     const x86_core_cpu_debug_register_patch entry = {
         .mask = X86_CORE_CPU_DEBUG_REGISTER_MASK(X86_CORE_CPU_DEBUG_CS) |
@@ -310,6 +316,20 @@ static void test_input(x86_core_machine *core, x86_nxvm_board_state *board)
     expect_input(core, 0x501u, 0x09u);
     expect_input(core, 0x501u, 0x05u);
     expect_input(core, 0x501u, 0x03u);
+
+    lib_test_assert(x86_core_machine_memory_write(core, 0x1d0u,
+        oem_mouse_vector, sizeof(oem_mouse_vector)) == LIB_STATUS_OK);
+    lib_test_assert(x86_core_machine_memory_write(core, 0x320u,
+        oem_mouse_irq, sizeof(oem_mouse_irq)) == LIB_STATUS_OK);
+    write_port(core, 0x238u, 0x08u);
+    write_port(core, 0x23bu, 0x30u);
+    myob300_board_receive_mouse(profile, 5, 3, BASE_MOUSE_BUTTON_LEFT);
+    expect_input(core, 0x502u, 0xfbu);
+    expect_port(core, 0x239u, 0x0fu);
+    expect_port(core, 0x23au, 0x03u);
+    expect_port(core, 0x23bu, 0x40u);
+    myob300_board_receive_mouse(profile, 0, 0, 0u);
+    expect_port(core, 0x23bu, 0xc0u);
 }
 
 static const struct {
@@ -596,6 +616,14 @@ static void test_machine(const lib_u8 *card)
         reset.cs == 0xf000u && reset.ip == 0xfff0u);
     lib_test_assert(x86_nxvm_machine_describe_emulator_driver(machine, &driver) == LIB_STATUS_OK);
     lib_test_assert(driver.reset(driver.context));
+    driver.deliver_input(driver.context, &(kvm_input_event){.type = KVM_EVENT_MOUSE,
+        .data.mouse = {.delta_x = -4, .delta_y = -2, .relative = LIB_TRUE}});
+    response = machine_debug(&driver, (x86_debug_request){.operation = X86_DEBUG_READ_PORT,
+        .port = 0x238u, .bytes = 1u});
+    lib_test_assert(response.value == 4u);
+    response = machine_debug(&driver, (x86_debug_request){.operation = X86_DEBUG_READ_PORT,
+        .port = 0x23au, .bytes = 1u});
+    lib_test_assert(response.value == 0xfeu);
     response = machine_debug(&driver, request);
     lib_test_assert(response.bytes == 2u && response.data[0] == 0x55u && response.data[1] == 0xaau);
     (void)machine_debug(&driver, (x86_debug_request){.operation = X86_DEBUG_WRITE_PORT,
@@ -684,7 +712,7 @@ int main(void)
     test_refresh_and_ram(core);
     test_ab_shadow(core);
     test_display(core, setup.profile);
-    test_input(core, board);
+    test_input(core, board, setup.profile);
     test_card(core);
     test_management_memory(core);
     lib_test_assert(x86_core_machine_reset(core) == LIB_STATUS_OK);

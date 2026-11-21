@@ -39,6 +39,16 @@ static lib_status myob300_machine_capture_display(void *owner,
     return myob300_board_capture_display(setup->profile, out_snapshot);
 }
 
+static lib_bool myob300_machine_handle_input(void *owner, const kvm_input_event *event)
+{
+    const myob300_board_setup *setup = owner;
+
+    if (event->type != KVM_EVENT_MOUSE) return LIB_FALSE;
+    myob300_board_receive_mouse(setup->profile, event->data.mouse.delta_x,
+        event->data.mouse.delta_y, event->data.mouse.buttons);
+    return LIB_TRUE;
+}
+
 static void myob300_machine_release(void *owner)
 {
     myob300_board_setup *setup = owner;
@@ -82,6 +92,7 @@ lib_status myob300_machine_prepare(const x86_nxvm_machine_config *config,
         .profile = {
             .context = setup,
             .configure = myob300_machine_configure,
+            .handle_input = myob300_machine_handle_input,
             .release = myob300_machine_release
         }
     };
