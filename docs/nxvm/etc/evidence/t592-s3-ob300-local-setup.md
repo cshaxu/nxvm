@@ -987,12 +987,44 @@ does not quantify how much of it that follow-up would save.
 | x64 worker and guest output | 05b9bbb916ac15a83d9f85bff0b5e8dd7301095e07b5d98de6c5eb8e89314e8e |
 | x86 worker and guest output | 0636d504d262944bf436920ca0c81e2d9c0b49a77ad49edf11d92c349680d31d |
 
+#### Direct branch-target decode sample
+
+A link-only observer sampled the existing branch-target lexical preview
+entry point from the production CPU archives. Both widths used the original
+card and the same readonly disposable C image as the preceding replays.
+They reached the original DOS prompt, returned to a fresh prompt after
+DIR, exited normally and left the image unchanged.
+
+| Worker region | x64 cold | x86 cold | x64 DIR | x86 DIR |
+| --- | ---: | ---: | ---: | ---: |
+| Complete Core calls, directly timed | 84.87 s | 105.84 s | 7.26 s | 8.01 s |
+| Branch preview calls | 8,647,212 | 8,622,386 | 508,533 | 506,051 |
+| Branch preview duration, estimated | 12.38 s | 15.06 s | 1.18 s | 1.23 s |
+| Board deadline observation, estimated | 10.68 s | 14.17 s | 0.88 s | 0.92 s |
+
+Every counted preview returned an available lexeme. The timing row uses
+one in 1,021 calls and includes any fetch, decoder preparation and counter
+overhead within that sample. It does not measure their individual costs or
+prove an achievable speedup. The two estimates place preview and deadline
+observation in the same order of magnitude. Even removing the entire
+measured preview cost would leave DIR far above its one-second budget.
+The performance receiver should bound a same-fetch-path preview change,
+then measure release cold start and DIR before deciding whether to change
+clock publication and board deadline handling. Preserve branch-target
+lexical observations, code-fetch behavior, fault handling and exact guest
+deadlines in both experiments.
+
+| Sampled replay | SHA-256 |
+| --- | --- |
+| x64 worker and guest output | 047976d44b0583ffb2fd2b27fccb50c786e5194818102c987154cc0bac456068 |
+| x86 worker and guest output | adfca132cbf712c3ee5759f1c4381440815eb79a7cbda375847514a98eb2851c |
+
 ### Product obligation review
 
-| Design row | Evidence at P23 | Remaining boundary |
+| Design row | Evidence at P32 | Remaining boundary |
 | --- | --- | --- |
 | O07 input | Product DOS make/break, native monitor handoff and owner-tested original Windows keyboard and built-in pointer | Formal Windows interaction and redraw are part of the Windows receiver. |
-| O08 power | Original DOS and original Windows resume via F13 have direct dual-width replay. Clean Product exit and restart preserve RTC/CMOS. | The original Windows Power control's Standard/Off cold-boot behavior has not been directly observed. The HP Operating Guide, page 9-8, specifies session loss and a reboot on power-on in both settings. |
+| O08 power | Original DOS and original Windows resume via F13 have direct dual-width replay. Clean Product exit and restart preserve RTC/CMOS. Windows Power Standard and Off both initiate a fresh POST with valid configuration on both widths. | x64 reaches the DOS driver in both modes. On x86 the 300-second probe cap expires after the configuration check and before the visible driver. See the original Windows Power control path below. |
 | O09 storage | DOS C/D access and writable readback are recorded in T591. An original DOS readonly write fails and returns to DOS on both widths. | Windows installation and file persistence remain with the Windows receiver. Live backing-file loss and card hot removal are unverified. |
 | O12 product | Native Console release startup, monitor lifecycle and packaging are recorded in S2. P23 passed fresh real DOS startup, clean exit and CMOS reload. | Usability thresholds remain open in the performance receiver. No new independent desktop/RDP qualification was run. |
 

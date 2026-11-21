@@ -34,8 +34,9 @@ malformed input and a refused save.
 
 The [published DOS handoff](../etc/evidence/t592-s3-ob300-local-setup.md#published-dos-performance-handoff)
 measures current native startup and directory response on both widths.
-Its original-DOS worker samples prioritize instruction preparation and timing
-selection over changes to the restart-state copy. The [original
+Direct dual-width sampling places branch-target decode and board deadline
+observation at comparable cost. Neither region alone explains the DIR gap.
+The [original
 Power control replay](../etc/evidence/t592-s3-ob300-local-setup.md#original-windows-power-control-path)
 confirms that x64 Standard and Off both run POST and load DOS after two F13
 presses without needing F1. On x86, both modes enter a new POST and pass the
