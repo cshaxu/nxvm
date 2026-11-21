@@ -1587,3 +1587,26 @@ prefix. They do not establish later x86 frame publication or DOS startup,
 or prove host throughput is the only remaining cause. Preserve that
 distinction for the product acceptance decision and the longer end-to-end
 check after performance work.
+
+#### Fractional-clock wake diagnostic
+
+An x86 replay used the same one-icon Control Panel startup image as the
+earlier Standard run, with the P44 fractional-clock object linked only
+into the probe. It removed per-access RTC logging and kept the marker
+from the actual BIOS wake poll. The original Windows Power dialog showed
+Standard, closed after confirmation and received the first F13 at
+260.318 s. It received the second F13 at 278.590 s. The original BIOS
+poll read 00h, then the asserted 10h at guest tick 529,909,639.
+The probe terminated at 286 s with neither fresh POST text nor the DOS
+driver on screen. The limit left only 7.410 s after the wake key.
+
+The original and disposable disk hashes matched before and after. The
+one-icon setup took longer to reach the Power dialog than in the
+previous run. One variant replay with different observation overhead
+cannot establish a performance regression or a firmware fault. It did
+not recover enough observation time to qualify x86 Standard. Resume
+this check against the published product after joint execution and boot
+performance work provides sufficient time for the full sequence.
+
+- Power UI and F13 transcript SHA-256: `7c2234f1858bb302933831e05953c4359bb99e0be7c74c2884ee6f4cfbd9cf9f`
+- BIOS wake-poll transcript SHA-256: `a68bea29fd8eb3f4197dd051c87ed1d76847c312b522d27efd15fe51ef6efb32`
