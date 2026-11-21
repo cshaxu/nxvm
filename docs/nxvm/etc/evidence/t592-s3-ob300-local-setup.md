@@ -639,6 +639,31 @@ with the replacement binding.
 The disposable APM C fixture SHA-256 was
 `eeb4a0d8590a00aa9d571c31d48d8ec70149e75743028c16bd6e1f6ed909e769`.
 
+#### Native DOS switch press and wake
+
+A dual-width diagnostic linked the P48 production Product and Machine
+with observation of the real SMI signal and BIOS port read. It kept
+the native Console and used the same staged Ctrl, Alt and O make and
+break events as the release replay. The original System 1.0 ABA guest
+first returned from software APM suspend. From awake DOS, another
+Ctrl+Alt+O produced exactly one SMI assertion and deassertion. The
+original firmware at F000:A337h read 00h while waiting, then 10h
+after the next Ctrl+Alt+O. The resumed DOS executed a new VER, and
+monitor exit returned code 0. The observer forwarded all operations
+and did not generate a wake, an SMI or a port value.
+
+| Width | Console transcript SHA-256 | SMI transcript SHA-256 | Original wake-poll transcript SHA-256 |
+| --- | --- | --- | --- |
+| x64 | `79bb0dfb8c4b1f77b4c643903e282f6f267751f8c3be4ab606ec5241feded0f1` | `7dcf4c0e11d03c512fec8c882fcf352fb5104258243d356759925a0f5e0b1909` | `f25810db3c72326534c4e63bb6855f80332ba6805cb0032c9b14c7b9f2202e71` |
+| x86 | `6a1cc9796940e04f15a4ecff34df25a06cdb05386c41e342adbfb4b7295c7632` | `28b298e635b163627deed73fa745835e49ca19f26e064ca42286f87d1a4e0b80` | `49c8012ecb17db98fb1d3b5dd364e0d9df1d197329cec5b4fc451dd12a5d45e7` |
+
+The source Card and C archive stayed unchanged. The read-only disposable
+C image stayed at SHA-256
+`fe7176c6814a41fe8dd05c98b10f4d31314102e265d750b002abf534b88949d3`.
+This extends the exact-release DOS APM wake proof to the awake-switch
+direction using an observed build. Windows Standard, Off and RDP
+qualification remain separate.
+
 ## Original Windows power checkpoint
 
 An x64 replay used the published P17 source graph, the original System 1.0

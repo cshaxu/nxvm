@@ -18,6 +18,8 @@ The owner removed Word and Excel from the later [ROM Windows acceptance
 scope](../proposals/m5-ob300-rom-windows.md).
 
 Both published widths now wake original DOS APM through Ctrl+Alt+O.
+A [dual-width DOS switch observation](../etc/evidence/t592-s3-ob300-local-setup.md#native-dos-switch-press-and-wake)
+also records one real SMI, the original firmware wake poll and fresh VER.
 The [replacement binding evidence](../etc/evidence/t592-s3-ob300-local-setup.md#ctrlalto-power-switch-binding)
 records the native Console input route. The prior release proved the original DOS power cycle through F13
 input. The [power evidence](../etc/evidence/t592-s3-ob300-local-setup.md#production-f13-suspend-and-wake)
