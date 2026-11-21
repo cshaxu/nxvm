@@ -2,6 +2,7 @@
 #include "app-myob300/ob300_chipset.h"
 #include "app-myob300/ob300_display.h"
 #include "app-myob300/ob300_mouse.h"
+#include "x86-core/machine/attachment_interface.h"
 #include "x86-core/machine/memory_interface.h"
 
 #define MYOB300_CPU_CLOCK_HZ 20000000u
@@ -15,7 +16,8 @@
 #define MYOB300_SYSTEM_ROM_BASE 0x000f8000u
 #define MYOB300_SYSTEM_ROM_RESET_ALIAS 0x00ff8000u
 #define MYOB300_MANAGEMENT_WINDOW_BASE 0x00060000u
-#define MYOB300_MANAGEMENT_MEMORY_BYTES 0x20000u
+#define MYOB300_MANAGEMENT_MEMORY_BYTES 0x10000u
+#define MYOB300_MANAGEMENT_HALF_AB_BYTES 0x10000u
 #define MYOB300_PANEL_DEFAULT_VSYNC_HZ 60u
 #define MYOB300_PARALLEL_DATA_PORT 0x378u
 
@@ -95,49 +97,77 @@ static void myob300_board_management_active(void *owner, lib_bool active)
     board->chipset.management_active = active;
 }
 
-static lib_u8 *myob300_board_management_range(myob300_board *board, lib_u32 address,
-    lib_u8 bytes)
+static lib_status myob300_board_management_range(myob300_board *board, lib_u32 address,
+    lib_u8 bytes, lib_u8 **mapping)
 {
     const lib_u8 control = board->chipset.management_control;
     const lib_u8 selection = control & 7u;
-    const lib_size capacity = selection == 7u ? MYOB300_MANAGEMENT_MEMORY_BYTES :
+    const lib_size capacity = selection == 7u ? sizeof(board->chipset.ab_shadow) :
         selection >= 4u ? 0x10000u : 0x8000u;
-    const lib_u32 offset = address - MYOB300_MANAGEMENT_WINDOW_BASE;
+    const lib_u32 window_end = MYOB300_MANAGEMENT_WINDOW_BASE + (lib_u32)capacity;
+    const lib_u64 access_end = (lib_u64)address + bytes;
 
-    if ((control & 0xa0u) != 0xa0u || address < MYOB300_MANAGEMENT_WINDOW_BASE ||
-        bytes == 0u || offset >= capacity || bytes > capacity - offset)
-        return LIB_NULL;
-    return board->management_memory + offset;
+    if (bytes == 0u) return LIB_STATUS_INVALID_ARGUMENT;
+    if ((control & 0xa0u) != 0xa0u || address >= window_end ||
+        access_end <= MYOB300_MANAGEMENT_WINDOW_BASE)
+        return X86_CORE_MACHINE_SMM_ROUTE_ORDINARY;
+    if (address < MYOB300_MANAGEMENT_WINDOW_BASE || access_end > window_end)
+        return LIB_STATUS_UNSUPPORTED;
+    /* SCAMP Table 40: SADS translates into the same onboard A/B DRAM
+     * the firmware populates through the ordinary shadow controls. */
+    switch (selection) {
+    case 1u:
+    case 4u:
+    case 7u:
+        *mapping = board->chipset.ab_shadow;
+        break;
+    case 2u:
+    case 5u:
+        *mapping = board->chipset.ab_shadow + MYOB300_MANAGEMENT_HALF_AB_BYTES;
+        break;
+    default:
+        *mapping = board->management_memory;
+        break;
+    }
+    *mapping += address - MYOB300_MANAGEMENT_WINDOW_BASE;
+    return LIB_STATUS_OK;
 }
 
 static lib_status myob300_board_management_read(void *owner, lib_u32 address,
     void *destination, lib_u8 bytes, lib_bool observe_only)
 {
     myob300_board *board = owner;
-    const lib_u8 *source = myob300_board_management_range(board, address, bytes);
-    lib_u32 rom_offset;
+    lib_u8 *mapping;
+    const lib_status status = myob300_board_management_range(board, address, bytes, &mapping);
 
     (void)observe_only;
-    if (source == LIB_NULL && board->chipset.card.common.data != LIB_NULL && bytes != 0u) {
-        rom_offset = address >= MYOB300_SYSTEM_ROM_RESET_ALIAS ?
+    if (status == LIB_STATUS_OK) {
+        lib_memory_copy(destination, mapping, bytes);
+        return LIB_STATUS_OK;
+    }
+    if (status == X86_CORE_MACHINE_SMM_ROUTE_ORDINARY &&
+        board->chipset.card.common.data != LIB_NULL) {
+        const lib_u32 rom_offset = address >= MYOB300_SYSTEM_ROM_RESET_ALIAS ?
             address - MYOB300_SYSTEM_ROM_RESET_ALIAS :
             address - MYOB300_SYSTEM_ROM_BASE;
         if (rom_offset < MYOB300_CARD_RESET_BYTES &&
-            bytes <= MYOB300_CARD_RESET_BYTES - rom_offset)
-            source = board->chipset.card.common.data + MYOB300_CARD_RESET_OFFSET + rom_offset;
+            bytes <= MYOB300_CARD_RESET_BYTES - rom_offset) {
+            lib_memory_copy(destination,
+                board->chipset.card.common.data + MYOB300_CARD_RESET_OFFSET + rom_offset, bytes);
+            return LIB_STATUS_OK;
+        }
     }
-    if (source == LIB_NULL) return LIB_STATUS_UNSUPPORTED;
-    lib_memory_copy(destination, source, bytes);
-    return LIB_STATUS_OK;
+    return status;
 }
 
 static lib_status myob300_board_management_write(void *owner, lib_u32 address,
     const void *source, lib_u8 bytes)
 {
     myob300_board *board = owner;
-    lib_u8 *destination = myob300_board_management_range(board, address, bytes);
+    lib_u8 *destination;
+    const lib_status status = myob300_board_management_range(board, address, bytes, &destination);
 
-    if (destination == LIB_NULL) return LIB_STATUS_UNSUPPORTED;
+    if (status != LIB_STATUS_OK) return status;
     lib_memory_copy(destination, source, bytes);
     return LIB_STATUS_OK;
 }

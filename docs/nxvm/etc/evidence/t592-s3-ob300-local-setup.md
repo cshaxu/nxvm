@@ -347,3 +347,211 @@ The native monitor launch check did not simulate a desktop F13 press.
 | --- | --- | --- |
 | myob300_0_5_0592_x64.exe | 8664h | `dacf14d52b78168345dafbdff695ce898a218970cea69f0954e39c8fa3fc3d3d` |
 | myob300_0_5_0592_x86.exe | 014Ch | `02fb6921da05410f2c6f5cfd529eaedaa6ed820edb04bd30c57a935c14786cbe` |
+
+## Original SMM handler backing
+
+After a probe linked against the P11 production board code resumed
+a disposable DOS session, an ordinary F13 press and release left DOS active. An
+explicit SMI pulse in the diagnostic then entered the CPU's original
+reset-vector SMM path. The firmware did not return to DOS in the
+observation window and was executing the card boot path. The pulse
+diagnostic does not establish that the real On/Off switch uses SMI.
+
+System 1.0's card initializes the handler through the ordinary A/B
+shadow path. It selects chipset index 0Eh, enables shadow access,
+writes its marker at A0210h and copies the handler beginning at
+A0800h. The ROM's SMM entry checks the same marker at 60210h before
+jumping to 60800h, with BASIZ=7 selected. The App instead had an
+independent 128 KiB backing for SADS. This was sufficient for a
+synthetic write followed by read within the same alias, while the
+original setup write and SMM read reached different bytes.
+
+The candidate now maps the SCAMP A/B SADS selections to the existing
+ordinary shadow bytes. The standard VL82C316 table identifies the
+selected backing ranges and translation. Selected C/E paths retain
+their prior private storage. The board fixture checks that an SMM
+write at 60210h becomes visible at A0210h in A/B mode and is separate
+from ordinary DOS RAM at 60210h. Both cached board tests passed.
+[VLSI VL82C316, Table 40 and Shadow Control Effects During SMM](https://bitsavers.computerhistory.org/components/vti/pc/VTI_VL82C316_VL82C323_SCAMP_II_199210.pdf).
+
+| Original P11 diagnostic | SHA-256 |
+| --- | --- |
+| SMM instruction-space read samples | `a8216d18d1fd76898e332cfd828d371bff6fc15802da74129389cc28fc2a069b` |
+| Guest output and final CPU sample | `dc0b471a974be676da82140abbc184e1b63d6690741d9fcdb7985be6ca82ad8b` |
+
+The x64 candidate read the original marker through SADS at 60210h
+and fetched instructions at 60800h. The next observed failure was at
+6080:0171h while the original handler accessed ordinary RAM at
+9C4B6h. The current Core dispatch returns the board's unsupported
+status on that non-translated address. Neither the ordinary DOS RAM
+address nor the fallback is covered by the synthetic alias test.
+The App alias correction is still a local candidate.
+
+| Candidate diagnostic | SHA-256 |
+| --- | --- |
+| Original marker and first installed-handler fetch | `457059d46a88076e4110c01833b499ebfa98ee3b0a2a86571ca0624659b415bd` |
+| Guest output and first non-translated SMM access failure | `7662c8e11004670a461ac194bb0ef21e125b5a4b76bb5fff80d36c588f773130` |
+
+A separate x64 diagnostic used ordinary Core memory routing for
+SMM accesses declined by the board. The handler passed the fault at
+9C4B6h and the Machine remained active for the remainder of the
+8.5-second post-resume window. Its final sample was in the original
+BIOS PIT-based delay routine at F000:ADCBh. The read-only test image
+was unchanged. The observation did not include a completed second
+power cycle.
+
+The existing Core attachment contract deliberately rejects an
+unsupported SMIADS access, and its test requires that rejection.
+A production change therefore needs an explicit distinction
+between routing to ordinary memory and rejecting a private access.
+The diagnostic's blanket unsupported fallback is not the proposed
+production contract.
+
+| Ordinary-route diagnostic | SHA-256 |
+| --- | --- |
+| Guest output and final CPU sample | `dfb270a74010a5ae2e6c3806931b85903a086a98ab7eb3217d98c737117028b9` |
+
+## Explicit SMIADS decode and receiving checks
+
+The existing Core attachment result now distinguishes an ordinary-memory
+route from an access refused by the board. Core runs the existing physical
+decode only for the explicit ordinary route. SMIADS provenance stays visible
+to transaction tracing. A provider error is returned unchanged and an
+observational read still bypasses transaction and device side effects. MyOB300
+uses this result for accesses wholly outside its enabled management window.
+The SADS backing remains separate from ordinary DOS addresses with the same
+numbers, and a cycle partially overlapping the private window is refused.
+
+On x64 and x86, the cached Core executor fixture verifies ordinary SMIADS
+read, write and observation, and retains the hard refusal check. The cached
+MyOB300 board fixture executes a guest handler that both reads private memory
+and writes ordinary RAM through the real App/Core wiring, then executes RES3.
+Both source/test Core manifest checks also passed on both widths.
+
+An x64 replay linked the production CPU bus with the immutable original card
+and a read-only diagnostic DOS image. The guest entered APM suspend and F13
+through the normal Machine input FIFO resumed DOS with event 0003. A separate
+diagnostic SMI pulse at guest tick 268342488 then progressed past the old
+9C4B6h failure, without a terminal Core error, and the final sampled PC was
+F000:A316h in the original BIOS. This run did not issue a second resume after
+that observation. The disposable DOS image SHA-256 remained
+`24f235b0955949fc2c1d9a353a7a97e9483d1adf6268239012164d42750c03ff`.
+
+| Production-link x64 diagnostic | SHA-256 |
+| --- | --- |
+| Guest output and final CPU sample | `e9c49746f623cc2408624a8cba94436d11efe2719f978880aa1fe6c3d3a1e45e` |
+| Core execution trace | `4a4cb4dd06f370660e8538de7b4206c2c095bd2b8d8130e05795c8449599f15f` |
+
+A second x64 replay logged successful production physical reads at
+9C4B6h after the diagnostic SMI. Its attempted second F13 did not restore
+interactive DOS. Comparing the sampled F000:A316h with the original ROM
+instructions showed that the probe signalled during a delay loop. The
+firmware checks the power key only later when it reads port EDh at
+F000:A337h. This unsuccessful replay does not qualify a second wake. Its
+read-only DOS image was unchanged.
+
+| Early-wake diagnostic | SHA-256 |
+| --- | --- |
+| Guest output and final CPU sample | `ff23d6c24db8d0355d76842d921073d1988a67342d1c4b7adcebab684b49be0f` |
+| Successful ordinary-memory read samples | `0af08004a5228f57f12b2f2ab4eaf6bcf2610db08195cd96c7a2b2f936c6ac65` |
+
+In the next x64 run the diagnostic watched the original EDh reads at
+F000:A337h and waited for that observation before sending F13 through
+the normal FIFO. After F13 release it sent the keyboard scan codes for
+`VER` and Enter. The guest displayed `C:\>ver`, emitted
+`Hewlett-Packard MS-DOS 5.00 - E.00.00`, and drew a fresh `C:\>` prompt.
+The replay itself returned 3 because its exit predicate expected the
+generic `MS-DOS Version` string. The guest framebuffer and unchanged
+read-only image prove the recorded DOS interaction. The SMI was still
+supplied by the diagnostic, so this run does not qualify awake F13 as
+the initiator of the suspend transition.
+
+| Power-poll diagnostic x64 | SHA-256 |
+| --- | --- |
+| Guest output including fresh DOS command and prompt | `34d93258e5ae195408dfc41e34f011a8b6f7dfa8e609b5a33ae3117a01a6dbe3` |
+| Original firmware power-port reads | `8cd75cc5c006eb61c8360806c475712420802a7f07158cf6854cbd7b1db2d5f6` |
+| Successful ordinary-memory reads after the pulse | `f4c34917e7cc3ef51c3e18e8bd7ca007831ba20bd0b96fe7f372cf6684e90461` |
+
+The x86 replay used the original EDh read trigger and matched the actual
+HP DOS version string. It sent the second F13 through the same Machine
+FIFO at 121,547 ms and released it at 121,804 ms. After the new `VER`
+input the guest printed `Hewlett-Packard MS-DOS 5.00 - E.00.00`.
+The probe exited successfully, and the read-only image was unchanged.
+The focused x86/x64 checks and Core dependency and test Types gates all
+passed. The diagnostic SMI, guest boot timing and separate desktop UX
+still retain their stated limits.
+
+| Power-poll diagnostic x86 | SHA-256 |
+| --- | --- |
+| Guest output with the fresh DOS command response | `806466bbea158ab40c02bbc1260100a48d0c4718bb1f9006d41c181bc1fae4a4` |
+| Original firmware power-port reads | `ccb6e37da90f50aaffd2a9ef9a20c7f6474f8a8bdf8a97fe5b5e234726c98943` |
+| Successful ordinary-memory reads after the pulse | `892a2a54708ed1e29c77edf76ded89ea106ec78d5fd62860602b321dcaf673f7` |
+
+## SMM enable at the DOS idle boundary
+
+An additional x64 replay observed the firmware's indexed SCAMP writes
+without substituting register values. After the original APM call had
+returned to DOS, the last successful SMMCTL (index 18h) write was A7h at
+the diagnostic SMI boundary. The original DOS prompt again handled a
+fresh `VER` after the diagnostic SMM/wake cycle. This fixes the input
+condition for further work: in this awake DOS case the firmware had
+enabled SMI, with BASIZ=7. A separate hardware event source for the
+production F13 key is still open. The tracing replay did not test the
+actual OmniBook wiring or an On/Off transition initiated by F13 alone.
+
+The VL82C316 signal description and Table 40 document that an external
+SMI request is gated by SMMEN. The related VL82C323 describes a rising
+push-button event while awake and a separate wake role while suspended.
+These are design references for the App, not identification of the
+OmniBook's actual PMU wiring.
+[VLSI SCAMP II chipset technical reference](https://bitsavers.computerhistory.org/components/vti/pc/VTI_VL82C316_VL82C323_SCAMP_II_199210.pdf).
+
+| Awake-register diagnostic x64 | SHA-256 |
+| --- | --- |
+| SCAMP writes and last SMMCTL value at the diagnostic SMI | `6962f0e204d6004a64193471d0798cf68059f3a00c17de7d68049fcab127ab09` |
+| Guest output and completion | `80f4add1e3c1c43b466a9e2afe76c33375e31c366feddb01dab7a74539dd09a7` |
+
+## SMM release qualification
+
+The Core receiver is Shared commit `f9b5eab867ad840262ba8bb31ab45ee20581f724`.
+The paired NXVM delivery updates the MyOB300 board, board fixture and all six
+PC releases. MyNES and MyRaidenII receive separate artifact commits. The
+artifact bytes below match the cached Ninja publication or the final relink
+in the same build tree. Both exact MyOB300 binaries launched in the isolated
+native Window configuration, attached the original card and read-only C
+image, and completed monitor `info` and `exit`. The original media hashes
+were unchanged. This check does not exercise the F13 gesture in the native
+Window; the original DOS wake observations above use the Machine input FIFO.
+
+- x64 and x86 Release unit tests: 717/717 each.
+- x64 integration: 47/48 in the first aggregate. The single MyNES snapshot
+  transaction failure passed on its exact isolated rerun. The test polls raw
+  RUNNING state before queue admission is necessarily open. It links MyNES
+  and Emulator, independently of the changed X86 Core. No MyNES code or test
+  was changed.
+- x86 integration: the 300-second aggregate budget expired after 38 passing
+  cases while starting the next MyNES case. The remaining ten registered cases
+  passed in the continuation. No original test timeout or aggregate policy was
+  changed. The resulting per-case coverage is 48/48 on each width, with the
+  failed and incomplete first aggregates retained as such.
+- Targeted Core dependency, Types and source/test manifest checks passed in
+  both trees. The NXVM documentation governance check and diff review passed.
+
+| Released executable | PE machine | SHA-256 |
+| --- | --- | --- |
+| nxvm_0_5_0592_x86.exe | 014Ch | `3d76d55d2a616eafb5f1f33f64bd29ad396e9a848a66cd50b690ce1bad042bba` |
+| nxvm_0_5_0592_x64.exe | 8664h | `168571b05d38e94a5c675e1d4f464a923c9bded12c35b5b81b0e5baa15f870aa` |
+| my5160_0_5_0592_x86.exe | 014Ch | `8a221a4dc285a00d469eefae88a2efe9e68504d0ea153fa9c0348a2cc6e08a00` |
+| my5160_0_5_0592_x64.exe | 8664h | `bd514a35913aecbe4b80eb1c3079de326667a010a0eec4f0709e3b5f4cfca260` |
+| my5170_0_5_0592_x86.exe | 014Ch | `13e06a595b7dc331f05a29d30e28bbf9ba74db73fe7a1862b585d1c57dfd1998` |
+| my5170_0_5_0592_x64.exe | 8664h | `5f6d36b70affe4c504ac315e70b7949028e56c913baf4907444b790f1cd70dd4` |
+| mydeskpro386_0_5_0592_x86.exe | 014Ch | `45681d997aa6328af1ab83199600de13e3c78d66019b369560c9bf4dd5fd9154` |
+| mydeskpro386_0_5_0592_x64.exe | 8664h | `36a80c339a121447483b3a1e686640ecea0071401f452510bd2ab9fa91601f32` |
+| mypc110_x86.exe | 014Ch | `e80f21d8d4d8688b1363d7aa71bbe6223f60a1bf7c2927ef85af18f78d95e4b6` |
+| mypc110_x64.exe | 8664h | `71fc48a01f1e2cb4cc352873d97a4be6ede66b7a90c31856cf613b63e7b1a520` |
+| myob300_0_5_0592_x86.exe | 014Ch | `51237e1543e27e6410a1d08fc1867c08612958d3fec43a257958136882d0c6f0` |
+| myob300_0_5_0592_x64.exe | 8664h | `2a42f5015843bd8900f731f1a16597a614775b826d728d785a2e4479ccb9ca5a` |
+| mynes_0_0_0044_x86.exe | 014Ch | `e362a56e74c6f1b60b864aec7f99d7c6fe57fa6d86d50391fc09391ec9a2f0f5` |
+| mynes_0_0_0044_x64.exe | 8664h | `697d63cda216948a5e1fd6f6e121c6da951f5940d0b314971315c658772458b7` |
+| myraidenii_0_0_0007_x86.exe | 014Ch | `4e0d1ce0b939d0632d4d83f2c03e630c344298b12e8b0cbae7b34a9ea1f39d64` |
+| myraidenii_0_0_0007_x64.exe | 8664h | `30e671e17800906a8454536abc04c8331e4b73a24d27ea2ff2f2024cff96a1bd` |
