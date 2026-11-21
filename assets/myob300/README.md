@@ -17,17 +17,27 @@ Extract the raw entry from the archive before launching. MyOB300
 checks the full digest of the loaded bytes before creating its worker.
 Keep protected card bytes outside this Git repository.
 
-The sample INI points to an owner-supplied C image. A ZIP containing
-the owner's C files is not a sector image. Use a prepared image with an
-active primary FAT16 partition and the original C files. Keep the master
-read-only or work from a disposable copy. The default `overlay` mode keeps
-writes off the input image. Use `direct` on a disposable image only when
-you intend to persist guest writes.
+The sample INI points to
+`../../../nxvm-assets/media-nxvm/ob300/ob300-c.img`. Create that directory
+in your external asset location, then run this from the repository root
+with Python 3.9 or later and your own System 1.0 ABA C-drive ZIP:
+
+```cmd
+python tools/nxvm/prepare_ob300_disk.py <C-drive-backup.zip> ../nxvm-assets/media-nxvm/ob300/ob300-c.img
+```
+
+The tool restores the ZIP hierarchy into an active FAT16 partition on a raw
+ATA disk with 32 cylinders, 16 heads and 63 sectors per track. It preserves
+the original file contents and refuses to overwrite an existing image.
+The System Card supplies DOS
+boot code. The default `overlay` mode keeps writes off the C image.
+Use `direct` on a disposable copy when you intend to persist guest writes.
 
 The current model selects 2 MiB RAM. Enter `start` at the monitor.
 On the first boot, the original ROM may report invalid configuration
 information and ask for F1. Press F1 in the guest display to continue.
-The original C backup normally starts Windows from the System Card.
-For a DOS-only check, use a disposable image with the original CONFIG.SYS
-and a copy of AUTOEXEC.BAT with Windows autostart removed. Windows
-and its applications have a separate qualification task.
+The original C backup starts Windows from the System Card. Both x86 and x64
+have drawn Program Manager in a replay. Menu interaction, Word and Excel
+remain under qualification. For a DOS-only check, use a disposable image
+with the original CONFIG.SYS and a copy of AUTOEXEC.BAT with Windows
+autostart removed.

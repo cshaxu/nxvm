@@ -75,6 +75,8 @@ static void test_chipset(x86_core_machine *core, myob300_board *profile)
     expect_port(core, 0xedu, 0x28u);
     write_indexed(core, 0xecu, 0xedu, 0x35u, 0x18u);
     expect_port(core, 0xedu, 0u);
+    write_port(core, 0xecu, 0x3eu);
+    expect_port(core, 0xedu, 0u);
     write_indexed(core, 0xecu, 0xedu, 0x3fu, 0x04u);
     expect_port(core, 0xedu, 0x04u);
 
@@ -422,6 +424,7 @@ static void test_card(x86_core_machine *core)
     lib_test_assert(x86_core_machine_memory_write(core, 0x00802070u, &write, 1u) ==
         LIB_STATUS_OK);
     expect_memory_pair(core, 0x00802070u, 0x36u, 0xc9u);
+    expect_memory_pair(core, 0x00c2ce34u, 0x17u, 0xd4u);
     write_indexed(core, 0xecu, 0xedu, 0x2cu, 0xbcu);
     write_indexed(core, 0xecu, 0xedu, 0x2du, 0xc2u);
     write_indexed(core, 0xecu, 0xedu, 0x2fu, 0xbdu);
@@ -652,8 +655,12 @@ int main(void)
     image[0x7f7fd0u] = 'O';
     image[0x7f7fd1u] = 'B';
     image[0x7f7ff1u] = 0x1au;
-    image[0x802070u] = 0x36u;
-    image[0x802071u] = 0xc9u;
+    image[0x2070u] = 0x36u;
+    image[0x2071u] = 0xc9u;
+    image[0x42ce34u] = 0x17u;
+    image[0x42ce35u] = 0xd4u;
+    image[0x802070u] = 0xa5u;
+    image[0x802071u] = 0x5au;
     image[0x803fffu] = 0x11u;
     image[0x804000u] = 0x22u;
     image[0x800100u] = 0xb8u;

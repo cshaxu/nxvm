@@ -178,6 +178,10 @@ static lib_status myob300_chipset_read(void *owner, lib_u16 port,
         *out_value = chipset->management_control |
             (chipset->management_active ? MYOB300_CHIPSET_MANAGEMENT_ACTIVE : 0u);
         break;
+    case 0x3eu:
+        /* L1: the observed OBMGM startup probe discards this read value. */
+        *out_value = 0u;
+        break;
     case MYOB300_KEYBOARD_COLUMN_LOW:
         *out_value = myob300_chipset_keyboard_columns(chipset) & 0xffu;
         break;

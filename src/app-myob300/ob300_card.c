@@ -15,8 +15,10 @@
 #define MYOB300_CARD_OPTION_BASE 0xe8000u
 #define MYOB300_CARD_OPTION_OFFSET 0x7e8000u
 #define MYOB300_CARD_OPTION_BYTES 0x8000u
+/* L1: the high half of the 24-bit bus exposes common card offsets.
+ * ROM Windows reads this aperture beyond the first two MiB. */
 #define MYOB300_CARD_HIGH_BASE 0x00800000u
-#define MYOB300_CARD_HIGH_END 0x00a00000u
+#define MYOB300_CARD_HIGH_END 0x01000000u
 
 static lib_status myob300_card_firmware_configure(void *owner,
     x86_core_machine_firmware_context *firmware)
@@ -111,13 +113,15 @@ static lib_status myob300_card_transfer(const myob300_card *card, lib_u32 physic
 {
     const lib_u8 *source;
 
-    /* Original ROM uses the high common area as a linear copy source. */
+    /* The high common window starts at card offset zero. */
     if (physical >= MYOB300_CARD_HIGH_BASE && physical < MYOB300_CARD_HIGH_END) {
+        const lib_u32 offset = physical - MYOB300_CARD_HIGH_BASE;
+
         if (bytes == 0u || bytes > MYOB300_CARD_HIGH_END - physical ||
-            card->common.data == LIB_NULL || physical + bytes > card->common.bytes)
+            card->common.data == LIB_NULL || offset + bytes > card->common.bytes)
             return LIB_STATUS_UNSUPPORTED;
         if (destination != LIB_NULL)
-            lib_memory_copy(destination, card->common.data + physical, bytes);
+            lib_memory_copy(destination, card->common.data + offset, bytes);
         return LIB_STATUS_OK;
     }
     if (physical < MYOB300_CARD_LEGACY_START || physical >= MYOB300_CARD_LEGACY_END ||

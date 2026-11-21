@@ -35,6 +35,8 @@ src/
     firmware/           project-owned BIOS source and offline ROM construction
   app-mypc110/          DSTN and TFT PC110 qualification App: board construction,
                          firmware bindings and stopped-state display selection
+  app-myob300/         OmniBook 300 board, System Card mapping and validation,
+                         Machine construction and fixed Product entry
 ```
 
 Keep machine-specific declarations beside the fixed App's construction source.
@@ -52,7 +54,7 @@ Shared PC Debug routing and hotkeys live in `src/x86-ibmpc/product`; reusable
 Debug CLI and assembly tools live in `src/x86-debug`. Neutral Machine/Session/UI composition, fixed monitor
 command grammar and help/startup framing live in `src/emulator/product` and
 `test/emulator/product`. `x86-nxvm/product`
-contains the NXVM-family INI, Machine adapter and extensions used by the four
+contains the NXVM-family INI, Machine adapter and extensions used by the six
 NXVM Apps; it is not an IBM PC Product dependency. Shared process entry consumes
 App-provided identity/banner and already composed machine/UI values; X86 NXVM Product owns
 the INI loader and factory. The

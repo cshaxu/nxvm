@@ -49,3 +49,5 @@ copied into this repository.
   they are not a second product launch route.
 - `New-DosProbe.ps1` creates a temporary probe for an explicitly admitted
   integration investigation.  Do not version generated media or logs.
+- `prepare_ob300_disk.py` restores an owner-supplied OmniBook C backup to
+  a new external disk image. See the [MyOB300 asset guide](../../assets/myob300/README.md).

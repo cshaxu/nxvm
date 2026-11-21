@@ -3,6 +3,14 @@
 [S2 is accepted and closed](../history/M5-T592-S2-ob300-native-qualification.md).
 The 0.5.0592 x64/x86 Product reaches original ROM DOS through native Console.
 
+S3 has a rebuilt dual-width candidate. The original 2 MiB guest passed its
+former Windows memory error and both widths drew Program Manager. The
+[original Windows evidence](../etc/evidence/t592-s3-ob300-rom-windows-baseline.md)
+records the mapping, protected-mode and RTC fixes, and distinguishes the
+captured desktop from input and application qualification. The
+[external media record](../etc/evidence/t592-s3-ob300-local-setup.md)
+covers repeatable C-drive preparation and native process entry.
+
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | M5 T592 S3 after ordered S2 publication. |
