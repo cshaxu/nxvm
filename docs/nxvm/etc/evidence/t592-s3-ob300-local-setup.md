@@ -1019,13 +1019,51 @@ deadlines in both experiments.
 | x64 worker and guest output | 047976d44b0583ffb2fd2b27fccb50c786e5194818102c987154cc0bac456068 |
 | x86 worker and guest output | adfca132cbf712c3ee5759f1c4381440815eb79a7cbda375847514a98eb2851c |
 
+#### Published Windows disk sharing
+
+A hidden process fixture used the exact published 0.5.0592 x64 and x86
+executables and the original System 1.0 ABA card. A separate Windows file
+handle held a disposable copy of the restored C image exclusively. For
+each width and each INI mode, process creation succeeded and the App exited
+with code 1 before displaying a monitor prompt. The current startup path
+does not print a diagnostic for this open failure.
+
+After the competing handle closed, the fixture launched the same EXE with
+the same configuration and waited for the native monitor prompt. It opened
+additional Windows handles to the attached image with separate read, write
+and delete-access requests. The tests request access only and perform no
+external data write or deletion.
+
+| INI mode | Other reader while mounted | Other writer | Delete-access handle |
+| --- | --- | --- | --- |
+| readonly | Accepted | Denied | Denied |
+| overlay | Accepted | Denied | Denied |
+| direct | Denied | Denied | Denied |
+
+All denied additional handle requests returned ERROR_SHARING_VIOLATION. In all six
+successful launches the fixture sent monitor exit, observed process exit
+code 0, and reopened the image with write and delete access. The disposable
+image, original restored backup and owner card hashes were unchanged. This
+covers Windows file sharing and release at the native monitor. It does not
+simulate a host-storage device being disconnected during DOS I/O.
+
+The App registers one boot-time ATA C-drive attachment and loads the
+System Card into owned immutable memory. It has no guest PCMCIA hot-removal
+command or slot event route. Host file sharing is a different contract from
+emulated card insertion and removal.
+
+| Probe evidence | SHA-256 |
+| --- | --- |
+| Dual-width replay and readonly backing-image result | 01030485cdf3cb0ef8ba8f5834fea0251e1bcb750cb248ade0f049d8493d00a5 |
+| Native handle and monitor fixture | 25a802490b48d12688fb6e34f48c8609a7d839abee575b4b2a324169e60443fd |
+
 ### Product obligation review
 
-| Design row | Evidence at P32 | Remaining boundary |
+| Design row | Evidence at P33 | Remaining boundary |
 | --- | --- | --- |
 | O07 input | Product DOS make/break, native monitor handoff and owner-tested original Windows keyboard and built-in pointer | Formal Windows interaction and redraw are part of the Windows receiver. |
 | O08 power | Original DOS and original Windows resume via F13 have direct dual-width replay. Clean Product exit and restart preserve RTC/CMOS. Windows Power Standard and Off both initiate a fresh POST with valid configuration on both widths. | x64 reaches the DOS driver in both modes. On x86 the 300-second probe cap expires after the configuration check and before the visible driver. See the original Windows Power control path below. |
-| O09 storage | DOS C/D access and writable readback are recorded in T591. An original DOS readonly write fails and returns to DOS on both widths. | Windows installation and file persistence remain with the Windows receiver. Live backing-file loss and card hot removal are unverified. |
+| O09 storage | T591 verifies DOS C/D access and writable readback. Original DOS returns to its prompt on a readonly write failure. Both published widths refuse a competing exclusive open and release all three media modes on exit. | Windows installation and file persistence remain queued. Host-storage disconnection is unverified. Guest PCMCIA hot removal has no product route. |
 | O12 product | Native Console release startup, monitor lifecycle and packaging are recorded in S2. P23 passed fresh real DOS startup, clean exit and CMOS reload. | Usability thresholds remain open in the performance receiver. No new independent desktop/RDP qualification was run. |
 
 ### Original Windows Power control path

@@ -32,6 +32,10 @@ the original file contents and refuses to overwrite an existing image.
 The System Card supplies DOS
 boot code. The default `overlay` mode keeps writes off the C image.
 Use `direct` on a disposable copy when you intend to persist guest writes.
+While MyOB300 has the C image mounted, Windows denies other writes and
+file removal. Close other tools or emulator instances that have an
+exclusive handle on the image before launching. An unavailable C image
+can make the process exit during startup.
 
 The current model selects 2 MiB RAM. Enter `start` at the monitor. On first
 boot, the original ROM may report invalid configuration information and

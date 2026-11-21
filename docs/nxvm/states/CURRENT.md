@@ -32,6 +32,10 @@ saves the firmware's RTC and CMOS beside the EXE. A second process loads the
 file and reaches original ROM DOS without F1. The evidence also covers
 malformed input and a refused save.
 
+The [disk-sharing replay](../etc/evidence/t592-s3-ob300-local-setup.md#published-windows-disk-sharing)
+confirms dual-width Windows denial of conflicting C-image access and release
+at monitor exit in readonly, overlay and direct modes.
+
 The [published DOS handoff](../etc/evidence/t592-s3-ob300-local-setup.md#published-dos-performance-handoff)
 measures current native startup and directory response on both widths.
 Direct dual-width sampling places branch-target decode and board deadline
