@@ -644,6 +644,47 @@ static void x86_core_cpu_timing_select_v30(
     result->key_id = result->form_id;
 }
 
+/* Dispatch the specialized 386 forms before the common source ledgers.
+ * An escape retains the original priority when more than one evaluator applies. */
+static lib_i32 x86_core_cpu_timing_select_386_specialized(
+    x86_core_cpu_execution_context *context, x86_core_cpu_timing_result *result,
+    lib_u32 prefixes)
+{
+    const t_cpuins_data *data = &context->instructions->data;
+
+    if (prefixes >= data->oplen) return 0;
+    const lib_u8 opcode = data->opcodes[prefixes];
+
+    if (opcode == 0x0fu) {
+        if (prefixes + 1u >= data->oplen) return 0;
+        return (data->opcodes[prefixes + 1u] == 0xafu &&
+            x86_core_cpu_timing_try(context, result,
+                X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_80386_DYNAMIC_MULTIPLY,
+                x86_core_cpu_80386_dynamic_multiply_cost, prefixes)) ||
+            x86_core_cpu_timing_try(context, result,
+                X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_80386_SECONDARY,
+                x86_core_cpu_80386_secondary_source_instruction_cost, prefixes) ||
+            x86_core_cpu_timing_try(context, result,
+                X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_80386_PRIVILEGED,
+                x86_core_cpu_80386_privileged_source_instruction_cost, prefixes);
+    }
+    if (opcode == 0x63u) {
+        return x86_core_cpu_timing_try(context, result,
+            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_80386_PRIVILEGED,
+            x86_core_cpu_80386_privileged_source_instruction_cost, prefixes);
+    }
+    if (opcode != 0x69u && opcode != 0x6bu) {
+        if ((opcode != 0xf6u && opcode != 0xf7u) || prefixes + 1u >= data->oplen)
+            return 0;
+        const lib_u8 extension = (data->opcodes[prefixes + 1u] >> 3u) & 7u;
+
+        if (extension != 4u && extension != 5u) return 0;
+    }
+    return x86_core_cpu_timing_try(context, result,
+        X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_80386_DYNAMIC_MULTIPLY,
+        x86_core_cpu_80386_dynamic_multiply_cost, prefixes);
+}
+
 lib_i32 x86_core_cpu_timing_select(x86_core_cpu_execution_context *context)
 {
     x86_core_cpu_timing_result result;
@@ -702,18 +743,12 @@ lib_i32 x86_core_cpu_timing_select(x86_core_cpu_execution_context *context)
     } else if (!x86_core_cpu_timing_try(context, &result,
             X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_STRING_IO,
             x86_core_cpu_string_io_source_instruction_cost, prefixes) &&
-        !x86_core_cpu_timing_try(context, &result,
-            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_80386_DYNAMIC_MULTIPLY,
-            x86_core_cpu_80386_dynamic_multiply_cost, prefixes) &&
-        !x86_core_cpu_timing_try(context, &result,
-            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_L2_DYNAMIC_ARITHMETIC,
-            x86_core_cpu_l2_dynamic_arithmetic_model_cost, prefixes) &&
-        !x86_core_cpu_timing_try(context, &result,
-            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_80386_SECONDARY,
-            x86_core_cpu_80386_secondary_source_instruction_cost, prefixes) &&
-        !x86_core_cpu_timing_try(context, &result,
-            X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_80386_PRIVILEGED,
-            x86_core_cpu_80386_privileged_source_instruction_cost, prefixes) &&
+        !(cpu_profile_has_386_semantics(context->cpu_profile) &&
+          x86_core_cpu_timing_select_386_specialized(context, &result, prefixes)) &&
+        !(context->cpu_profile == X86_CORE_CPU_PROFILE_8086 &&
+          x86_core_cpu_timing_try(context, &result,
+              X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_L2_DYNAMIC_ARITHMETIC,
+              x86_core_cpu_l2_dynamic_arithmetic_model_cost, prefixes)) &&
         !x86_core_cpu_timing_try(context, &result,
             X86_CORE_CPU_RETIREMENT_TIMING_ORIGIN_PRIMARY,
             x86_core_cpu_primary_source_instruction_cost, prefixes) &&
