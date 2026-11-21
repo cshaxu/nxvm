@@ -238,3 +238,53 @@ focused release gate covers cached x64/x86 build, board tests, native
 monitor launch, external media attachment and exit. The real x64
 instrumented variant traces the firmware register restore sequence.
 This batch did not repeat the full repository or desktop test suites.
+
+## Firmware wake cause and repeated suspend
+
+A bounded trace of the index 02h bit-0 diagnostic kept the first two
+samples of each instruction address so the F000:A4C7h loop could not
+consume the entire capture. It shows that the original BIOS reaches
+its resume epilogue. F000:A4DEh and A4E2h restore both PIC masks,
+A4ECh restores index 48h, and A4F3h restores port 61h. The APM caller
+then reaches the code after the BIOS routine. The original HP software
+reads B5h again and the BIOS enters the save routine a second time.
+The diagnostic still does not reach the DOS completion marker.
+
+That distinguishes a rejected or insufficient wake reason from a failure
+to execute the first resume epilogue. Static inspection shows that the
+APM handler tests bits 1, 3 and 4 of its recorded wake reason after the
+epilogue. The injected bit 0 does not satisfy that test. Separately, the
+ROM selects UART modem-status port 3FEh or 2FEh and tests its ring input
+at F000:A360h. The *HP OmniBook Operating Guide*, page 11-21, identifies
+serial and internal-modem ring as auto-on sources and excludes PCMCIA
+modems. This documents a firmware wake input with an independent
+source. It does not identify the On/Off button's signal.
+
+| Item | SHA-256 |
+| --- | --- |
+| Index 02h deduplicated effect trace | `765d389e9b09e2e912b7b76ed7f015ff295dd1b6a7d68e24013b92e04a489265` |
+| Index 02h diagnostic display and paused sample | `28cbcfc9d528a55c3f4f52434cd5a4460e53686491094051adc184e4da521860` |
+
+The first serial-ring diagnostic asserted RI for one modem-status read.
+It did not return from 5307h. The ROM's loop advances while RI is high
+and falls through to wake only after 1,000 consecutive high samples.
+A second x64 diagnostic held RI through those reads, all at 02FEh.
+Samples 1 and 1,000 were separated by 2,190,807 guest ticks, about
+110 ms on the board's nominal 20 MHz axis. The actual BIOS then
+returned from the original 5307h call with carry clear, and the next
+530Bh returned BX=0003h with carry clear, the normal resume event.
+The DOS diagnostic printed its completion marker. The read-only disk
+retained its recorded SHA-256.
+
+The injection targeted the observed modem-status I/O reads in the
+diagnostic executable. It demonstrates original guest continuation
+after a known wake cause. The production App still has no modem ring
+or On/Off signal source, and this test does not claim preservation of
+an open Windows session or Standard/Off cold start.
+
+| Item | SHA-256 |
+| --- | --- |
+| One-sample ring trace, no DOS completion | `861afd7383de15e2956b2920bdd8db6173587f81f6b6a03d02c4f60276cc1e6b` |
+| Continuous RI sample window | `dac3ed5f1c0cdcba0555006728733bdd25985360b58a34c96fca25f2a36a2621` |
+| Continuous RI indexed and interrupt trace | `8d40e5a1a43770e0a551aee33f99d56ac365851f52e3514d4b77508042085b00` |
+| Continuous RI DOS BIOS results and completion marker | `7565ef70cb75617566d99d7ac692865f805d693bd447fc7b2d6ef5499c917295` |
