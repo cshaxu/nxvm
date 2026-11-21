@@ -9,7 +9,7 @@ the original usability goals. The 0.5.0592 release is the measurement baseline.
 | Task | Status |
 | --- | --- |
 | T593 S3 | Accepted for its bounded functional delivery through a1e0e1b86. No whole-machine acceleration claimed. |
-| T593 S4 | Active. Prove and remove unnecessary timing evaluator calls. Reconcile the unchanged MyOB300 usability targets against current releases. |
+| T593 S4 | Delivered for review. [Release and usability qualification](../etc/evidence/t593-s4-release-qualification.md) records the current performance limits. Owner scope decision pending for unmet gates. |
 
 | Field | Required record |
 | --- | --- |

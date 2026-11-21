@@ -38,3 +38,11 @@ record the four retained simplifications, the rejected routing variants,
 all sixteen deployed identities and the dual-width results. Functional
 qualification passed. The MyOB300 probes still miss the original DIR gate
 on both widths. S3 is delivered for review, with the usability target open.
+
+## S4 evidence
+
+[Timing dispatch proof](../etc/evidence/t593-s4-cpu-timing-dispatch.md)
+and [release and usability qualification](../etc/evidence/t593-s4-release-qualification.md)
+record the bounded call reduction and unchanged timing contracts, the full
+dual-width receiving matrix and one original DOS qualification per width.
+The remaining performance gates and scope decision stay with T593.
