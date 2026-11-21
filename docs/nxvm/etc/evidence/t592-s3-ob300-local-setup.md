@@ -1092,6 +1092,51 @@ must make the existing fetch/decode cheaper or prove safe reuse under the
 same timing contract. This experiment does not measure the independent
 cost of producing other retirement data.
 
+#### Exact fractional clock prototype
+
+A scratch copy of `x86-core/machine/clock.c` adds 12 lines. When elapsed
+ticks fit in 32 bits, it computes elapsed × numerator + phase in 64
+bits. If the result fits in 32 bits, it uses 32-bit quotient and
+remainder. Larger inputs take the original path. The prototype changes
+neither the guest clock model nor the clock domain state.
+
+On each width, 280,000 deterministic differential cases matched return
+value, phase and cumulative delivery. The existing rational clock and
+scheduler smoke tests passed with the scratch object on both widths.
+Five alternating-order pairs of 16 million conversions used the
+OmniBook PIT and RTC ratios, with identical final state in every run.
+Median x86 time was 0.334395 → 0.122676 s. Median x64 time was
+0.114845 → 0.082602 s. The x86 compiler emitted one divide for the
+narrow quotient and remainder.
+
+One sequential original DOS x86 replay per variant used the same
+read-only disposable C image. Both reached the prompt, executed
+`DIR CONFIG.SYS` and returned to the prompt.
+
+| Measure | Baseline | Prototype |
+| --- | ---: | ---: |
+| First DOS prompt, seconds | 108.894 | 100.908 |
+| DIR response, seconds | 8.936 | 8.513 |
+| Cold fractional clock calls | 95,362,546 | 95,417,783 |
+| Cold fractional clock sampled seconds | 11.067128 | 9.065179 |
+| DIR fractional clock calls | 6,864,788 | 6,842,545 |
+| DIR fractional clock sampled seconds | 0.835536 | 0.734078 |
+
+Cold instruction and guest tick totals differed by less than 0.06%.
+Unchanged CPU/refresh sampled time also varied between runs
+(80.165 → 75.640 s cold). The differential checks establish arithmetic
+equivalence and the paired microbenchmarks show lower conversion cost.
+This single sequential replay cannot attribute the full boot-time delta
+to the clock change. The measured DIR latency still exceeds the 1 s
+target. The prototype is a candidate for the queued performance task.
+There is no production or release binary change in this batch.
+
+SHA-256 evidence:
+- Disposable DOS C image: `34d5597e7b040ea7a8b09d84234eea118d7f2cd8934cc4fc6c5eceaadf90b67f`
+- Differential, microbenchmark and component test transcript: `d5343cfc1c2f2f727d85f483536f0aa7810700e3926003d8948eaadf811c9cac`
+- Baseline replay transcript: `bdecfd190bc8fe5b91c839147c4875bf5dce6aa0cf4d3ab2a8c1c26389078ba4`
+- Prototype replay transcript: `ef58f0127e99fcb414a88ea07400e8b1072497c4c3a4e27fa373030b1bc6daa3`
+
 #### Published Windows disk sharing
 
 A hidden process fixture used the exact published 0.5.0592 x64 and x86

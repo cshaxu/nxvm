@@ -56,6 +56,8 @@ cut the cold preview sample in one pair without improving DIR latency.
 [Call-site counters](../etc/evidence/t592-s3-ob300-local-setup.md#timing-versus-observation-preview-calls)
 attribute every sampled workload preview to the timing formula, with no
 additional target read for retirement metadata.
+The [fractional clock prototype](../etc/evidence/t592-s3-ob300-local-setup.md#exact-fractional-clock-prototype)
+reduced conversion cost in isolation and in one original DOS x86 pair.
 The [original
 Power control replay](../etc/evidence/t592-s3-ob300-local-setup.md#original-windows-power-control-path)
 confirms that x64 Standard and Off both run POST and load DOS after two F13
