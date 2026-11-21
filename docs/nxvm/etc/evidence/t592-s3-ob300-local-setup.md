@@ -111,3 +111,130 @@ a suspend request, switch event, or resume.
 | Disposable C image | `1fd14d4126d1ad5cf85caa711db261317eb4f4ab1ad62cb59767fec3b6818ed0` |
 | x64 guest output | `133eaf08b4d85b6b5ea6318dc830edf322e3a8d5e377c61723ae16c8b1c1276f` |
 | x86 guest output | `caa26ad48a6ebb3395cc65f2dce8188bf9558a35f586b6db17a4e83f07069234` |
+
+## Original APM suspend request
+
+A second disposable DOS replay issued INT 15h AX=5307h with BX=0001h
+and CX=0002h after the original HP startup, without reconnecting or
+disconnecting APM. The replay traced the real I/O dispatch and captured
+the failed CPU access. The original BIOS reached its device state save
+code and selected the SCAMP index range 32h through 48h.
+
+On the unmodified tree, x64 reached F000:A0ECh and failed reading ECh's
+selected index 3Ah through data port EDh. The board already accepted
+writes to the keyboard row selection latch. Reading back that same latch
+is sufficient for this register. The two cached builds and existing
+board unit fixtures passed with the readback and a real Core I/O
+round-trip assertion. This four-line local candidate is not a release.
+
+The patched x64 replay read through index 44h and then hit the same
+unsupported I/O result at index 45h. The BIOS save loop reads the whole
+range. Its restore code also reads 45h and 46h to write UART FIFO control,
+then restores the other saved external device registers. This is a
+separate App board obligation. The next implementation must determine
+the serial register owners and routing before assigning values to these
+indexes. No suspend return, wake, or session preservation was observed.
+
+| Item | SHA-256 |
+| --- | --- |
+| Suspend request program | `d27b9a682083b64c9bc59742fe90270491dbc0f237f4ab1cdaaecf7f38fee779` |
+| Disposable C image, unchanged in both attempts | `24f235b0955949fc2c1d9a353a7a97e9483d1adf6268239012164d42750c03ff` |
+| Original failure trace | `b5a955024ee580ad2c8b8d05b1877ccd9b8bf40740d1ae37de0db802eb18a0eb` |
+| Candidate failure trace | `b67b20466a3cb1bfeca878b4745e83ab89ffdc4050723af4d381b2b43cd4993f` |
+| Candidate indexed writes | `86a202fe3d1555873bd932b5e45fd4085254d4696280dfe9a7d77bbd951f17c1` |
+
+The original BIOS reads extension register 47h before restoring the
+two FIFO controls. Bit 3 selects 3FAh or 2EAh for the value from 45h.
+Bit 1 selects 2FAh or 3EAh for the value from 46h. HP documents the
+four logical COM address and IRQ pairs in the *OmniBook Operating
+Guide*, page 4-6. The selected destinations are offsets 2 in those
+UART ranges. That supports an App-owned connection to a UART FIFO
+control register, but does not by itself establish the backing latches'
+power-on values or what updates them.
+
+An x64 diagnostic supplied zero for just the two unsupported FIFO
+control reads. It entered the original state restore loop and failed
+on a write to index 3Bh at F000:A14Eh. This proves the needed bus
+behavior of the keyboard column input: accept its restore write while
+continuing to derive the value from pressed keys. Both column bytes
+now ignore writes in the local candidate. These probe results are
+separate from hardware suspend qualification: the trace shows the BIOS
+executing its restore path, without an external On/Off event.
+
+| Item | SHA-256 |
+| --- | --- |
+| FIFO-read diagnostic display | `9ec6e47d7f9b61a30328f2c50d57a420b745347ec98efab1c0e90398c9a5887b` |
+| FIFO-read diagnostic indexed ports | `c16d3e41d14844f652941e0f4b94d9a671bc8d65d2fc9bb04d531b583334dfbb` |
+| Restore-write failure | `06664d41be742e6f6635435365a63502e78a422945342e8f73b11463c4e6b899` |
+
+With the column write behavior in place, both cached App board tests
+passed again. A second x64 diagnostic also accepted the unsupported
+FIFO restore writes and the zero-value write to the existing 3Eh probe
+register inside the scratch runner only. The original BIOS completed
+the indexed restore sequence through 48h and progressed into a polling
+loop. The latest x64 diagnostic therefore checks a later firmware
+boundary, not a product code path or an observed wake. The stock BIOS
+also contains a separate status-gated branch that selects keyboard
+matrix row 0, reads column bit 4, and may reset the processor. That
+branch needs a live instruction sample before assigning the physical
+On/Off key or changing the current matrix contract.
+
+The restore-only diagnostic exhausted its bounded window. A paused
+instruction sample was inside the real BIOS delay routine at F000:ADB0h
+and the indexed trace showed repeated 02h/32h/47h queries. The original
+loop tests bit 7 of I/O port B5h at F000:A3C6h, then checks the master
+PIC before continuing. A separate diagnostic pulsed only that input at
+the actual read, at guest tick 255000370. It demonstrates the branch's
+input location and does not establish which physical switch or latch
+drives it on the original board.
+
+The local production candidate now gives 45h and 46h distinct, writable
+FIFO shadow bytes. The current board has no emulated UART endpoints,
+so both use disabled reset defaults as an L1 model. The guest's observed
+3Eh restore writes back its inert zero probe value. That write is now
+acknowledged. The x64 and x86 existing board tests passed with the
+candidate, including both shadows and the matrix restore checks.
+
+| Item | SHA-256 |
+| --- | --- |
+| Restore-only display and paused sample | `d7d0d8e503ad745a11c633695e7235cd29a0418b2a33f976c34c7b4c6969ff7a` |
+| Restore-only indexed trace | `a4ab18a87ee610c3df065b25ecfaeb1a4b4176e92ec421acbd76dc3e7fa4fc14` |
+| B5h bit-7 diagnostic marker | `fbd3e13c3743598f92be6e8f185f1195e6b3d3ea0e56f692442edc7ad4341f54` |
+
+The one-shot B5h pulse did not return to DOS within the 280-second
+bound. The paused sample was again in the BIOS delay routine, at
+F000:ADC6h. The probe supplies a diagnostic input only and cannot
+distinguish a sustained level from a missing secondary wake signal.
+The display and paused trace SHA-256 is `9bbda32a2966538777b421ad73da18ad52a8df6d92bfccb18e1bc479891d99c0`.
+
+An unmodified-ROM x64 replay of the production register candidate
+completed the same save and restore sequence without an I/O bypass.
+Its indexed trace matched the earlier restore-only diagnostic byte
+for byte. It still remained in the BIOS wait with no host-operated
+power input. In a separate test, one pulse of the status bit 0 at
+index 02h reached F000:A337h. This diagnostic also reached the time
+bound without returning to DOS. The App does not emulate either
+diagnostic input in production.
+
+| Item | SHA-256 |
+| --- | --- |
+| Production register candidate display and paused sample | `3585c3819aacb4feb232439d265e339ca35afd977b938a30b55b582664a28120` |
+| Index 02h diagnostic marker | `397cfc05f23851c230892f278f4bca95631866843533051d04ac258d36dc2514` |
+| Index 02h diagnostic display and paused sample | `e7f25eb25fb6a15917f13a40e0b2df82585ce5fd2418f3bf41c2dbf77d829474` |
+
+The verified dual-width register build is published under assets/myob300.
+Both native executables started with the external card and read-only
+C drive in an isolated layout. Their monitor reported the attached disk
+and handled exit, and the ROM, disk and checked-in INI were unchanged.
+The previously running owner copy was left in place.
+
+| Release | PE machine | SHA-256 |
+| --- | --- | --- |
+| myob300_0_5_0592_x64.exe | 8664h | `42867875243c9e9778a216d4823da16a8e0e94e3ad4f24364fae39514ae5782f` |
+| myob300_0_5_0592_x86.exe | 014Ch | `0ec934f71e28c3f158c1ff80a9c80e9c974bf88ef9ec391ef43d9a60614d3e53` |
+
+The register change is App-local. No Shared source changed. The
+focused release gate covers cached x64/x86 build, board tests, native
+monitor launch, external media attachment and exit. The real x64
+instrumented variant traces the firmware register restore sequence.
+This batch did not repeat the full repository or desktop test suites.

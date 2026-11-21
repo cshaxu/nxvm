@@ -77,16 +77,35 @@ static void test_chipset(x86_core_machine *core, myob300_board *profile)
     expect_port(core, 0xedu, 0u);
     write_port(core, 0xecu, 0x3eu);
     expect_port(core, 0xedu, 0u);
+    write_port(core, 0xedu, 0u);
+    expect_port(core, 0xedu, 0u);
     write_indexed(core, 0xecu, 0xedu, 0x3fu, 0x04u);
     expect_port(core, 0xedu, 0x04u);
 
     write_indexed(core, 0xecu, 0xedu, 0x3au, 0xfeu);
+    expect_port(core, 0xedu, 0xfeu);
     write_port(core, 0xecu, 0x3bu);
     expect_port(core, 0xedu, 0xffu);
+
     lib_test_assert(myob300_board_set_matrix_key(profile, 0u, 4u, LIB_TRUE) == LIB_STATUS_OK);
     expect_port(core, 0xedu, 0xefu);
-    lib_test_assert(myob300_board_set_matrix_key(profile, 0u, 4u, LIB_FALSE) == LIB_STATUS_OK);
+    write_port(core, 0xedu, 0u);
+    expect_port(core, 0xedu, 0xefu);
+    write_indexed(core, 0xecu, 0xedu, 0x3cu, 0u);
     expect_port(core, 0xedu, 0xffu);
+    lib_test_assert(myob300_board_set_matrix_key(profile, 0u, 4u, LIB_FALSE) == LIB_STATUS_OK);
+    write_port(core, 0xecu, 0x3bu);
+    expect_port(core, 0xedu, 0xffu);
+
+    write_port(core, 0xecu, 0x45u);
+    expect_port(core, 0xedu, 0u);
+    write_port(core, 0xedu, 0x41u);
+    write_port(core, 0xecu, 0x46u);
+    expect_port(core, 0xedu, 0u);
+    write_port(core, 0xedu, 0x81u);
+    expect_port(core, 0xedu, 0x81u);
+    write_port(core, 0xecu, 0x45u);
+    expect_port(core, 0xedu, 0x41u);
 }
 
 static void configure_pic(x86_core_machine *core)

@@ -28,6 +28,9 @@
 #define MYOB300_KEYBOARD_ROW_SELECT 0x3au
 #define MYOB300_KEYBOARD_COLUMN_LOW 0x3bu
 #define MYOB300_KEYBOARD_COLUMN_HIGH 0x3cu
+#define MYOB300_CHIPSET_PROBE_REGISTER 0x3eu
+#define MYOB300_CHIPSET_UART0_FIFO_SHADOW 0x45u
+#define MYOB300_CHIPSET_UART1_FIFO_SHADOW 0x46u
 #define MYOB300_CHIPSET_VSF_DISABLED 0x80u
 #define MYOB300_CHIPSET_MANAGEMENT_ACTIVE 0x08u
 #define MYOB300_CHIPSET_MANAGEMENT_LOCK 0x10u
@@ -51,7 +54,11 @@ static const struct {
     {0x34u, 0x00u}, {MYOB300_CHIPSET_FIXED_DISK_SOCKET_STATUS, 0x00u},
     {0x36u, 0x00u}, {0x37u, 0x00u}, {0x38u, 0x00u}, {0x39u, 0x00u},
     {0x3du, 0x00u}, {0x3fu, 0x00u}, {0x40u, 0x00u}, {0x41u, 0x00u},
-    {0x42u, 0x00u}, {0x43u, 0x00u}, {0x44u, 0x00u}, {0x47u, 0x00u}, {0x48u, 0x00u}
+    {0x42u, 0x00u}, {0x43u, 0x00u}, {0x44u, 0x00u},
+    /* The ROM saves and restores these FIFO shadows. L1: the current board
+     * has no UART endpoints, so both reset with FIFO disabled. */
+    {MYOB300_CHIPSET_UART0_FIFO_SHADOW, 0x00u},
+    {MYOB300_CHIPSET_UART1_FIFO_SHADOW, 0x00u}, {0x47u, 0x00u}, {0x48u, 0x00u}
 };
 
 static lib_u8 *myob300_chipset_startup_register(myob300_chipset *chipset)
@@ -178,9 +185,12 @@ static lib_status myob300_chipset_read(void *owner, lib_u16 port,
         *out_value = chipset->management_control |
             (chipset->management_active ? MYOB300_CHIPSET_MANAGEMENT_ACTIVE : 0u);
         break;
-    case 0x3eu:
+    case MYOB300_CHIPSET_PROBE_REGISTER:
         /* L1: the observed OBMGM startup probe discards this read value. */
         *out_value = 0u;
+        break;
+    case MYOB300_KEYBOARD_ROW_SELECT:
+        *out_value = chipset->keyboard_row_select;
         break;
     case MYOB300_KEYBOARD_COLUMN_LOW:
         *out_value = myob300_chipset_keyboard_columns(chipset) & 0xffu;
@@ -235,7 +245,9 @@ static lib_status myob300_chipset_write(void *owner, lib_u16 port,
     }
     if (port != MYOB300_CHIPSET_DATA_PORT) return LIB_STATUS_UNSUPPORTED;
     switch (chipset->configuration_index) {
-    case MYOB300_CHIPSET_VERSION: break;
+    case MYOB300_CHIPSET_VERSION:
+    case MYOB300_CHIPSET_PROBE_REGISTER:
+        break;
     case MYOB300_CHIPSET_SLEEP_CONTROL:
         /* SCAMP II Table 23. The observed divide-by-one path keeps the
          * clock rate. Other power and clock effects are not modeled. */
@@ -250,6 +262,10 @@ static lib_status myob300_chipset_write(void *owner, lib_u16 port,
         break;
     case MYOB300_KEYBOARD_ROW_SELECT:
         chipset->keyboard_row_select = (lib_u8)value;
+        break;
+    case MYOB300_KEYBOARD_COLUMN_LOW:
+    case MYOB300_KEYBOARD_COLUMN_HIGH:
+        /* The columns are inputs, including during BIOS state restore. */
         break;
     default:
         startup = myob300_chipset_startup_register(chipset);
