@@ -946,6 +946,47 @@ existing retirement, device wake and fault semantics in any comparison.
 | x64 worker and guest output | `f35412b06c505f64c9c34439a0db708c823a3dc62d357758ad33913e70233ef8` |
 | x86 worker and guest output | `5832d602aa81930ef8eb1549775fb515c2fdd8a6dca314629106a81baf7b5eb9` |
 
+#### CPU timing and preparation detail
+
+A serial follow-up substituted only an instrumented CPU object in the scratch
+replay above. Both widths saw the original DOS prompt and a fresh
+CONFIG.SYS entry followed by a ready prompt. Both exited normally and left
+the readonly C image unchanged. The guest retired about 45.1 million
+instructions before DIR and 3.28 million during DIR on each width.
+
+| Worker region | x64 cold | x86 cold | x64 DIR | x86 DIR |
+| --- | ---: | ---: | ---: | ---: |
+| Complete Core calls, directly timed | 85.70 s | 106.79 s | 7.75 s | 9.24 s |
+| CPU refresh, estimated | 65.18 s | 77.65 s | 6.11 s | 7.08 s |
+| Instruction execution, inclusive estimate | 42.87 s | 50.58 s | 3.91 s | 4.49 s |
+| Timing selection, inclusive estimate | 22.91 s | 28.14 s | 2.88 s | 2.72 s |
+| CPU restart-state assignment, estimated | 4.60 s | 5.94 s | 0.42 s | 0.51 s |
+
+The scratch object times one out of 1,021 internal calls. The x64 run
+staggers sampler offsets. On x86 the instruction preparation, boundary and
+copy samples overlap, so their individual totals cannot be used to estimate
+exclusive preparation cost. Nested samples and performance-counter overhead
+also prevent adding the estimates or comparing the two widths as a benchmark.
+The production readings remain the acceptance comparison.
+
+Instruction preparation ran about 53.8 million times for 45.1 million
+retirements, and about 3.78 million times for 3.28 million during DIR.
+Preparation is also called by branch-target lexical preview and exception
+entry, so those differences cannot be assigned to one caller. Inspection of
+the timing path found that formula metadata can preview a taken branch
+target. That preview copies private CPU and decoder state, then calls the
+same instruction preparation as execution. Keep the regular restart
+checkpoint. For the performance receiver, first compare a narrowly scoped
+reduction in branch-target preview work against unchanged guest ticks,
+retirement metadata and faults. Reuse the existing timing-preview and
+retirement-observation tests. This sample quantifies the timing region, but
+does not quantify how much of it that follow-up would save.
+
+| Sampled replay | SHA-256 |
+| --- | --- |
+| x64 worker and guest output | 05b9bbb916ac15a83d9f85bff0b5e8dd7301095e07b5d98de6c5eb8e89314e8e |
+| x86 worker and guest output | 0636d504d262944bf436920ca0c81e2d9c0b49a77ad49edf11d92c349680d31d |
+
 ### Product obligation review
 
 | Design row | Evidence at P23 | Remaining boundary |
