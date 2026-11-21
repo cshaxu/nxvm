@@ -69,6 +69,8 @@ verified POST but did not reach the DOS driver under the existing cap.
 The [aligned wake traces](../etc/evidence/t592-s3-ob300-local-setup.md#cross-width-restart-trace-comparison)
 match through every captured x86 ordinary POST CMOS operation. The
 later x86 DOS endpoint still lacks direct evidence.
+The [published x86 acceptance procedure](../etc/evidence/t592-s3-ob300-local-setup.md#published-x86-windows-power-acceptance-procedure)
+specifies the observable Standard and Off endpoints and RDP evidence.
 The queued performance and Windows gates remain in force.
 
 | Field | Required record |
