@@ -1073,3 +1073,34 @@ remain unchanged.
 | Shorter x86 test disk before and after both runs | `0b79d2caf21ad4a424b609e69dbb4c0cdcda53e2be89230b526e36ac4c5a52c3` |
 | Shorter Standard RTC trace | `9e8d70ec07cd3baaa867925eaacf2a1c673df6c55f0568c2b259029344d1222e` |
 | Shorter Off RTC trace | `66a712b0d63120ba9c6187d591cec4b4f63ef3e1124c0ec316b42465d9c94f4f` |
+
+To observe a later DOS checkpoint within the same limit, the follow-up
+x86 fixture used Windows 3.1's documented `CONTROL.INI` `[don't load]`
+setting to hide unrelated Control Panel icons. The original Power icon,
+Power driver, OptionsDLL, DOS startup, ROM and power path remained present.
+The first two probes reached the one-icon Control Panel but had assumed
+the old left-column position. The next probes used the Power icon's
+coordinates measured from that actual frame. The resulting disk hash is
+`f6c53ca2ec36bdf963b0543d140bc7654b09388776012f091cb9b7076fb75088`.
+[Microsoft Knowledge Base Q84709](https://jeffpar.github.io/kbarchive/kb/084/Q84709/).
+
+| One-icon Control Panel, x86 | Standard | Off |
+| --- | ---: | ---: |
+| Original Power icon selected and Enter sent | 227.460 s | 228.075 s |
+| First F13 after confirmation | 234.608 s | 235.493 s |
+| Second F13, accepted by the original BIOS | 249.859 s | 251.093 s |
+| Visible DOS driver at 288-second probe terminal | Not observed | Not observed |
+
+The altered panel saved only a few seconds versus the complete panel.
+Both probes advanced through the valid POST configuration check and
+later RTC/CMOS work after the second F13. No F1 was sent and both disk
+hashes stayed unchanged. This checks the same x86 firmware behavior with
+a smaller startup fixture. It does not qualify the DOS driver terminal
+or meet a performance threshold. The 300-second outer budget is unchanged.
+
+| One-icon evidence | SHA-256 |
+| --- | --- |
+| Standard UI and wake | `8999d0fa5bb58110cfeaa8b2e60a0dd924058ae4f3493d782317417522d8132f` |
+| Standard POST RTC trace | `eb42bb5776277aeab229d6673bbd2689c5f664134f3d2e2324df7ce37567c404` |
+| Off UI and wake | `af8d4f4f0aa54431f82f49956540ff85cf7c5df075af58d627579352e120ff17` |
+| Off POST RTC trace | `d364d36ab912e7e08aff275077c0ad6cbc1efbb7f5e4b360c595cdf92f6acd97` |
