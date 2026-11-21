@@ -939,3 +939,35 @@ actual F13 power-off and reset sequence.
 | Stock Control Panel and Power icon | `4a9f04339fafb34525ff16cba904e51f05635fe4cd751085c99254ca7ac9abf8` |
 | Selected Power after Enter | `c2d2c79cabb9baf5cf16fc08a3bcf2630ba18481733a8ceba3e66a2b3d75a1c1` |
 | Control Panel replay | `3046b699ed3981edbc01e5aadd96ed2bc2544ad7fdec8e556d28c8c049fc4134` |
+
+The next bounded x64 replay used the observed icon to open the actual Power
+dialog. It showed Advanced initially. Keyboard navigation selected Standard;
+confirmation closed the dialog and returned to Control Panel. The first F13
+reached the existing guest power input, emitted an accepted SMI pulse, and
+the firmware reached its wake-poll instruction at F000:A337h. This run
+reached its limit before a second F13. The old session's retention or loss
+on power-on remains unproven at this checkpoint.
+
+| Standard selection and first F13 diagnostic | SHA-256 |
+| --- | --- |
+| Original dialog, default Advanced | `a16c04d34b4183fcabebd8a6d23256b7e68dfcefab3252891f0e6b72d16bb62e` |
+| Standard visibly selected | `fda5157247a6a3955e05c33442d73790e37c56b72ad22bc237b3fa494fafd298` |
+| Control Panel after confirmation | `33aa08ae796d48ccc42fe1b31e5b873ca8a446418a62a7bc04498738287d3b6b` |
+| Original BIOS wake poll | `9147ca38d4e8d0e06dee6e55ef68ca95ba19b198661ed7ac2a24dacf074fa9e4` |
+
+The automated x64 Standard replay observed the selected mode at 190.812 s,
+confirmed the dialog closed, and sent the first F13 at 191.079 s. It sent the
+second F13 at the actual BIOS wait at 201.130 s. The BIOS read the asserted
+0x10 switch bit and drew a new OmniBook ROM BIOS 1.0 POST at 242.529 s.
+The guest then loaded the original DOS BIOS Services driver. This confirms
+that the old Windows session was discarded and firmware ran again. The
+probe returned 1 because its exit predicate also expected a Core reset
+notification. None was captured, so the reboot mechanism remains open.
+The new POST asked for F1 with invalid configuration information despite
+the initial process starting with known-good persisted CMOS. The probe
+acknowledged F1. The trigger for the new warning remains to be traced.
+
+| Standard power-on diagnostic | SHA-256 |
+| --- | --- |
+| Actual Windows input, BIOS POST and DOS driver | `7dd8182644be30b80b23cef64b40c484d649f710c93296df92f90fb9e51b1a7a` |
+| Firmware sampled both wake switch levels | `bf5a8932684102c188c9a080c4cce0ba37cdef842f58f6e57624cebfeb3caf17` |
