@@ -32,6 +32,11 @@ saves the firmware's RTC and CMOS beside the EXE. A second process loads the
 file and reaches original ROM DOS without F1. The evidence also covers
 malformed input and a refused save.
 
+The [published DOS handoff](../etc/evidence/t592-s3-ob300-local-setup.md#published-dos-performance-handoff)
+measures current native startup and directory response on both widths. Its
+product obligation review records the outstanding Standard/Off cold-boot
+behavior and keeps the queued performance and Windows gates explicit.
+
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | M5 T592 S3 after ordered S2 publication. |

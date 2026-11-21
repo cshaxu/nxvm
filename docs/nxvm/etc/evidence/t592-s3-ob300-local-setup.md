@@ -863,3 +863,52 @@ App-local, +71/-6 production lines including the storage link declaration,
 with no shared-corpus source change. The original card, owner configuration
 and unrelated product artifacts were unchanged. No new Windows or RDP run
 was performed for this persistence change.
+
+### Published DOS performance handoff
+
+The follow-up native Console replay used the exact P23 release executables,
+original System 1.0 ABA card, a newly absent CMOS file and Turbo. Both host
+widths run serially. The disposable C image retained the original CONFIG.SYS
+and AUTOEXEC setup until the original Windows launch, then printed one
+diagnostic marker and returned to DOS. Its readonly SHA-256 was
+`34d5597e7b040ea7a8b09d84234eea118d7f2cd8934cc4fc6c5eceaadf90b67f`.
+
+The probe observes the active native Console buffer. It sends F1 only after
+the actual warning, then checks the DOS prompt, HP's VER output and a DIR
+result containing CONFIG.SYS followed by a ready prompt. DIR timing begins
+just before injecting Enter, after the full command has been typed. An
+earlier attempt observed both DOS prompts but injected the command keys in
+one burst and failed to complete VER. It is excluded from the command
+comparison. The successful input feeds each make and break separately.
+
+| Published EXE measurement | x64 | x86 | Gate |
+| --- | ---: | ---: | --- |
+| Start to F1 submission | 35.312 s | 43.016 s | Diagnostic checkpoint |
+| Start to DOS prompt | 78.640 s | 87.500 s | Diagnostic checkpoint |
+| Start to DOS VER | 79.015 s | 87.875 s | 60 s x64, 90 s x86 |
+| DIR CONFIG.SYS through ready prompt | 6.015 s | 7.344 s | 1 s on both widths |
+
+Both EXEs passed the fresh-input checks and quit successfully. The disk hash
+was unchanged. x64 missed the cold threshold in this run and both widths
+missed the DIR threshold. The single x86 cold result is under its budget;
+the previous controlled x86 result was over budget, so its repeatable cold
+qualification remains open. The successful Console trace SHA-256 is
+`517ced3a70a9f7e8bdbd222aaddd466a29511fb0e855a0c195c3c331067f3bf2`.
+
+The [T591 controlled worker measurement](t591-s4-ob300-dos-baseline.md)
+remains the performance receiver's controlled baseline. The native checks
+include actual Console transfer and display and do not measure guest-side
+instruction cost in isolation. Core's Turbo runner skips wall-clock pacing
+and still advances the guest scheduler at instruction retirement. A useful
+first split for the receiver is CPU execution versus elapsed-time publication,
+then board deadline observation versus device advance inside that publication.
+The read-through identified the calls, but their relative costs are unmeasured.
+
+### Product obligation review
+
+| Design row | Evidence at P23 | Remaining boundary |
+| --- | --- | --- |
+| O07 input | Product DOS make/break, native monitor handoff and owner-tested original Windows keyboard and built-in pointer | Formal Windows interaction and redraw are part of the Windows receiver. |
+| O08 power | Original DOS and original Windows resume via F13 have direct dual-width replay. Clean Product exit and restart preserve RTC/CMOS. | The original Windows Power control's Standard/Off cold-boot behavior has not been directly observed. The HP Operating Guide, page 9-8, specifies session loss and a reboot on power-on in both settings. |
+| O09 storage | DOS C/D access and writable readback are recorded in T591. An original DOS readonly write fails and returns to DOS on both widths. | Windows installation and file persistence remain with the Windows receiver. Live backing-file loss and card hot removal are unverified. |
+| O12 product | Native Console release startup, monitor lifecycle and packaging are recorded in S2. P23 passed fresh real DOS startup, clean exit and CMOS reload. | Usability thresholds remain open in the performance receiver. No new independent desktop/RDP qualification was run. |
