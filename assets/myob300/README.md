@@ -10,7 +10,7 @@ directory.
 
 Place the raw common-memory image from your own OmniBook 300
 System 1.0 ABA card at
-`../../../nxvm-assets/hp-omnibook300/rom/system10-aba-common.bin`
+`../../../nxvm-assets/media-nxvm/ob300/system10-aba-common.bin`
 relative to the executable. The file has 16,777,216 bytes and SHA-256
 `b98001a30b79f126483f823fd4d7a5ce91a973a5ab8fb35e3d76043b74a8e099`.
 Extract the raw entry from the archive before launching. MyOB300

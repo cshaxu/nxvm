@@ -1841,3 +1841,22 @@ performance work provides sufficient time for the full sequence.
 
 - Power UI and F13 transcript SHA-256: `7c2234f1858bb302933831e05953c4359bb99e0be7c74c2884ee6f4cfbd9cf9f`
 - BIOS wake-poll transcript SHA-256: `a68bea29fd8eb3f4197dd051c87ed1d76847c312b522d27efd15fe51ef6efb32`
+
+### Colocated production System Card and C image
+
+The owner selected the same external asset directory for both inputs.
+The MyOB300 executable now resolves the original System 1.0 ABA Card at
+`../../../nxvm-assets/media-nxvm/ob300/system10-aba-common.bin` beside
+`ob300-c.img`. INI media semantics and the bytes of both inputs are
+unchanged. The old local placement is retired.
+
+Both published EXEs launched directly from the repository asset
+directory, displayed Ctrl+Alt+O in the initial Monitor menu before
+any command, and returned zero through monitor exit. MyOB300 board
+and repository line-ending tests each passed on both widths. The
+only executable input change was the App path literal.
+
+| Published width | SHA-256 |
+| --- | --- |
+| x86 | `42b0549c5221b5a968cb76eaf9e56d4d8eb5808e3f632d591ac81ff37bc626a6` |
+| x64 | `8ae6ee269d4553a8f95dce308ed336ff329e0f9782ba39cc934df3adf9648ae8` |

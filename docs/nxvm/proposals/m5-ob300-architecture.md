@@ -92,7 +92,7 @@ in a committed EXE. App firmware loads the fixed external BYOB asset at prepare
 time and verifies the S1 size/hash, using existing storage and path capabilities.
 No fallback image or guessed filename. Use a portable path relative to the
 EXE directory, for example the external sibling collection's
-`hp-omnibook300/rom/system10-aba-common.bin`, not a machine-local drive path.
+`media-nxvm/ob300/system10-aba-common.bin`, not a machine-local drive path.
 The exact relative deployment path belongs to the implementation asset manifest
 and App binding; do not add firmware selection to the shared INI grammar.
 

@@ -88,7 +88,7 @@ The queued performance and Windows gates remain in force.
 | --- | --- |
 | Identifier Mode | M5 T592 S3 after ordered S2 publication. |
 | Admission And Approval | Continue the owner's ordered OmniBook implementation and single-session coordinator/executor review. Necessary X86-NXVM and X86 Core changes are owner-approved. The owner also approved the optional X86-IBMPC Product hotkey extension and MyOB300 help entry. |
-| Objective | Reconcile remaining power, peripheral, storage failure, desktop and documented setup obligations against the original Machine and released Product. Close confirmed gaps within scope and record explicit acceptance limits. Owner requests replacing the MyOB300 F13 power binding with Ctrl+Alt+O for manual acceptance. |
+| Objective | Reconcile remaining power, peripheral, storage failure, desktop and documented setup obligations against the original Machine and released Product. Close confirmed gaps within scope and record explicit acceptance limits. Owner requests replacing the MyOB300 F13 power binding with Ctrl+Alt+O for manual acceptance. Owner also requests colocating the external System Card and test C image under media-nxvm/ob300. |
 | Non-goals | No firmware bytes in Git, duplicate release or input route, speculative Windows fix, or claim of unobserved power behavior. |
 | Reference Baseline | S2 published 0.5.0592 and S3/S4 of T591 for Machine lifecycle, C persistence and timing. |
 | Candidate Proposal | proposals/m5-ob300-product-qualification.md and m5-ob300-architecture.md, especially O07-O09 and O12. |

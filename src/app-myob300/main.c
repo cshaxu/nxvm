@@ -5,7 +5,7 @@
 #include "lib/types/file.h"
 #include "x86-nxvm/product/startup_interface.h"
 
-#define MYOB300_SYSTEM_CARD_PATH "../../../nxvm-assets/hp-omnibook300/rom/system10-aba-common.bin"
+#define MYOB300_SYSTEM_CARD_PATH "../../../nxvm-assets/media-nxvm/ob300/system10-aba-common.bin"
 #define MYOB300_CMOS_FILE "myob300.cmos"
 
 static lib_status myob300_product_load_cmos(x86_nxvm_machine_construction *out)
