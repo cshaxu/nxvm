@@ -11,7 +11,7 @@ Both configurations accept and echo ten neutral host keys within
 [Controlled baseline](../etc/evidence/t591-s4-ob300-dos-baseline.md).
 Startup and DIR exceed their unchanged usability targets. Their timing
 work transfers to the [performance receiver](../proposals/m5-ob300-performance.md).
-The [product receiver](../proposals/m5-ob300-product-qualification.md)
+The [product receiver](M5-T592-ob300-product-qualification-proposal.md)
 takes the exact original-ROM configuration, desktop verification and
 the executable release. Windows remains in its own planned receiver.
 This closeout changes only governance and evidence. The published

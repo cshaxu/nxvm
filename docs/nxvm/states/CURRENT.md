@@ -1,107 +1,35 @@
-# M5 T592 S3 - Active: OmniBook product acceptance and remaining limits
+# M5 T593 S1 - Active: OmniBook execution and interaction baseline
 
-[S2 is accepted and closed](../history/M5-T592-S2-ob300-native-qualification.md).
-The 0.5.0592 x64/x86 Product reaches original ROM DOS through native Console.
+The owner closed [T592](../history/M5-T592-ob300-product-qualification.md)
+and admitted [OmniBook performance](../proposals/m5-ob300-performance.md).
+MyOB300 retains the published 0.5.0592 x64/x86 pair during the baseline.
+Original ROM Windows qualification remains queued behind performance.
 
-S3 has a rebuilt dual-width candidate. The original 2 MiB guest passed its
-former Windows memory error and both widths drew Program Manager. The
-[original Windows evidence](../etc/evidence/t592-s3-ob300-rom-windows-baseline.md)
-records the mapping, protected-mode and RTC fixes, and distinguishes the
-captured desktop from input and application qualification. The
-[external media record](../etc/evidence/t592-s3-ob300-local-setup.md)
-covers repeatable C-drive preparation and native process entry.
+| Task | Status |
+| --- | --- |
+| T592 | Closed by owner on 2026-11-21. S1 through S3 are archived with the product verification and explicit receiving limits. |
+| T593 S1 | Active. Establish the controlled baseline and rank measurable causes. |
 
-The owner verified Windows menu navigation, exit to DOS and usable mouse input. The
-[pop-out mouse evidence](../etc/evidence/t592-s3-ob300-popout-mouse.md)
-records the fixed OEM input path and an original guest frame after motion.
-The owner removed Word and Excel from the later [ROM Windows acceptance
-scope](../proposals/m5-ob300-rom-windows.md).
-
-Both published widths now wake original DOS APM through Ctrl+Alt+O.
-Both widths display the chord in Monitor help and the Window Console
-status page. See the [product hotkey verification](../etc/evidence/t592-s3-ob300-local-setup.md#product-hotkey-extensions-and-native-help).
-A [dual-width DOS switch observation](../etc/evidence/t592-s3-ob300-local-setup.md#native-dos-switch-press-and-wake)
-also records one real SMI, the original firmware wake poll and fresh VER.
-The [replacement binding evidence](../etc/evidence/t592-s3-ob300-local-setup.md#ctrlalto-power-switch-binding)
-records the native Console input route. The prior release proved the original DOS power cycle through F13
-input. The [power evidence](../etc/evidence/t592-s3-ob300-local-setup.md#production-f13-suspend-and-wake)
-records new DOS command execution after wake and the remaining power limits.
-Both widths also restore the original Windows Program Manager in the same
-run generation and respond to a fresh Alt+F after F13 wake. See the [original
-Windows power checkpoint](../etc/evidence/t592-s3-ob300-local-setup.md#original-windows-power-checkpoint)
-for the replay limits. Final Windows installation, persistence and performance
-qualification remain with their queued receivers.
-
-The [configuration restart replay](../etc/evidence/t592-s3-ob300-local-setup.md#configuration-warning-after-process-restart)
-now passes through the published product on both widths. Clean monitor exit
-saves the firmware's RTC and CMOS beside the EXE. A second process loads the
-file and reaches original ROM DOS without F1. The evidence also covers
-malformed input and a refused save.
-
-The [disk-sharing replay](../etc/evidence/t592-s3-ob300-local-setup.md#published-windows-disk-sharing)
-confirms dual-width Windows denial of conflicting C-image access and release
-at monitor exit in readonly, overlay and direct modes.
-The [published DOS write replay](../etc/evidence/t592-s3-ob300-local-setup.md#published-dos-writes-in-overlay-and-direct-modes)
-verifies overlay isolation and direct persistence on both widths.
-
-The [native Window replay](../etc/evidence/t592-s3-ob300-local-setup.md#published-native-window-lifecycle)
-verifies paint, pause freeze, resume in the same window and normal exit of
-both releases on a private local desktop. The [published Program Manager
-captures](../etc/evidence/t592-s3-ob300-local-setup.md#original-program-manager-on-the-published-window-path)
-also show original Windows drawing through that route on both widths.
-The [x64 Window input replay](../etc/evidence/t592-s3-ob300-local-setup.md#published-x64-window-keyboard-response)
-observed the guest File menu selection and clean exit after original Windows.
-The [x86 follow-up](../etc/evidence/t592-s3-ob300-local-setup.md#published-x86-guest-selected-file-label)
-also captured a guest File selection, populated Main group and clean exit.
-The addressed messages leave physical input focus and RDP outside that proof.
-
-The [published DOS handoff](../etc/evidence/t592-s3-ob300-local-setup.md#published-dos-performance-handoff)
-measures current native startup and directory response on both widths.
-Direct dual-width sampling places branch-target decode and board deadline
-observation at comparable cost. Neither region alone explains the DIR gap.
-A [scratch preview prototype](../etc/evidence/t592-s3-ob300-local-setup.md#read-only-preview-boundary-prototype)
-cut the cold preview sample in one pair without improving DIR latency.
-[Call-site counters](../etc/evidence/t592-s3-ob300-local-setup.md#timing-versus-observation-preview-calls)
-attribute every sampled workload preview to the timing formula, with no
-additional target read for retirement metadata.
-The [fractional clock prototype](../etc/evidence/t592-s3-ob300-local-setup.md#exact-fractional-clock-prototype)
-reduced conversion cost in isolation and in one original DOS x86 pair.
-The [original
-Power control replay](../etc/evidence/t592-s3-ob300-local-setup.md#original-windows-power-control-path)
-confirms that x64 Standard and Off both run POST and load DOS after two F13
-presses without needing F1. On x86, both modes enter a new POST and pass the
-extended CMOS check. A shorter disposable x86 Standard startup again
-verified POST but did not reach the DOS driver under the existing cap.
-The [aligned wake traces](../etc/evidence/t592-s3-ob300-local-setup.md#cross-width-restart-trace-comparison)
-match through every captured x86 ordinary POST CMOS operation. The
-later x86 DOS endpoint still lacks direct evidence.
-The [published x86 acceptance procedure](../etc/evidence/t592-s3-ob300-local-setup.md#published-x86-windows-power-acceptance-procedure)
-specifies the observable Standard and Off endpoints and RDP evidence.
-The replacement chord passes x64 Windows [Standard](../etc/evidence/t592-s3-ob300-local-setup.md#windows-standard-with-the-replacement-power-chord)
-and [Off](../etc/evidence/t592-s3-ob300-local-setup.md#windows-off-with-the-replacement-power-chord)
-through fresh POST and DOS driver load in the instrumented guest replays.
-The [x86 Standard replay](../etc/evidence/t592-s3-ob300-local-setup.md#x86-windows-standard-with-the-replacement-power-chord)
-confirmed the new keyboard chord and restarted firmware CMOS reads.
-The queued performance and Windows gates remain in force.
+## S1 brief
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | M5 T592 S3 after ordered S2 publication. |
-| Admission And Approval | Continue the owner's ordered OmniBook implementation and single-session coordinator/executor review. Necessary X86-NXVM and X86 Core changes are owner-approved. The owner also approved the optional X86-IBMPC Product hotkey extension and MyOB300 help entry. |
-| Objective | Reconcile remaining power, peripheral, storage failure, desktop and documented setup obligations against the original Machine and released Product. Close confirmed gaps within scope and record explicit acceptance limits. Owner requests replacing the MyOB300 F13 power binding with Ctrl+Alt+O for manual acceptance. Owner also requests colocating the external System Card and test C image under media-nxvm/ob300. |
-| Non-goals | No firmware bytes in Git, duplicate release or input route, speculative Windows fix, or claim of unobserved power behavior. |
-| Reference Baseline | S2 published 0.5.0592 and S3/S4 of T591 for Machine lifecycle, C persistence and timing. |
-| Candidate Proposal | proposals/m5-ob300-product-qualification.md and m5-ob300-architecture.md, especially O07-O09 and O12. |
-| Files And ABI Surface | MyOB300 App, assets guidance, corresponding fixtures and NXVM evidence. X86-NXVM or X86 Core only when a confirmed defect requires their ownership. The hotkey delivery affects Shared X86-IBMPC Product and its tests, MyOB300, and Release qualification for all eight Apps. |
-| Applicable Rules | NXVM guide, Contributing, Roadmap, Architecture/Layout, source and UI policy, shared Execution/Documentation/Architecture/Coding. |
-| Verification | Review the product/device ledger, repeat actual DOS lifecycle across both widths where not already covered, cover detectable storage failures and collect native Window and power evidence when supported. Keep performance and Windows qualification separate. |
-| Expected Markers | Proven supported behavior, explicit unsupported capabilities and a repeatable setup. No unnecessary receiver rebuild if only evidence changes. |
-| Asset Needs | Read-only owner card/backup and disposable C medium. build/t592-s3 owns transient probes, capped at 200 MiB and 300 seconds per probe. |
-| Reporting Requirements | Separate compiled, observed, limited and unverified capabilities. Record any scope decision required for T592 acceptance. For the replacement binding verify neutral input, guest-visible switch levels, both published widths, and existing App regressions. |
-| Stop Conditions | Do not deem original guest suspend, native desktop UX or Windows qualified by monitor pause or raw Console alone. |
-| Exit Criteria | Every T592 product obligation has direct evidence or an explicitly accepted limitation, with application and build instructions agreeing with the released pair. |
-| Original Owner Request | Complete the OmniBook in hardware, board, Machine, Product and verification order. |
-| Similar-Issue Sweep | Guest suspend versus monitor pause, reset/stop across different media states, clean failure, display routing and BYOB ownership. |
+| Identifier Mode | New M5 T593 S1 after T592 closure. |
+| Admission And Approval | Owner on 2026-11-21 directed closure of the product stage and admission of the queue-head performance investigation. |
+| Objective | Measure actual OB300 startup and interaction, and locate where elapsed time accumulates before proposing changes. |
+| Non-goals | No production, timing-model or ABI changes in S1, no target relaxation, no Windows installation or RDP qualification claim. |
+| Reference Baseline | Git 597aad29d, current 0.5.0592 release pair, T591 S4 controlled DOS baseline, and T592 S3 native DOS and Program Manager observations. |
+| Candidate Proposal | [Performance scope and S sequence](../proposals/m5-ob300-performance.md). |
+| Files And ABI Surface | NXVM evidence and disposable profiling probes only. No runtime, build or artifact changes in S1. |
+| Applicable Rules | NXVM guide and Contributing, Roadmap, design architecture/layout, source policy, shared Execution/Documentation/Architecture/Coding. |
+| Verification | Reuse cached GCC Release configurations. Sequence fixed-input x64 and x86 runs. Measure cold ROM DOS, ten key echoes and DIR-to-ready, plus separate Windows first-draw, interaction-ready and switch-response checkpoints where observable. Compare guest progress and attributable host cost before choosing changes. |
+| Expected Markers | Timestamped guest endpoints, both-width baseline, ranked cost observations with measurement limits, and one justified next batch. |
+| Asset Needs | Read-only external System Card and C master; disposable overlay or copy. NXVM executor owns build/t593-s1, capped at 200 MiB and 300 seconds per native probe. Stop after 120 seconds without measurable progress, wait for owned processes, archive evidence and clean disposable data before closure. |
+| Reporting Requirements | Separate actual guest observations, sampling estimates, real desktop/RDP coverage, and unresolved waits. |
+| Stop Conditions | Preserve the single execution and clock path. Stop a probe at its budget or if it risks owner media. Do not infer a hotkey or performance root cause from first paint or a synthetic loop alone. |
+| Exit Criteria | Reproducible both-width measurements, a ranked cost ledger, explicit gaps, and required governance/closure checks. No new EXE for evidence-only changes. |
+| Original Owner Request | Close the product stage and start the OmniBook performance investigation. |
+| Similar-Issue Sweep | Compare guest polling, device scheduling, instruction/timing work and output delivery across the measured workloads. S1 applies no defect fix. |
 
 # M5 T588 - Closed: OB300 hardware and execution design
 

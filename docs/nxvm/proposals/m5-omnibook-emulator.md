@@ -59,7 +59,7 @@ authorize embedding the combined Microsoft-bearing card into published EXEs.
 2. [Real firmware and ROM DOS](m5-ob300-rom-dos.md).
 3. [Execution and interaction performance](m5-ob300-performance.md).
 4. [Original ROM Windows](m5-ob300-rom-windows.md).
-5. [Complete product qualification](m5-ob300-product-qualification.md).
+5. [Complete product qualification](../history/M5-T592-ob300-product-qualification-proposal.md).
 
 This replaces the earlier suggestion to start with OB430. The existing family
 ROM observations remain valid research, not proof of OB300 boot. Performance

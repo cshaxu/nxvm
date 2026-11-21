@@ -3,7 +3,7 @@
 Owner queued this bounded T on 2026-11-19. Admitted as M5 T592 after
 [original DOS qualification](../history/M5-T591-S4-ob300-rom-dos-closure.md).
 [Queue](../states/QUEUE.md) owns priority;
-[family research and shared boundaries](m5-omnibook-emulator.md) apply.
+[family research and shared boundaries](../proposals/m5-omnibook-emulator.md) apply.
 
 ## Objective and scope
 
@@ -23,7 +23,7 @@ qualification and preserve owner configuration and media.
 
 ## Dependencies
 
-Accepted [real-ROM machine assembly](m5-ob300-rom-dos.md). This product
+Accepted [real-ROM machine assembly](M5-T591-S4-ob300-rom-dos-closure.md). This product
 delivery provides the executable for the later performance and
 ROM Windows/application receivers.
 

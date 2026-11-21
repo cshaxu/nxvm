@@ -1,7 +1,6 @@
-# M5 Candidate: OmniBook 300: execution and interaction performance
+# M5 T593: OmniBook 300: execution and interaction performance
 
-Owner queued this bounded T candidate on 2026-11-19. Numeric T/S identifiers
-are allocated only at admission. [Queue](../states/QUEUE.md) owns priority;
+Owner queued this work on 2026-11-19 and admitted M5 T593 on 2026-11-21. [Queue](../states/QUEUE.md) owns priority;
 [family research and shared boundaries](m5-omnibook-emulator.md) apply.
 
 ## Objective and scope
@@ -22,7 +21,7 @@ review the expected payoff before adding further implementation batches.
 
 ## Dependencies
 
-Working real ROM DOS, [product assembly](m5-ob300-product-qualification.md)
+Working real ROM DOS, [product assembly](../history/M5-T592-ob300-product-qualification.md)
 and the design-stage measurement/budget contract. T591 S4 transfers
 the measured startup and directory latency misses. Start with the
 [controlled baseline](../etc/evidence/t591-s4-ob300-dos-baseline.md)
@@ -48,6 +47,23 @@ L2 reference models or L3 explicit manual formulas/constants honestly. Public
 interface changes follow the applicable review rules. New evidence that
 invalidates a prerequisite requires a recorded design/scope decision, not a
 second execution route or an unreported transfer.
+
+## S sequence
+
+1. **S1: Controlled baseline and diagnosis.** Reuse the T591 DOS baseline
+   and T592 native probes. Measure boot and DIR on both widths. Separate
+   Windows desktop draw, first verified interaction and visible power
+   response. Rank guest waits and measured host costs; use instrumented
+   samples to explain, and uninstrumented Release runs for latency.
+2. **S2: Address the highest-value measured batch.** Select the real owner
+   using S1 evidence. Compare equal work, media and guest outcomes. Retain
+   reductions in repeated work, algorithms or production code when behavior
+   and measured performance do not materially regress. Split only if evidence
+   identifies independent changes with different verification needs.
+3. **S3: Qualify the selected changes.** Compare both widths against the
+   original budgets, run the required cached checks and publish only as
+   required by the actual change surface. If the targets remain unmet,
+   document the measured limits for the owner's scope decision.
 
 ## T588 handoff
 

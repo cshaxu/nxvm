@@ -19,7 +19,10 @@ using explicit budgets set before qualification.
 
 ## Dependencies
 
-Accepted ROM DOS and performance usability gate.
+Accepted ROM DOS and the [performance usability gate](m5-ob300-performance.md).
+[T592 closure](../history/M5-T592-ob300-product-qualification.md) hands off
+x86 Standard/Off completion and real desktop/RDP verification alongside the
+original Windows installation and persistence cases below.
 
 ## Non-goals
 

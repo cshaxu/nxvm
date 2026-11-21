@@ -74,7 +74,7 @@ The headless baseline does not establish desktop responsiveness,
 complete power-management behavior, or Windows application operation.
 Startup and DIR misses go to the queued
 [performance receiver](../../proposals/m5-ob300-performance.md) after
-[product assembly](../../proposals/m5-ob300-product-qualification.md).
+[product assembly](../../history/M5-T592-ob300-product-qualification-proposal.md).
 The product receiver retains the same lifecycle and storage acceptance.
 
 S3 cleanup verified all probes had exited, removed its exact directory
