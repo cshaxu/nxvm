@@ -1181,11 +1181,43 @@ guest would have handled input once it finished startup.
 | Original guest still displaying a busy cursor at the endpoint | 125e192821ac91652a515e5bf79ca4b2ff0f119b5f99bee2bfa3215723d32fed |
 | Probe output and verified exit | 66638edee43c0dcb85a0c04031a96cc622e9fce4a1b76b5f362799d0bc34feb2 |
 
+#### Published x86 guest-selected File label
+
+A serial follow-up preserved the exact x86 release, original card, original
+restored C image in overlay mode and private guest-saved CMOS. It waited
+for a Program Manager arrow frame before posting one F10 make/break to
+the native Window. The busy cursor returned during startup. Program
+Manager subsequently highlighted the File label before the fixture sent
+Down. The highlighted frame is byte-identical to the x64 input-response
+frame. This verifies guest keyboard response on both published widths.
+
+| Host-observed milestone | x86 elapsed |
+| --- | ---: |
+| First Program Manager capture | 189.563 s |
+| Arrow frame and one F10 make/break posted | 220.438 s |
+| Guest File label visibly selected | 249.188 s |
+| Main group icons visible in subsequent capture | 250.375 s |
+
+The subsequent screenshot shows a populated Main group with File still
+highlighted. It does not show an open dropdown, so the generic pixel
+difference does not qualify a Down response. These timings include startup
+and do not isolate keyboard latency. The cooked monitor paused and exited
+the process normally, the guest CMOS checksum passed, and the base C image
+retained its original hash. Physical keyboard focus, RDP transport and
+the formal original Windows installation/persistence gate are separate.
+
+| x86 native evidence | SHA-256 |
+| --- | --- |
+| Arrow before F10 | d1e0df4ce4f399dc1d34e1b1046ffcdf210c724258a0d51cc76eab4caa61b0cd |
+| Guest File label selected before Down | 108df568caa2b9c16a9906babb329c759c3acf9e082705fa5290af95c92f7f34 |
+| Populated Main group | e5155abc6d02adb1dade52331127fd4b44112e6a76b5e3afbc3737b81fadb4aa |
+| Probe output and exit | a1c1fe30b05b1d3e511db56dc42a47e9280b36be69669c0dcb88379d3a95ec56 |
+
 ### Product obligation review
 
-| Design row | Evidence at P38 | Remaining boundary |
+| Design row | Evidence at P39 | Remaining boundary |
 | --- | --- | --- |
-| O07 input | Product DOS make/break, native monitor handoff, owner-tested Windows keyboard and built-in pointer, and a visible x64 guest File selection through its native Window messages. | Formal Windows interaction and redraw are queued. The published x86 guest stayed busy through the input observation. RDP is unverified. |
+| O07 input | Product DOS make/break, native monitor handoff, owner-tested Windows keyboard and built-in pointer, and original guest File selection through native Window messages on both widths. | Formal Windows interaction and redraw are queued. Physical Window input focus and RDP are unverified by the isolated automation. |
 | O08 power | Original DOS and original Windows resume via F13 have direct dual-width replay. Clean Product exit and restart preserve RTC/CMOS. Windows Power Standard and Off both initiate a fresh POST with valid configuration on both widths. | x64 reaches the DOS driver in both modes. On x86 the 300-second probe cap expires after the configuration check and before the visible driver. See the original Windows Power control path below. |
 | O09 storage | T591 verifies DOS C/D access and writable readback. Original DOS returns to its prompt on a readonly write failure. The published x64 Window also shows original Windows rejecting a readonly C write. Both published widths refuse a competing exclusive open and release all three media modes on exit. | Windows installation and file persistence remain queued. Host-storage disconnection is unverified. Guest PCMCIA hot removal has no product route. |
 | O12 product | S2 and P23 cover native Console, DOS lifecycle and CMOS persistence. Both released EXEs paint, freeze, resume and exit their native Window on a private desktop. The original Windows Program Manager also paints through that route on both widths. | Usability remains queued. Foreground input focus and RDP were outside this replay. |

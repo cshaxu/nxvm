@@ -43,8 +43,8 @@ captures](../etc/evidence/t592-s3-ob300-local-setup.md#original-program-manager-
 also show original Windows drawing through that route on both widths.
 The [x64 Window input replay](../etc/evidence/t592-s3-ob300-local-setup.md#published-x64-window-keyboard-response)
 observed the guest File menu selection and clean exit after original Windows.
-The [x86 comparison](../etc/evidence/t592-s3-ob300-local-setup.md#published-x86-window-keyboard-endpoint)
-also exited cleanly. Its guest cursor remained busy through the input test.
+The [x86 follow-up](../etc/evidence/t592-s3-ob300-local-setup.md#published-x86-guest-selected-file-label)
+also captured a guest File selection, populated Main group and clean exit.
 The addressed messages leave physical input focus and RDP outside that proof.
 
 The [published DOS handoff](../etc/evidence/t592-s3-ob300-local-setup.md#published-dos-performance-handoff)
