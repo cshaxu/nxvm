@@ -1215,10 +1215,10 @@ the formal original Windows installation/persistence gate are separate.
 
 ### Product obligation review
 
-| Design row | Evidence at P40 | Remaining boundary |
+| Design row | Evidence at P41 | Remaining boundary |
 | --- | --- | --- |
 | O07 input | Product DOS make/break, native monitor handoff, owner-tested Windows keyboard and built-in pointer, and original guest File selection through native Window messages on both widths. | Formal Windows interaction and redraw are queued. Physical Window input focus and RDP are unverified by the isolated automation. |
-| O08 power | Original DOS and original Windows resume via F13 have direct dual-width replay. Clean Product exit and restart preserve RTC/CMOS. Windows Power Standard and Off both initiate a fresh POST with valid configuration on both widths. | x64 reaches the DOS driver in both modes. On x86 the 300-second probe cap expires after the configuration check and before the visible driver. See the original Windows Power control path below. |
+| O08 power | Original DOS and original Windows resume via F13 have direct dual-width replay. Clean Product exit and restart preserve RTC/CMOS. Windows Power Standard and Off both initiate a fresh POST with valid configuration on both widths. | x64 reaches the DOS driver in both modes. The x86 probes match the captured ordinary POST RTC prefix but end before showing the DOS driver. See the cross-width restart trace comparison below. |
 | O09 storage | T591 verifies DOS C/D access and writable readback. Original DOS returns to its prompt on a readonly write failure. The published x64 Window also shows original Windows rejecting a readonly C write. Both published widths refuse a competing exclusive open and release all three media modes on exit. | Windows installation and file persistence remain queued. Host-storage disconnection is unverified. Guest PCMCIA hot removal has no product route. |
 | O12 product | S2 and P23 cover native Console, DOS lifecycle and CMOS persistence. Both released EXEs paint, freeze, resume and exit their native Window on a private desktop. The original Windows Program Manager also paints through that route on both widths. | Usability remains queued. Foreground input focus and RDP were outside this replay. |
 
@@ -1438,3 +1438,34 @@ to the missing x86 terminal within the current cap.
 | Disposable C image | 1ef6d59a30e81d6054f3c6227e62cc489b31981deb3b1ed383e6ec6806ed530b |
 | Actual Power dialog selections and F13 output | a1a815878aa67d88957bd35eac5776efc28beb63c30154865ad01b2aa8882b94 |
 | New POST RTC trace | 1b5e4e8c7e47e6b84ae7188817191fb44a5271d8048614302ce73b7f7dd0cda5 |
+
+#### Cross-width restart trace comparison
+
+The completed x64 Standard trace and all three bounded x86 RTC traces were
+aligned at the original BIOS poll that first read the second F13 as 10h.
+The comparison starts at the first ordinary-bank read of CMOS index 78h
+in the restarted firmware and compares operation, index, value, bank
+selector, instruction address and guest-tick spacing. It excludes the
+selected power-record bank and the first short offset between the key
+poll and the comparison anchor.
+
+| Replay | Matching ordinary-bank rows with x64 Standard | Tick offset from x64 Standard at comparison anchor | Remaining host observation after second F13 |
+| --- | ---: | ---: | ---: |
+| x86 Standard, one-icon fixture | 92 of 92 | -30 | At most 38.141 s |
+| x86 Off, one-icon fixture | 92 of 92 | +390 | At most 36.907 s |
+| x86 Standard, shorter DOS fixture | 73 of 73 | +270 | At most 20.413 s |
+
+The x86 Standard and Off traces both reached the later read of index 78h,
+approximately 88.206 million guest ticks after the wake poll, and continued
+through subsequent ordinary RTC writes. The first checksum pair is 003Ch
+on both widths. The listed traces and SHA-256 values are recorded above.
+
+The completed x64 Standard and Off replays captured their first new POST
+text 41.667 s and 43.133 s after the second F13. Their DOS driver frames
+appeared at 54.434 s and 56.518 s respectively. The bounded x86 observations
+ended before even those x64 visible POST intervals. The matched rows show
+no observed width-dependent firmware divergence within the instrumented
+prefix. They do not establish later x86 frame publication or DOS startup,
+or prove host throughput is the only remaining cause. Preserve that
+distinction for the product acceptance decision and the longer end-to-end
+check after performance work.

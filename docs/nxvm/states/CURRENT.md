@@ -57,6 +57,9 @@ confirms that x64 Standard and Off both run POST and load DOS after two F13
 presses without needing F1. On x86, both modes enter a new POST and pass the
 extended CMOS check. A shorter disposable x86 Standard startup again
 verified POST but did not reach the DOS driver under the existing cap.
+The [aligned wake traces](../etc/evidence/t592-s3-ob300-local-setup.md#cross-width-restart-trace-comparison)
+match through every captured x86 ordinary POST CMOS operation. The
+later x86 DOS endpoint still lacks direct evidence.
 The queued performance and Windows gates remain in force.
 
 | Field | Required record |
