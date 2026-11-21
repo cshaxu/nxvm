@@ -51,6 +51,8 @@ The [published DOS handoff](../etc/evidence/t592-s3-ob300-local-setup.md#publish
 measures current native startup and directory response on both widths.
 Direct dual-width sampling places branch-target decode and board deadline
 observation at comparable cost. Neither region alone explains the DIR gap.
+A [scratch preview prototype](../etc/evidence/t592-s3-ob300-local-setup.md#read-only-preview-boundary-prototype)
+cut the cold preview sample in one pair without improving DIR latency.
 The [original
 Power control replay](../etc/evidence/t592-s3-ob300-local-setup.md#original-windows-power-control-path)
 confirms that x64 Standard and Off both run POST and load DOS after two F13

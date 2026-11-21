@@ -1019,6 +1019,49 @@ deadlines in both experiments.
 | x64 worker and guest output | 047976d44b0583ffb2fd2b27fccb50c786e5194818102c987154cc0bac456068 |
 | x86 worker and guest output | adfca132cbf712c3ee5759f1c4381440815eb79a7cbda375847514a98eb2851c |
 
+#### Read-only preview boundary prototype
+
+The direct preview sample motivated a scratch-only x86 prototype. Its
+only change is in the existing CPU instruction boundary. The copy used
+for lexical preview initializes the common fetch and exception fields,
+then skips execution-only bookkeeping and the restart-state copy. It
+still uses the existing prefetch, translation and fault paths. The
+normal executor and asynchronous entry retain their restart state. The
+experimental source diff is seven added and six removed lines, with no
+API or timing formula change. It was not used to rebuild releases.
+
+The existing CPU timing-preview and retirement-observation regressions
+passed both stock and scratch-linked x86 runs. The same diagnostic then
+ran stock and candidate serially with the same readonly original DOS
+fixture, original card, same observer and one-in-1,021 samples. Both
+reached a real DOS prompt and returned to it after DIR CONFIG.SYS.
+
+| Measurement | Stock | Prototype |
+| --- | ---: | ---: |
+| First DOS prompt | 116.597 s | 112.908 s |
+| Cold Core wall time, integrated | 118.403 s | 114.781 s |
+| Cold branch preview, sampled estimate | 17.011 s | 15.765 s |
+| Cold retired instructions | 44,992,650 | 44,943,498 |
+| Cold guest ticks | 249,235,755 | 248,944,950 |
+| DIR end to end | 8.897 s | 9.670 s |
+| DIR branch preview, sampled estimate | 1.328 s | 1.377 s |
+| DIR board deadline observation, sampled estimate | 1.008 s | 1.212 s |
+
+Cold sampling points to lower preview work in this pair. The unchanged
+board observation cost varied during DIR, and the command did not get
+faster. The two guest executions used similar workloads, with small
+differences in instruction and tick counts. A single pair cannot
+establish a reliable end-to-end gain, and the change adds a branch to
+the shared instruction boundary. Preserve the prototype as a
+comparison result. It does not justify a standalone production change
+or satisfy the one-second DIR goal.
+
+| Prototype evidence | SHA-256 |
+| --- | --- |
+| Stock original DOS replay | 1e51bb252ed7d80ec10c1e1308c2c256ec70470b91e60b5b0a72dfa947f8173f |
+| Scratch original DOS replay | 09a4c55c8cdb0ea8421e081d22483564faa3920bc8570828c6955a74890c68aa |
+| Existing regressions, stock and scratch | e67ed40a75d25cfac17e38034bad0c56739e66ac6e5dde8529a42d20e9144663 |
+
 #### Published Windows disk sharing
 
 A hidden process fixture used the exact published 0.5.0592 x64 and x86
