@@ -64,10 +64,13 @@ second execution route or an unreported transfer.
    routing proof into existing provider selection. Independently measure
    skipping work that cannot affect absent devices or Turbo host pacing.
    Preserve access priorities, faults and deadline flags.
-4. **S4: Qualify the selected changes.** Compare both widths against the
-   original budgets, run the required cached checks and publish only as
-   required by the actual change surface. If the targets remain unmet,
-   document the measured limits for the owner's scope decision.
+4. **S4: Reduce CPU timing dispatch and qualify the selected changes.** Use
+   the existing decoded opcode to avoid known-inapplicable timing evaluators,
+   preserving their priority, formulas and observable results. Compare
+   both widths against the original budgets, run the required cached
+   checks and publish only as required by the actual change surface. If
+   the targets remain unmet, document the limits for the owner's scope
+   decision.
 
 ## T588 handoff
 
