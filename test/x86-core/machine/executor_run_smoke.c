@@ -556,6 +556,8 @@ typedef struct executor_smm_memory_probe {
     lib_bool active;
 } executor_smm_memory_probe;
 
+#define EXECUTOR_SMM_ORDINARY_RAM 0x9c4b6u
+
 static const lib_u8 executor_smm_vector[16] = {0xeau, 0u, 2u, 0u, 0u};
 static const lib_u8 executor_smm_handler[48] = {
     0xb8u, 0u, 0x60u,             /* AX = management save segment */
@@ -596,6 +598,8 @@ static lib_status executor_smm_memory_read(void *context, lib_u32 address,
 
     if (!observe_only && address == probe->fail_read && probe->fail_read != 0u)
         return LIB_STATUS_IO_ERROR;
+    if (address == EXECUTOR_SMM_ORDINARY_RAM)
+        return X86_CORE_MACHINE_SMM_ROUTE_ORDINARY;
     if (address >= 0x60000u && address + bytes <= 0x60000u + sizeof(probe->image)) {
         lib_memory_copy(destination, probe->image + (address - 0x60000u), bytes);
     } else if (probe->active && address >= 0xfffff0u && address + bytes <= 0x1000000u) {
@@ -616,6 +620,8 @@ static lib_status executor_smm_memory_write(void *context, lib_u32 address,
 
     if (address == probe->fail_write && probe->fail_write != 0u)
         return LIB_STATUS_IO_ERROR;
+    if (address == EXECUTOR_SMM_ORDINARY_RAM)
+        return X86_CORE_MACHINE_SMM_ROUTE_ORDINARY;
     if (address < 0x60000u || address + bytes > 0x60000u + sizeof(probe->image) ||
         (probe->active && address < 0x60100u && address + bytes > 0x600ccu))
         return LIB_STATUS_UNSUPPORTED;
@@ -676,6 +682,17 @@ static lib_bool executor_sxlv_smm_memory(void)
             LIB_FALSE, LIB_TRUE, 0u) == LIB_STATUS_OK && value == hidden &&
         bus->read_memory(machine, 0x60128u, &value, 1u, smm_fetch,
             LIB_FALSE, LIB_FALSE, 0u) == LIB_STATUS_UNSUPPORTED &&
+        bus->write_memory(machine, EXECUTOR_SMM_ORDINARY_RAM, &hidden, 1u,
+            X86_CORE_CPU_MEMORY_ACCESS_SMM, 0u) == LIB_STATUS_OK &&
+        bus->read_memory(machine, EXECUTOR_SMM_ORDINARY_RAM, &value, 1u,
+            X86_CORE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) ==
+                LIB_STATUS_OK && value == hidden &&
+        bus->write_memory(machine, EXECUTOR_SMM_ORDINARY_RAM, &ordinary, 1u,
+            X86_CORE_CPU_MEMORY_ACCESS_DATA, 0u) == LIB_STATUS_OK &&
+        bus->read_memory(machine, EXECUTOR_SMM_ORDINARY_RAM, &value, 1u, smm_fetch,
+            LIB_FALSE, LIB_FALSE, 0u) == LIB_STATUS_OK && value == ordinary &&
+        bus->read_memory(machine, EXECUTOR_SMM_ORDINARY_RAM, &value, 1u, smm_fetch,
+            LIB_TRUE, LIB_FALSE, 0u) == LIB_STATUS_OK && value == ordinary &&
         bus->read_memory(machine, 0x60000u, &value, 1u,
             X86_CORE_CPU_MEMORY_ACCESS_DATA, LIB_FALSE, LIB_FALSE, 0u) ==
                 LIB_STATUS_OK && value == ordinary &&

@@ -16,17 +16,13 @@ static lib_status x86_core_machine_cpu_bus_read_memory(void *opaque,
     if (machine == LIB_NULL ||
         (cache_control & ~(X86_CORE_CPU_MEMORY_CACHE_PWT | X86_CORE_CPU_MEMORY_CACHE_PCD)))
         return LIB_STATUS_INVALID_ARGUMENT;
-    if (observe_only && !smm) {
-        return x86_core_machine_memory_inspect_physical(&machine->executor_memory,
-            address, (lib_uptr)destination, bytes, reset_fetch);
-    }
     if (!locked && !observe_only) {
         status = x86_core_machine_transaction_begin(&machine->transaction,
             X86_CORE_MACHINE_TRANSACTION_OWNER_CPU, X86_CORE_MACHINE_TRANSACTION_CPU_MEMORY_READ,
             address, bytes, (lib_u32)provenance | ((lib_u32)cache_control << 8u));
         if (status != LIB_STATUS_OK) return status;
     }
-    if (!smm && machine->attachment.memory_cache_control != LIB_NULL) {
+    if (!smm && !observe_only && machine->attachment.memory_cache_control != LIB_NULL) {
         status = machine->attachment.memory_cache_control(machine->attachment.context,
             address, bytes, LIB_FALSE, cache_control);
         if (status != LIB_STATUS_OK) {
@@ -39,12 +35,18 @@ static lib_status x86_core_machine_cpu_bus_read_memory(void *opaque,
             LIB_STATUS_UNSUPPORTED :
             machine->attachment.read_smm_memory(machine->attachment.context,
                 address, destination, bytes, observe_only);
-    } else {
+    }
+    if (!smm || status == X86_CORE_MACHINE_SMM_ROUTE_ORDINARY) {
+        const x86_core_cpu_memory_access_provenance access =
+            provenance & ~X86_CORE_CPU_MEMORY_ACCESS_SMM;
+        if (observe_only)
+            return x86_core_machine_memory_inspect_physical(&machine->executor_memory,
+                address, (lib_uptr)destination, bytes, reset_fetch);
         status = reset_fetch ?
             x86_core_machine_memory_read_reset_physical(&machine->executor_memory,
                 address, (lib_uptr)destination, bytes) :
-            (provenance == X86_CORE_CPU_MEMORY_ACCESS_INSTRUCTION_FETCH ||
-             provenance == X86_CORE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH) ?
+            (access == X86_CORE_CPU_MEMORY_ACCESS_INSTRUCTION_FETCH ||
+             access == X86_CORE_CPU_MEMORY_ACCESS_INSTRUCTION_PREFETCH) ?
             x86_core_machine_memory_read_instruction_physical(&machine->executor_memory,
                 address, (lib_uptr)destination, bytes) :
             x86_core_machine_memory_read_physical(&machine->executor_memory,
@@ -96,11 +98,14 @@ static lib_status x86_core_machine_cpu_bus_write_memory(void *opaque,
         machine->transaction.address = address;
         machine->transaction.value = bytes;
     }
-    status = smm ?
-        (machine->attachment.write_smm_memory == LIB_NULL ? LIB_STATUS_UNSUPPORTED :
-         machine->attachment.write_smm_memory(machine->attachment.context,
-             address, source, bytes)) :
-        x86_core_machine_memory_write_physical(&machine->executor_memory,
+    if (smm) {
+        status = machine->attachment.write_smm_memory == LIB_NULL ?
+            LIB_STATUS_UNSUPPORTED :
+            machine->attachment.write_smm_memory(machine->attachment.context,
+                address, source, bytes);
+    }
+    if (!smm || status == X86_CORE_MACHINE_SMM_ROUTE_ORDINARY)
+        status = x86_core_machine_memory_write_physical(&machine->executor_memory,
             address, (lib_uptr)source, bytes, LIB_TRUE);
     if (locked) {
         machine->transaction.address = lock_address;

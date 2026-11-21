@@ -47,6 +47,10 @@ typedef lib_status (*x86_core_machine_attachment_firmware_provider)(void *owner)
 typedef lib_status (*x86_core_machine_attachment_memory_admission_provider)(void *owner,
     lib_size memory_bytes);
 
+/* Valid only as an SMIADS provider result. Core consumes this before
+ * returning a status to the CPU. */
+enum { X86_CORE_MACHINE_SMM_ROUTE_ORDINARY = 0x100 };
+
 /* Copied once during construction. Context remains valid until finalize_devices
  * returns during Core destruction. Callbacks run on the Core execution owner;
  * they may use bounded Core operations but cannot recursively run or destroy it.
@@ -98,7 +102,8 @@ typedef struct x86_core_machine_attachment {
         lib_bool commit);
     void *context;
     /* Optional pair for CPU SMIADS cycles. The board owns the physical decode.
-     * No ordinary RAM, ROM, A20 or cache policy is applied to these cycles.
+     * Return X86_CORE_MACHINE_SMM_ROUTE_ORDINARY for a cycle decoded by the
+     * ordinary memory bus. Other results, including UNSUPPORTED, are final.
      * Observational reads must leave device state unchanged. */
     lib_status (*read_smm_memory)(void *owner, lib_u32 address, void *destination,
         lib_u8 bytes, lib_bool observe_only);
