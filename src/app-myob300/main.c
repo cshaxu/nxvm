@@ -95,6 +95,21 @@ static lib_status myob300_product_prepare(const x86_nxvm_machine_config *config,
     return status;
 }
 
+static lib_status myob300_product_configure_extensions(void *context,
+    x86_nxvm_product_machine *machine, x86_ibmpc_product_command_extensions *out_extensions)
+{
+    static const x86_ibmpc_product_hotkey power = {
+        .help = {"Ctrl+Alt+O", "operate the OmniBook power switch"}
+    };
+    lib_status status = x86_nxvm_product_configure_standard_extensions(machine, out_extensions);
+
+    (void)context;
+    if (status != LIB_STATUS_OK) return status;
+    out_extensions->hotkeys = &power;
+    out_extensions->hotkey_count = 1u;
+    return LIB_STATUS_OK;
+}
+
 int main(void)
 {
     const x86_nxvm_product_machine_binding binding = {
@@ -104,7 +119,8 @@ int main(void)
         .initial_speed = X86_NXVM_MACHINE_SPEED_TURBO,
         .floppy_format = X86_NXVM_MACHINE_FLOPPY_FORMAT_1440K,
         .prepare = myob300_product_prepare,
-        .save_configuration = myob300_product_save_cmos
+        .save_configuration = myob300_product_save_cmos,
+        .configure_extensions = myob300_product_configure_extensions
     };
 
     return x86_nxvm_product_run("MyOB300", "myob300.ini", &binding);

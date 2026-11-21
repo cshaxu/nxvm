@@ -18,6 +18,8 @@ The owner removed Word and Excel from the later [ROM Windows acceptance
 scope](../proposals/m5-ob300-rom-windows.md).
 
 Both published widths now wake original DOS APM through Ctrl+Alt+O.
+Both widths display the chord in Monitor help and the Window Console
+status page. See the [product hotkey verification](../etc/evidence/t592-s3-ob300-local-setup.md#product-hotkey-extensions-and-native-help).
 A [dual-width DOS switch observation](../etc/evidence/t592-s3-ob300-local-setup.md#native-dos-switch-press-and-wake)
 also records one real SMI, the original firmware wake poll and fresh VER.
 The [replacement binding evidence](../etc/evidence/t592-s3-ob300-local-setup.md#ctrlalto-power-switch-binding)
@@ -85,12 +87,12 @@ The queued performance and Windows gates remain in force.
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | M5 T592 S3 after ordered S2 publication. |
-| Admission And Approval | Continue the owner's ordered OmniBook implementation and single-session coordinator/executor review. Necessary X86-NXVM and X86 Core changes are owner-approved. |
+| Admission And Approval | Continue the owner's ordered OmniBook implementation and single-session coordinator/executor review. Necessary X86-NXVM and X86 Core changes are owner-approved. The owner also approved the optional X86-IBMPC Product hotkey extension and MyOB300 help entry. |
 | Objective | Reconcile remaining power, peripheral, storage failure, desktop and documented setup obligations against the original Machine and released Product. Close confirmed gaps within scope and record explicit acceptance limits. Owner requests replacing the MyOB300 F13 power binding with Ctrl+Alt+O for manual acceptance. |
 | Non-goals | No firmware bytes in Git, duplicate release or input route, speculative Windows fix, or claim of unobserved power behavior. |
 | Reference Baseline | S2 published 0.5.0592 and S3/S4 of T591 for Machine lifecycle, C persistence and timing. |
 | Candidate Proposal | proposals/m5-ob300-product-qualification.md and m5-ob300-architecture.md, especially O07-O09 and O12. |
-| Files And ABI Surface | MyOB300 App, assets guidance, corresponding fixtures and NXVM evidence. X86-NXVM or X86 Core only when a confirmed defect requires their ownership. |
+| Files And ABI Surface | MyOB300 App, assets guidance, corresponding fixtures and NXVM evidence. X86-NXVM or X86 Core only when a confirmed defect requires their ownership. The hotkey delivery affects Shared X86-IBMPC Product and its tests, MyOB300, and Release qualification for all eight Apps. |
 | Applicable Rules | NXVM guide, Contributing, Roadmap, Architecture/Layout, source and UI policy, shared Execution/Documentation/Architecture/Coding. |
 | Verification | Review the product/device ledger, repeat actual DOS lifecycle across both widths where not already covered, cover detectable storage failures and collect native Window and power evidence when supported. Keep performance and Windows qualification separate. |
 | Expected Markers | Proven supported behavior, explicit unsupported capabilities and a repeatable setup. No unnecessary receiver rebuild if only evidence changes. |

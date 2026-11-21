@@ -639,6 +639,61 @@ with the replacement binding.
 The disposable APM C fixture SHA-256 was
 `eeb4a0d8590a00aa9d571c31d48d8ec70149e75743028c16bd6e1f6ed909e769`.
 
+#### Product hotkey extensions and native help
+
+Shared X86-IBMPC Product now builds its registration and help list from
+the built-in table plus optional borrowed App entries. The same help
+map is consumed by Monitor help and the Window status page. Product
+rejects duplicate combinations and identifiers before starting.
+A registered App action uses the existing KVM matcher and Session
+result. A help-only binding leaves App-owned input delivery intact.
+
+MyOB300 uses one help-only entry for Ctrl+Alt+O. It continues to use
+the keyboard press and release at the existing virtual power switch.
+The default shared setup still has the five built-in entries.
+No Lib, Emulator or X86-NXVM source changes were needed.
+
+Both x64 and x86 passed the 12 focused tests. The shared command
+test delivers a key through the real KVM registry and matcher to a
+fixture App callback. It covers the no-extension default, combination
+and identifier conflicts, and both optional row forms. The entry
+test verifies the configured help and registry reach Window UI.
+
+Both exact published MyOB300 executables answered an explicit
+Monitor help command and showed the same power entry in the
+Console status page while running a guest Window on a private
+desktop. Both exited with code zero. The original System Card
+and read-only C fixture were preserved. The two native logs have
+the same SHA-256
+`5d43b12ed4d66ad28ebeb66a3cd0fc3beaa4486efc2c1290ddecbb2f264f8700`.
+
+The full cached unit matrix passed 717 tests on each width.
+The Shared implementation is commit `fd72303dc` and the MyOB300
+binding is delivered by this receipt commit.
+
+All eight Apps were rebuilt and published in both widths through
+the cached Release graphs. Independently read PE headers and
+SHA-256 hashes matched all publication receipts.
+
+| Artifact under assets | PE machine | SHA-256 |
+| --- | --- | --- |
+| my5160/my5160_0_5_0592_x64.exe | 8664h | `02d42449c0de93fd09fdf7dccccab6375e3da15441a0335cbc7b12b580c317e8` |
+| my5160/my5160_0_5_0592_x86.exe | 014Ch | `b204dce32b897b5e64be1529f2420399c362e9c7f581fe0a942c13bffc9af22d` |
+| my5170/my5170_0_5_0592_x64.exe | 8664h | `7f722f58cfe15cb7afe154628769e15435fb04eca3361fb04bfbdc7fccadba24` |
+| my5170/my5170_0_5_0592_x86.exe | 014Ch | `c3a2a6cc4e4b876fbd9a664318ba02e3777929a41f4c83fe88b09b62edead831` |
+| mydeskpro386/mydeskpro386_0_5_0592_x64.exe | 8664h | `f707c4b6bfa5b4ea46f9bb5c5173f97c2eb617186582725a3ec639b5662c4711` |
+| mydeskpro386/mydeskpro386_0_5_0592_x86.exe | 014Ch | `b8f97b68efcdfe389441ec4525f9b1533cf231a10f205e47309cc18692a7607c` |
+| mynes/mynes_0_0_0044_x64.exe | 8664h | `4f52a9066708d94f781879c8c58dc861e850791dc9721ed1c85fab32dc0e4799` |
+| mynes/mynes_0_0_0044_x86.exe | 014Ch | `5d07c841f2bb5e9f42e19049cbcad59f08a54a033405e168a310a779dde4a437` |
+| myob300/myob300_0_5_0592_x64.exe | 8664h | `12a20bee4e443cc056a9b6e6dbf6181c1bbb86e14db1cf9e065195d0769acdd8` |
+| myob300/myob300_0_5_0592_x86.exe | 014Ch | `60f2f603a27d8f20f88104e96381adcabf35679e5224d8c6935fe37b2165a729` |
+| mypc110/mypc110_x64.exe | 8664h | `ff99a92a7dbedc9bf96d0fc39099058e14354b6fcb6016a029f4d75c38bf1ad3` |
+| mypc110/mypc110_x86.exe | 014Ch | `b96cf08927edfcb8311bc728eebf4e1f8c244b753e1d8a1359cb478c5ca20961` |
+| myraidenii/myraidenii_0_0_0007_x64.exe | 8664h | `fa47c5459e592e7e77bb73839091aa7adf7f664e6c08145416cad083edc2a939` |
+| myraidenii/myraidenii_0_0_0007_x86.exe | 014Ch | `262a7ef3c0e7d62f62781584400a1c03f4c93deec6f4ea93d6c5b4b93b992a2a` |
+| nxvm/nxvm_0_5_0592_x64.exe | 8664h | `1b7ab55b7556c5a69d30ab87c271a2557da800e3fe59c77ea56565d1738233ba` |
+| nxvm/nxvm_0_5_0592_x86.exe | 014Ch | `ce0c42a1753fdc00bc9886437e525af2d21557d10e61fa41496ed710334b8526` |
+
 #### Native DOS switch press and wake
 
 A dual-width diagnostic linked the P48 production Product and Machine
