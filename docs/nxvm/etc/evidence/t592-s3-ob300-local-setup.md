@@ -1062,6 +1062,36 @@ or satisfy the one-second DIR goal.
 | Scratch original DOS replay | 09a4c55c8cdb0ea8421e081d22483564faa3920bc8570828c6955a74890c68aa |
 | Existing regressions, stock and scratch | e67ed40a75d25cfac17e38034bad0c56739e66ac6e5dde8529a42d20e9144663 |
 
+#### Timing versus observation preview calls
+
+The previous measurements counted one lexical-preview entry used by two
+CPU callers. In the x86 diagnostic, only the observer-metadata call in
+the scratch timing translation unit was redirected to a separate
+counter. Both counters called the same unmodified lexical preview and
+preserved all return values. The timing-model call continued to use the
+original remaining call site. Source inspection found no third production
+caller in CPU.
+
+| Original DOS phase | Preview calls required by the timing model | Additional calls for observation metadata | Timing-preview estimated wall time |
+| --- | ---: | ---: | ---: |
+| Cold boot through DOS | 8,625,025 | 0 | 13.318 s |
+| DIR CONFIG.SYS | 507,633 | 0 | 1.261 s |
+
+Each counted target decoded successfully. The actual guest reached the
+first DOS prompt at 94.238 s and returned to a ready prompt after DIR in
+8.557 s. The base disk hash was unchanged. Times are one-in-1,021
+samples; both counters count every call. The guest output and combined
+timing log SHA-256 is
+44a96c7eab3e3346e6c308cedf53de7be32a4a28583315221fdb944494059301.
+
+The actual timing formula uses the target instruction's lexical size, and
+the observation path reuses the resulting component count. Turning off
+retirement observation would therefore remove zero preview calls for
+these workloads. Preserve the timing input. Any future preview improvement
+must make the existing fetch/decode cheaper or prove safe reuse under the
+same timing contract. This experiment does not measure the independent
+cost of producing other retirement data.
+
 #### Published Windows disk sharing
 
 A hidden process fixture used the exact published 0.5.0592 x64 and x86
