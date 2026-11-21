@@ -45,6 +45,9 @@ typedef struct x86_nxvm_board_profile_binding {
         lib_u8 bytes, lib_bool observe_only);
     lib_status (*write_smm_memory)(void *context, lib_u32 address, const void *source,
         lib_u8 bytes);
+    /* Optional board-owned byte selected in place of an RTC data access.
+     * Return null for the ordinary RTC. The borrow lasts only for this access. */
+    lib_u8 *(*rtc_cmos_override)(void *context, lib_u8 index);
 } x86_nxvm_board_profile_binding;
 
 /* Scoped construction inputs, not a runtime board getter. Handles are

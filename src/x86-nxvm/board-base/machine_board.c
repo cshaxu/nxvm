@@ -752,6 +752,14 @@ static lib_i32 x86_nxvm_board_rtc_cmos_config_is_valid(
     return LIB_TRUE;
 }
 
+static lib_u8 *x86_nxvm_board_rtc_cmos_override(x86_nxvm_board_state *board)
+{
+    const x86_nxvm_board_profile_binding *profile = &board->profile_binding;
+
+    return profile->rtc_cmos_override == LIB_NULL ? LIB_NULL :
+        profile->rtc_cmos_override(profile->context, board->rtc_selected_register);
+}
+
 static lib_status x86_nxvm_board_rtc_cmos_port_read(void *owner,
     lib_u16 port, lib_u64 tick,
     lib_u32 *out_value)
@@ -763,8 +771,9 @@ static lib_status x86_nxvm_board_rtc_cmos_port_read(void *owner,
         port != board->rtc_cmos_config.data_port) {
         return LIB_STATUS_INVALID_ARGUMENT;
     }
-    *out_value = x86_rtc_read_register(board->shared_rtc,
-        board->rtc_selected_register);
+    const lib_u8 *override = x86_nxvm_board_rtc_cmos_override(board);
+    *out_value = override != LIB_NULL ? *override :
+        x86_rtc_read_register(board->shared_rtc, board->rtc_selected_register);
     return LIB_STATUS_OK;
 }
 
@@ -784,7 +793,9 @@ static lib_status x86_nxvm_board_rtc_cmos_port_write(void *owner,
         return LIB_STATUS_OK;
     }
     if (port == board->rtc_cmos_config.data_port) {
-        x86_rtc_write_register(board->shared_rtc,
+        lib_u8 *override = x86_nxvm_board_rtc_cmos_override(board);
+        if (override != LIB_NULL) *override = (lib_u8)value;
+        else x86_rtc_write_register(board->shared_rtc,
             board->rtc_selected_register, (lib_u8)value);
         return LIB_STATUS_OK;
     }
