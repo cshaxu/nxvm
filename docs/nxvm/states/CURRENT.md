@@ -36,7 +36,9 @@ The [published DOS handoff](../etc/evidence/t592-s3-ob300-local-setup.md#publish
 measures current native startup and directory response on both widths. The
 [original Power control replay](../etc/evidence/t592-s3-ob300-local-setup.md#original-windows-power-control-path)
 confirms that x64 Standard mode runs POST and loads DOS after two F13 presses.
-That new POST asks for F1. Diagnose the warning and verify Off independently.
+Separating the firmware's full SCAMP-selected power record now lets that POST
+complete without F1. Off was selected and both presses reached the BIOS in
+an earlier run, but its terminal and x86 Windows checks still need evidence.
 The queued performance and Windows gates remain in force.
 
 | Field | Required record |

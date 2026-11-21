@@ -18,14 +18,15 @@
 #define MYOB300_MANAGEMENT_WINDOW_BASE 0x00060000u
 #define MYOB300_MANAGEMENT_MEMORY_BYTES 0x10000u
 #define MYOB300_MANAGEMENT_HALF_AB_BYTES 0x10000u
-#define MYOB300_CONTROL_RECORD_SELECT 0x08u
-#define MYOB300_CONTROL_RECORD_BASE 0x40u
+#define MYOB300_POWER_CMOS_SELECT 0x08u
+#define MYOB300_POWER_CMOS_BASE 0x40u
+#define MYOB300_POWER_CMOS_END 0x7au
 #define MYOB300_PANEL_DEFAULT_VSYNC_HZ 60u
 #define MYOB300_PARALLEL_DATA_PORT 0x378u
 
 struct myob300_board {
     myob300_chipset chipset;
-    lib_u8 control_record[4];
+    lib_u8 power_cmos[MYOB300_POWER_CMOS_END - MYOB300_POWER_CMOS_BASE];
     myob300_mouse mouse;
     x86_ct_vga *display;
     lib_u8 parallel_data;
@@ -103,12 +104,12 @@ static void myob300_board_management_active(void *owner, lib_bool active)
 static lib_u8 *myob300_board_rtc_cmos_override(void *owner, lib_u8 index)
 {
     myob300_board *board = owner;
-    const lib_size offset = (lib_size)index - MYOB300_CONTROL_RECORD_BASE;
+    const lib_size offset = (lib_size)index - MYOB300_POWER_CMOS_BASE;
 
-    /* L2: the System 1.0 ROM brackets both access directions with the
-     * same SCAMP selection bit. Keep the record out of the RTC checksum. */
-    return (board->chipset.miscellaneous & MYOB300_CONTROL_RECORD_SELECT) != 0u &&
-        offset < sizeof(board->control_record) ? &board->control_record[offset] : LIB_NULL;
+    /* L2: System 1.0 selects the separate power records for both reads
+     * and writes, then checks the ordinary extended CMOS unselected. */
+    return (board->chipset.miscellaneous & MYOB300_POWER_CMOS_SELECT) != 0u &&
+        offset < sizeof(board->power_cmos) ? &board->power_cmos[offset] : LIB_NULL;
 }
 
 static lib_status myob300_board_management_range(myob300_board *board, lib_u32 address,

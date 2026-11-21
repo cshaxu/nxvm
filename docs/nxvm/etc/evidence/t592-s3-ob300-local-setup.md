@@ -971,3 +971,63 @@ acknowledged F1. The trigger for the new warning remains to be traced.
 | --- | --- |
 | Actual Windows input, BIOS POST and DOS driver | `7dd8182644be30b80b23cef64b40c484d649f710c93296df92f90fb9e51b1a7a` |
 | Firmware sampled both wake switch levels | `bf5a8932684102c188c9a080c4cce0ba37cdef842f58f6e57624cebfeb3caf17` |
+
+The x64 Off replay separately captured the original dialog displaying Off.
+It confirmed the dialog closed and sent F13 at 230.632 s. The second F13
+was sent at 245.981 s after the original wake poll was observed. The BIOS
+sampled the asserted switch. The replay ended at 288 s without a POST or
+return to the old Control Panel, leaving the result of Off power-on open.
+The old C image and the isolated Control Panel variation stayed unchanged.
+
+| Off power-on diagnostic | SHA-256 |
+| --- | --- |
+| Off visibly selected | `2e386b2a3cc165de5e680a29695b52c198baf8a106858a418df4fd04bdb1406f` |
+| Actual Windows input and bounded terminal | `cadf8a9dc9c1efceee40345df35c048e281d80180fa881f0395a60a9c4470dfc` |
+| Firmware sampled both wake switch levels | `f4c9bdbd9cbb9eb233d5afbf4cd84d34b37ee3f57af6861e61945a34b5c5bc39` |
+
+The earlier Standard run that ended in the BIOS wake wait captured RTC/CMOS
+with an extended data sum of 036Eh against the saved 003Ch. The mismatch
+was present before the wake key and new POST. Its changed bytes included
+44h–5Bh, outside the already isolated 40h–43h control record. This
+identifies an earlier point to trace. The capture alone cannot identify the
+writer, the SCAMP selector during the writes, or the intended physical bank.
+Its SHA-256 is `e1f488b867ac87c087f7c8c0c61294b77cfb2fce08c15cc993b47c31aff0d356`.
+
+The Standard trace confirmed that System 1.0 writes every index from 40h
+through 79h with SCAMP MISCSET bit 3 set. F000:A516h enables the selector
+for the rolling power record. The ROM shifts the existing record from
+44h–70h into 4Dh–79h and writes fresh values into 44h–4Ch. F000:A5B7h
+clears the selector. The later POST reads unselected 40h–64h and sees
+056Dh against stored 003Ch, then writes bit 6 at index 78h. The same
+selected routine reads time/calendar indices below 40h from the RTC.
+Trace SHA-256: `950ed8947ba9aafa48804fa7dbf0eae96db8abb7c4ae725ca008eb7dbd61b117`.
+
+MyOB300 now gives the observed 40h–79h power record one board-owned bank
+selected by the existing SCAMP bit. The ordinary RTC remains the owner
+of all unselected accesses, the time/calendar and the adjacent unobserved
+indices. This extends the existing L2 board route and adds no shared
+interface. The x64 and x86 board regressions check 44h and 79h in each
+bank and 7Ah immediately outside the modeled range.
+
+The x64 candidate repeated the complete Standard sequence. The POST read
+003Ch and the stored 003Ch, left the index 78h diagnostic flag clear and
+loaded the original DOS BIOS Services driver. The probe terminated
+successfully and never acknowledged F1. The backing C and isolated Control
+Panel variation were unchanged. The result verifies this firmware and
+model route on x64. The x86 Power panel replay and an Off terminal remain
+separate checks.
+
+| Candidate Standard after bank separation | SHA-256 |
+| --- | --- |
+| Visible ROM POST and DOS driver | `1f1634e546d2889663e393de9d1a4b0a866ffbfd75b17e017bc2ccf861f2d0a3` |
+| RTC bus routing and valid POST checksum | `4ade67e57f1e372ce86c8155e70c2491f4426e78bb6ad8ad803288d82c516d03` |
+
+Cached Release rebuilt and published the two MyOB300 0.5.0592 executables.
+PE checks and publication receipts match the on-disk hashes. Only MyOB300
+production and board tests changed. The production diff is +9/-8 and the
+board test diff is +13/-1. The existing INI and external inputs were preserved.
+
+| Updated release | PE | SHA-256 |
+| --- | --- | --- |
+| MyOB300 x64 | 8664h | `44ed3a49c0cbe740854b6bf8072340cb619027dde5592a827599d4e7e4218971` |
+| MyOB300 x86 | 014Ch | `974f1553a28fcf496753ed73624879b871c7a237eacc4adf07402cd37c62a5d2` |
