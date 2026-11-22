@@ -263,3 +263,89 @@ the publication. The receiving suites ran after artifact deployment.
 | `mynes/mynes_0_0_0044_x86.exe` | `014C` | `b3c57827b84291af306761a27da6e008506f71dbaefce5c34efa788a9b7c9830` |
 | `myraidenii/myraidenii_0_0_0007_x64.exe` | `8664` | `6ca8f066df9befa3ece2d1e36286e4555793cae84b3a05af81a8c6909d4901db` |
 | `myraidenii/myraidenii_0_0_0007_x86.exe` | `014C` | `ee513f07a47f65898ec6fee192051363075fe78a2cca6d21aad8999586635a3b` |
+
+## 32-bit effective-address prototype
+
+The existing decoder repeats 32-bit register and segment selection for the
+three displacement encodings. A scratch replacement chose SIB and base once,
+read displacement through the existing fetch path, and used the same handler
+and 486 timing annotation. It removed a net 255 lines. The existing operand
+contract passed on both hosts, covering the 80386 and 80486SX, and all timed
+workloads agreed on one million retired instructions, guest ticks and final
+result. The x86 medians rose by 1.4 percent for plain 32-bit addressing,
+4.0 percent for SIB, 4.2 percent for the 16-bit ModR/M memory control and
+11.5 percent for the register control. The x64 results were mixed. Reject this
+version despite the source reduction. Transcript SHA-256 is
+`ae798b1d7d665b485852934ced71c7868a720924412441a78aea3fbe4256514b`.
+
+## GCC link-time optimization feasibility
+
+The comparison used the combined released source at `71edc3b0c`. The
+scratch tool collected 22 real Release translation units and their flags
+from the existing Ninja graphs. The candidate compiled only CPU, FPU and
+Machine with GCC LTO. It excluded changes to the board, App and guest
+model. Three alternating baseline/candidate pairs per cell retired one
+million instructions with matching guest ticks and final register or
+memory values. Medians below are elapsed seconds.
+
+| Host | Workload | Standard | LTO |
+| --- | --- | ---: | ---: |
+| x64 | ModR/M registers | 0.443270 | 0.379184 |
+| x64 | ModR/M memory | 0.548893 | 0.477730 |
+| x64 | Direct-address memory | 0.545605 | 0.523403 |
+| x86 | ModR/M registers | 0.638012 | 0.538555 |
+| x86 | ModR/M memory | 0.755912 | 0.658155 |
+| x86 | Direct-address memory | 0.726937 | 0.594562 |
+
+The same objects passed the existing 486 timing, Debug, fault/event and
+Machine branch-preview contracts on both host widths. The combined test
+transcript SHA-256 is
+`4771accedbfbea402875a61ad17d6ec4ccb46ba7a49a03bf8cb4970cba77bae9`.
+
+The paired MyOB300 DOS replay used the same read-only scratch disk and
+System Card as the earlier replay. It wrapped only Product entry and the
+Machine run boundary for both builds so the inner CPU and Machine calls
+could be optimized. It ran stock then candidate on x64 and candidate then
+stock on x86. Each run verified DOS VER, DIR, the returned prompt, ten key
+echoes and pause. All media hashes matched after use.
+
+| Host | Cold through VER, standard / LTO | DIR, standard / LTO | Slowest key echo, standard / LTO | Pause, standard / LTO |
+| --- | ---: | ---: | ---: | ---: |
+| x64 | 86.464 / 69.159 s | 7.164 / 5.482 s | 33 / 34 ms | 17 / 18 ms |
+| x86 | 88.808 / 81.757 s | 7.264 / 7.283 s | 40 / 35 ms | 17 / 18 ms |
+
+The measured workload at the DOS boundaries retired slightly different
+work. These single-pair results favor LTO for startup on both host widths
+and DIR on x64. The x86 DIR observation is unchanged within the resolution
+of this comparison. The x64 cold and both DIR gates remain open. RDP, native
+redraw, restart and other App integrations were outside this experiment.
+The replay transcript SHA-256 is
+`4bac97f1fbc2101bd6d3ec531763fbbe6da1f6cb48f6f89b5eb8a967c58413ad`.
+
+The actual release still uses its standard GCC configuration. Production
+qualification would need the regular static library and link layout, the
+complete cached product matrix and its tests. The individual-object replay
+does not validate a new shipping configuration.
+
+### Static-library linkage
+
+Three scratch archives with the normal CPU/FPU/Machine split linked and
+ran on both hosts, including when the caller added no LTO flag. A second
+four-way rotation compared the same ModR/M memory workload. All sixteen
+runs per width agreed on 1,000,000 retired instructions, 4,500,000 guest
+ticks and final value 53,392. Medians are elapsed seconds.
+
+| Host | Standard | Archives, automatic | Archives, explicit `-flto` | Archives, one partition |
+| --- | ---: | ---: | ---: | ---: |
+| x64 | 0.534880 | 0.487736 | 0.489180 | 0.475577 |
+| x86 | 0.725341 | 0.628791 | 0.591226 | 0.604974 |
+
+In an earlier three-way rotation the x64 archive-auto median was 0.526356 s
+against 0.526233 s standard, so code layout and host variability matter.
+x86 archive-auto improved in both rotations. The smaller integration
+surface is to try the normal archive path with GCC's native IPO, requiring
+the full qualification build before changing the release. Neither these
+timings nor the DOS object-link result justify a repository-wide linker
+flag or a forced partition policy.
+The four-way transcript SHA-256 is
+`bdbdf3708d7bce10522ed1dce54615eed6fb2e96d5c917883d04af50e9eb1c28`.
