@@ -308,10 +308,21 @@ static void x86_pit_tick_mode2(x86_pit *pit, lib_u8 id)
     x86_pit_sync_count(pit, id);
 }
 
+static void x86_pit_mode3_decrement(x86_pit *pit, lib_u8 id, lib_u32 ticks)
+{
+    lib_u32 decrement = ticks * 2u;
+    if (pit->personality == X86_PIT_PERSONALITY_8253 &&
+        (pit->data.reload[id] & 1u) != 0u &&
+        pit->data.phase[id] == (pit->data.flagOutput[id] ?
+            x86_pit_mode3_high_length(pit, id) : x86_pit_mode3_low_length(pit, id)))
+        decrement = pit->data.flagOutput[id] ? decrement - 1u : decrement + 1u;
+    pit->data.remaining[id] = pit->data.remaining[id] > decrement ?
+        pit->data.remaining[id] - decrement : 0u;
+}
+
 static void x86_pit_tick_mode3(x86_pit *pit, lib_u8 id)
 {
     lib_bool was_output;
-    lib_u32 decrement = 2u;
     if (pit->data.flagRestart[id]) {
         x86_pit_commit_pending(pit, id);
         return;
@@ -321,13 +332,7 @@ static void x86_pit_tick_mode3(x86_pit *pit, lib_u8 id)
         return;
     }
     if (!pit->data.flagActive[id] || !pit->connect.flagGate[id]) return;
-    if (pit->personality == X86_PIT_PERSONALITY_8253 &&
-        (pit->data.reload[id] & 1u) != 0u &&
-        pit->data.phase[id] == (pit->data.flagOutput[id] ?
-            x86_pit_mode3_high_length(pit, id) : x86_pit_mode3_low_length(pit, id)))
-        decrement = pit->data.flagOutput[id] ? 1u : 3u;
-    if (pit->data.remaining[id] > decrement) pit->data.remaining[id] -= decrement;
-    else pit->data.remaining[id] = 0u;
+    x86_pit_mode3_decrement(pit, id, 1u);
     if (--pit->data.phase[id] == 0u) {
         was_output = pit->data.flagOutput[id];
         if (pit->data.flagLoadPending[id]) x86_pit_commit_pending(pit, id);
@@ -386,6 +391,15 @@ static void x86_pit_tick_mode4_or_5(x86_pit *pit,
     x86_pit_sync_count(pit, id);
 }
 
+static lib_bool x86_pit_free_counting(const x86_pit *pit, lib_u8 id, lib_u8 mode)
+{
+    return !pit->data.flagActive[id] && pit->data.reload[id] != 0u &&
+        !pit->data.flagTrigger[id] && !pit->data.flagRestart[id] &&
+        (mode == 1u || mode == 5u ||
+            ((mode == 0u || mode == 4u) && !pit->data.flagLoadPending[id])) &&
+        (pit->connect.flagGate[id] || mode == 1u || mode == 5u);
+}
+
 static void x86_pit_tick(x86_pit *pit, lib_u8 id)
 {
     lib_u8 mode = x86_pit_mode(pit, id);
@@ -395,11 +409,7 @@ static void x86_pit_tick(x86_pit *pit, lib_u8 id)
     if (!pit->data.flagReady[id] && !pit->data.flagLoadPending[id] &&
         !pit->data.flagTrigger[id]) return;
     /* Terminal count ends the OUT sequence, not the loaded counter. */
-    if (!pit->data.flagActive[id] && pit->data.reload[id] != 0u &&
-        !pit->data.flagTrigger[id] && !pit->data.flagRestart[id] &&
-        (mode == 1u || mode == 5u ||
-            ((mode == 0u || mode == 4u) && !pit->data.flagLoadPending[id])) &&
-        (pit->connect.flagGate[id] || mode == 1u || mode == 5u)) {
+    if (x86_pit_free_counting(pit, id, mode)) {
         x86_pit_decrement_count(pit, id);
         return;
     }
@@ -584,13 +594,63 @@ void x86_pit_reset(x86_pit *pit)
     }
 }
 
+static void x86_pit_advance_one(x86_pit *pit)
+{
+    for (lib_u8 id = 0u; id < 3u; ++id) x86_pit_tick(pit, id);
+}
+
+/* Between events no callback can observe an intermediate count. Keep
+ * the event tick in advance_one so callback order remains chronological. */
+static lib_u64 x86_pit_advance_quiet(x86_pit *pit, lib_u64 limit)
+{
+    enum { IDLE, COUNT_DOWN, SQUARE_WAVE, FREE_COUNT } motion[3] = { IDLE };
+    for (lib_u8 id = 0u; id < 3u; ++id) {
+        const lib_u8 mode = x86_pit_mode(pit, id);
+        lib_u64 distance;
+        if (!pit->data.flagReady[id] && !pit->data.flagLoadPending[id] &&
+            !pit->data.flagTrigger[id]) continue;
+        if (x86_pit_free_counting(pit, id, mode)) {
+            motion[id] = FREE_COUNT;
+        } else if (x86_pit_ticks_until_output(pit, id, &distance) == LIB_STATUS_OK) {
+            if (distance <= limit) limit = distance - 1u;
+            if (limit == 0u) return 0u;
+            motion[id] = mode == 3u ? SQUARE_WAVE : COUNT_DOWN;
+        } else if (pit->data.flagActive[id] &&
+            (pit->connect.flagGate[id] || mode == 1u || mode == 5u)) {
+            /* An active counter without a positive known boundary needs a tick. */
+            return 0u;
+        }
+    }
+
+    for (lib_u8 id = 0u; id < 3u; ++id) {
+        if (motion[id] == IDLE) continue;
+        if (motion[id] == FREE_COUNT && limit > pit->data.remaining[id]) {
+            const lib_u32 period = (pit->data.cw[id] & VPIT_CW_BCD) != 0u ?
+                10000u : 65536u;
+            const lib_u64 past_zero = limit - pit->data.remaining[id] - 1u;
+            pit->data.remaining[id] = period - 1u - (lib_u32)(past_zero % period);
+        } else if (motion[id] == SQUARE_WAVE) {
+            x86_pit_mode3_decrement(pit, id, (lib_u32)limit);
+            pit->data.phase[id] -= (lib_u32)limit;
+        } else {
+            pit->data.remaining[id] -= (lib_u32)limit;
+        }
+        x86_pit_sync_count(pit, id);
+    }
+    return limit;
+}
+
 void x86_pit_advance(x86_pit *pit, lib_u64 elapsed_ticks)
 {
-    lib_u64 tick;
-    lib_u8 id;
     if (pit == LIB_NULL) return;
-    for (tick = 0u; tick < elapsed_ticks; ++tick) {
-        for (id = 0u; id < 3u; ++id) x86_pit_tick(pit, id);
+    while (elapsed_ticks != 0u) {
+        if (elapsed_ticks > 3u) {
+            const lib_u64 quiet = x86_pit_advance_quiet(pit, elapsed_ticks);
+            elapsed_ticks -= quiet;
+            if (elapsed_ticks == 0u) break;
+        }
+        x86_pit_advance_one(pit);
+        --elapsed_ticks;
     }
 }
 

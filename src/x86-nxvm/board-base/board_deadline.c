@@ -40,9 +40,8 @@ static void board_consider_pit(const x86_pit *pit,
 
         if (x86_pit_ticks_until_output(pit, counter, &device_ticks) != LIB_STATUS_OK)
             continue;
-        if (nearest == 0u || device_ticks < nearest) {
-            nearest = device_ticks;
-        }
+        if (nearest == 0u || device_ticks < nearest) nearest = device_ticks;
+        if (nearest == 1u) break;
     }
     if (nearest != 0u) (void)board_consider_clock(clock, nearest, io_source_ticks);
 }

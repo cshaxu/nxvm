@@ -135,6 +135,10 @@ static lib_i32 x86_pit_waveform_terminal_cases(x86_pit *pit)
         if (!triggered) x86_pit_set_gate(pit, 0u, LIB_TRUE);
         lib_memory_set(&probe, 0u, sizeof(probe));
         x86_pit_advance(pit, bcd ? 10000u : 65536u);
+        x86_pit_write_register(pit, 3u, 0u);
+        lib_u16 wrapped = x86_pit_waveform_read(pit, 0u);
+        wrapped |= (lib_u16)x86_pit_waveform_read(pit, 0u) << 8u;
+        failed |= wrapped != count;
         failed |= !x86_pit_get_output(pit, 0u) || probe.count != 0u;
     }
     for (row = 0u; row < 2u; ++row) {

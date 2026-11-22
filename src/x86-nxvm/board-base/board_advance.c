@@ -64,10 +64,12 @@ void x86_nxvm_board_before_internal_advance(void *owner,
     if (board == LIB_NULL || source_ticks == 0u) return;
     primary_ticks = x86_core_machine_clock_domain_advance(&board->pit_clock,
         source_ticks);
-    auxiliary_ticks = x86_core_machine_clock_domain_advance(
-        &board->auxiliary_pit_clock, source_ticks);
+    const lib_bool auxiliary_pit_configured = board->auxiliary_pit_configured;
+    auxiliary_ticks = auxiliary_pit_configured ?
+        x86_core_machine_clock_domain_advance(&board->auxiliary_pit_clock,
+            source_ticks) : 0u;
     x86_pit_advance(board->shared_pit, primary_ticks);
-    if (board->auxiliary_pit_configured) {
+    if (auxiliary_pit_configured) {
         x86_pit_advance(board->auxiliary_pit, auxiliary_ticks);
     }
     if (primary_ticks != 0u) {
