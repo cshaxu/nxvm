@@ -1104,3 +1104,42 @@ such a redesign remain subject to the active proposal's scope decision.
 
 The complete diagnostic transcript SHA-256 is
 `1bd8a98ef95caccef4d3e25b3d758d6981ef5c0b47067b7817f18d9e83114ea6`.
+
+### Page-filter prototype after continuation approval
+
+The owner confirmed continued performance work on 2026-11-22. The
+prototype filtered raw and decoded provider scans by page without
+retaining a device's query result. The existing resolver still checked
+the exact range and performed queries in the same order. Cross-page
+accesses used the original unfiltered scan. Scratch state was cleared
+for each geometry change in the differential fixture.
+
+Both widths matched all 1,011,074 observable records and 315,355
+provider queries. Including page fills, visits to provider geometry
+fell from 5,067,779 to 2,113,405. Without trace output the randomized
+fixture's median fell from 0.857 to 0.841 s on x64 and 0.852 to
+0.833 s on x86. The same result does not imply equivalent gains when
+executing guest code through the Core.
+
+The equal-work FAT12 instruction fixture executed 1,549,105
+instructions in 6,668,907 guest ticks, with result 15,552, in every run.
+The following medians use three measured runs per case after a warmup.
+
+| Host | Instruction mapping | Published Core | Page filter |
+| --- | --- | ---: | ---: |
+| x64 | RAM | 0.742 s | 0.760 s |
+| x64 | ROM with overlapping route | 1.153 s | 1.328 s |
+| x64 | ROM with disjoint route | 1.005 s | 0.992 s |
+| x86 | RAM | 0.983 s | 0.961 s |
+| x86 | ROM with overlapping route | 1.506 s | 1.674 s |
+| x86 | ROM with disjoint route | 1.223 s | 1.267 s |
+
+The overlap path regressed by about 15 percent on x64 and 11 percent on
+x86. The prototype is held. The experiment changed neither production
+sources nor deployed executables, and did not repeat the full DOS boot.
+
+| Diagnostic transcript | SHA-256 |
+| --- | --- |
+| Route differential | `b07c633d8cc94476301ff2b9f5763c4e3a0a139f09c905209dbf0c0645968b0a` |
+| Route timing | `06f982d931a1d6e83e49f395be506c76e362a326f82ba09a2a526256bcbae99c` |
+| FAT12 Core execution | `00c536304bd91f8a4febec65cb0bf4bcd2508de5392407c73e14a00a3ebd047e` |

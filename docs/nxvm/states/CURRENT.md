@@ -20,15 +20,16 @@ cold times fell from 49.789/62.340 s to 44.412/58.855 s. DIR fell from
 4.276/5.310 s to 4.123/5.206 s, above the one-second target. MyOB300 native
 DOS input and redraw passed on a private Windows desktop. Both Machine
 restart sequences returned to DOS in fresh generations on both widths.
-RDP remains open. The missed DIR gate requires the decision specified in
-the proposal.
+RDP remains open. The owner approved continuing performance work on
+2026-11-22 with the original DIR gate. The first page-filter prototype
+is held after an overlapping-ROM regression on both widths.
 
 The owner withdrew the [standalone ROM Windows candidate](../proposals/m5-ob300-rom-windows.md).
 
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation M5 T593 S6 after S5. |
-| Admission And Approval | On 2026-11-21 the owner approved generic Core optimization based on 86Box and Bochs. The owner also selected exact reductions in clock and PIC work based on their operation counts. |
+| Admission And Approval | On 2026-11-21 the owner approved generic Core optimization based on 86Box and Bochs. The owner also selected exact reductions in clock and PIC work based on their operation counts. On 2026-11-22 the owner confirmed continued performance work after the paired results missed the DIR target. |
 | Objective | Reduce repeated work in the generic CPU and board execution paths while preserving guest fetch, timing and device event order. Use focused equal-work probes. |
 | Non-goals | No product-specific path, third-party code import, public ABI change, JIT, second instruction engine or timing grade reduction. |
 | Reference Baseline | `9d77899d1` and the published S5 receiver set. Local Bochs 2.6 decoded trace cache is a design reference. |
