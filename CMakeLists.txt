@@ -49,6 +49,16 @@ add_subdirectory(src/emulator)
 add_subdirectory(src/x86-debug)
 add_subdirectory(src/x86-ibmpc)
 add_subdirectory(src/x86-core)
+# The neutral Core benefits from cross-unit optimization in GCC Release.
+# Keep the policy here so independently built packages retain their defaults.
+if(WIN32 AND CMAKE_C_COMPILER_ID STREQUAL "GNU")
+    include(CheckIPOSupported)
+    check_ipo_supported(RESULT repository_core_ipo LANGUAGES C)
+    if(repository_core_ipo)
+        set_property(TARGET x86-core-cpu x86-core-fpu x86-core-machine
+            PROPERTY INTERPROCEDURAL_OPTIMIZATION_RELEASE TRUE)
+    endif()
+endif()
 add_subdirectory(src/x86-nxvm)
 add_subdirectory(test/lib)
 add_subdirectory(test/emulator)
