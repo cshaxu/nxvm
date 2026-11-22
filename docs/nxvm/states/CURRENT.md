@@ -1,15 +1,35 @@
-# M5 T593 - Open: Shared x86 execution performance
+# M5 T593 S6 - Active: Shared CPU decode optimization
 
-S5 is coordinator-accepted and closed after reviewing source delivery
-`63cd192ad`, the sixteen published executables through `0e9e64546`, and
-the [dual-width verification](../etc/evidence/t593-s5-core-read-mapping.md).
-The review checked RAM bounds, parity, provider/alias exclusion, invalidation
-and A20/reset coverage. Both widths passed 717 unit and 48 integration tests.
-The original MyOB300 latency gates remain open.
+S5 closed at `9d77899d1`. The S6 [decoder consolidation and PC qualification](../etc/evidence/t593-s6-decoded-execution.md)
+were pushed through `22540337f`. The four rebuilt MyNES and MyRaidenII
+receiving EXEs remain local pending separate release approval.
 
-The [performance proposal](../proposals/m5-ob300-performance.md) owns the
-remaining work. Its next bounded batch is S6, decoded execution design.
-There is no active S packet between these subtasks.
+The current candidate reuses primary opcode classification within one CPU
+profile. Focused tests pass on both host widths, including profile rebinding.
+The candidate has not yet completed full receiving qualification. Both MyOB300
+DIR targets and the x64 cold-start target remain open. Decoded sequence reuse
+is still under investigation.
+
+The owner withdrew the [standalone ROM Windows candidate](../proposals/m5-ob300-rom-windows.md).
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation M5 T593 S6 after S5. |
+| Admission And Approval | On 2026-11-21 the owner approved generic Core optimization based on 86Box and Bochs. Proceed with the bounded decoded execution design batch. |
+| Objective | Identify the fixed decoding work that can be reused without duplicating handlers or weakening guest fetch and execution semantics. Prove the benefit and limits with short workloads. |
+| Non-goals | No product-specific path, third-party code import, public ABI change, JIT, second instruction engine or timing grade reduction. |
+| Reference Baseline | `9d77899d1` and the published S5 receiver set. Local Bochs 2.6 decoded trace cache is a design reference. |
+| Candidate Proposal | [Performance S sequence and decoded execution boundary](../proposals/m5-ob300-performance.md), S6. |
+| Files And ABI Surface | Core CPU private decode/fetch experiments, existing CPU and Machine owners, NXVM evidence. Any production change reaches all sixteen dual-width artifacts. |
+| Applicable Rules | NXVM Task Reading Set, shared Execution, Architecture, Coding and Documentation, local Core contract and NXVM source policy. |
+| Verification | Derive needed fetch/decode state from the execution path first. Use focused dual-width preview, faults, self-modification, 386 and 486 timing, and short equal-work probes. Qualify the complete receiving set only for retained production changes. |
+| Expected Markers | Fewer redundant boundary preparations or static decode operations while retaining identical fetches, arch state, execution ordering, faults, timing attribution and ticks. |
+| Asset Needs | NXVM-owned ignored build/t593-s6 scratch, no external media for the initial prototype. Cap each process at 60 seconds and 1 MiB output. |
+| Reporting Requirements | Distinguish observational preview from real execution and operation counts from host elapsed time. Record viable and rejected candidates and original usability gaps. |
+| Stop Conditions | Reject redundant caches, unproved invalidation or a second semantic path. Keep original performance targets. |
+| Exit Criteria | Review the design and concrete experiment results, retain only independently justified changes, and document the next architectural decision. |
+| Original Owner Request | Bring the useful generic 86Box and Bochs Core performance techniques into NXVM. |
+| Similar-Issue Sweep | Fixed and dynamic operands, profile/mode changes, current prefetch ownership, memory writes, debug traps, crossed pages, asynchronous entries and REP. |
 
 # M5 T588 - Closed: OB300 hardware and execution design
 
