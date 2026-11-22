@@ -2,12 +2,13 @@
 
 S5 closed at `9d77899d1`. The [S6 delivery](../etc/evidence/t593-s6-decoded-execution.md)
 includes decoded execution reuse, the disabled breakpoint fast path,
-native Windows GCC Release IPO and the clock/PIC arithmetic changes.
+native Windows GCC Release IPO, PIT event advancement, compact CPU access records,
+clock arithmetic and IRQ line aggregation.
 All sixteen EXEs were rebuilt together. Each host width passed 717 unit
 tests and 48 integrations.
 
-The MyOB300 DOS replay recorded x64/x86 cold through VER of 67.678/88.465 s
-and DIR to prompt of 6.745/7.645 s. See the evidence for exact budgets and scope.
+The MyOB300 DOS replay recorded x64/x86 cold through VER of 55.376/74.776 s
+and DIR to prompt of 4.592/6.677 s. See the evidence for exact budgets and scope.
 The replay verified key echo and pause. Native redraw and RDP were outside
 the validation.
 

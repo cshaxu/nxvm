@@ -676,3 +676,96 @@ above provide context. Native redraw and RDP were not measured here.
 | `mynes/mynes_0_0_0044_x86.exe` | `014C` | `0395b2b920d87973a7e88d4d52053fe8a639842350a874c9589bc06b9316b0a3` |
 | `myraidenii/myraidenii_0_0_0007_x64.exe` | `8664` | `edf490d4e77e47d08e1c3836a3f95d9d59aa13307f6f5130cf8022cc2f670b07` |
 | `myraidenii/myraidenii_0_0_0007_x86.exe` | `014C` | `0bae1cc4f3f73f03b5979b58428866d13e5f09ce911868e1b191f084d4061d05` |
+
+## CPU access records, clock conversion and IRQ line aggregation
+
+The private CPU record retains all 512 address ranges for hardware breakpoints.
+The public debugger consumes values for the first 32 accesses. Recording one
+range per access and one value per observable access reduces the arrays from
+12,288 to 4,352 bytes on both architectures. One helper records completed reads
+and writes. It preserves watchpoint and fault ordering. An 80186 ENTER fixture
+matched all 510 ranges and all 32 visible values on both widths. A 386/486
+late stack write still triggered DR0 in both the baseline and candidate.
+
+The separate unpaged translation early return was excluded. Across three
+alternating x64 register-loop samples even its fastest run exceeded the
+slowest stock run. Its memory-loop results were mixed. The measurements
+below describe that isolated experiment only.
+
+The inverse rational-clock conversion uses
+positive integer ceiling division without computing a remainder. Each width
+matched the original status and result in 8,019 boundary cases.
+
+The board stores resolved IRQ levels and counts additional sources for each
+line. Each refresh supplies the existing mask directly. On each architecture
+17,202 stock/candidate observations matched the levels, IRR, IMR, ISR and
+selected vector, including reset, saturation and mixed shared sources.
+
+Single and cascaded DMA request arbitration now reads the primary chip only
+when its signals decide the answer. Both widths matched all 51,200 signal and
+topology combinations, reducing reads from 76,800 to 51,360 across that
+inventory. Both existing DMA channel and binding tests passed per width.
+The primary ALU ModR/M formats share one encoding rule with the same result
+across all 256 opcode bytes on both widths. Neither change adds state.
+
+All eleven combined CPU, Machine and board contracts passed on each width.
+Their isolated build and the operation counts do not establish end-user latency.
+
+| Host | Million-instruction case | Stock median, s | Unpaged candidate median, s |
+| --- | --- | ---: | ---: |
+| x64 | register | 0.456066 | 0.574392 |
+| x64 | modrm-memory | 0.677713 | 0.637470 |
+| x64 | indexed | 0.602558 | 0.632791 |
+| x64 | control | 0.566959 | 0.550389 |
+| x86 | register | 0.650683 | 0.586295 |
+| x86 | modrm-memory | 0.753415 | 0.736954 |
+| x86 | indexed | 0.696706 | 0.749987 |
+| x86 | control | 0.760001 | 0.749826 |
+
+## CPU access record and IRQ aggregation delivery
+
+Build source revision: `b9aaae7defa66dbef85cfd82193257b9353a8747`.
+
+The receiving set uses the compact CPU access record,
+clock ceiling division, primary ALU decode, resolved IRQ inputs and DMA request arbitration.
+Both widths verified all 22 Core IPO compilation commands.
+The normal cached Release build rebuilt and published all sixteen
+products. The native integration link may refresh the default NXVM
+timestamp, so hashes below identify the final qualified files.
+
+| Host | Suite | Passed | Transcript SHA-256 |
+| --- | --- | ---: | --- |
+| x64 | unit | 717/717 | `dbb8d6ce998f8f77f247b91a37cc1eb33c75739b31093f5c1be19e730fbf1f7e` |
+| x64 | integration | 48/48 | `f652defc1ea63b43f6823723093c6ccf34cabcada31e12ac1ac7c33b9b6c4fb7` |
+| x86 | unit | 717/717 | `f1206133c59dc7bc693d814bc0f732d5d8dede0ca9922569d2e6d852df0fccda` |
+| x86 | integration | 48/48 | `3bde67300946cdac2b261b1d408fbb16e455e97e35b07569381b41035204d4a1` |
+
+The reduced-instrumentation MyOB300 replay used the existing read-only
+DOS and System Card fixture. Each width reached VER, verified DIR and
+return to prompt, then verified ten echoes and pause. These are separate
+single runs of the final build configuration. The paired stock comparisons
+above provide context. Native redraw and RDP were not measured here.
+
+| Host | Cold through VER, s | DIR, s | Slowest key echo, ms | Pause, ms | Transcript SHA-256 |
+| --- | ---: | ---: | ---: | ---: | --- |
+| x64 | 55.376 | 4.592 | 32 | 16 | `2344925a10d15a84d5596cd0e6de13f13692ca10672a3af31685d9247c9ef9d2` |
+| x86 | 74.776 | 6.677 | 32 | 16 | `042bde126b466fa13716f0d30f14ff4e3cbe02ba8f3657f9180ee19098df10e3` |
+
+| Artifact | PE machine | SHA-256 |
+| --- | --- | --- |
+| `nxvm/nxvm_0_5_0593_x64.exe` | `8664` | `f4da8fc34e563ff97c592cdb65ce70da8fdf2d01aeec4408a396746bb9362807` |
+| `nxvm/nxvm_0_5_0593_x86.exe` | `014C` | `64d0a20c1f8f4c3c2d1cf7a0814f7807f5cb761cd52c2bbd37de8b76861065fb` |
+| `my5160/my5160_0_5_0593_x64.exe` | `8664` | `1fb712a10f105c9a0fc4ddd708f41438760bef77454a735e7ea0e9116db63df7` |
+| `my5160/my5160_0_5_0593_x86.exe` | `014C` | `60ae66fde05e7178b689bf2e9e05a4e1c4b0cd0a2af8ea8e9277e62c9c5dedbb` |
+| `my5170/my5170_0_5_0593_x64.exe` | `8664` | `2ff8d6c9a636208cd0a5597eb4cda5bbd64790731676832e0754122daa843b1e` |
+| `my5170/my5170_0_5_0593_x86.exe` | `014C` | `d9c98f152ccb5203beca56ceb663136f607f53194b361386ea1a0551d535b5dc` |
+| `mydeskpro386/mydeskpro386_0_5_0593_x64.exe` | `8664` | `dac3912b0a0452c84c93524a9c77d5a2d2e93d541b39d18d74517d5924e1dbf9` |
+| `mydeskpro386/mydeskpro386_0_5_0593_x86.exe` | `014C` | `7051a06b6ef0d87c167ea903e944505bbf14f3217c6c2d1a7f73238b6fdf7e24` |
+| `mypc110/mypc110_x64.exe` | `8664` | `27f17e08ba8c4c407870e157642bdb5d44e29088b5693979313f21a802f06e8c` |
+| `mypc110/mypc110_x86.exe` | `014C` | `6e360390ed05a4b7c6a98f466dc6033473a9992e121043da6db1cb687f20f64d` |
+| `myob300/myob300_0_5_0593_x64.exe` | `8664` | `8c148eda1eff30977ade1bd8b99a4a1ee6675cad12c398556da6e858b6a9dc54` |
+| `myob300/myob300_0_5_0593_x86.exe` | `014C` | `502ca0fe9d08fe6e6218be760f4181f45b14c928c7151725ce9de70d9eac7ca5` |
+| `mynes/mynes_0_0_0044_x64.exe` | `8664` | `84b4de8889d40e4e9dc5099a0f69f0332a8b50ee5840d7df7bd85117ab72b07f` |
+| `mynes/mynes_0_0_0044_x86.exe` | `014C` | `f79b1168dddded2b84ac38f4cbf23101c9990302a372f93dd620ce538b62519e` |
+| `myraidenii/myraidenii_0_0_0007_x64.exe` | `8664` | `97af1295301185b8393cfa2a9d0710da076d5ff43c9272f4d17d497062fa7a06` |
+| `myraidenii/myraidenii_0_0_0007_x86.exe` | `014C` | `b141dc2e838587db356d4423bb402aa947397005f483f6f3ffa5c474b1b6890a` |
