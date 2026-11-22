@@ -1,14 +1,14 @@
 # M5 T593 S6 - Active: Shared CPU decode optimization
 
-S5 closed at `9d77899d1`. The initial S6 PC delivery was recorded at
-`22540337f`. The [combined S6 delivery](../etc/evidence/t593-s6-decoded-execution.md)
-covers primary opcode classification reuse and the disabled execution-breakpoint
-fast path. All sixteen receiving EXEs were rebuilt together. Both host widths
-passed 717 unit tests and 48 integrations.
+S5 closed at `9d77899d1`. The [S6 delivery](../etc/evidence/t593-s6-decoded-execution.md)
+includes decoded execution reuse, the disabled breakpoint fast path and native
+IPO in the Windows GCC Release build. All sixteen receiving EXEs were rebuilt
+together. Both host widths passed 717 unit tests and 48 integrations.
 
-Both MyOB300 cold-start budgets and both DIR latency budgets remain open.
-The recorded DOS replay reached the prompt and passed key echo and pause
-on both widths. Decoded sequence reuse remains under investigation.
+The MyOB300 DOS replay recorded x64/x86 cold through VER of 56.3/81.699 s
+and DIR to prompt of 4.936/8.695 s. Both DIR budgets remain open.
+The replay verified key echo and pause. Native redraw and RDP were outside
+the validation. Decoded sequence reuse remains under investigation.
 
 The owner withdrew the [standalone ROM Windows candidate](../proposals/m5-ob300-rom-windows.md).
 

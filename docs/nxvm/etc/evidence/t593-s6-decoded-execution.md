@@ -427,3 +427,56 @@ reusable variant has passed the full receiving suite or an actual-guest
 latency replay. There is no shipping configuration change in this batch.
 The three-way run transcript SHA-256 is
 `73e8786efe8308ccf7f87939b2bc34d8aee9b30224bd52db4724728d09523a8e`.
+
+## Root GCC Release IPO delivery
+
+Build source revision: `f1d57e5bd9508e0d1f5dbdd834df29fa6acbb4f9`.
+
+The repository root selects native CMake IPO for the three X86 Core
+production libraries when the Windows GCC toolchain supports it.
+The standalone source package retains its own build defaults.
+Both width configurations verified all 22 Core compilation commands.
+The normal cached Release build rebuilt and published all sixteen
+products. The native integration link may refresh the default NXVM
+timestamp, so hashes below identify the final qualified files.
+
+| Host | Suite | Passed | Transcript SHA-256 |
+| --- | --- | ---: | --- |
+| x64 | unit | 717/717 | `ea3824130c9dc5a513cab32fff461aee0bd95f3aa971f997fecb4168effb3b01` |
+| x64 | integration | 48/48 | `adb5b73e0c3a64c52709493ca1502dc3eabfcf3894f9d13472a43fc8ae514f22` |
+| x86 | unit | 717/717 | `b5c4f146432cf8325de78e2946db3977ca3f2584fd3ea9a46ae9e589d588ec3b` |
+| x86 | integration | 48/48 | `30192f1a2b366d10377bc764cc66465d6fa1960987fd273e55d60eb6bf6364a5` |
+
+The reduced-instrumentation MyOB300 replay used the existing read-only
+DOS and System Card fixture. Each width reached VER, verified DIR and
+return to prompt, then verified ten echoes and pause. These are separate
+single runs of the final build configuration. The paired stock comparisons
+above provide context. Native redraw and RDP were not measured here.
+
+| Host | Cold through VER, s | DIR, s | Slowest key echo, ms | Pause, ms | Transcript SHA-256 |
+| --- | ---: | ---: | ---: | ---: | --- |
+| x64 | 56.300 | 4.936 | 34 | 18 | `8d92bdeff897eec7a706ad210590c7c7752b40e55d1ef8ac2c921c5ede8f185e` |
+| x86 | 81.699 | 8.695 | 49 | 17 | `df5c4ce0e972795c2fdcaf4f5bd7f219839ca40d42552783fa734c13dd76fc5a` |
+
+| Artifact | PE machine | SHA-256 |
+| --- | --- | --- |
+| `nxvm/nxvm_0_5_0593_x64.exe` | `8664` | `d018e5a55b6d0eda305d35190bbf50936c45062d73eda20c9e3c4386136036ab` |
+| `nxvm/nxvm_0_5_0593_x86.exe` | `014C` | `97eb623e7598510acbc3bc7f1130b3cc7d25974aa64d0d5580b6e9803d3b2cbd` |
+| `my5160/my5160_0_5_0593_x64.exe` | `8664` | `9299b2cbf4c520471a204b12cc515d1b8eefc54ce843c0d98df17f2dac8e0948` |
+| `my5160/my5160_0_5_0593_x86.exe` | `014C` | `0c47bc173883f7fc83f61642a9b6257053320c24225a711bdbca5d8882669c22` |
+| `my5170/my5170_0_5_0593_x64.exe` | `8664` | `ec037328b4986eddb38427e6d6b96845b70efdb435467a64ec5596e82b603008` |
+| `my5170/my5170_0_5_0593_x86.exe` | `014C` | `29498196f7ceb5edd26ca144b39fe17207bae507abf8c4879ff0ae505b2decf0` |
+| `mydeskpro386/mydeskpro386_0_5_0593_x64.exe` | `8664` | `ef7b5023310e945174ba4df39de727d6f40c9d07fb5b70494948a27717c2914d` |
+| `mydeskpro386/mydeskpro386_0_5_0593_x86.exe` | `014C` | `b51821e5e49a8b49d15710ecb8ff631d0a4f94a6b54f9c02f5321ccc620d0ae0` |
+| `mypc110/mypc110_x64.exe` | `8664` | `f826c38e5d164fc65fb1528eb3aa58861f790f7dcbc46419274a425e23fc22c7` |
+| `mypc110/mypc110_x86.exe` | `014C` | `f69ad3aaeae8d1e4c28b607dc235e7ef2b33bd308db8d0f65a5ac62c77b94ff7` |
+| `myob300/myob300_0_5_0593_x64.exe` | `8664` | `d8eeb360fe8323b82936b0b3b8d63bf6001a8c4407f2d64c75db256f20e70b39` |
+| `myob300/myob300_0_5_0593_x86.exe` | `014C` | `40f7b399d45898a9cb4be78f3ff7c6bdafbcd56a740e671590dfd6dda1a5717c` |
+| `mynes/mynes_0_0_0044_x64.exe` | `8664` | `66da8e1fcd63f093136dfa41e78243aaeee265e6075e7998b0f44538dc94ee96` |
+| `mynes/mynes_0_0_0044_x86.exe` | `014C` | `b46d715a167850876cdb899c2fc60fd28fe6d481f6c7588e2b4b2c1b8441cb50` |
+| `myraidenii/myraidenii_0_0_0007_x64.exe` | `8664` | `61c8b96ca335aca2d29efd632261f7ec094acfe2e6046638aa6decc033fd8e2e` |
+| `myraidenii/myraidenii_0_0_0007_x86.exe` | `014C` | `dbee124eb6c2b27ccdedd5e2d52322f97737d0298e2e865b56aac0e2d8a38574` |
+
+This first full IPO test build took x64 22.1 min and x86 22.3 min
+for the unit targets. The isolated per-owner and caching probes remain
+follow-up build-cost work.
