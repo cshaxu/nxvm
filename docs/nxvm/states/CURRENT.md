@@ -1,32 +1,15 @@
-# M5 T593 S5 - Active: Generic Core memory mapping reuse
+# M5 T593 - Open: Shared x86 execution performance
 
-[S4](../history/M5-T593-S4-ob300-cpu-dispatch.md) is retained as a bounded
-delivery. The [performance proposal](../proposals/m5-ob300-performance.md)
-owns the original targets. The release and original device gates remain open.
+S5 is coordinator-accepted and closed after reviewing source delivery
+`63cd192ad`, the sixteen published executables through `0e9e64546`, and
+the [dual-width verification](../etc/evidence/t593-s5-core-read-mapping.md).
+The review checked RAM bounds, parity, provider/alias exclusion, invalidation
+and A20/reset coverage. Both widths passed 717 unit and 48 integration tests.
+The original MyOB300 latency gates remain open.
 
-S5 delivered for review. The [read mapping evidence](../etc/evidence/t593-s5-core-read-mapping.md)
-records the generic Core change, 717 unit and 48 integration passes per
-width, and the sixteen artifact hashes. Original MyOB300 usability and S6
-decoded execution remain open.
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation M5 T593 S5 after S4. |
-| Admission And Approval | On 2026-11-21 the owner requested generic, shared execution optimization and approved using the 86Box and Bochs designs as references. |
-| Objective | Reuse a proved ordinary RAM read mapping in the shared Core memory owner. Measure equivalent short guest loops before any complete guest replay. |
-| Non-goals | No machine-specific path, borrowed third-party source, guest timing downgrade, platform API, or public ABI change. Decoded execution blocks are a separate design batch. |
-| Reference Baseline | 7c6106379. Local 86Box 4fef696 and Bochs 2.6 were behavior and design references. |
-| Candidate Proposal | [Performance S sequence](../proposals/m5-ob300-performance.md), S5 and S6. |
-| Files And ABI Surface | Shared X86 Core Machine private memory and invalidation, existing Core tests and manifests, NXVM evidence; receivers NXVM, My5160, My5170, MyDeskPro386, MyPC110, MyOB300, MyRaidenII and MyNES. |
-| Applicable Rules | NXVM reading set, shared Execution, Architecture, Coding and Documentation, local Core contract and NXVM source policy. |
-| Verification | Reuse the dual-width cached graph and existing Core memory, fetch, paging, and receiver board tests. Short equal-work loops discriminate route cost from execution cost. Apply the full receiving gate to retained production changes before release. |
-| Expected Markers | Fewer repeated route resolutions in ordinary RAM. Identical bytes, faults, guest ticks and device ordering under memory remaps. |
-| Asset Needs | NXVM-owned build/t593-s5 scratch with bounded background processes. Focused tests require no owner media. |
-| Reporting Requirements | Report candidate and actual changes, work counts, comparable short samples, receiver results and original usability gaps. |
-| Stop Conditions | Reject any fault, timing, route or material performance regression. Keep unproved pages on the existing resolver. |
-| Exit Criteria | Candidate diff and invariants reviewed, focused and applicable receiving qualification passed, and any remaining performance work explicitly transferred. |
-| Original Owner Request | Optimize the generic x86 core using the 86Box and Bochs approaches. Do not optimize for an OB300-specific feature. |
-| Similar-Issue Sweep | Instruction and data reads, parity, raw overlays, dynamic range and alias updates, A20, reset and non-PC receivers. |
+The [performance proposal](../proposals/m5-ob300-performance.md) owns the
+remaining work. Its next bounded batch is S6, decoded execution design.
+There is no active S packet between these subtasks.
 
 # M5 T588 - Closed: OB300 hardware and execution design
 
