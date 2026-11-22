@@ -58,6 +58,10 @@ lib_u64 x86_core_machine_clock_domain_advance(x86_core_machine_clock_domain *dom
      * A narrow quotient and remainder are exact if the sum also fits. */
     if (elapsed_ticks <= LIB_UINT32_MAX) {
         const lib_u64 scaled = elapsed_ticks * domain->numerator + domain->phase;
+        if (scaled < domain->denominator) {
+            domain->phase = (lib_u32)scaled;
+            return 0u;
+        }
         if (scaled <= LIB_UINT32_MAX) {
             const lib_u32 narrow = (lib_u32)scaled;
             converted = narrow / domain->denominator;

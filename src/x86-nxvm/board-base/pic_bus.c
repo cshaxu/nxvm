@@ -1,14 +1,24 @@
 /* Copyright 2012-2026 Neko. */
 #include "x86-nxvm/board-base/pic_bus.h"
 
+static lib_u8 pic_bus_four_levels(const lib_u8 *counts)
+{
+    const lib_u32 low_bits = 0x7f7f7f7fu;
+    const lib_u32 lanes = (lib_u32)counts[0] | ((lib_u32)counts[1] << 8u) |
+        ((lib_u32)counts[2] << 16u) | ((lib_u32)counts[3] << 24u);
+    /* Each low-seven-bit sum is at most 254, so no carry crosses a lane.
+     * An original high bit or the carry into bit seven denotes nonzero. */
+    const lib_u32 occupied = ((lanes | ((lanes & low_bits) + low_bits)) >> 7u) &
+        0x01010101u;
+
+    /* Collect the four lane bits in increasing input order. */
+    return (lib_u8)((occupied * 0x01020408u) >> 24u);
+}
+
 static lib_u8 pic_bus_levels(const x86_nxvm_board_pic_bus *bus)
 {
-    lib_u8 id;
-    lib_u8 levels = 0u;
-    for (id = 0u; id < 8u; ++id) {
-        if (bus->asserted[id] != 0u) levels |= (lib_u8)(1u << id);
-    }
-    return levels;
+    return (lib_u8)(pic_bus_four_levels(bus->asserted) |
+        (pic_bus_four_levels(bus->asserted + 4u) << 4u));
 }
 
 void x86_nxvm_board_pic_refresh(x86_nxvm_board_pic_bus *master,
