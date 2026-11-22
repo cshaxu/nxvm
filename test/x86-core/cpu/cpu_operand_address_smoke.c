@@ -432,6 +432,53 @@ static lib_i32 oas_test_memory_strings(x86_core_cpu_profile profile)
     return !failed;
 }
 
+static lib_i32 oas_test_ea16_matrix(x86_core_cpu_profile profile)
+{
+    static const lib_u16 offsets[] = {0x110u, 0x120u, 0x210u, 0x220u,
+        0x10u, 0x20u, 0x200u, 0x100u};
+    oas_machine state = {0};
+    t_cpu after = {0};
+
+    if (!oas_prepare(&state, profile, 0)) return 0;
+    for (lib_u8 mod = 0u; mod < 3u; ++mod) {
+        for (lib_u8 rm = 0u; rm < 8u; ++rm) {
+            const lib_bool absolute = mod == 0u && rm == 6u;
+            const lib_bool stack = rm == 2u || rm == 3u || (rm == 6u && !absolute);
+            const lib_u16 expected = (lib_u16)(0x4000u + mod * 8u + rm);
+            const lib_u16 wrong = 0xf1f2u;
+            const lib_u16 offset = absolute ? 0x2a00u :
+                (lib_u16)(offsets[rm] + (mod == 1u ? 0xffdfu : mod == 2u ? 0xff10u : 0u));
+            lib_u8 code[5] = {0x8bu, (lib_u8)((mod << 6u) | rm), 0xf4u, 0u, 0u};
+            lib_size size = 3u;
+
+            if (absolute || mod == 2u) {
+                code[2] = absolute ? 0u : 0x10u;
+                code[3] = absolute ? 0x2au : 0xffu;
+                code[4] = 0xf4u;
+                size = 5u;
+            } else if (mod == 1u) {
+                code[2] = 0xdfu;
+                code[3] = 0xf4u;
+                size = 4u;
+            }
+            state.chip.cpu.data.bx = 0x100u;
+            state.chip.cpu.data.bp = 0x200u;
+            state.chip.cpu.data.si = 0x10u;
+            state.chip.cpu.data.di = 0x20u;
+            if (!oas_write(&state, (stack ? OAS_DATA_ADDRESS : OAS_STACK_ADDRESS) + offset,
+                    &wrong, sizeof(wrong)) ||
+                !oas_write(&state, (stack ? OAS_STACK_ADDRESS : OAS_DATA_ADDRESS) + offset,
+                    &expected, sizeof(expected)) ||
+                !oas_run_halt(&state, code, size, &after) || after.data.ax != expected) {
+                lib_c_printf("EA16 profile=%u mod=%u rm=%u expected=%x actual=%x\n",
+                    profile, mod, rm, expected, after.data.ax);
+                return 0;
+            }
+        }
+    }
+    return 1;
+}
+
 lib_i32 main(void)
 {
     static const x86_core_cpu_profile profiles[] = {
@@ -440,7 +487,8 @@ lib_i32 main(void)
 
     for (lib_size profile = 0u; profile < sizeof(profiles) / sizeof(profiles[0]);
         ++profile) {
-        if (!oas_test_prefix_and_ea(profiles[profile]) ||
+        if (!oas_test_ea16_matrix(profiles[profile]) ||
+            !oas_test_prefix_and_ea(profiles[profile]) ||
             !oas_test_16bit_code_and_faults(profiles[profile]) ||
             !oas_test_stack_forms(profiles[profile]) ||
             !oas_test_memory_strings(profiles[profile])) {

@@ -3230,7 +3230,6 @@ static void _kdf_code(x86_core_cpu_execution_context *context, lib_uptr rdata, l
 static void _kdf_modrm_with_mod_quirk(x86_core_cpu_execution_context *context, lib_u8 regbyte, lib_u8 rmbyte, lib_u8 ignore_mod)
 {
     lib_i8 disp8;
-    lib_u16 disp16;
     lib_u32 disp32;
     lib_u32 sibindex = 0u;
     lib_u8 modrm = 0u;
@@ -3247,153 +3246,58 @@ static void _kdf_modrm_with_mod_quirk(x86_core_cpu_execution_context *context, l
     /* The normal architecture requires MOD=11 for MOV CR. Selected original
      * 80386 silicon instead takes only the r/m register bits: no effective
      * address, SIB, displacement, or memory operation is decoded. */
-    if (!ignore_mod || _GetModRM_MOD(modrm) == 3)
+    if (!ignore_mod && _GetModRM_MOD(modrm) != 3u)
     {
         switch (_GetAddressSize)
     {
-    case 2:
-        CPU_TRACE_BLOCK_BEGIN("AddressSize(2)");
-        switch (_GetModRM_MOD(modrm))
-        {
+    case 2: {
+        const lib_u8 mod = _GetModRM_MOD(modrm);
+        const lib_u8 rm = _GetModRM_RM(modrm);
+        lib_u16 displacement = 0u;
+        lib_u16 base = 0u;
+        t_cpu_data_sreg *segment = instruction_state.data.roverds;
+
+        if (mod == 1u) {
+            CPU_TRACE_CHECK_RETURN(_kdf_code(context, X86_CPU_REFERENCE_OF(disp8), 1u));
+            displacement = X86_CPU_MASK_U16(disp8);
+        } else if (mod == 2u || rm == 6u) {
+            CPU_TRACE_CHECK_RETURN(_kdf_code(context, X86_CPU_REFERENCE_OF(displacement), 2u));
+        }
+        switch (rm) {
         case 0:
-            CPU_TRACE_BLOCK_BEGIN("ModRM_MOD(0)");
-            switch (_GetModRM_RM(modrm))
-            {
-            case 0:
-                instruction_state.data.mrm.offset = X86_CPU_MASK_U16(cpu_state.data.bx + cpu_state.data.si);
-                instruction_state.data.mrm.rsreg = instruction_state.data.roverds;
-                break;
-            case 1:
-                instruction_state.data.mrm.offset = X86_CPU_MASK_U16(cpu_state.data.bx + cpu_state.data.di);
-                instruction_state.data.mrm.rsreg = instruction_state.data.roverds;
-                break;
-            case 2:
-                instruction_state.data.mrm.offset = X86_CPU_MASK_U16(cpu_state.data.bp + cpu_state.data.si);
-                instruction_state.data.mrm.rsreg = instruction_state.data.roverss;
-                break;
-            case 3:
-                instruction_state.data.mrm.offset = X86_CPU_MASK_U16(cpu_state.data.bp + cpu_state.data.di);
-                instruction_state.data.mrm.rsreg = instruction_state.data.roverss;
-                break;
-            case 4:
-                instruction_state.data.mrm.offset = X86_CPU_MASK_U16(cpu_state.data.si);
-                instruction_state.data.mrm.rsreg = instruction_state.data.roverds;
-                break;
-            case 5:
-                instruction_state.data.mrm.offset = X86_CPU_MASK_U16(cpu_state.data.di);
-                instruction_state.data.mrm.rsreg = instruction_state.data.roverds;
-                break;
-            case 6:
-                CPU_TRACE_BLOCK_BEGIN("ModRM_RM(6)");
-                CPU_TRACE_CHECK_RETURN(_kdf_code(context, X86_CPU_REFERENCE_OF(disp16), 2));
-                instruction_state.data.mrm.offset = X86_CPU_MASK_U16(disp16);
-                instruction_state.data.mrm.rsreg = instruction_state.data.roverds;
-                CPU_TRACE_BLOCK_END;
-                break;
-            case 7:
-                instruction_state.data.mrm.offset = X86_CPU_MASK_U16(cpu_state.data.bx);
-                instruction_state.data.mrm.rsreg = instruction_state.data.roverds;
-                break;
-            default:
-                CPU_TRACE_IMPOSSIBLE_RETURN;
-                break;
-            }
-            CPU_TRACE_BLOCK_END;
+            base = X86_CPU_MASK_U16(cpu_state.data.bx + cpu_state.data.si);
             break;
         case 1:
-            CPU_TRACE_BLOCK_BEGIN("ModRM_MOD(1)");
-            CPU_TRACE_CHECK_RETURN(_kdf_code(context, X86_CPU_REFERENCE_OF(disp8), 1));
-            switch (_GetModRM_RM(modrm))
-            {
-            case 0:
-                instruction_state.data.mrm.offset = X86_CPU_MASK_U16(cpu_state.data.bx + cpu_state.data.si + disp8);
-                instruction_state.data.mrm.rsreg = instruction_state.data.roverds;
-                break;
-            case 1:
-                instruction_state.data.mrm.offset = X86_CPU_MASK_U16(cpu_state.data.bx + cpu_state.data.di + disp8);
-                instruction_state.data.mrm.rsreg = instruction_state.data.roverds;
-                break;
-            case 2:
-                instruction_state.data.mrm.offset = X86_CPU_MASK_U16(cpu_state.data.bp + cpu_state.data.si + disp8);
-                instruction_state.data.mrm.rsreg = instruction_state.data.roverss;
-                break;
-            case 3:
-                instruction_state.data.mrm.offset = X86_CPU_MASK_U16(cpu_state.data.bp + cpu_state.data.di + disp8);
-                instruction_state.data.mrm.rsreg = instruction_state.data.roverss;
-                break;
-            case 4:
-                instruction_state.data.mrm.offset = X86_CPU_MASK_U16(cpu_state.data.si + disp8);
-                instruction_state.data.mrm.rsreg = instruction_state.data.roverds;
-                break;
-            case 5:
-                instruction_state.data.mrm.offset = X86_CPU_MASK_U16(cpu_state.data.di + disp8);
-                instruction_state.data.mrm.rsreg = instruction_state.data.roverds;
-                break;
-            case 6:
-                instruction_state.data.mrm.offset = X86_CPU_MASK_U16(cpu_state.data.bp + disp8);
-                instruction_state.data.mrm.rsreg = instruction_state.data.roverss;
-                break;
-            case 7:
-                instruction_state.data.mrm.offset = X86_CPU_MASK_U16(cpu_state.data.bx + disp8);
-                instruction_state.data.mrm.rsreg = instruction_state.data.roverds;
-                break;
-            default:
-                CPU_TRACE_IMPOSSIBLE_RETURN;
-                break;
-            }
-            CPU_TRACE_BLOCK_END;
+            base = X86_CPU_MASK_U16(cpu_state.data.bx + cpu_state.data.di);
             break;
         case 2:
-            CPU_TRACE_BLOCK_BEGIN("ModRM_MOD(2)");
-            CPU_TRACE_CHECK_RETURN(_kdf_code(context, X86_CPU_REFERENCE_OF(disp16), 2));
-            switch (_GetModRM_RM(modrm))
-            {
-            case 0:
-                instruction_state.data.mrm.offset = X86_CPU_MASK_U16(cpu_state.data.bx + cpu_state.data.si + disp16);
-                instruction_state.data.mrm.rsreg = instruction_state.data.roverds;
-                break;
-            case 1:
-                instruction_state.data.mrm.offset = X86_CPU_MASK_U16(cpu_state.data.bx + cpu_state.data.di + disp16);
-                instruction_state.data.mrm.rsreg = instruction_state.data.roverds;
-                break;
-            case 2:
-                instruction_state.data.mrm.offset = X86_CPU_MASK_U16(cpu_state.data.bp + cpu_state.data.si + disp16);
-                instruction_state.data.mrm.rsreg = instruction_state.data.roverss;
-                break;
-            case 3:
-                instruction_state.data.mrm.offset = X86_CPU_MASK_U16(cpu_state.data.bp + cpu_state.data.di + disp16);
-                instruction_state.data.mrm.rsreg = instruction_state.data.roverss;
-                break;
-            case 4:
-                instruction_state.data.mrm.offset = X86_CPU_MASK_U16(cpu_state.data.si + disp16);
-                instruction_state.data.mrm.rsreg = instruction_state.data.roverds;
-                break;
-            case 5:
-                instruction_state.data.mrm.offset = X86_CPU_MASK_U16(cpu_state.data.di + disp16);
-                instruction_state.data.mrm.rsreg = instruction_state.data.roverds;
-                break;
-            case 6:
-                instruction_state.data.mrm.offset = X86_CPU_MASK_U16(cpu_state.data.bp + disp16);
-                instruction_state.data.mrm.rsreg = instruction_state.data.roverss;
-                break;
-            case 7:
-                instruction_state.data.mrm.offset = X86_CPU_MASK_U16(cpu_state.data.bx + disp16);
-                instruction_state.data.mrm.rsreg = instruction_state.data.roverds;
-                break;
-            default:
-                CPU_TRACE_IMPOSSIBLE_RETURN;
-                break;
-            }
-            CPU_TRACE_BLOCK_END;
+            base = X86_CPU_MASK_U16(cpu_state.data.bp + cpu_state.data.si);
+            segment = instruction_state.data.roverss;
             break;
         case 3:
+            base = X86_CPU_MASK_U16(cpu_state.data.bp + cpu_state.data.di);
+            segment = instruction_state.data.roverss;
             break;
-        default:
-            CPU_TRACE_IMPOSSIBLE_RETURN;
+        case 4:
+            base = cpu_state.data.si;
+            break;
+        case 5:
+            base = cpu_state.data.di;
+            break;
+        case 6:
+            if (mod != 0u) {
+                base = cpu_state.data.bp;
+                segment = instruction_state.data.roverss;
+            }
+            break;
+        case 7:
+            base = cpu_state.data.bx;
             break;
         }
-        CPU_TRACE_BLOCK_END;
+        instruction_state.data.mrm.offset = X86_CPU_MASK_U16(base + displacement);
+        instruction_state.data.mrm.rsreg = segment;
         break;
+    }
     case 4:
         CPU_TRACE_BLOCK_BEGIN("AddressSize(4)");
         if (_GetModRM_MOD(modrm) != 3 && _GetModRM_RM(modrm) == 4)
@@ -3682,8 +3586,6 @@ static void _kdf_modrm_with_mod_quirk(x86_core_cpu_execution_context *context, l
                 break;
             }
             CPU_TRACE_BLOCK_END;
-            break;
-        case 3:
             break;
         default:
             CPU_TRACE_IMPOSSIBLE_RETURN;
@@ -20995,6 +20897,7 @@ static void x86_core_cpu_dispatch_0f(x86_core_cpu_execution_context *context, li
 static void ExecIns(x86_core_cpu_execution_context *context)
 {
     lib_u8 opcode = 0;
+    lib_bool is_prefix;
     lib_u32 debug_cause;
     lib_u32 debug_matches;
     const lib_bool smm_before = context->smm_active;
@@ -21047,7 +20950,8 @@ static void ExecIns(x86_core_cpu_execution_context *context)
             UndefinedOpcode(context);
             break;
         }
-        if (x86_core_cpu_instruction_is_prefix(opcode, context->cpu_profile)) {
+        is_prefix = x86_core_cpu_instruction_is_prefix(opcode, context->cpu_profile);
+        if (is_prefix) {
             if (context->cpu_profile == X86_CORE_CPU_PROFILE_V30) {
                 ++instruction_state.data.nec_prefix_bytes;
                 if (opcode == 0xf0u) instruction_state.data.nec_lock_prefix = LIB_TRUE;
@@ -21097,8 +21001,7 @@ static void ExecIns(x86_core_cpu_execution_context *context)
             } else if (!comparing) context->repeat_compare_flags_valid = LIB_FALSE;
         }
         CPU_TRACE_CHECK_BREAK(x86_core_cpu_dispatch_primary(context, opcode));
-        if (context->cpu_profile == X86_CORE_CPU_PROFILE_V30 &&
-            x86_core_cpu_instruction_is_prefix(opcode,context->cpu_profile)) {
+        if (is_prefix && context->cpu_profile == X86_CORE_CPU_PROFILE_V30) {
             /* Successful nominal rows already contain this decode term.
              * Failed work consumes it through the same accepted-work owner. */
             if (!x86_core_cpu_timing_add_ticks(&instruction_state.data.timing_transfer_ticks,2u)) {
@@ -21107,7 +21010,7 @@ static void ExecIns(x86_core_cpu_execution_context *context)
             }
         }
         CPU_TRACE_CALL_END;
-    } while (x86_core_cpu_instruction_is_prefix(opcode, context->cpu_profile));
+    } while (is_prefix);
     if (instruction_state.data.except) context->io_restart_valid = LIB_FALSE;
     if (!smm_before || context->smm_active) _debug_complete_instruction(context, opcode);
     if (instruction_state.data.flagWE && instruction_state.data.weLinear == instruction_state.data.linear)
