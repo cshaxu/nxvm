@@ -1199,3 +1199,90 @@ remain separate observations.
 | --- | --- |
 | Filtering stage attribution | `82c8094e5ba8bd749821a92c802b16c4ad428f9b2ac74f221552b0d68208ff20` |
 | Single provider-table pass | `c06e3affac6de6a687657f0d98654984c22870149dfa592388f8492b531d76d1` |
+
+## Prefetch qualification and compiler feedback follow-up
+
+The prefetch candidate removes the second instruction-record write when the
+current linear address and complete byte span match what the instruction
+boundary already recorded. It preserves the existing decoder destination
+and the ordinary read for uncovered bytes. The focused prefetch, fault,
+Debug, V30 bus-lock and decode-admission checks passed on both host widths.
+An instrumented build also compared 10,006,524 covered fetches per width,
+across three FAT12 mappings, with zero byte differences.
+
+| Host | Paired cold through VER, stock / candidate | Paired DIR, stock / candidate |
+| --- | ---: | ---: |
+| x64 | 53.885 / 52.569 s | 4.786 / 4.247 s |
+| x86 | 83.098 / 79.082 s | 7.521 / 6.817 s |
+
+The cached build produced all sixteen candidate executables. x64 passed 717
+unit tests and 47 of 48 integrations. The independent Lib window-modal test
+failed before x86 receiving qualification started. Rollback restored the
+tracked CPU source, its manifest and all sixteen published executable
+hashes. The worktree was clean after rollback.
+
+The unchanged window-modal executable failed three of three attempts per
+width at the same assertion. A requested 1480 by 920 client measured 1486
+by 924, with a 1496 by 959 outer rectangle. The actual border and title
+decoration therefore totaled 10 by 35 pixels. The outer request produced
+using AdjustWindowRectEx implied 16 by 39 pixels. The test links Lib only.
+The local alternative reuses the existing measured-decoration helper.
+It passed both native window-modal and window-retirement tests on
+both widths. Production Lib source remains unchanged pending scope review.
+
+### Compiler feedback
+
+Two isolated Release IPO objects, CPU instruction execution and Machine
+memory routing, were trained with the synthetic FAT12 run. The paired
+baselines used the same source, including the prefetch candidate. Across
+three training mappings, x64 median wall time fell 26.7–29.1% and x86 fell
+23.7–29.7%. The three independently executed register and ModR/M loops
+improved by 13.7–16.6% on x64 and 11.4–23.6% on x86. Retirement counts,
+guest ticks and checksums matched exactly in all these synthetic pairs.
+CPU fault/event, Machine retirement observation and memory device
+registration passed on both widths.
+
+The FAT12 executable code section shrank by 5,824 bytes on x64 and grew by
+5,152 bytes on x86. Both emitted binaries separate more cold paths and
+specialize a second routed-read call form. These static facts do not
+measure dynamic instruction counts or cache stalls.
+
+| Host | Paired cold through VER, stock / feedback | Paired DIR, stock / feedback | Slowest key and pause with feedback |
+| --- | ---: | ---: | ---: |
+| x64 | 57.012 / 44.314 s | 5.178 / 4.209 s | 32 / 16 ms |
+| x86 | 67.680 / 52.580 s | 6.123 / 4.855 s | 33 / 16 ms |
+
+The paired DOS runs used separate fresh CMOS state and identical read-only
+media. x64 observed 4,096 additional retirements and 24,305 additional
+guest ticks by the returned prompt. x86 matched the retirement count and
+observed 1,178 fewer ticks. The paired DIR changes are about 19% and 21%.
+Both measured values are above one second. The runs did not qualify native
+redraw, RDP or Windows. Synthetic counters, probe executables and local
+media copies do not form part of a release. No production build option or
+receiver was changed.
+
+### Held source forms
+
+Direct aggregate initialization of the CPU observation regressed the
+FAT12 RAM controls by 6.8% on x64 and 4.7% on x86. The compiler emitted
+84 to 101 static instructions for the x64 observation routine and
+126 to 153 for x86, with more stack traffic. Keep the current initializer.
+
+Maintaining the raw-provider upper bound at registration and rollback
+preserved over one million route trace records per width. The rollback
+negative control detected a stale route. The ROM gain did not carry over
+to x86 RAM. GCC inlined the resolver into read and write, doubling each
+stack frame from 88 to 176 bytes. Controlling only that inlining returned
+RAM to the baseline median and removed the measured ROM improvement.
+Keep the original route scan.
+
+| Evidence | SHA-256 |
+| --- | --- |
+| prefetch-invariant.out | 2f139bff64244302d68d2ea3a64a91fd41f01775485240b80cbffeafafc028e4 |
+| integration-x64.log | 4f9297162d6254525e89ac1a7ce8a22f0bf46ba93ce46b609ad18f748cfdb13d |
+| modal-geometry.out | eb3cf734f96853831ea7cd2c463c628fea765e426473a8d9766d9d2fa70963ef |
+| modal-decoration.out | abb1280e44549cc1ab4c8e7be57b74566253161731b09483ae6ee281a6245a91 |
+| feedback-final.out | de1bad4922c79558e1257a2bf4af61748f246cf740aeb2fdc2e68ab28537d075 |
+| driver.out | d114bd78653ef8f512d20676c0b195ea12ad357747042dcf2ca6e6980e61ea07 |
+| observation-recovery.out | 81627a82d7e567e2f675fa2d7efcffd099bd7470fa25d9fc7198841b0527f8f3 |
+| raw-inline-diagnostic.out | 5bedc9c5bf0d8ddd367821253ffc38e7e0a54d0adf52ea6438cfafb86d7f6bae |

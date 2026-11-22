@@ -24,6 +24,12 @@ RDP remains open. The owner approved continuing performance work on
 2026-11-22 with the original DIR gate. The first page-filter prototype
 is held after an overlapping-ROM regression on both widths.
 
+The prefetch batch passed focused checks on both widths, then stopped at an
+independently reproduced native Lib window-modal failure. The previous
+executable hashes were restored. An isolated compiler-feedback build improved
+paired MyOB300 DOS cold boot and DIR on both widths. Its DIR remained
+4.209/4.855 s, above the original gate. Neither candidate is deployed.
+
 The owner withdrew the [standalone ROM Windows candidate](../proposals/m5-ob300-rom-windows.md).
 
 | Field | Required record |
