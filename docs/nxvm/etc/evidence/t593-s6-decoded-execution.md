@@ -349,3 +349,81 @@ timings nor the DOS object-link result justify a repository-wide linker
 flag or a forced partition policy.
 The four-way transcript SHA-256 is
 `bdbdf3708d7bce10522ed1dce54615eed6fb2e96d5c917883d04af50e9eb1c28`.
+
+## Native IPO and reusable-link qualification probes
+
+Baseline `5f5b1b1bd`. A temporary CMake include enabled Release IPO for
+exactly the CPU, FPU and Machine production targets. The two existing Ninja
+trees generated IPO commands for all 22 units, built their real MyOB300
+target, and passed the four existing 486 timing, Debug, fault/event and
+branch-preview tests on each width. The temporary setting was removed and
+the standard Core archives were rebuilt. The deployed 16 EXEs kept their
+recorded hashes throughout.
+
+The following single-pair DOS comparison used the three archives generated
+by CMake and the normal link command. It retained the same read-only DOS
+fixture, board, firmware and guest I/O. It verified DOS VER, directory
+listing with returned prompt, ten key echoes and pause. Stock and candidate
+retired slightly different amounts of work at those externally observed
+boundaries.
+
+| Host | Cold through VER, stock / IPO | DIR, stock / IPO | Slowest echo, stock / IPO | Pause, stock / IPO |
+| --- | ---: | ---: | ---: | ---: |
+| x64 | 77.752 / 63.779 s | 6.515 / 5.514 s | 36 / 35 ms | 17 / 17 ms |
+| x86 | 84.733 / 82.866 s | 8.843 / 7.650 s | 35 / 34 ms | 17 / 19 ms |
+
+The x64 cold and both one-second DIR gates remain open. Native redraw and
+RDP were outside this replay. The temporary media copies were removed.
+The real IPO target also showed a build cost: the four x86 test links took
+about 23 to 24 seconds each, and the real MyOB300 link took about 28 seconds.
+
+A second scratch experiment used GCC relocatable LTO to compile the 22
+units to a native object once per host width. The result contained native
+text and no deferred LTO sections. The CPU fault/event contract passed on
+both widths. All three executable variants agreed on 1,000,000 retirements,
+4,500,000 guest ticks and final value 53,392. Link values below are one
+measurement per executable. Runtime values are medians of three rotations.
+
+| Host | Measure | Stock | IPO at every link | IPO once |
+| --- | --- | ---: | ---: | ---: |
+| x64 | Final link, seconds | 1.829 | 27.459 | 1.749 |
+| x64 | Memory loop, seconds | 0.674374 | 0.604749 | 0.619409 |
+| x64 | Probe executable bytes | 637128 | 600450 | 682676 |
+| x86 | Final link, seconds | 0.946 | 25.005 | 0.952 |
+| x86 | Memory loop, seconds | 0.703658 | 0.605372 | 0.611465 |
+| x86 | Probe executable bytes | 696657 | 641991 | 737528 |
+
+The native object cost 30.227 s once on x64 and 29.927 s once on x86.
+The unified object is a feasibility probe. One large object draws all
+three components into a consumer and increases the probe executable size,
+so it is unsuitable as the shared package boundary without further work.
+
+| Transcript | SHA-256 |
+| --- | --- |
+| Native CMake qualification | `f8ba619bfa41f870aba6a398440d122470afa3d6349c915eb024670cee0d3e3a` |
+| DOS comparison | `3b7f9c33d7948f1cc63f424c63096b9ce7f01473e4f378b493853d53a4d13ab3` |
+| Relocatable link comparison | `16c56de53f43d8f298c7bee5d5a8df28acd5b1468240eb012f610ddca89df2b5` |
+
+### Independent native archives
+
+The next prototype performed the same relocatable step independently for
+each existing CPU, FPU and Machine archive. The release link retained the
+same three-library order. The input was the same 22 IPO translation units.
+The output archives contained native text and no deferred IPO sections.
+All measured variants agreed on retirements, guest ticks and final values.
+
+| Host | Loop | Stock | Unified native object | Independent native archives |
+| --- | --- | ---: | ---: | ---: |
+| x64 | ModR/M memory | 0.519282 | 0.480460 | 0.513057 |
+| x64 | Registers | 0.443126 | 0.399388 | 0.419035 |
+| x86 | ModR/M memory | 0.731282 | 0.640149 | 0.696838 |
+| x86 | Registers | 0.598604 | 0.512012 | 0.569978 |
+
+The final link took 1.474 s on x64 and 1.073 s on x86, each measured once.
+The independent archives retained about five percent in the register
+loops and less in memory, with a noisy x64 memory result. They preserve
+component ownership but give up some cross-library inlining. Neither
+reusable variant has passed the full receiving suite or an actual-guest
+latency replay. There is no shipping configuration change in this batch.
+The three-way run transcript SHA-256 is
+`73e8786efe8308ccf7f87939b2bc34d8aee9b30224bd52db4724728d09523a8e`.
