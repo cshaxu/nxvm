@@ -660,6 +660,7 @@ void x86_core_cpu_execution_context_initialize(
     context->prefetch_reservation_linear = 0u;
     context->prefetch_reservation_count = 0u;
     context->cpu_profile = X86_CORE_CPU_PROFILE_80386;
+    context->primary_opcode_traits_valid = LIB_FALSE;
     context->fpu_profile = X86_FPU_PROFILE_NONE;
     context->cpu_80386_cr_mov_ignores_mod = LIB_FALSE;
     context->protected_data_reload_policy = X86_CORE_CPU_PROTECTED_DATA_RELOAD_STRICT;

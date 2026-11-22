@@ -1702,6 +1702,33 @@ static lib_i32 legacy_alu_test_reserved_and_attribute_rejections(void)
     return 1;
 }
 
+/* Reuse one context while changing the admission and meaning of 66h. */
+static lib_i32 legacy_alu_test_profile_rebind(void)
+{
+    const x86_core_cpu_instruction_timing timing = {.base_ticks = 1u};
+    const lib_u8 nop[] = {0x90u};
+    const lib_u8 mov[] = {0x66u, 0xb8u, 0x78u, 0x56u, 0x34u, 0x12u};
+    legacy_alu_machine state;
+    t_cpu after;
+
+    cpu_instruction_prepare(&state, X86_CORE_CPU_PROFILE_80286);
+    if (!legacy_alu_run(&state, nop, sizeof(nop), 0, &after)) return 0;
+    x86_core_cpu_execution_context_bind_profiles(&state.execution,
+        X86_CORE_CPU_PROFILE_80386, X86_FPU_PROFILE_NONE, LIB_FALSE,
+        X86_CORE_CPU_PROTECTED_DATA_RELOAD_STRICT, &timing);
+    state.cpu.data.eip = 0u;
+    x86_core_cpu_execution_invalidate_prefetch(&state.execution);
+    if (!legacy_alu_run(&state, mov, sizeof(mov), 0, &after) ||
+        after.data.eax != 0x12345678u || after.data.eip != sizeof(mov)) return 0;
+
+    x86_core_cpu_execution_context_bind_profiles(&state.execution,
+        X86_CORE_CPU_PROFILE_80286, X86_FPU_PROFILE_NONE, LIB_FALSE,
+        X86_CORE_CPU_PROTECTED_DATA_RELOAD_STRICT, &timing);
+    state.cpu.data.eip = 0u;
+    x86_core_cpu_execution_invalidate_prefetch(&state.execution);
+    return cpu_instruction_expect_real_fault(&state, mov, sizeof(mov), 6u);
+}
+
 int main(void)
 {
     if (!legacy_alu_test_binary_forms() ||
@@ -1717,7 +1744,8 @@ int main(void)
         !legacy_alu_test_inc_dec_and_shift_extensions() ||
         !legacy_alu_test_flags_and_sign_forms() || !legacy_alu_test_group2_forms() ||
         !legacy_alu_test_group2_immediate_extensions() ||
-        !legacy_alu_test_reserved_and_attribute_rejections()) {
+        !legacy_alu_test_reserved_and_attribute_rejections() ||
+        !legacy_alu_test_profile_rebind()) {
         lib_c_fprintf(lib_c_stderr, "LEGACY-ALU:FAILED\n");
         return 1;
     }

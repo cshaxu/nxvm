@@ -343,6 +343,9 @@ struct x86_core_cpu_execution_context {
     /* NEC hardware permits MD restoration only between BRKEM and RETEM. */
     lib_bool nec_md_write_enabled;
     t_cpu instruction_task_checkpoint;
+    x86_core_cpu_profile primary_opcode_profile;
+    lib_bool primary_opcode_traits_valid;
+    lib_u8 primary_opcode_traits[256];
     cpu_tlb_entry tlb[X86_CPU_TLB_SETS][X86_CPU_TLB_WAYS];
     lib_u8 tlb_lru[X86_CPU_TLB_SETS];
     cpu_cache_line cache[X86_CPU_CACHE_SETS][X86_CPU_CACHE_WAYS];

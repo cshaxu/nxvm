@@ -19938,7 +19938,8 @@ static lib_u32 _debug_match_instruction_breakpoint(
     lib_u8 index;
 
     *matched = 0u;
-    if (!cpu_profile_has_32bit_architecture(context->cpu_profile) ||
+    if ((cpu_state.data.dr7 & 0xffu) == 0u ||
+        !cpu_profile_has_32bit_architecture(context->cpu_profile) ||
         context->debug_rf_before || context->debug_segment_shadow_before) return 0u;
     for (index = 0u; index < 4u; ++index) {
         lib_u32 control = (cpu_state.data.dr7 >> (16u + index * 4u)) &
@@ -20894,6 +20895,29 @@ static void x86_core_cpu_dispatch_0f(x86_core_cpu_execution_context *context, li
     if (umov) context->memory_access_provenance = X86_CORE_CPU_MEMORY_ACCESS_DATA;
 }
 
+enum x86_core_cpu_primary_opcode_trait {
+    X86_CORE_CPU_PRIMARY_OPCODE_ADMITTED = 1u,
+    X86_CORE_CPU_PRIMARY_OPCODE_PREFIX = 2u
+};
+
+static void x86_core_cpu_prepare_primary_opcode_traits(
+    x86_core_cpu_execution_context *context)
+{
+    for (lib_size index = 0u; index < sizeof(context->primary_opcode_traits); ++index) {
+        const lib_u8 opcode = (lib_u8)index;
+        lib_u8 traits = 0u;
+
+        if (x86_core_cpu_profile_allows_form(context,
+                X86_CORE_CPU_INSTRUCTION_PRIMARY, opcode, 0u))
+            traits |= X86_CORE_CPU_PRIMARY_OPCODE_ADMITTED;
+        if (x86_core_cpu_instruction_is_prefix(opcode, context->cpu_profile))
+            traits |= X86_CORE_CPU_PRIMARY_OPCODE_PREFIX;
+        context->primary_opcode_traits[index] = traits;
+    }
+    context->primary_opcode_profile = context->cpu_profile;
+    context->primary_opcode_traits_valid = LIB_TRUE;
+}
+
 static void ExecIns(x86_core_cpu_execution_context *context)
 {
     lib_u8 opcode = 0;
@@ -20935,6 +20959,9 @@ static void ExecIns(x86_core_cpu_execution_context *context)
         ExecFinal(context);
         return;
     }
+    if (!context->primary_opcode_traits_valid ||
+        context->primary_opcode_profile != context->cpu_profile)
+        x86_core_cpu_prepare_primary_opcode_traits(context);
     do
     {
         CPU_TRACE_CALL_BEGIN("ExecIns");
@@ -20944,13 +20971,12 @@ static void ExecIns(x86_core_cpu_execution_context *context)
             break;
         }
         CPU_TRACE_CHECK_BREAK(_s_read_cs(context, cpu_state.data.eip, X86_CPU_REFERENCE_OF(opcode), 1));
-        if (!x86_core_cpu_profile_allows_form(context,
-                                                  X86_CORE_CPU_INSTRUCTION_PRIMARY, opcode, 0u))
-        {
+        const lib_u8 traits = context->primary_opcode_traits[opcode];
+        if ((traits & X86_CORE_CPU_PRIMARY_OPCODE_ADMITTED) == 0u) {
             UndefinedOpcode(context);
             break;
         }
-        is_prefix = x86_core_cpu_instruction_is_prefix(opcode, context->cpu_profile);
+        is_prefix = (traits & X86_CORE_CPU_PRIMARY_OPCODE_PREFIX) != 0u;
         if (is_prefix) {
             if (context->cpu_profile == X86_CORE_CPU_PROFILE_V30) {
                 ++instruction_state.data.nec_prefix_bytes;
