@@ -18,8 +18,10 @@ qualification. All sixteen EXEs were rebuilt together. Each host width
 passed 717 unit tests and 48 integrations without skips. The paired x64/x86
 cold times fell from 49.789/62.340 s to 44.412/58.855 s. DIR fell from
 4.276/5.310 s to 4.123/5.206 s, above the one-second target. MyOB300 native
-DOS input and redraw passed on a private Windows desktop. Restart and
-RDP remain open.
+DOS input and redraw passed on a private Windows desktop. Both Machine
+restart sequences returned to DOS in fresh generations on both widths.
+RDP remains open. The missed DIR gate requires the decision specified in
+the proposal.
 
 The owner withdrew the [standalone ROM Windows candidate](../proposals/m5-ob300-rom-windows.md).
 

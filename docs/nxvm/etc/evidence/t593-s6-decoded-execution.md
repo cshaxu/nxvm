@@ -1034,3 +1034,39 @@ through GDI painting, without physical input or display scanout timing.
 RDP, Windows guest workloads and MyOB300 restart performance were
 outside this probe. The earlier paired DOS runs still miss the
 one-second DIR gate.
+
+### MyOB300 production Machine restart
+
+The follow-up linked the same qualified Release inputs for both widths and
+used the same read-only DOS fixture. It drove public Machine operations on
+one machine per width. Reset reached PAUSED in a new generation before
+resume. Stop reached STOPPED before the subsequent start. Each transition
+required the guest to display the DOS fixture marker and C prompt in the
+next generation. Only the fresh launch requested F1.
+
+| Host | Cold start | Reset then resume | Stop then start | Transcript SHA-256 |
+| --- | ---: | ---: | ---: | --- |
+| x64 | 45.191 s | 45.626 s | 47.216 s | `cb3e086710a9ee15fb2b8dbe7418ef12cb59c9a1cda06de8bfb7c22e06c27da` |
+| x86 | 57.944 s | 54.899 s | 56.045 s | `556069ed973490ea8bd4dff3aad511aeda2d23dfee770e911b5d76d19a840e96` |
+
+Timing starts after start or resume is submitted. State checks and
+generation checks establish the reset and stop boundaries separately.
+These are Machine-to-DOS results. They leave RDP, physical keyboard and
+guest Windows behavior outside the measurement.
+
+### Performance gate decision
+
+The current paired DIR results still require about 76 percent lower wall
+latency on x64 and 81 percent on x86 to reach one second at the same guest
+work. The earlier sampling run attributed 38.6 percent of its samples to
+physical memory, card and bus functions and 23.2 percent to board, clock
+and device functions. Even setting both sampled groups to zero in that
+run's arithmetic leaves about 1.68 seconds. This arithmetic illustrates
+why another isolated routing or device optimization is insufficient
+under that profile. It does not bound what a different execution design
+can achieve.
+
+The reported improvement and receiving qualification stand. The proposal
+requires an explicit scope or budget decision before a larger execution
+redesign or Windows qualification. Preserve the one-second gate pending
+that decision.
