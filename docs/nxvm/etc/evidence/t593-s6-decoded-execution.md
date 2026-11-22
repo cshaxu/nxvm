@@ -495,7 +495,7 @@ without the candidate. Comparisons included a single-tick step and one to
 eight ticks, each with the auxiliary PIT installed or absent. x86 medians
 moved between a 2.8 percent improvement and a 0.6 percent slowdown. x64
 medians moved between a 3.2 percent improvement and a 6.4 percent
-slowdown. No demonstrated general win justifies adding the branch.
+slowdown. The owner selected the branch because the zero-tick path avoids division.
 
 The PIC prototype packed four source counters at a time into a level mask.
 It preserved overlapping IRQ sources and did not add a second copy of
@@ -511,8 +511,8 @@ matched throughout.
 | x86 | Cascaded, no auxiliary PIT | 0.961710 | 0.922624 |
 | x86 | Single with auxiliary PIT | 1.263322 | 1.202997 |
 
-This extra source is not selected given the mixed x64 behavior. The
-standalone function instruction count fell from 31/32 to 22 on x64/x86,
+The owner selected the packed calculation. The standalone function
+instruction count fell from 31/32 to 22 on x64/x86,
 but this does not predict an application-level latency reduction.
 
 The 22-minute unit-target relink is an independent build cost. Installed
@@ -534,8 +534,12 @@ temporary CMake fixture confirmed that two concurrently built executable
 targets independently populated pre-created target-specific cache
 directories on both widths. A shared writable directory is excluded
 from the repository candidate. These probes establish reuse of an
-unchanged Core archive after a test object edit. Reuse after a Core edit
-and the benefit on the full Ninja graph still need verification.
+unchanged Core archive after a test object edit. A subsequent test rebuilt the
+clock object itself and verified its new behavior through the existing
+rational-clock contract. The warm and cold edited-archive links took
+18.951/23.013 s on x64 and 23.190/29.022 s on x86. Reverting to the known
+object linked in 0.838/1.041 s. This is partial reuse after a shared edit.
+The benefit on the full Ninja graph still needs verification.
 
 | Transcript | SHA-256 |
 | --- | --- |
@@ -544,3 +548,53 @@ and the benefit on the full Ninja graph still need verification.
 | Incremental links | `164a7db239d66226186136d0e55b75e4a27897483dbce5e1a5a290cd37a07b5f` |
 | Modified consumer relink | `ed16224adf01b5e729033e5ea40f8a9dcc6146930293f7e86a56daed712b133b` |
 | Independent CMake caches | `f8eb2729e16ca84ef74e4103fbd3d7b6c6886bfe422aab362a499c13c78b453e` |
+| Modified Core archive relink | `76f22c0c7cba5c149d5083b4b9faf0f3d301184e5540c9233f72648912facfe2` |
+
+## Clock and PIC algorithm delivery
+
+Build source revision: `508261dff94ffded29e80b769d369b7b86af585b`.
+
+The Core rational clock skips division when no ticks accrue. The
+NXVM PIC packs validated pending counts four at a time. Equal-work
+results above distinguish the reduced operations from elapsed noise.
+Both widths verified all 22 Core IPO compilation commands.
+The normal cached Release build rebuilt and published all sixteen
+products. The native integration link may refresh the default NXVM
+timestamp, so hashes below identify the final qualified files.
+
+| Host | Suite | Passed | Transcript SHA-256 |
+| --- | --- | ---: | --- |
+| x64 | unit | 717/717 | `968c407f2c930ccbc322560a7c1b48f455234594e18ab0d6f3b9a35defa1f964` |
+| x64 | integration | 48/48 | `dc414fe1e71a03f98770158776b8d1988a02e5b95e419655dd36c5f4f2185e6a` |
+| x86 | unit | 717/717 | `f4dbb06d61d0d41943f2152f19197efc53ea08b0544fb361bf86aec8862a79b6` |
+| x86 | integration | 48/48 | `d3ad42db1b43d59e73092cb0a98521aedaf04470cb9796fc9bb6ad07120d7b8b` |
+
+The reduced-instrumentation MyOB300 replay used the existing read-only
+DOS and System Card fixture. Each width reached VER, verified DIR and
+return to prompt, then verified ten echoes and pause. These are separate
+single runs of the final build configuration. The paired stock comparisons
+above provide context. Native redraw and RDP were not measured here.
+
+| Host | Cold through VER, s | DIR, s | Slowest key echo, ms | Pause, ms | Transcript SHA-256 |
+| --- | ---: | ---: | ---: | ---: | --- |
+| x64 | 63.154 | 5.795 | 48 | 16 | `71cbd1dbf678f9a7b418cc1a50921d9cbacee41eaf633021ff224a976a63e9bc` |
+| x86 | 85.546 | 7.679 | 32 | 16 | `add346ac04a7c6dd4e752bf89f18d43a8b0bdbe468d61f65c1784290ae435a44` |
+
+| Artifact | PE machine | SHA-256 |
+| --- | --- | --- |
+| `nxvm/nxvm_0_5_0593_x64.exe` | `8664` | `87078b487ef39fb43de1c875e2b92d5e155e26231082ca72d56b0dc538be99eb` |
+| `nxvm/nxvm_0_5_0593_x86.exe` | `014C` | `7e59b18def68e8cb69fe814ac6b852e675920369f27b60bc1309b1330bf462e2` |
+| `my5160/my5160_0_5_0593_x64.exe` | `8664` | `529bb7fbc6ba3e4c1db877caf921edede79863c1f8dc86492766e8946e999b69` |
+| `my5160/my5160_0_5_0593_x86.exe` | `014C` | `8b73a8f91883ff0fe3820a32093e90a0efb53313e3e4a8a9f10b656c1084474b` |
+| `my5170/my5170_0_5_0593_x64.exe` | `8664` | `ab398f43eb684b118ae194130571e7d383f9775f0c29f705b9e6a5caa8e0ec89` |
+| `my5170/my5170_0_5_0593_x86.exe` | `014C` | `d78aeb6727844b98dd306f733ee12aaace3fa489ee53a570537c08b25f695b2c` |
+| `mydeskpro386/mydeskpro386_0_5_0593_x64.exe` | `8664` | `c4f9686e93f9717a9b64f51cdb8939f1bb5f82f1354e7113127da5bf8dcfe40f` |
+| `mydeskpro386/mydeskpro386_0_5_0593_x86.exe` | `014C` | `7c02e561fcfe134c48d21d2e898e30db758d62c61bf1f2615dd11002db33bc32` |
+| `mypc110/mypc110_x64.exe` | `8664` | `13731a9fbdbb6a1363d84c7e5eadf3154fff32d4cf1a62702fc3bc7dbe8de752` |
+| `mypc110/mypc110_x86.exe` | `014C` | `5763295e2ec6b12d82275c7734ab821e7a39d8798e283c03ed0875ae60808502` |
+| `myob300/myob300_0_5_0593_x64.exe` | `8664` | `5f16dbbb0e48f082b771ca88ad5f685f1f6a88830890c93c019b35fa8c7b8c7b` |
+| `myob300/myob300_0_5_0593_x86.exe` | `014C` | `30624bdf43d5e7031651e4d4fd06c5f45f7e16cebe5091f2afcfe7be695b8967` |
+| `mynes/mynes_0_0_0044_x64.exe` | `8664` | `e6175d9fa02749e435c2caf3e2965632e7b05828b540e3a16309df1cfef76b4f` |
+| `mynes/mynes_0_0_0044_x86.exe` | `014C` | `c94a65179b1ebfa68bd0976f118e6e3f3d087def4388f1374655c7f83a432ddc` |
+| `myraidenii/myraidenii_0_0_0007_x64.exe` | `8664` | `069c900ee988ae0b734c417c3f28e7ff23e77839963fb52decf3da11b626871c` |
+| `myraidenii/myraidenii_0_0_0007_x86.exe` | `014C` | `e420e570e9dde373ec25fe1c13e20f746968fb507a42bdb084336346aac7f199` |

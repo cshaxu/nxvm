@@ -1,0 +1,3484 @@
+# NXVM status records retained before T593
+
+These entries preserve prior task records as they appeared during T593 S6. See the [active packet](../states/CURRENT.md) for current status.
+
+# M5 T588 - Closed: OB300 hardware and execution design
+
+S1-S3 completed under the owner's autonomous planning/execution direction.
+[Closure review](../history/M5-T588-ob300-design-closure.md) reconciles all
+predicates against actual commits and the finite ledger. The final
+[architecture](../proposals/m5-ob300-architecture.md) follows app-mypc110.
+Dual-width real reset proof and synthetic execution baseline are delivered;
+full ROM DOS/Windows implementation and usability are not claimed.
+No active S. [Queue](../states/QUEUE.md) begins with OB300 real firmware and ROM DOS.
+
+# M5 Td S186 - Completed: OmniBook 300 queue planning
+
+Owner requested five bounded OB300 implementation candidates at the queue head.
+[Queue](../states/QUEUE.md) positions 1-5 now cover design, ROM DOS, performance,
+ROM Windows/applications and final product qualification. The former broad
+family candidate is a research umbrella, not a duplicate task. Existing
+pending candidates retain their relative order at positions 6-9.
+[Governance record](../history/M5-Td-S186-ob300-planning.md) preserves the
+packet and review. No numeric implementation T/S was allocated. T587 was subsequently owner-closed; the current task is recorded above.
+
+# M5 T587 - Closed after owner acceptance
+
+The owner accepted S5 and explicitly approved closure after delivery through
+`b11e2c266`. Coordinator review reconciled the exact eight-tree import,
+receiving adapters, fourteen published EXEs and full qualification with the
+approved packet. [S5 history](../history/M5-T587-token-import.md) retains the
+verification evidence and archived packet.
+
+The owner approved T587 closure on 2026-11-19. S1-S5 are accepted and closed;
+[final review](../history/M5-T587-closure.md) reconciles their deliveries.
+No unfinished implementation is transferred from T587.
+
+| Task | Status |
+| --- | --- |
+| T587 S4 | Accepted and closed 2026-11-18. [Audit and archived packet](../history/M5-T587-softpc-eight-tree-audit.md). |
+
+# M5 T587 - S3 accepted baseline
+
+| Task | Status |
+| --- | --- |
+| T587 S3 | Accepted and closed by the owner on 2026-11-15. Delivery through 3ae29d626 includes the exact SoftPC import, fourteen published EXEs and full dual-width qualification. [S3 history](../history/M5-T587-softpc-eight-tree-import.md) retains evidence and the archived packet. Awaiting the next owner instruction; no new task is admitted. |
+
+# M5 T587 S2 — Closed after owner acceptance
+
+The owner accepted S2 and authorized closure on 2026-11-11.
+The selectable CMD build/publication entry and receiving artifacts were
+delivered through 544e51f5c; [S2 history](../history/M5-T587-build-entry.md)
+records verification, artifact hashes and the archived packet.
+T587 and S1-S5 are closed as recorded above.
+
+# M5 T587 S1 — Closed after owner acceptance
+
+The owner accepted and authorized closure of S1 on 2026-11-06.
+The Break import and all fourteen receiving artifacts were delivered through
+`7794e25f9`; [S1 history](../history/M5-T587-break-input.md) records source,
+verification, artifact hashes and the archived packet. S2 is closed as recorded above.
+
+# NXVM current task status
+
+## M5 Td S185 — Completed: OmniBook queue registration
+
+The owner requested this candidate on 2026-11-11. It is appended at queue
+position 5 with its [proposal](../proposals/m5-omnibook-emulator.md).
+[Registration record](../history/M5-Td-S185-omnibook-queue.md) retains the packet
+and scope review. No implementation task is admitted.
+
+## M5 Td S184 — Closed: repository text line endings
+
+Owner authorized repository-wide LF normalization, removal of obsolete Git
+attributes, and a regression check. Git identified 182 tracked working files
+with CRLF or mixed endings; their normalized contents already matched the LF
+index. The task changed only their working-tree line endings, not product
+contents or binary data. The repository CTest checks index and working-tree
+endings for tracked and non-ignored untracked files; temporary Git fixtures
+proved LF/binary acceptance and CRLF/mixed rejection. Both existing x86/x64
+build trees register the check. All three product documentation governance
+checks pass. Generated and ignored files are outside the repository check.
+
+| Task | Status |
+| --- | --- |
+| T586 | Closed after owner acceptance. [Final qualification history](../history/M5-T586-pc110-final-qualification.md) records results and retained limitations. T587 is now admitted above. |
+
+# M5 T586 S3 — Closed: PC110 final qualification review
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T586 S3 after S2. |
+| Admission And Approval | Owner directed autonomous completion of the first four PC110 tasks. |
+| Objective | Audit all T586 requirements, current artifacts, task evidence, environment exceptions and remaining product limitations before final delivery. |
+| Non-goals | Do not represent unavailable physical input, RDP, native audio or unimplemented peripheral fidelity as passed. |
+| Reference Baseline | [T586 qualification ledger](../etc/evidence/t586-product-qualification-ledger.md), [T585 device ledger](../etc/evidence/t585-s23-device-coverage.md), and current artifact/test records. |
+| Candidate Proposal | [Final product qualification](../history/M5-T586-pc110-final-qualification-proposal.md). |
+| Files And ABI Surface | NXVM governance and evidence; no production changes planned without a demonstrated defect. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding and source policy. |
+| Verification | Review test outcomes and hashes, artifact identity, documentation, actual diff and working-tree status. |
+| Expected Markers | Every final-product requirement has a direct observation, explicit environment limitation or named follow-on owner. |
+| Asset Needs | Preserve user configuration, firmware, CMOS and disks; clean only task-owned reviewed scratch. |
+| Reporting Requirements | Summarize exact test results, failures, limitations, commits and final task status. |
+| Stop Conditions | No claim that RDP, physical input, audio audibility or full hardware fidelity was tested. |
+| Exit Criteria | Evidence-backed final audit is recorded in the [S3 review](../etc/evidence/t586-s3-final-review.md); the owner accepted T586. Unavailable physical/RDP/audio checks are not represented as passed. |
+| Original Owner Request | Complete the first four PC110 queue tasks. |
+| Similar-Issue Sweep | Both architectures, both firmware variants, restart paths, audio and external-device boundaries. |
+
+# M5 T586 S2 — Closed: PC110 current-product restart matrix
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T586 S2 after S1. |
+| Admission And Approval | Owner directed autonomous completion of the first four PC110 tasks and permits task-local test planning. |
+| Objective | Verify the current PC110 products reach DOS after stop/start and reset/resume on both widths and display variants. |
+| Non-goals | Do not equate monitor pause with guest suspend or posted messages with physical input. |
+| Reference Baseline | [T586 ledger](../etc/evidence/t586-product-qualification-ledger.md) and [T583 restart evidence](../etc/evidence/t583-first-setup-ledger.md). |
+| Candidate Proposal | [Final product qualification](../history/M5-T586-pc110-final-qualification-proposal.md). |
+| Files And ABI Surface | NXVM evidence and task-owned observer; no production change planned without a demonstrated defect. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding and source policy. |
+| Verification | Four real EXE/variant cells with private media, verified changed frame and new DOS frame after each restart, and normal teardown. |
+| Expected Markers | Both restart commands complete and each reaches the guest DOS checkpoint. |
+| Asset Needs | Test-owned media and CMOS copies; preserve user assets and configuration. |
+| Reporting Requirements | Record actual observer results, budgets, timing and environmental limits. |
+| Stop Conditions | Do not count a stale frame, changed screenshot alone or timeout as success. |
+| Exit Criteria | [T586 ledger](../etc/evidence/t586-product-qualification-ledger.md) records all four current-artifact stop/start and reset/resume cells, unchanged private media and normal exits. The first attempt's stale-pause observer defect and correction remain documented. |
+| Original Owner Request | Complete the first four PC110 queue tasks. |
+| Similar-Issue Sweep | Stop/start, reset/resume, both firmware variants and both host widths. |
+
+# M5 T586 S1 — Closed: PC110 final qualification inventory
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New — M5 T586 S1, fourth owner-selected PC110 task. |
+| Admission And Approval | Owner directed completion of the first four PC110 queue tasks and autonomous S progression. |
+| Objective | Reconcile final product qualification requirements and current evidence, then execute the required current-artifact and guest checks. |
+| Non-goals | Do not describe derived firmware, unconnected peripherals, physical input or RDP as verified hardware behavior. |
+| Reference Baseline | [Final qualification proposal](../history/M5-T586-pc110-final-qualification-proposal.md), [T583](../etc/evidence/t583-first-setup-ledger.md), [T584](../etc/evidence/t584-product-interaction-ledger.md), and [T585 coverage](../etc/evidence/t585-s23-device-coverage.md). |
+| Candidate Proposal | [Final product qualification](../history/M5-T586-pc110-final-qualification-proposal.md). |
+| Files And ABI Surface | NXVM task records and existing PC110 test/diagnostic receivers; source changes only if evidence establishes a defect. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding and source policy. |
+| Verification | Current paired EXEs, both firmware variants and widths, actual guest/product paths, appropriate cached suites, and explicit unavailable desktop or physical checks. |
+| Expected Markers | A finite requirement-by-requirement ledger with current-source evidence and no inferred passes. |
+| Asset Needs | Only disposable media and CMOS copies; preserve owner assets and configuration. |
+| Reporting Requirements | Distinguish real guest execution, injected/native messages, user interaction and native device availability. |
+| Stop Conditions | No firmware interception or claims of complete fidelity based only on an early boot checkpoint. |
+| Exit Criteria | [T586 ledger](../etc/evidence/t586-product-qualification-ledger.md) records the current artifacts and all four real-product DOS/Personaware/pause/resume checks; S2 owns the remaining current-artifact restart matrix. |
+| Original Owner Request | Complete the first four PC110 queue tasks. |
+| Similar-Issue Sweep | Startup, firmware selection, DOS/Personaware, restart, input, presentation, power and device limits. |
+
+# M5 T585 S23 — Closed: PC110 device qualification reconciliation
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T585 S23 after S22. |
+| Admission And Approval | Owner directed autonomous completion of the first four PC110 tasks and permits bounded L1/L2 models. |
+| Objective | Reconcile the complete T585 device/model inventory against the current source and real-path evidence; record each remaining limitation and its owner. |
+| Non-goals | Do not infer physical fidelity, external peripheral transport or an interactive RDP pass from unit tests. |
+| Reference Baseline | [S1 inventory](../etc/evidence/t585-device-model-inventory.md), S2–S22 evidence, [T580 ledger](../etc/evidence/t580-s1-pc110-qualification-ledger.md), and current code. |
+| Candidate Proposal | [Device and model qualification](../proposals/m5-pc110-device-model-qualification.md). |
+| Files And ABI Surface | NXVM evidence, queue and current task records; no production change planned without a demonstrated defect. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding and source policy. |
+| Verification | Check actual receiving code, focused and real-firmware evidence, released artifacts and residual limitations. |
+| Expected Markers | A current, requirement-by-requirement ledger separating implemented functionality from deferred fidelity and absent external receivers. |
+| Asset Needs | Preserve owner ROM, INI, CMOS and media. |
+| Reporting Requirements | Do not describe documented model gaps as complete hardware emulation. |
+| Stop Conditions | No claim of full qualification until the remaining T586 product checks are completed. |
+| Exit Criteria | [S23 coverage](../etc/evidence/t585-s23-device-coverage.md) maps current receivers and evidence; remaining peripheral work is explicitly recorded in [TODO](../states/TODO.md), and final product qualification moves to T586. Documentation and actual-diff checks were performed. |
+| Original Owner Request | Complete the first four PC110 queue tasks. |
+| Similar-Issue Sweep | PC Card, storage, power, audio, serial, display, input and firmware provenance. |
+
+# M5 T585 S22 — Closed: PC110 guest power status
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T585 S22 after S21. |
+| Admission And Approval | Owner directed autonomous completion of the first four PC110 tasks and permits L1/L2 models. |
+| Objective | Trace the selected firmware's guest APM power-status path and correct any demonstrated missing receiver using the existing chipset and EC owners. |
+| Non-goals | No host-pause-as-guest-suspend shortcut, invented physical battery telemetry, second clock or BIOS interception. |
+| Reference Baseline | [S20 power review](../etc/evidence/t585-s20-peripheral-reconciliation.md), [T580 S71 firmware power checkpoint](../etc/evidence/t580-s71-postsetup-power.md), and Open-Source-PC110 Pluto live observations. |
+| Candidate Proposal | [Device and model qualification](../proposals/m5-pc110-device-model-qualification.md). |
+| Files And ABI Surface | Begin with PC110 App and existing test paths; Shared changes only if a concrete receiver requires them. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding and source policy. |
+| Verification | Exercise the actual guest firmware path on both widths with disposable state; identify current status and source level before deciding a change. |
+| Expected Markers | An explicit, reproducible guest APM result rather than assumptions from static EC register values. |
+| Asset Needs | Preserve owner ROM, INI, CMOS and disks; test only with disposable copies. |
+| Reporting Requirements | Separate fixed L1 AC/battery estimates from physical telemetry and firmware behavior. |
+| Stop Conditions | No fake real-device or physical-timing claim. |
+| Exit Criteria | [S22 evidence](../etc/evidence/t585-s22-apm-status.md) records actual BIOS APM calls on both firmware variants and widths, and the existing cold-boot test now checks that path without adding another boot. Dynamic battery/AC behavior remains explicitly unmodeled; production and EXEs did not change. |
+| Original Owner Request | Complete the first four PC110 queue tasks. |
+| Similar-Issue Sweep | APM status, AC indicators, EC mailbox reply, guest suspend/wake and reset. |
+
+# M5 T585 S21 — Closed: PC110 COM1 UART receiver
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T585 S21 after S20. |
+| Admission And Approval | Owner directed autonomous completion of PC110 tasks; X86-NXVM changes and L1/L2 models are authorized. |
+| Objective | Implement the evidenced FIFO-capable COM1 UART and wire the PC110 board at 3F8h and IRQ4. |
+| Non-goals | Do not claim host serial, infrared, modem, or physical baud fidelity without a real receiver and evidence. |
+| Reference Baseline | [S20 receiver review](../etc/evidence/t585-s20-peripheral-reconciliation.md) and the referenced PC110 live dump. |
+| Candidate Proposal | [Device and model qualification](../proposals/m5-pc110-device-model-qualification.md). |
+| Files And ABI Surface | Reusable X86-NXVM UART chip, PC110 wiring, corresponding source and tests; update applicable manifests. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding and source policy. |
+| Verification | Real CPU/port and PIC routes, reset, FIFO, divisor, loopback and interrupt behavior on x64/x86; applicable full cached suites and all affected releases. |
+| Expected Markers | Guest observes FIFO-enabled COM1 and independently verified interrupt/loopback behavior. |
+| Asset Needs | Preserve owner configuration, CMOS, firmware and media. |
+| Reporting Requirements | Separate UART guest behavior from absent external serial transport and mark timing model. |
+| Stop Conditions | No second bus, host polling thread or PC110 special case in a reusable UART. |
+| Exit Criteria | [S21 evidence](../etc/evidence/t585-s21-uart-design.md) records the UART model, real guest/PIC path, 714/714 dual-width units, profile tests and checked artifacts. Native MIDI creation failed on the isolated desktop on both widths and is explicitly retained under the owner-approved device-availability exception. Host serial, infrared and modem transport remain outside this receiver. |
+| Original Owner Request | Complete the first four PC110 queue tasks. |
+| Similar-Issue Sweep | Reset and IIR/LSR acknowledgement, DLAB, FIFO enable/clear and existing port ownership. |
+
+# M5 T585 S20 — Closed: PC110 power and peripheral reconciliation
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T585 S20 after S19. |
+| Admission And Approval | Owner directed autonomous completion of the first four PC110 queue tasks and permits L1/L2 models. |
+| Objective | Reconcile implemented guest power, display and auxiliary paths with current code, firmware-path tests and available references; identify and fix concrete remaining product gaps in appropriately sized batches. |
+| Non-goals | Do not equate host pause with guest suspend, claim physical timing or invent a peripheral merely to close the ledger. |
+| Reference Baseline | [Device inventory](../etc/evidence/t585-device-model-inventory.md), [PC Card wake](../etc/evidence/t585-s11-pcic-wake.md), and [power checkpoint](../etc/evidence/t580-s71-postsetup-power.md). |
+| Candidate Proposal | [Device and model qualification](../proposals/m5-pc110-device-model-qualification.md). |
+| Files And ABI Surface | PC110 App and existing tests; Shared only where a demonstrated receiver requires it. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding and source policy. |
+| Verification | Compare actual receiver and existing tests to available references; verify any changes on both widths and preserve owner data. |
+| Expected Markers | A current receiver ledger distinguishing tested behavior, actual missing behavior and bounded model limitations. |
+| Asset Needs | Preserve owner firmware, INI, CMOS and media; use disposable test inputs. |
+| Reporting Requirements | Identify L1/L2 sources and unexecuted physical or interactive checks. |
+| Stop Conditions | No speculative device framework, second guest clock, or false claim of complete hardware fidelity. |
+| Exit Criteria | [S20 receiver ledger](../etc/evidence/t585-s20-peripheral-reconciliation.md) records current routes, evidence and missing COM1; S21 owns its implementation. This was a source audit, not a dynamic qualification. |
+| Original Owner Request | Complete the first four PC110 queue tasks. |
+| Similar-Issue Sweep | Guest suspend/wake, power status, serial/IR/modem/dock, display/font and external-card receiver. |
+
+# M5 T585 S19 — Closed: PC110 ES488 continuous playback
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T585 S19 after S18. |
+| Admission And Approval | Owner directed autonomous completion of the first four PC110 tasks and permits L1/L2 models. |
+| Objective | Implement Sound Blaster 2 compatible 8-bit auto-initialized DMA output, block interrupts and graceful exit on the existing PC110 ES488 path. |
+| Non-goals | No claim of complete ES488, other formats, capture, physical timing, or FM completeness. |
+| Reference Baseline | [S16 playback](../etc/evidence/t585-s16-es488-playback-work.md), [S18 mixing](../etc/evidence/t585-s18-fm-mixing-design.md), and 86Box Sound Blaster 2 behavioral reference. |
+| Candidate Proposal | [Device and model qualification](../proposals/m5-pc110-device-model-qualification.md). |
+| Files And ABI Surface | PC110 App and corresponding existing tests; no Shared change planned. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding and source policy. |
+| Verification | Actual guest-programmed DMA across multiple blocks, interrupt acknowledgement, graceful exit, pause/resume, reset and bounded output, both widths. |
+| Expected Markers | Consecutive blocks produce ordered PCM and independent completion interrupts; exit stops at the next block boundary. |
+| Asset Needs | Disposable test inputs; preserve owner media, firmware and configuration. |
+| Reporting Requirements | Label L2 reference behavior and retain unimplemented ESS commands explicitly. |
+| Stop Conditions | No second DMA controller, clock, host audio stream or false full-device claim. |
+| Exit Criteria | [S19 evidence](../etc/evidence/t585-s19-es488-auto-init.md) records the real DMA receiver, dual-width PC110 suites 20/20 and deployed artifacts. Native audio endpoint was unavailable, so physical audio delivery remains unverified. |
+| Original Owner Request | Complete the first four PC110 queue tasks. |
+| Similar-Issue Sweep | Block lengths, DMA terminal count, IRQ rearming, speaker status and reset. |
+
+# M5 T585 S18 — Closed: PC110 FM output architecture
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T585 S18 after S17. |
+| Admission And Approval | Owner directed autonomous completion of PC110 queue tasks and permits sourced L2 and estimated L1 models. |
+| Objective | Design the minimum single-clock, single-PCM path for guest-programmed YM3812 output alongside ES488, then implement bounded real FM output with matching tests. |
+| Non-goals | No silent register-only device claimed as music; no second host stream, guest clock, or imported unreviewed third-party code. |
+| Reference Baseline | [S14 audio design](../etc/evidence/t585-s14-pc110-audio-design.md), [S16 PCM delivery](../etc/evidence/t585-s16-es488-playback-work.md), [S17 timers](../etc/evidence/t585-s17-opl2-timers.md), [S18 mixing investigation](../etc/evidence/t585-s18-fm-mixing-design.md), and available chip references. |
+| Candidate Proposal | [Device and model qualification](../proposals/m5-pc110-device-model-qualification.md). |
+| Files And ABI Surface | PC110 App audio and tests; X86-NXVM Machine may cap its existing run tick budget for a bounded output producer; X86-Core exposes its existing clock to synchronous owner callbacks. Update Shared tests/manifests. No Lib/Emulator change. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding and source policy. |
+| Verification | Guest register programming produces nonzero waveform via the real PCM receiver, plus simultaneous PCM/FM, reset and dual-width checks. |
+| Expected Markers | Meaningful generated sound, not only timer/status success. |
+| Asset Needs | Disposable test inputs; preserve all owner media, firmware and configuration. |
+| Reporting Requirements | Clearly distinguish bounded estimated synthesis, authoritative register behavior, production integration and real audibility. |
+| Stop Conditions | Do not mislabel a partial model as complete YM3812, or bypass backpressure and lifecycle ownership. |
+| Exit Criteria | [S18 evidence](../etc/evidence/t585-s18-fm-mixing-design.md) records bounded L1 synthesis, actual guest-to-Lib mixing, dual-width tests, artifact checks, initial x86 timeouts and remaining YM3812 scope. |
+| Original Owner Request | Complete the first four PC110 queue tasks. |
+| Similar-Issue Sweep | Mixing, sample clocks, envelope reset, simultaneous ES488 playback, silence and backpressure. |
+
+# M5 T585 S17 — Closed: PC110 YM3812 register and timer path
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T585 S17 after S16. |
+| Admission And Approval | Owner directed autonomous completion of the first four PC110 tasks, including L1/L2 reference-based models. |
+| Objective | Connect the PC110 OPL2 register and timer interface on the existing Core time axis, with real guest-port tests. |
+| Non-goals | Timer detection alone is not FM synthesis or audible output; subsequent work must implement the actual sound path. |
+| Reference Baseline | [S14 audio design](../etc/evidence/t585-s14-pc110-audio-design.md), observed PC110 OPL2 388h and 86Box YM3812 behavior. |
+| Candidate Proposal | [Device and model qualification](../proposals/m5-pc110-device-model-qualification.md). |
+| Files And ABI Surface | PC110 App-local device and existing App tests; no Shared changes planned. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding and source policy. |
+| Verification | Actual port route, both timers, control/mask/reset, guest-time progression and device reset on both architectures. |
+| Expected Markers | OPL2 software detection observes distinct timer overflow and reset states. |
+| Asset Needs | Preserve owner media, firmware and configuration. |
+| Reporting Requirements | Distinguish reference-derived behavior from hardware measurements and expressly retain FM synthesis gap. |
+| Stop Conditions | No silent device claimed as working music and no second clock or audio pathway. |
+| Exit Criteria | [S17 evidence](../etc/evidence/t585-s17-opl2-timers.md) records the receiver, dual-width 20/20 PC110 tests and remaining FM synthesis work. |
+| Original Owner Request | Complete the first four PC110 queue tasks. |
+| Similar-Issue Sweep | Reset, timer reload, masking, control writes and existing audio routes. |
+
+# M5 T585 S16 — Closed: PC110 ES488 DMA playback path
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T585 S16 after S15. |
+| Admission And Approval | Owner directed autonomous completion of the first four PC110 tasks and approved reference-derived L2 and bounded L1 models, including X86 Core and X86-NXVM changes. |
+| Objective | Design and implement the guest-driven ES488 digital playback path using the existing DMA, IRQ, guest clock and PCM owners. |
+| Non-goals | No second executor, device clock or host audio subsystem; do not claim complete ES488 or YM3812 support. |
+| Reference Baseline | [S14 audio design](../etc/evidence/t585-s14-pc110-audio-design.md), [S15 identification](../etc/evidence/t585-s15-es488-identification.md), and [S16 investigation](../etc/evidence/t585-s16-es488-playback-work.md). |
+| Candidate Proposal | [Device and model qualification](../proposals/m5-pc110-device-model-qualification.md). |
+| Files And ABI Surface | PC110 App and necessary X86-NXVM board/machine seams and corresponding tests; no Lib/Emulator change anticipated. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding and source policy. |
+| Verification | Actual guest command, DMA memory-to-device transfer, timed sample delivery, IRQ and acknowledgement, pause/reset/teardown, dual-width product and applicable full cached tests. |
+| Expected Markers | A guest-programmed bounded PCM transfer reaches the existing host stream with explicit accepted-prefix handling and completion. |
+| Asset Needs | Disposable generated audio and test input; preserve owner media, firmware, CMOS and configuration. |
+| Reporting Requirements | Distinguish independently verified emulated data delivery from physical audible output and clearly label L1/L2 timing. |
+| Stop Conditions | Do not claim playback from register recognition or a silent stub; do not bypass DMA or manufacture a second clock. |
+| Exit Criteria | [S16 evidence](../etc/evidence/t585-s16-es488-playback-work.md) records the guest-to-DMA-to-Lib PCM path, both-width verification, asset delivery and explicit remaining model limits. |
+| Original Owner Request | Complete the first four PC110 queue tasks. |
+| Similar-Issue Sweep | Commands and parameters, DMA terminal count, IRQ acknowledgement, FIFO backpressure, reset, pause and cleanup. |
+
+# M5 T585 S15 — Closed: PC110 ES488 DSP identification
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T585 S15 after S14. |
+| Admission And Approval | Owner directed autonomous completion of the first four PC110 tasks and approved sourced L1/L2 models. |
+| Objective | Implement the PC110 ES488 guest-visible reset and identity protocol as the first bounded part of onboard audio. |
+| Non-goals | No claim of DMA playback, FM synthesis, audible output or verified physical power-on configuration. |
+| Reference Baseline | [S14 design](../etc/evidence/t585-s14-pc110-audio-design.md), upstream PC110 ES488 live observations and the current port bus. |
+| Candidate Proposal | [Device and model qualification](../proposals/m5-pc110-device-model-qualification.md). |
+| Files And ABI Surface | PC110 App-local device, construction and existing tests; no Lib/Emulator modifications. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding and source policy. |
+| Verification | Actual Core port path, reset sequence, response readiness and ordering, unknown commands and board reset on both widths; cached full unit suite and affected product integration. |
+| Expected Markers | Configured guest can observe reset AAh, DSP version 2.01 and ESS identity 48h/82h without fabricating audio. |
+| Asset Needs | Preserve all owner media, firmware, CMOS and configuration. |
+| Reporting Requirements | Distinguish L1 default decode and remaining real audio work from observed identification. |
+| Stop Conditions | No second bus, false sound-output claim or silently replacing an existing port owner. |
+| Exit Criteria | [S15 evidence](../etc/evidence/t585-s15-es488-identification.md) records the bounded protocol, actual Core route, dual-width 712/712 unit and 9/9 firmware integration results and deployed artifacts. DMA, audible PCM and FM remain separate work. |
+| Original Owner Request | Complete the first four PC110 queue tasks. |
+| Similar-Issue Sweep | Reset without edge, stale responses, read-status flags, unknown command and reset reuse. |
+
+# M5 T585 S14 — Closed: PC110 onboard audio design audit
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T585 S14 after S13. |
+| Admission And Approval | Owner directed autonomous completion of the first four PC110 tasks and approved reference-derived L2 and bounded L1 models. |
+| Objective | Audit PC110 ES488/YM3812 onboard audio, available references and existing Core, machine and host-audio paths; prepare concrete bounded implementation increments. |
+| Non-goals | No fake audible-output claim, external ROM import or unsolicited changes to unrelated Apps. |
+| Reference Baseline | [Device inventory](../etc/evidence/t585-device-model-inventory.md), existing PC110 board plan, Lib audio, and authorized external references. |
+| Candidate Proposal | [Device and model qualification](../proposals/m5-pc110-device-model-qualification.md). |
+| Files And ABI Surface | Read-only investigation first; identify actual single owners and necessary existing interfaces. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding and source policy. |
+| Verification | Trace guest port, DMA and IRQ path to host PCM; distinguish verified behavior, L2 reference model and L1 estimates. |
+| Expected Markers | Explicit minimum viable guest-facing audio plan with source provenance and no second audio pipeline. |
+| Asset Needs | Read-only references and disposable test inputs; preserve owner configuration and media. |
+| Reporting Requirements | Hardware components, present gaps, smallest implementation batches, tests and external-evidence limits. |
+| Stop Conditions | No claim of audio based solely on host mute, register placeholders or fabricated sound samples. |
+| Exit Criteria | [S14 design](../etc/evidence/t585-s14-pc110-audio-design.md) records actual board devices, references, current DMA/PCM seams and a bounded sequential implementation plan without claiming sound output. |
+| Original Owner Request | Complete the first four PC110 queue tasks. |
+| Similar-Issue Sweep | DSP reset/version, command/read status, DMA/IRQ, mixer, FM and host PCM ownership. |
+
+# M5 T585 S13 — Closed: reconcile PC110 storage evidence
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T585 S13 after S12. |
+| Admission And Approval | Owner directed autonomous completion of the first four PC110 tasks and approved Shared x86-core corrections. |
+| Objective | Reconcile contradictory PC110 storage references and discard any unnecessary internal-ATA routing draft. |
+| Non-goals | No internal ATA rerouting based on superseded evidence, unused Shared interface or artificial external card. |
+| Reference Baseline | [S12 audit](../etc/evidence/t585-s12-pcic-io-audit.md), upstream live dump and revised Pluto report, existing PC110 ATA and Ricoh owners. |
+| Candidate Proposal | [Device and model qualification](../proposals/m5-pc110-device-model-qualification.md). |
+| Files And ABI Surface | Documentation only after withdrawing the uncommitted X86 Core draft. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding and source policy. |
+| Verification | Verify working tree against the delivered S11 source and artifact baseline; documentation governance and existing qualified product evidence. |
+| Expected Markers | Evidence establishes what is known about internal ATA versus the external PC Card and explicitly corrects S12. |
+| Asset Needs | No user media mutation. |
+| Reporting Requirements | Reference conflict, withdrawn draft and actual remaining external-card gap. |
+| Stop Conditions | No unsupported equivalence between two storage paths or fake device. |
+| Exit Criteria | [S13 correction](../etc/evidence/t585-s13-storage-correction.md) records the conflicting references and restored S11 source/artifact baseline; an external-card receiver requires a concrete device. |
+| Original Owner Request | Complete the first four PC110 queue tasks. |
+| Similar-Issue Sweep | Source recency, both physical slots, ATA owner, PC Card I/O and actual product boot evidence. |
+
+# M5 T585 S12 — Closed: PC110 PC Card I/O and ATA ownership audit
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T585 S12 after S11. |
+| Admission And Approval | Owner directed autonomous completion of the first four PC110 tasks and approved L1/L2 models when stronger sources are unavailable. |
+| Objective | Reconcile PC110 internal ATA wiring, Ricoh I/O windows, port ownership and current guest firmware behavior; select the smallest correct implementation path. |
+| Non-goals | No second ATA controller or guest-visible fake card, user media mutation, or physical-wiring claim without evidence. |
+| Reference Baseline | Current PC110 composition, Ricoh decode, real firmware boot evidence and authorized external PC110 references. |
+| Candidate Proposal | [Device and model qualification](../proposals/m5-pc110-device-model-qualification.md). |
+| Files And ABI Surface | Audit first; choose existing single bus and storage owners before any implementation. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding and source policy. |
+| Verification | Inspect actual code and source references; use bounded guest or unit probes where they resolve a specific question. |
+| Expected Markers | Distinguish actual direct ATA behavior, configured I/O window behavior, and physical-path uncertainty. |
+| Asset Needs | Read-only user firmware and disposable test media; preserve INI, ROM and disks. |
+| Reporting Requirements | Findings, source grades, necessary changes and retained limits. |
+| Stop Conditions | No duplicate port owner, hand-waved ATA routing, or unreviewed third-party code import. |
+| Exit Criteria | [S12 audit](../etc/evidence/t585-s12-pcic-io-audit.md) confirms the unused dynamic I/O decoder and current direct ATA ownership, records reference limits and defines the next Core/PC110 receiver work. No production code changed. |
+| Original Owner Request | Complete the first four PC110 queue tasks. |
+| Similar-Issue Sweep | Both sockets, I/O windows, decode enable, ATA access width, IRQ and ownership. |
+
+# M5 T585 S11 — Closed: PC110 power and wake reconciliation
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T585 S11 after S10. |
+| Admission And Approval | Owner directed autonomous completion of the first four PC110 tasks and approved L1/L2 models when stronger sources are unavailable. |
+| Objective | Audit the existing PC110 guest power, suspend and wake paths against available references and implement one evidence-supported missing behavior if needed. |
+| Non-goals | No claim of a physical EC, host battery simulation or complete APM without actual implementation and validation. |
+| Reference Baseline | Current PC110 firmware, chipset and EC adapters; T580 S71, T585 S1 inventory and available authorized references. |
+| Candidate Proposal | [Device and model qualification](../proposals/m5-pc110-device-model-qualification.md). |
+| Files And ABI Surface | Determine from current code and evidence; use the smallest single-owner path. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding and source policy. |
+| Verification | Existing relevant fixture and both-width cached builds and unit suites; exercise real guest behavior where meaningful. |
+| Expected Markers | Separate already-working suspend/resume from the specific verified deficit and remaining model limits. |
+| Asset Needs | Preserve user CMOS, firmware and media; use disposable test-owned inputs. |
+| Reporting Requirements | Evidence grade, actual files and tests, retained limitations. |
+| Stop Conditions | No fabricated physical accuracy, duplicate machine owner or silent loss of existing wake behavior. |
+| Exit Criteria | Shared `d9b93a28d` and PC110 L1 wake receiver validated on both widths; complete unit, registered integration, additional machine-profile, MyRaidenII probes and 14 artifact identities are recorded in [S11 evidence](../etc/evidence/t585-s11-pcic-wake.md). Guest APM, other PCIC outputs and physical wiring remain subsequent work. |
+| Original Owner Request | Complete the first four PC110 queue tasks. |
+| Similar-Issue Sweep | Guest suspend, F12 wake, PC Card wake, APM and EC status ownership. |
+
+# M5 T585 S10 — Closed: PC110 memory-card media lifecycle
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T585 S10 after S9. |
+| Admission And Approval | Owner directed autonomous completion of the first four PC110 tasks and approved sourced L1/L2 models. |
+| Objective | Design and implement a safe product-to-PC110 memory-card attachment and removal path using the existing S6 receiver and Storage ownership. |
+| Non-goals | No mutation of owner media without an explicit writable mode, fake attribute memory or I/O-card data transport claim. |
+| Reference Baseline | S6 receiver, current product lifecycle, Session/worker ownership and Storage leases. |
+| Candidate Proposal | [Device and model qualification](../proposals/m5-pc110-device-model-qualification.md). |
+| Files And ABI Surface | App-local product/PC110 adapter and existing tests; keep Lib/Emulator unchanged unless an actual contract gap is separately established. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding and source policy. |
+| Verification | Actual product request to guest memory path, both sockets, insert/remove, failed open, lifecycle/restart and safe lease cleanup on both widths. |
+| Expected Markers | Explicit user-controlled media ownership reaches the existing card window without unsafe cross-thread access. |
+| Asset Needs | Task-owned temporary card images only; preserve user INI, firmware and disks. |
+| Reporting Requirements | State exact command/configuration, write mode, attribute-space behavior and timing of insertion/removal. |
+| Stop Conditions | No user-media mutation without requested mode, dangling lease, second machine execution path or silent missing-attribute claim. |
+| Exit Criteria | Real product extension to worker and guest memory route, both socket leases, access modes, failure and teardown verified; dual-width 712/712 units and 9/9 PC110 integrations, final focused test and deployed artifacts are recorded in [S10 evidence](../etc/evidence/t585-s10-pcic-media.md). Physical cards and DOS driver recognition are not claimed. |
+| Original Owner Request | Complete the first four PC110 queue tasks. |
+| Similar-Issue Sweep | Two slots, stop/reset/start, failed open, replacement/eject, exit and write-protected media. |
+
+# M5 T585 S9 — Closed: PC Card I/O interrupt signals
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T585 S9 after S8. |
+| Admission And Approval | Owner directed autonomous completion of the first four PC110 tasks and approved sourced L1/L2 models. |
+| Objective | Reconcile documented I/O-card IREQ and STSCHG signals with the existing Ricoh slot and PC110 PIC ownership. |
+| Non-goals | No fabricated I/O device, ring-wake claim, new scheduler, second machine loop or owner-media mutation. |
+| Reference Baseline | Ricoh EA-028-9804, S3 PIC receiver, S7 I/O decode and S8 socket-status evidence. |
+| Candidate Proposal | [Device and model qualification](../proposals/m5-pc110-device-model-qualification.md). |
+| Files And ABI Surface | Existing Ricoh slot/interface and PC110 PIC adapter plus component and product tests as justified. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding and source policy. |
+| Verification | Both sockets, status and functional IRQ masks, independent/shared IRQ sources, acknowledgements, reset and dual-width release gates. |
+| Expected Markers | Guest PIC observes the selected documented signals with no spurious memory-card reinterpretation. |
+| Asset Needs | Task-owned signal fixtures; preserve all owner inputs. |
+| Reporting Requirements | Distinguish signal receivers from actual I/O card, I/O-window transport and RI_OUT wake. |
+| Stop Conditions | No fabricated physical-device behavior, duplicate interrupt owner or wrong IRQ route. |
+| Exit Criteria | Shared c7c7d345c reviewed; Core/PIC wiring and full dual-width qualification recorded in [S9 evidence](../etc/evidence/t585-s9-pcic-io-signals.md); PC110 receiver delivered in the NXVM S9 commit. |
+| Original Owner Request | Complete the first four PC110 queue tasks. |
+| Similar-Issue Sweep | Both sockets, type/mode switch, enable/mask, simultaneous status and functional interrupts, reset. |
+
+# M5 T585 S8 — Closed: Ricoh socket status-change completion
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T585 S8 after S7 at 5c54e8714. |
+| Admission And Approval | Owner directed autonomous completion of the first four PC110 tasks and approved sourced L1/L2 models. |
+| Objective | Audit and implement documented socket ready and memory-card battery status-change semantics using the existing chip and PIC path. |
+| Non-goals | No fabricated physical battery, I/O-card IRQ/wake or product media availability claim. |
+| Reference Baseline | Ricoh EA-028-9804 status registers; S2/S3 card-detect and PIC receiver; S6 memory-card attachment. |
+| Candidate Proposal | [Device and model qualification](../proposals/m5-pc110-device-model-qualification.md). |
+| Files And ABI Surface | Ricoh chip and tests, PC110 socket adapter and tests if needed; keep existing single status and PIC ownership. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding and source policy. |
+| Verification | Both sockets and card types, actual Core port/PIC delivery, masks, read/write acknowledgement, reset and dual-width repository release gates. |
+| Expected Markers | Correct ready and battery status changes without duplicate owners or false interrupt claims. |
+| Asset Needs | Task-owned fixtures; do not modify user firmware, configuration or media. |
+| Reporting Requirements | Distinguish documented pin semantics from untested physical cards and deferred I/O-card wake. |
+| Stop Conditions | No fabricated physical-device support, silent fault or second interrupt path. |
+| Exit Criteria | Shared 0c96c0b30 reviewed; actual Core/PIC status route and full dual-width unit/integration qualification are recorded in [S8 evidence](../etc/evidence/t585-s8-pcic-socket-status.md); PC110 product receiver delivered in the NXVM S8 commit. |
+| Original Owner Request | Complete the first four PC110 queue tasks. |
+| Similar-Issue Sweep | Both sockets, ready transitions, battery states, card type, status acknowledgement and reset. |
+
+# M5 T585 S7 — Closed: Ricoh PC Card I/O-window decode
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T585 S7 after the S6 receiver. |
+| Admission And Approval | Owner directed autonomous completion of the first four PC110 tasks and approved sourced L1/L2 models. |
+| Objective | Implement the documented Ricoh I/O-window address and offset decode, after auditing the current card/media ownership. |
+| Non-goals | No mutation of owner media, fabricated I/O-card support, product insertion claim, second bus or unsupported physical-timing claim. |
+| Reference Baseline | [S6 memory receiver](../etc/evidence/t585-s6-pcic-memory.md), Ricoh manual and current PC110 product/slot ownership. |
+| Candidate Proposal | [Device and model qualification](../proposals/m5-pc110-device-model-qualification.md). |
+| Files And ABI Surface | Determine from current source and reference evidence; preserve Shared boundaries and independent component tests. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding and source policy. |
+| Verification | Chip register and window contract on both widths, followed by full required cached unit/integration and release rules; retain product and device limitations. |
+| Expected Markers | Two slots and both I/O windows decode with documented offset and control fields; the separate product receiver remains explicit. |
+| Asset Needs | Disposable task-owned media only; preserve user INI, firmware and disks. |
+| Reporting Requirements | Distinguish memory cards, I/O cards, onboard ATA and wake/status semantics. |
+| Stop Conditions | No silently accepted wrong routing, user-media mutation or unsupported completeness claim. |
+| Exit Criteria | Shared 5c54e8714 reviewed; both unit suites 712/712, both registered integration suites 48/48 and fourteen release identities recorded in [S7 evidence](../etc/evidence/t585-s7-pcic-io-decode.md). Media attachment, port-bus receiver, card IRQ/wake and actual I/O devices remain subsequent work. |
+| Original Owner Request | Complete the first four PC110 queue tasks. |
+| Similar-Issue Sweep | Both sockets, mapping and ownership, errors, status and interrupt/wake paths. |
+
+# M5 T585 S6 — Closed: PC110 memory-card bus receiver
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T585 S6 after S5 at 192aaa3d2. |
+| Admission And Approval | Owner directed autonomous completion of the first four PC110 tasks and approved sourced L1/L2 models. |
+| Objective | Connect the Ricoh memory-window decoder to a bounded PC110 memory-card backing through the existing Core route. |
+| Non-goals | No second bus, permanent 16-MiB active overlay, mutation of owner media, fake I/O-card support or physical timing claim. |
+| Reference Baseline | S4 decoder cf2782271; S5 Core range 175aff537; current PC110 and Storage ownership. |
+| Candidate Proposal | [Device and model qualification](../proposals/m5-pc110-device-model-qualification.md); [S5 evidence](../etc/evidence/t585-s5-core-device-range.md). |
+| Files And ABI Surface | Ricoh bounds/timing contract, PC110 adapter, any necessary Core masked-span correction and corresponding tests. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding and source policy. |
+| Verification | Actual Core memory read/write, disabled/no-card RAM fallback, mapping and card changes, attributes, protection, cache, crossings and both widths; repository gates and 14 releases. |
+| Expected Markers | Guest bus observes card bytes only in enabled windows; RAM fallback and cache remain correct on move/removal. |
+| Asset Needs | Disposable task-owned memory-card medium; preserve owner configuration, disks and firmware. |
+| Reporting Requirements | Separate machine-boundary attachment from later product commands, I/O cards, wake routing and physical claims. |
+| Stop Conditions | No owner-media mutation, silent wrong routing, second memory bus or broad always-active overlay. |
+| Exit Criteria | Shared 6f68a2bde and MyRaidenII 0e6cd7e95 reviewed; full dual-width unit/integration and release evidence in [S6 record](../etc/evidence/t585-s6-pcic-memory.md); product adapter delivered in the NXVM S6 commit. |
+| Original Owner Request | Complete the first four PC110 queue tasks. |
+| Similar-Issue Sweep | Both slots and windows, offset/attribute changes, cross-boundary accesses, A20/masked spans, overlapping providers, reset and removal. |
+
+# M5 T585 S5 — Closed: movable Core memory-device range
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T585 S5 after S4 at 07f34ecc1. |
+| Admission And Approval | Owner directed autonomous completion of the first four PC110 tasks and approved sourced L1/L2 models. |
+| Objective | Provide a bounded runtime-selectable range on the existing Core device route, including cache invalidation, for the PC Card receiver. |
+| Non-goals | No second memory bus, permanent all-RAM overlay, host-media mutation or physical timing claim. |
+| Reference Baseline | S4 decoder cf2782271; Core memory route and cache implementation; retained masked-span/fallback TODO. |
+| Candidate Proposal | [Device and model qualification](../proposals/m5-pc110-device-model-qualification.md); [S4 evidence](../etc/evidence/t585-s4-pcic-memory-decode.md). |
+| Files And ABI Surface | Existing X86 Core memory route interface and tests; PC110 media attachment follows in the next S. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding and source policy. |
+| Verification | Actual Core read/write across enabled, moved and disabled device ranges, cache invalidation, mapping boundaries and both widths; repository gates and 14 releases. |
+| Expected Markers | One existing provider changes range without affecting unrelated RAM, and cached old/new mappings are invalidated. |
+| Asset Needs | No external card needed for the Core range fixture; preserve owner configuration, disks and firmware. |
+| Reporting Requirements | Separate real Core-bus tests from product command/UI and physical card claims; disclose timing/overlap limits. |
+| Stop Conditions | No owner-media mutation, broad always-active overlay or silent provider-fallback errors. |
+| Exit Criteria | Reviewed Shared commit 175aff537, dual-width unit/integration qualification, 14 artifacts and [S5 evidence](../etc/evidence/t585-s5-core-device-range.md); PC110 card backing remains S6. |
+| Original Owner Request | Complete the first four PC110 queue tasks. |
+| Similar-Issue Sweep | Window changes, A20/masked spans, adjacent providers, partial reads/writes, overlap, reset/removal and cache reuse. |
+
+# M5 T585 S4 — Closed: PC Card memory-window decode
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T585 S4 after S3 at c5ba1d0ad. |
+| Admission And Approval | Owner directed autonomous completion of the first four PC110 tasks and approved sourced L1/L2 models. |
+| Objective | Implement and test Ricoh PC Card memory-window decoding before its Core memory-path receiver. |
+| Non-goals | No second memory bus, host media mutation, fabricated physical timing or conflation with onboard ATA. |
+| Reference Baseline | S1 inventory, S2/S3 controller work, Ricoh EA-028-9804 and current Core memory routes. |
+| Candidate Proposal | [Device and model qualification](../proposals/m5-pc110-device-model-qualification.md). |
+| Files And ABI Surface | Ricoh chip contract and its tests; subsequent S owns Core and PC110 production memory routes. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding and source policy. |
+| Verification | Slot/window enable, 4 KiB boundaries, signed offsets, attribute/common selection, write protection and reset on both widths; complete applicable repository gates and release. |
+| Expected Markers | Explicit translated card addresses and failure/decline semantics; Core production routing remains a separate receiver. |
+| Asset Needs | Ricoh manual and task-owned test card; preserve external firmware, INI and media. |
+| Reporting Requirements | Separate bounded memory-card behavior from future I/O, IRQ/wake, card lifecycle and physical claims. |
+| Stop Conditions | No owner-media mutation, overlapping second bus or silently unsupported provider fallback. |
+| Exit Criteria | Reviewed Shared commit cf2782271, dual-width unit and integration qualification, 14 product artifacts and [S4 evidence](../etc/evidence/t585-s4-pcic-memory-decode.md); Core route and card media remain the next receiver. |
+| Original Owner Request | Complete the first four PC110 queue tasks. |
+| Similar-Issue Sweep | Both slots and all windows, overlap, reset/removal, ROM/RAM fallback, read/write boundaries and access widths. |
+
+# M5 T585 S3 — Closed: PC Card ISA status-change interrupts
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T585 S3 after S2 at bb57b59da. |
+| Admission And Approval | Owner directed autonomous completion of the first four PC110 tasks and approved sourced L1/L2 models. |
+| Objective | Trace and implement Ricoh card-detect ISA interrupt selection, acknowledgement and PC110 PIC integration through existing owners. |
+| Non-goals | No second scheduler or interrupt controller, external source copying, fabricated media or physical-input claims. |
+| Reference Baseline | S2 bounded status receiver eeb281cb2 and the Ricoh EA-028-9804 manual. |
+| Candidate Proposal | [Device and model qualification](../proposals/m5-pc110-device-model-qualification.md); [S2 evidence](../etc/evidence/t585-s2-pcic-status.md). |
+| Files And ABI Surface | Existing Ricoh chip contract and tests, PC110 adapter and tests; Shared changes require all consumer release gates. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding and source policy. |
+| Verification | Both sockets, interrupt selection, masks, pending/ack/reset and actual board/PIC paths on both widths; complete applicable repository unit/integration and release gates. |
+| Expected Markers | Observable guest PIC request and acknowledgement with no duplicate source; explicit unimplemented card/window boundaries. |
+| Asset Needs | Existing Ricoh manual and owner-managed external firmware; preserve originals. |
+| Reporting Requirements | State source grade, actual changes, tested paths and unverified physical electrical behavior. |
+| Stop Conditions | Do not mutate owner media or claim unsupported card insertion or DMA. |
+| Exit Criteria | Reviewed Shared commit df12230c9, source-to-PIC tests, dual-width unit and integration evidence, 14 release artifacts and [S3 evidence](../etc/evidence/t585-s3-pcic-irq.md); INTR#/wake and card/window work remain subsequent. |
+| Original Owner Request | Complete the first four PC110 queue tasks. |
+| Similar-Issue Sweep | Both slots, selected IRQ changes, shared IRQ ownership, disabled events, reset and teardown. |
+
+# M5 T585 S2 — Closed: PC Card controller status and bounds
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T585 S2 after S1 at ee94e19ba. |
+| Admission And Approval | Owner directed autonomous completion of the first four PC110 tasks, including L1/L2 modeling. |
+| Objective | Design and implement a bounded PC Card controller receiver on the existing chip and PC110 board paths, grounded in the Ricoh contract. |
+| Non-goals | No conflation of onboard ATA with PC Card storage, external source copying, second scheduler or owner-media writes. |
+| Reference Baseline | S1 inventory and T580 S58 empty-controller model. |
+| Candidate Proposal | [Device and model qualification](../proposals/m5-pc110-device-model-qualification.md). |
+| Files And ABI Surface | Ricoh chip, its tests and PC110 board integration as evidence warrants; assess any Shared interface and affected consumers before editing. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding and source policy. |
+| Verification | Chip and actual board/bus path tests on both widths, required repository unit gate, applicable build and release checks. |
+| Expected Markers | Explicit register/slot/reset behavior, implementation evidence and honest remaining window/IRQ/card boundaries. |
+| Asset Needs | Ricoh manual and existing local reference implementations; no physical card required for a bounded model. |
+| Reporting Requirements | Classify references and explain actual code changes and unverified physical behavior. |
+| Stop Conditions | Do not mutate owner media or represent stub behavior as complete card support. |
+| Exit Criteria | Reviewed Shared commit eeb281cb2, dual-width full unit and registered integration tests, per-profile checks, 14 release artifacts and [S2 evidence](../etc/evidence/t585-s2-pcic-status.md); IRQ and card windows continue in subsequent S tasks. |
+| Original Owner Request | Complete the first four PC110 queue tasks. |
+| Similar-Issue Sweep | Review both sockets, insertion and removal, reset, register read/write and interrupt ownership. |
+
+# M5 T585 S1 — Closed: PC110 device and model inventory
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New M5 T585, S1. |
+| Admission And Approval | Owner directed completion of the first four PC110 queue tasks. |
+| Objective | Audit current PC110 device implementations, owner-path tests and evidence; enumerate real gaps and plan sequential repairs. |
+| Non-goals | No unsupported claim that boot alone qualifies hardware; no third-party source import or owner-media mutation. |
+| Reference Baseline | T584 closed at ee68511b2; T580 device evidence and current source. |
+| Candidate Proposal | [Device and model qualification](../proposals/m5-pc110-device-model-qualification.md). |
+| Files And ABI Surface | NXVM evidence and governance for S1; source changes require a subsequent scoped S. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding and source policy. |
+| Verification | Trace source and tests against device evidence; run required governance and unit qualification. |
+| Expected Markers | Device-by-device implementation, evidence, unresolved boundaries and repair sequence. |
+| Asset Needs | Existing external PC110 firmware and media; preserve originals. |
+| Reporting Requirements | Separate modeled behavior, actual execution, and unverified features; classify L1/L2/L3 honestly. |
+| Stop Conditions | Do not invent hardware behavior or modify owner media. |
+| Exit Criteria | Device inventory, scoped continuation, 712/712 x64 unit results and documentation gate recorded in [S1 evidence](../etc/evidence/t585-device-model-inventory.md). |
+| Original Owner Request | Complete the first four PC110 queue tasks. |
+| Similar-Issue Sweep | Inspect PCIC, power, audio, display, input, storage and firmware provenance. |
+
+# M5 T584 S7 — Closed: private-media inking calibration persistence
+
+Both variants and both host widths completed guest calibration, saved CMOS and
+entered Personaware without further calibration input after independent
+restart. The full x64 unit suite passed 712/712. T584 is closed with physical
+host capture, physical hotkeys and interactive RDP explicitly transferred to
+final product qualification; those unavailable paths are not claimed passed.
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T584 S7 after S6 qualification reconciliation. |
+| Admission And Approval | Owner requested completion of the first four PC110 receivers and protection of owner media. |
+| Objective | Verify whether guest-saved four-corner inking calibration survives process restart when writes are retained on a task-owned disk copy. |
+| Non-goals | No owner-media writes, user-desktop switch, fabricated guest state or claim of physical/RDP capture. |
+| Reference Baseline | c86ce42e0, T584 S3 overlay calibration and current Product/Machine storage contracts. |
+| Candidate Proposal | [Product interaction](../history/M5-T584-pc110-product-interaction-proposal.md); [interaction ledger](../etc/evidence/t584-product-interaction-ledger.md). |
+| Files And ABI Surface | Task-private media and observer plus NXVM evidence; no public API or Shared change. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding, UI and source policy. |
+| Verification | Calibrate on an isolated writable disk copy, verify guest save and normal exit, independently restart using that same copy, observe guest path and run repository units/documentation gate. |
+| Expected Markers | Guest save, disk-copy before/after hashes, second-process calibration/launcher behavior and honest persistence conclusion. |
+| Asset Needs | Existing source media copied into a task-owned directory; source images never opened writable. |
+| Reporting Requirements | Distinguish private retained writes from discarded overlay and disclose unsupported persistence. |
+| Stop Conditions | No owner-media mutation or guessing an unobserved guest prompt. |
+| Exit Criteria | Reviewed 378a5a01f: four Machine-path calibration/save/restart combinations, private-media integrity and x64 units. |
+| Original Owner Request | Complete the first four PC110 queue tasks. |
+| Similar-Issue Sweep | Compare retained writes and overlay behavior without inventing a second persistence path. |
+
+# M5 T584 S6 — Closed: interaction qualification reconciliation
+
+Full x64 units passed 712/712; PC110 external-firmware integrations passed
+9/9 on both widths. The honest physical-input and RDP limits are recorded;
+private-media inking calibration persistence remains in S7.
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T584 S6 after S5 guest keyboard evidence. |
+| Admission And Approval | Owner requested automatic completion of the first four PC110 receivers. |
+| Objective | Reconcile product interaction evidence, existing host capture tests, outstanding physical/RDP boundaries and required PC110 integration suites. |
+| Non-goals | No user-desktop switch, physical pointer clipping, fabricated RDP evidence or unreviewed Shared modification. |
+| Reference Baseline | a30e4237f and the T584 interaction ledger. |
+| Candidate Proposal | [Product interaction](../history/M5-T584-pc110-product-interaction-proposal.md); [interaction ledger](../etc/evidence/t584-product-interaction-ledger.md). |
+| Files And ABI Surface | NXVM evidence/governance initially; no public API or production source change. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding, UI and source policy. |
+| Verification | Review retained source/test evidence, run complete repository units and PC110 external-firmware integrations on both host widths, and run documentation gate. |
+| Expected Markers | Explicit per-boundary results, valid test exit codes and retained unavailable host conditions. |
+| Asset Needs | Existing EXEs and owner-managed firmware; preserve owner media and configuration. |
+| Reporting Requirements | Do not equate injected Machine/native messages or mocks with physical/RDP input; record any failed result. |
+| Stop Conditions | No foreground desktop change or unsupported completion claim. |
+| Exit Criteria | Reviewed c86ce42e0: applicable unit/integration results and interaction boundaries recorded, with the private-media calibration receiver admitted next. |
+| Original Owner Request | Complete the first four PC110 queue tasks. |
+| Similar-Issue Sweep | Compare Console/Window, both widths and display variants, guest input and host capture. |
+
+# M5 T584 S5 — Closed: product keyboard and host-input boundary
+
+Actual DSTN x64 and TFT x86 products navigated into Personaware Calculator
+using extended Down and evaluated `1 + 2 = 3` through native key messages.
+The full x64 unit suite passed 712/712. Physical hotkeys, mouse capture and
+interactive RDP were not claimed from posted messages or mocked tests.
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T584 S5 after S4 Console handoff. |
+| Admission And Approval | Owner requested automatic completion of the four PC110 receivers. |
+| Objective | Exercise actual guest keyboard navigation and reconcile native hotkey/mouse capture against available host tests. |
+| Non-goals | No user-desktop focus theft, global pointer clipping, user-media writes or claiming injected messages prove physical input. |
+| Reference Baseline | e52cda74e and T584 S1–S4 evidence. |
+| Candidate Proposal | [Product interaction](../history/M5-T584-pc110-product-interaction-proposal.md); [interaction ledger](../etc/evidence/t584-product-interaction-ledger.md). |
+| Files And ABI Surface | Task-owned isolated diagnostics and NXVM evidence initially; no public API or Shared change. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding, UI and source policy. |
+| Verification | Observe guest keyboard navigation, inspect existing hotkey and capture tests and host restrictions, run complete repository units and document gate. |
+| Expected Markers | Guest-visible key response, normal teardown and explicit real-host versus mock coverage. |
+| Asset Needs | Existing EXEs and private media/configuration only. |
+| Reporting Requirements | Separate native keyboard-message, mocked host capture and unavailable physical/RDP evidence. |
+| Stop Conditions | No desktop switching, global user-pointer clipping or unreviewed Shared change. |
+| Exit Criteria | Reviewed a30e4237f: actual guest navigation/calculation, existing hotkey/capture coverage and explicit physical-input limits. |
+| Original Owner Request | Complete the first four PC110 queue tasks. |
+| Similar-Issue Sweep | Compare PC110 input, generic Product hotkeys and Window capture ownership. |
+
+# M5 T584 S4 — Closed: Console display and graphics handoff
+
+Actual products with `display=console` exercised both console-control policies,
+both firmware variants and both host widths through graphical Window handoff,
+Personaware, pause/resume and normal exit. The first prematurely interrupted
+observations and the cooked-buffer resume check were corrected and retained.
+Full x86 units passed 712/712; physical/RDP input remains unverified.
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T584 S4 after S3 guest inking evidence. |
+| Admission And Approval | Owner requested automatic completion of the first four PC110 receivers. |
+| Objective | Verify actual PC110 Console-display startup, graphical Window handoff and monitor return for both control policies. |
+| Non-goals | No user-desktop focus theft, user-media writes, fabricated frames or treating native message injection as physical RDP input. |
+| Reference Baseline | b12b86e3e and T584 S1–S3 evidence. |
+| Candidate Proposal | [Product interaction](../history/M5-T584-pc110-product-interaction-proposal.md); [interaction ledger](../etc/evidence/t584-product-interaction-ledger.md). |
+| Files And ABI Surface | Task-owned isolated diagnostics and NXVM evidence initially; no public API or Shared change. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding, UI and source policy. |
+| Verification | Exercise real EXEs and independent INI/media with Console display, both control policies, Window graphics, product keyboard and lifecycle; complete repository units and document gate. |
+| Expected Markers | Actual graphical Window, guest response, monitor pause/resume and normal exit. |
+| Asset Needs | Existing EXEs and private media/configuration only. |
+| Reporting Requirements | Distinguish native Console/Window handoff from physical input or RDP, and record actual host restrictions. |
+| Stop Conditions | No desktop switching, global user-pointer clipping or unreviewed Shared change. |
+| Exit Criteria | Reviewed e52cda74e: actual Console-to-Window handoff and return on both policies, variants and widths, with original observer errors retained. |
+| Original Owner Request | Complete the first four PC110 queue tasks. |
+| Similar-Issue Sweep | Compare control 0/1, host widths and both display variants. |
+
+# M5 T584 S3 — Closed: inking calibration owner path
+
+Both variants and both widths completed four-corner inking calibration through
+the existing Emulator Machine queue, guest controller/IRQ and DOS driver,
+then reached Personaware. Private input media stayed unchanged, all probes
+exited 0 and full x64 units passed 712/712. Actual native capture, interactive
+RDP and calibration persistence outside an overlay were not established.
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T584 S3 after S2 product keyboard matrix. |
+| Admission And Approval | Owner requested automatic completion of the first four PC110 receivers. |
+| Objective | Verify the current inking input, IRQ and guest calibration route using the existing machine and tests; identify what remains for genuine native capture. |
+| Non-goals | No user-desktop focus theft, pointer clipping of the user desktop, owner-media writes or claiming injected Machine events are physical input. |
+| Reference Baseline | 2cc5e8c60; S1/S2 actual product keyboard evidence and existing inking tests. |
+| Candidate Proposal | [Product interaction](../history/M5-T584-pc110-product-interaction-proposal.md); [interaction ledger](../etc/evidence/t584-product-interaction-ledger.md). |
+| Files And ABI Surface | Initially task-owned isolated diagnostics and NXVM evidence; no public API or Shared change. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding, UI and source policy. |
+| Verification | Exercise existing inking/IRQ and relevant Machine route with observed guest state; run repository units and documentation gate. |
+| Expected Markers | Guest-visible calibration progress and precise source/host boundary evidence. |
+| Asset Needs | Existing EXEs, external firmware and private disk copies only. |
+| Reporting Requirements | Separate component/driver and actual native Window input results; retain unavailable human/RDP cases. |
+| Stop Conditions | No guessed physical hardware claim, desktop switching or unreviewed Shared modification. |
+| Exit Criteria | Reviewed b12b86e3e: guest-visible four-corner calibration and launcher on both variants and widths; host capture remains separately scoped. |
+| Original Owner Request | Complete the first four PC110 queue tasks. |
+| Similar-Issue Sweep | Trace inking and PS/2 event ownership, capture/release and queue delivery. |
+
+# M5 T584 S2 — Closed: Personaware keyboard and pause/resume matrix
+
+Both variants and both widths entered the actual Personaware World Clock,
+paused/resumed, returned and exited. The original TFT exit-observer failures
+and stale pause-notification bug are retained; both TFT cases passed with a
+corrected observer. The original x86 unit run had two timeouts and the complete
+serial rerun passed 712/712. Native pointer and RDP remain separate.
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T584 S2 after S1 route audit. |
+| Admission And Approval | Owner requested automatic completion of the four PC110 receivers. |
+| Objective | Exercise actual Personaware keyboard entry and application pause/resume across both widths and both display variants. |
+| Non-goals | No user-desktop focus theft, user-media writes, fabricated frame results or physical/RDP pointer claims. |
+| Reference Baseline | ed5bcfb8c and T583 guest-saved CMOS and restart evidence. |
+| Candidate Proposal | [Product interaction](../history/M5-T584-pc110-product-interaction-proposal.md); [interaction ledger](../etc/evidence/t584-product-interaction-ledger.md). |
+| Files And ABI Surface | Task-owned isolated diagnostics and NXVM evidence initially; no public API or Shared change. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding, UI and source policy. |
+| Verification | Observe calibration, launcher, World Clock, pause/resume, return and normal exit using native messages on isolated desktops; compare widths/variants, run repository units and document gate. |
+| Expected Markers | Observed guest responses, lifecycle completion, normal process exit and unchanged private media. |
+| Asset Needs | Existing EXEs, independently copied media and guest-produced CMOS. |
+| Reporting Requirements | Per-case and host evidence, failed checks, actual RDP/manual boundary, and unresolved teardown observations. |
+| Stop Conditions | No desktop switching, pointer clipping of the user desktop or unreviewed Shared modification. |
+| Exit Criteria | Reviewed 2cc5e8c60: real-product keyboard and pause/resume matrix, corrected TFT observer reruns and 712/712 x86 units; failures and host limits retained. |
+| Original Owner Request | Complete the first four PC110 queue tasks. |
+| Similar-Issue Sweep | Compare both firmware variants and both host widths against the same product path. |
+
+# M5 T584 S1 — Closed: product interaction evidence and route audit
+
+Actual DSTN x64 product input reached the Personaware launcher and World Clock,
+returned to the launcher and exited normally. The audit distinguished native
+messages from true pointer capture and RDP interaction. Full x64 repository
+units passed 712/712; the UI documentation's obsolete prepublication status
+was corrected.
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New — M5 T584 S1 after T583 closure. |
+| Admission And Approval | Owner directed automatic completion of the first four PC110 queue receivers. |
+| Objective | Audit current desktop, Console, input, lifecycle and Personaware routes against existing evidence; identify and verify the next unproven owner path. |
+| Non-goals | No user-desktop focus theft, user-media writes, fabricated guest results or treating native message injection as human RDP input. |
+| Reference Baseline | 56005541d, T583 real-product observations, T580 S87/S90 and current source/tests. |
+| Candidate Proposal | [Product interaction](../history/M5-T584-pc110-product-interaction-proposal.md); [T584 history](../history/M5-T584-pc110-product-interaction.md). |
+| Files And ABI Surface | Initially NXVM task evidence and private diagnostics; no public API or Shared change. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding, UI and source policy. |
+| Verification | Inventory source/test/host routes, verify actual prerequisites and run the smallest justified isolated product observation; full repository units and documentation gate before S closure. |
+| Expected Markers | Named routes, real owner checkpoints, precise remaining desktop and RDP boundaries. |
+| Asset Needs | Existing guest firmware and independent media copies; preserve owner files. |
+| Reporting Requirements | Distinguish actual product from machine-only evidence, observed interaction from accepted input, and unavailable environments. |
+| Stop Conditions | No foreground window or desktop switch; no unreviewed Shared modification. |
+| Exit Criteria | Reviewed ed5bcfb8c: actual product keyboard evidence and the remaining Window, Console, pointer and RDP boundaries were recorded. |
+| Original Owner Request | Complete the first four PC110 queue tasks. |
+| Similar-Issue Sweep | Compare both display variants, both widths, Window versus Console and normal versus failed teardown. |
+
+# M5 T583 S9 — Closed: x86 Setup date/time and retained restart
+
+Both x86 actual products accepted edited dates and hours and retained them
+through normal teardown and a new-process DOS boot. The x64 full repository
+unit suite passed 712/712; PC110 integration passed 9/9 on both host widths.
+T583 is closed by the owner-authorized four-task sequence; the next receiver
+owns interactive qualification and the recorded inconclusive exit observation.
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T583 S9 after S8 lifecycle evidence. |
+| Admission And Approval | Owner requested completion of the four PC110 receivers and automatic sequential execution. |
+| Objective | Verify deliberate x86 date/time edits and retention for both PC110 variants, then reconcile the first-configuration receiver. |
+| Non-goals | No Shared changes, owner-media writes, fabricated CMOS, blind input or stale-frame success. |
+| Reference Baseline | d06778ba6 and the T583 coverage ledger. |
+| Candidate Proposal | [T583 coverage ledger](../etc/evidence/t583-first-setup-ledger.md). |
+| Files And ABI Surface | Task-owned isolated observer and NXVM evidence initially; no production API changes. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding, UI and source policy. |
+| Verification | Observe Setup, edit valid date/time on x86 for both variants, save via normal product teardown and verify separate-process boot and CMOS; complete repository units and document gate. |
+| Expected Markers | Edited Setup frame, RTC fields after save and restart, DOS frame and normal exit. |
+| Asset Needs | Private media copies and existing EXEs; preserve all owner files. |
+| Reporting Requirements | Per-variant evidence, exit, tests, unverified desktop and retained product gaps. |
+| Stop Conditions | No user-desktop focus theft or synthetic guest configuration. |
+| Exit Criteria | Reviewed 16eea1c77: both x86 variants retained edited date and hour across actual process restart, reached DOS and exited normally. |
+| Original Owner Request | Complete the four queued PC110 tasks. |
+| Similar-Issue Sweep | Compare x86 variants against S7's x64 route and S8's lifecycle results. |
+
+# M5 T583 S8 — Closed: in-process cold restart and reset
+
+All four actual EXE/variant combinations reached DOS after both stop/start and
+reset/resume, with new POST frames. Three exited normally on the first run;
+the DSTN x86 repeat exited normally with an explicitly recorded wait and exit
+code. The original DSTN x86 exit-check failure remains unexplained. Full x86
+units passed 712/712.
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T583 S8 after S7 date/time evidence. |
+| Admission And Approval | Owner requested completion of the four PC110 receivers and automatic sequential execution. |
+| Objective | Verify stop/start and reset/resume on actual product processes using guest-saved configuration and isolated media. |
+| Non-goals | No Shared changes, owner-media writes, fabricated CMOS, blind input or treating a stale frame as a new boot. |
+| Reference Baseline | f01c84cd6 and the T583 coverage ledger. |
+| Candidate Proposal | [T583 coverage ledger](../etc/evidence/t583-first-setup-ledger.md). |
+| Files And ABI Surface | Task-owned isolated observer and NXVM evidence initially; no production API changes. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding, UI and source policy. |
+| Verification | Observe actual DOS, perform monitor stop/start and reset/resume, observe fresh POST then DOS, preserve CMOS/media; compare both widths and display variants; complete repository units and document gate. |
+| Expected Markers | Lifecycle completion, changed post-reset frame, restored DOS frame and normal exit. |
+| Asset Needs | Private media copies and guest-produced configuration; preserve all owner files. |
+| Reporting Requirements | Per-variant and width checkpoints, actual exit, unverified conditions and exact results. |
+| Stop Conditions | No user-desktop focus theft or claim from stale frames. |
+| Exit Criteria | Reviewed d06778ba6: both restart paths reached new POST/DOS in all four cases; normal teardown completed in an independent DSTN x86 repeat, with the first exit-check failure retained as unresolved. |
+| Original Owner Request | Complete the four queued PC110 tasks. |
+| Similar-Issue Sweep | Compare both variants, both widths and stop/start versus reset/resume. |
+
+# M5 T583 S7 — Closed: Setup date acceptance and restart
+
+DSTN x64 and TFT x64 real firmware accepted edited dates and retained them
+across independent process restart; TFT also retained an edited hour. Both
+widths completed real EXE Setup and restart from truly empty TFT CMOS. The
+x64 complete unit suite passed 712/712. Interactive RDP and deliberate edits
+on x86 were not tested by this batch.
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T583 S7 after S6 product-path evidence. |
+| Admission And Approval | Owner requested completion of the four PC110 receivers and automatic sequential execution. |
+| Objective | Verify a deliberate valid firmware date edit, acceptance and retention through normal product exit and independent restart. |
+| Non-goals | No Shared changes, owner-media writes, fabricated CMOS, blind input or acceptance claims without guest evidence. |
+| Reference Baseline | 093ca6863 and the T583 coverage ledger; S6 established real EXE Setup and DOS on both widths and variants. |
+| Candidate Proposal | [T583 coverage ledger](../etc/evidence/t583-first-setup-ledger.md). |
+| Files And ABI Surface | Task-owned native observer and NXVM evidence initially; no public API or production changes. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding, UI and source policy. |
+| Verification | Inspect firmware controls and guest observations, enter a valid date in an isolated task environment, verify acceptance, normal shutdown and retained value in a new process; complete repository units and document gate. |
+| Expected Markers | Observed edited date, successful guest acceptance, retained CMOS and independent restart evidence. |
+| Asset Needs | Private media and existing EXEs; preserve owner files. |
+| Reporting Requirements | Separate observed and unverified date, RTC, product and native boundaries. |
+| Stop Conditions | No user-desktop focus theft or fabricated guest configuration. |
+| Exit Criteria | Reviewed f01c84cd6: actual x64 date edits, TFT time edit, cross-process retention, and zero-TFT Setup/restart on both widths; scope and remaining boundaries explicitly recorded. |
+| Original Owner Request | Complete the four queued PC110 tasks. |
+| Similar-Issue Sweep | Compare both firmware variants and widths without treating one observation as all four. |
+
+# M5 T583 S6 — Closed: isolated real-product first-setup observation
+
+Both actual EXEs and both display variants reached first Setup and DOS, saved
+guest CMOS through normal exit, and reached DOS on a new process without Setup
+input. Native Window messages were sent only on isolated desktops. Deliberate
+date acceptance, actual-product zero-filled TFT CMOS, and interactive RDP remain
+open; the x64 repository unit suite passed 712/712.
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T583 S6 after S5 closure 0868d19a5. |
+| Admission And Approval | Owner requested completion of the four queued PC110 receivers and prohibits foreground long-running tasks. |
+| Objective | Establish a safe background native-window observation route and exercise the actual executable's first Setup and DOS path where the host permits it. |
+| Non-goals | No user-desktop focus theft, fabricated guest input, production/Shared changes, owner-media writes or headless-machine evidence presented as native product proof. |
+| Reference Baseline | 0868d19a5; S2–S5 guest and product persistence evidence; retained T580 S87 native diagnostic. |
+| Candidate Proposal | [T583 coverage ledger](../etc/evidence/t583-first-setup-ledger.md), real App entry/session batch. |
+| Files And ABI Surface | Initially task-owned background observer and NXVM evidence only; no public API or production code change. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding, UI and source policy. |
+| Verification | Run the two actual EXEs for DSTN and TFT on separate isolated desktops with copied media and no saved CMOS; use frame-observed input and normal exit. Exercise an actual date edit and persisted restart where supported. Complete repository units before closure. |
+| Expected Markers | Explicit host capability result; actual product Setup responses, saved CMOS and selected DOS frame where observable; no claim from queue acceptance alone. |
+| Asset Needs | Existing firmware and private copies of guest media; preserve all owner files. |
+| Reporting Requirements | Native desktop versus hidden observation, host errors, process results, input/frame identities, coverage and exact remaining receivers. |
+| Stop Conditions | No foreground window or desktop switch, no blind setup input, no unsafe state fabrication, and no unsupported native coverage claim. |
+| Exit Criteria | Reviewed 093ca6863: first Setup, DOS, normal save and saved-state restart observed for both variants and both host widths; remaining date and native TFT boundaries retained for subsequent work. |
+| Original Owner Request | Complete the four queued PC110 tasks without foreground long-running processes. |
+| Similar-Issue Sweep | Compare DSTN/TFT, x64/x86, first/retained CMOS and actual entry versus Machine-only probes. |
+
+# M5 T583 S5 — Closed: real-product CMOS restore and teardown
+
+The current deployed EXEs were run in isolated hidden-console processes on
+both widths for both variants using guest-produced CMOS. Start/pause/stop/exit
+completed, a controlled paused Debug RTC write persisted through normal
+Product teardown, and the other variant's distinct CMOS remained byte-for-byte
+unchanged in all four cases. Full x64 units passed 712/712. This does not
+qualify guest Setup/DOS or native Window input through the real executable.
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T583 S5 after S4 closure 26df5a4cc. |
+| Admission And Approval | Owner requested completion of the first four queued PC110 tasks and automatic sequential execution. |
+| Objective | Verify actual released App entry, Session lifecycle and normal teardown load and save independently guest-produced CMOS for DSTN and TFT on both host widths. |
+| Non-goals | No fabricated configured CMOS, Shared changes, external media writes, blind input, or treating lifecycle-only runs as DOS/native UI proof. |
+| Reference Baseline | 26df5a4cc; S2–S4 guest-produced CMOS and current product artifacts. |
+| Candidate Proposal | [T583 coverage ledger](../etc/evidence/t583-first-setup-ledger.md), full App entry/session persistence batch. |
+| Files And ABI Surface | Initially NXVM evidence and a task-owned extension of the existing console process fixture; no production source or public API changes. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding, UI and source policy. |
+| Verification | Copy actual x64/x86 EXEs and guest-produced per-variant CMOS into private directories, run real monitor lifecycle and normal exit, verify preserved configuration, process exit and isolated data; complete repository units. |
+| Expected Markers | Real executable loads matching variant, reports start/stop, exits normally and leaves valid saved CMOS without cross-variant contamination. |
+| Asset Needs | Existing guest-produced task CMOS and copied executables only; never change owner INI, CMOS, media or ROM. |
+| Reporting Requirements | Executable and CMOS identities, lifecycle output, exit status, per-variant persistence, remaining first-boot/native limits and next step. |
+| Stop Conditions | No synthetic configured CMOS, user-file mutation, guessed guest input, or claim that lifecycle-only tests prove a DOS boot. |
+| Exit Criteria | Reviewed 9a4c40fbd: real EXE lifecycle, Debug RTC mutation, normal teardown/save and other-variant byte isolation passed on both host widths for both variants. Real EXE guest Setup/DOS and native Window input remain open. |
+| Original Owner Request | Complete the first four queued PC110 tasks. |
+| Similar-Issue Sweep | Compare both display variants and host widths, file-missing behavior, matching CMOS isolation and start/stop/exit. |
+
+# M5 T583 S4 — Closed: TFT initial CMOS paths on both host widths
+
+Both host widths reached DOS from explicitly empty TFT CMOS after Setup, saved
+guest state, and reached DOS again in new processes without Setup input. For
+the absent-file seeded default, both reached the date page and persisted its
+`2000-01-01` date; both saved-state new processes reached DOS. The x64 first
+process began DOS, while the x86 first process was still in POST at the probe
+budget. That first-run checkpoint remains open for the real-product receiver;
+the budget is not a failure or a pass. Native App/session behavior remains open.
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T583 S4 after S3 closure 776920928. |
+| Admission And Approval | Owner requested the four PC110 receivers and automatic sequential execution. |
+| Objective | Observe truly empty TFT CMOS through first Setup, save and new-process DOS restart, and separately check the absent-file embedded-seed default on x64 and x86. |
+| Non-goals | No configured-CMOS fabrication, firmware mutation, user-media writes, Shared source changes or native Window/product-session qualification claim. |
+| Reference Baseline | 776920928; S2/S3 derived-DSTN observations and T580 firmware evidence. |
+| Candidate Proposal | [T583 coverage ledger](../etc/evidence/t583-first-setup-ledger.md), TFT empty-CMOS batch. |
+| Files And ABI Surface | Initially NXVM evidence and isolated scratch probes; no production source or public API changes. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding, UI and source policy. |
+| Verification | Run both host widths with a task-owned all-zero 128-byte TFT CMOS image and separately without a TFT CMOS file; use identified guest frames before input, independent copied media and save/restart; complete repository units. |
+| Expected Markers | Actual firmware setup response and DOS, guest-produced 128-byte CMOS, and DOS on a new process without Setup input. |
+| Asset Needs | Existing TFT firmware and copied PC110 disks; never change user INI, CMOS, media or ROM. |
+| Reporting Requirements | Frame/input, CMOS/log/media hashes, both process exit statuses and unverified product/native boundaries. |
+| Stop Conditions | No assumed screenshot or blind input; distinguish explicit empty image from the absent-file embedded-seed default. |
+| Exit Criteria | Reviewed 49754c4bc: blank TFT Setup/DOS and saved-state restarts observed on both widths; seeded default Setup and saved-state restarts observed on both. Seeded x86 first-run DOS remained outside its observation budget and is retained for the real-product receiver, not passed or failed. Full App/native paths remain open. |
+| Original Owner Request | Complete the first four queued PC110 tasks. |
+| Similar-Issue Sweep | Compare both host widths, DSTN behavior, variant-specific CMOS ownership and restored RTC. |
+
+# M5 T583 S3 — Closed: derived-DSTN x86 setup and restart
+
+The x86 isolated factory/Machine run reached ERROR, date confirmation and
+DOS, saved guest-produced CMOS through the existing App callback, and a new
+process reached the same DOS frame without setup input. The original disk
+copies were unchanged. Full x86 repository units passed 712/712. This does
+not qualify native App entry/session teardown, Window input or TFT.
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T583 S3 after S2 closure 70026cdcf. |
+| Admission And Approval | Owner requested completion of the four queued PC110 receivers and automatic sequential execution. |
+| Objective | Check the independently empty derived-DSTN first-setup, save and fresh-process DOS restart path on the x86 host build, against S2's x64 checkpoints. |
+| Non-goals | No fabricated configured CMOS, firmware mutation, owner-media writes, Shared changes or unverified desktop/whole-product claim. |
+| Reference Baseline | 70026cdcf; S2's x64 guest frame and save/restart evidence. |
+| Candidate Proposal | [T583 coverage ledger](../etc/evidence/t583-first-setup-ledger.md), DSTN x86 batch. |
+| Files And ABI Surface | Initially NXVM evidence and isolated task-owned probe; no production interface or source changes. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding, UI and source policy. |
+| Verification | Use x86 Product-factory/Machine, task-owned media, empty CMOS and identified guest frames before input; verify save and a second process without Setup input; run full repository unit suite. |
+| Expected Markers | ERROR and date pages, guest DOS screen, 128-byte guest-produced CMOS, and a fresh-process DOS screen without injected Setup keys. |
+| Asset Needs | Existing external firmware and private copies of both disks; preserve owner INI, CMOS, disks and ROMs. |
+| Reporting Requirements | Per-checkpoint frame/log hashes, process exit, input, RTC/CMOS evidence, media identity and native/product limits. |
+| Stop Conditions | No fabricated guest state, blind input, external media writes or treating probe evidence as native Window/App-session proof. |
+| Exit Criteria | Reviewed d144c3502: independently initialized x86 DSTN reached DOS, saved guest-produced CMOS through the App callback, then reached DOS in a new process without Setup input. TFT and full product routes remain open. |
+| Original Owner Request | Complete the first four queued PC110 tasks. |
+| Similar-Issue Sweep | Compare x64 and x86 initial CMOS, Setup responses, saved state, date/time and DOS checkpoint. |
+
+# M5 T583 S2 — Closed: derived-DSTN Setup and persistence diagnosis
+
+An independently empty DSTN x64 guest accepted ERROR/date input, restarted
+POST and reached PC DOS. A second fresh run repeated that route, then invoked
+the existing Product save callback after Machine shutdown/unbinding. A new
+process restored that guest-produced CMOS and reached the same DOS frame
+without Setup input. These Product-factory/Machine probes preserve copied
+media but do not qualify native App entry/session teardown or Window input.
+The x64 repository unit suite passed 712/712; see the ledger for hashes.
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T583 S2 after S1 closure 671a93c24. |
+| Admission And Approval | Owner directed completion of the first four queued PC110 tasks and automatic sequential execution. |
+| Objective | Observe actual derived-DSTN first-time Setup input, saving, restart and DOS boot through the existing Product/Machine route, and identify the first unproven or failed boundary. |
+| Non-goals | No fabricated CMOS, firmware mutation, host BIOS interception, user-media writes, Shared changes or desktop qualification claim. |
+| Reference Baseline | 671a93c24; S1 fresh-DSTN ERROR observation and existing T580 S87/S90. |
+| Candidate Proposal | [T583 coverage ledger](../etc/evidence/t583-first-setup-ledger.md), next batch. |
+| Files And ABI Surface | Initially NXVM evidence and task-owned probe only; no production interface or source changes. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding, UI and source policy. |
+| Verification | Use isolated media and absent saved CMOS; identify guest frames before each existing input event, observe save and new-process restart if reached, record outputs and media hashes. Run complete repository unit suite before S closure. |
+| Expected Markers | ERROR 00173/00163, actual Setup response, persisted guest configuration and selected DOS-media checkpoint distinguished from event enqueue and time budgets. |
+| Asset Needs | Existing external firmware and task-owned copies of configured disks only; preserve owner files. |
+| Reporting Requirements | Record screenshots/frame hashes, inputs, guest response, process status, observed boundaries, verification and exact next S. |
+| Stop Conditions | No guest state fabrication, direct writes to user files, speculative key injection or claim of native Window/RDP verification from the probe. |
+| Exit Criteria | Reviewed eb2e331d7: fresh DSTN x64 Setup reaches DOS, its guest-produced CMOS is saved by the existing callback, and a new process reaches DOS without Setup input. Product entry/teardown, native interaction, x86 and TFT remain open. |
+| Original Owner Request | Complete queued PC110 tasks including independent first setup and restart. |
+| Similar-Issue Sweep | Retain TFT seeded and genuinely empty CMOS, x86, reset/start and separate process restart as open ledger cases. |
+
+# M5 T583 S1 — Closed: PC110 first-configuration inventory
+
+The x64 repository unit suite passed 712/712, and the product CMOS lifecycle
+tests passed for both display variants on both widths. A current x64 isolated
+DSTN product-factory probe with no saved CMOS reached the same ERROR screen
+as T580, then exited normally after its bounded no-input observation; both
+private media copies were unchanged. This is not an end-to-end Setup pass.
+
+The existing product CMOS lifecycle tests pass on both widths for both
+variants, but do not exercise guest Setup or DOS. The registered firmware
+POST receiver links TFT only. TFT supplies an embedded CMOS seed when no
+saved file exists; DSTN does not. The ledger distinguishes an absent file
+from independently empty CMOS and retains every complete Setup/restart/DOS
+row as open. Next, design a bounded real-product first-setup observation for
+both initial conditions using isolated media and actual guest input; do not
+reuse a TFT-generated CMOS as proof of independent DSTN setup.
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New — M5 T583 S1, following owner-closed T582. |
+| Admission And Approval | Owner directed completion of the first four queued PC110 tasks; this S begins the first-time configuration and restart receiver. |
+| Objective | Reconcile the real first-configuration and restart path with existing source, fixtures and prior evidence, then establish reproducible next-step diagnostics and a coverage ledger. |
+| Non-goals | No fabricated CMOS, proprietary firmware change, owner media mutation, Shared implementation change or full-product qualification claim. |
+| Reference Baseline | 5715cd392, T580 S87/S90 and T582 S40; derived DSTN and TFT remain distinct build-provided firmware variants. |
+| Candidate Proposal | [First configuration and restart](../history/M5-T583-pc110-first-setup-proposal.md); [coverage ledger](../etc/evidence/t583-first-setup-ledger.md). |
+| Files And ABI Surface | Initially NXVM task records and read-only App/integration source; any implementation requires a subsequently bounded S. |
+| Applicable Rules | NXVM guide, execution, documentation, architecture, coding, UI and source policy. |
+| Verification | Review actual firmware/CMOS and integration ownership; run existing suitable bounded diagnostics with private inputs when available, preserve hashes and report actual coverage. |
+| Expected Markers | Independent empty CMOS, Setup input, persisted configuration, restart and DOS checkpoints distinguished for each firmware and host width. |
+| Asset Needs | Existing external firmware and private copies of approved media only; no modification of user INI, CMOS, disks or ROMs. |
+| Reporting Requirements | Report each ledger disposition, reusable tests, evidence limits, measured blockers and the next bounded repair or qualification scope. |
+| Stop Conditions | No source import, undocumented guest-state fabrication, destructive media access, UI claim from a headless probe or unsupported full-coverage claim. |
+| Exit Criteria | Coverage inventory and next diagnostic batch reviewed at ea4bff842; x64 712/712 units, four dual-width product CMOS regressions and the bounded fresh-DSTN observation passed within their stated scope. All end-to-end setup rows remain open. |
+| Original Owner Request | Complete the first four queued PC110 tasks, beginning with first-time configuration and restart. |
+| Similar-Issue Sweep | Compare both display variants and host widths, fresh/persisted CMOS, date/time, setup input and stop/reset/restart boundaries. |
+
+# M5 T582 — Stage closed by owner direction
+
+The owner accepts stage closure even though the original PC110 usability goal
+has not been achieved. The delivered optimizations and non-Shared product
+boundaries were reviewed, and outstanding correctness and performance debt
+was preserved. S39's clock change
+and its dual-width receiver were delivered in 4fb901430, 340baabaf and
+fd4ecfedd. This authorization is not a claim that PC110 startup is usable.
+
+The review confirmed that MyPC110 silently accepted a memory size other than
+the implemented 20 MiB. Delivery bb712dc88 rejects unsupported explicit sizes
+while retaining the default and 20 MiB configuration. Both widths passed
+712 unit tests and the affected product integrations; the two rebuilt EXEs
+match their build outputs. No Shared API or component changed in S40.
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T582 S40 after S39 delivery. |
+| Admission And Approval | Owner authorized stage closure and a final non-Shared quality audit. |
+| Objective | Audit delivered performance work and product-owned code, correct the confirmed PC110 memory request mismatch, and close or explicitly transfer remaining gaps. |
+| Non-goals | No claim of achieved PC110 usability, Shared production changes, unrelated product modifications, or user media changes. |
+| Reference Baseline | Shared 4fb901430, NXVM 340baabaf and MyRaidenII fd4ecfedd. |
+| Candidate Proposal | [T582 proposal](../proposals/m5-pc110-startup-clock-performance.md), S40. |
+| Files And ABI Surface | MyPC110 construction, existing test, App release pair and NXVM task records. No public interface change. |
+| Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding, NXVM architecture and UI. |
+| Verification | Cached x64/x86 build, 712/712 units on each width, two affected integration tests per width, PE and artifact identity, actual-diff review. Full integration results belong to the previous S39 receiver. |
+| Expected Markers | Unsupported explicit RAM rejected; default and 20 MiB accepted; retained debt and unverified desktop/RDP limits recorded. |
+| Asset Needs | Existing firmware inputs; do not alter INI, CMOS, snapshots, disks or external ROMs. |
+| Reporting Requirements | Delivered changes and measured limits, applicable tests, artifact hashes, quality coverage and outstanding debt. |
+| Stop Conditions | Do not claim solved performance or erase user-owned unrelated changes; do not expand Shared or another App's production scope. |
+| Exit Criteria | Owner-directed stage closure after validated delivery bb712dc88 and recorded unresolved performance and memory-routing debt. This is not full performance acceptance. |
+| Original Owner Request | Close if further gains are difficult after final accounting and non-Shared quality review. |
+| Similar-Issue Sweep | Review all PC App configuration and lifecycle boundaries; make a limited read-only pass of MyNES and MyRaidenII. |
+
+# M5 T582 S39 — Closed: execution and timing architecture convergence
+
+### Admitted bounded clock-deadline division candidate
+
+In `src/x86-core/machine/clock.c`, use the existing positive, post-phase
+deadline numerator as a 32-bit dividend only when it fits, retaining the
+existing full-width path otherwise. The ratio, rounding, error result, output,
+clock state and public interface remain unchanged for every machine. Extend
+the existing rational-clock boundary table and update the X86 Core source and
+test manifests. The x86 startup probe observed 10298986 of 10299355 deadline
+conversions within this range; scratch differential checks covered one
+million cases per width. Fixed-work performance is noisy and does not prove
+usability. Qualify the existing clock and affected scheduling tests, cached
+full Shared and product receivers, integrations and fourteen artifacts before
+delivery; inspect the actual diff. T582 remains open for the user-facing goal.
+
+Both widths passed 712 unit and 48 default integration tests, plus the
+5160/5170/DeskPro receiver groups and MyRaidenII selected-set probes. Fourteen
+PE widths were verified. The private-media PC110 menu/response marker took
+183/8 seconds on x64 and 251/11 on x86; the x86 response capture was still
+incomplete. These single runs do not establish a stable speedup or native
+Window/RDP usability. Continue S39 after this bounded optimization.
+
+### Local string-form handoff remains experimental
+
+An unwrapped local-argument timing prototype reached the same stable PC110
+frame as a following baseline in one x64 private-media pair, but both took
+minutes and x86 fixed-work samples were mixed. The prototype removes helper
+entries still used by tests; a scratch forwarding version passes focused
+tests but changes generated layout and did not establish a consistent
+benefit. A scratch single-path migration of the six direct-test files passed
+their focused tests, but one fixed-work pair per width did not show a gain;
+its expanded internal contract is not adopted. Usability remains unproven.
+
+### Masked-span candidate withdrawn; crossing defect open
+
+A generic masked-span candidate reduced isolated query work but did not
+establish a PC110 improvement. Its testing exposed an existing cross-mask
+multi-byte routing defect in ordinary RAM and provider-decline paths. A
+partial correction did not cover both, so the candidate and its task-owned
+artifacts were withdrawn. The existing committed implementation remains.
+Further design must preserve provider errors, partial writes, parity and
+observers without creating a second routing owner. The usability objective
+remains open; see S39 evidence.
+
+### Approximate timing investigation
+
+The owner asked whether Turbo could use L1 timing. A temporary fixed-tick
+selector removed detailed timing and observation and shortened one x64 private
+PC110 menu-marker run, but changed guest time and returned an incomplete
+response frame. It is an experiment, not a qualified L1 model or an approved
+production precision downgrade. The existing Turbo and timing semantics are
+unchanged. A second temporary 486 experiment retained existing bus cost, REP
+bookkeeping and generic branch observation, and reported a shorter menu marker
+than its subsequent baseline; its response frame and guest time differed. It
+still lacks complete metadata, cross-profile design, switching and device
+qualification. A scratch variant reused the existing compatibility recipe
+and reached the same fixed checkpoint, but its write to the detailed-mode
+configuration is not an acceptable production design. See S39 evidence for
+the comparisons, functional checks and limits. A cross-profile scratch probe
+also showed that one nominal value changes guest tick totals differently on
+8086, 286, 386 and 486; V30 retained its original timing path. It does not
+establish a safe general policy or full-system performance gain.
+
+### External wait-window scan upper bound not adopted
+
+A task-only ablation of the existing wait-window search at the middle startup
+checkpoint gave mixed host-width results and cannot support a generic timing
+change. The normal ordered window search remains. See S39 evidence; PC110
+usability remains unresolved.
+
+### I/O permission compilation experiment not adopted
+
+A task-only compiler hint changed the port-input stack frame and improved one
+fixed-work sample on each width, but one adjacent x64 full-menu comparison did
+not establish a repeatable practical improvement. The nonportable hint was not
+adopted; PC110 usability remains unresolved. See S39 evidence.
+
+### Startup-middle port-read attribution
+
+Task-only x64 sampling attributed a substantial portion of sampled ordinary
+instruction execution to `IN` during the middle startup phase. Port stages and
+the existing wired-OR/removal ownership were reviewed; the data do not justify
+skipping device callbacks or assuming route state is unchanged across a
+callback. See S39 evidence. The complete usability goal remains open.
+
+### Admitted lexical preview task-checkpoint copy removal
+
+Move the existing private task-switch checkpoint beside the already omitted
+preview cache/TLB region and exclude it from the preview context copy. Lexical
+preview does not execute instruction handlers or task switches; its copied
+task-switch flag is reset at the existing boundary. There is no new state,
+public API, second decoder or profile branch. Scratch layouts reduce the
+initial context-copy prefix by 344 bytes on x64 and 340 bytes on x86; the
+context itself is eight bytes smaller on x64 and unchanged on x86. These are
+fixed-size reductions, not an asymptotic change. Two-width long fixed-work,
+poisoned existing preview tests and one x64 full-menu pair do not prove all
+fault/callback behavior or practical speedup. Run existing preview, CPU,
+fault, debug and multi-profile regressions, full Shared receivers and fourteen
+artifact qualification; preserve the full system-usability objective.
+
+After rebuilding both test trees, both widths passed the full 712-unit and
+48-default-integration suites and all three PC profile receiver groups.
+MyRaidenII selected-set probes and fourteen PE-width checks passed. The final
+x86 private-media menu and partial-frame marker was 256/11 seconds; visual
+inspection showed the World Clock was still drawing. Native Window/RDP
+performance remains unverified, and the S objective is still open.
+
+### Admitted private CPU segment-layout compaction
+
+Reorder the private segment-cache fields and store the existing bounded segment
+kind in `lib_u8`; retain the existing enum constants, all segment fields and
+complete CPU snapshots. Add a compile-time bound on the stored enum values.
+There is no public ABI, machine-specific path, new state or timing change.
+Scratch layouts reduce each segment from 24 to 20 bytes and the CPU snapshot
+from 380 to 340 on both host widths; this is a fixed-size reduction, not an
+asymptotic change. Fixed-work and one adjacent x64 full-menu pair do not prove
+an end-to-end speedup. Qualify CPU profiles, faults, snapshots, all Shared
+receivers and fourteen artifacts; reject if actual behavior or performance
+materially regresses. PC110 usability remains the S objective.
+
+Both widths passed the focused suite, 712 unit and 48 default integration
+tests, plus all three PC profile receiver groups. MyRaidenII selected-set
+probes passed and fourteen PE widths were verified. The final x86 PC110
+private-media menu/input marker was 259/13 seconds; one sample and earlier
+host variability do not prove an overall speedup or completed RDP experience.
+The user-facing performance objective remains open.
+
+### Pending retirement subtotal candidate rejected
+
+Retaining a local event subtotal avoided one repeated CPU timing capture
+without skipping the retirement control checks. Fixed-work results did not
+establish a stable cross-width gain, and callback and partial-budget equivalence
+remains unproven. The candidate was not adopted; S39 remains active.
+
+### Empty FDC advancement candidate rejected
+
+An idle-command FDC guard showed mixed fixed-work results and was slower in
+both x86 run orderings; it added conditions and was not adopted. Full guest
+and callback equivalence was not established. S39 remains active.
+
+### DMA signal reuse candidate rejected
+
+A scratch candidate reused the primary DMA signal snapshot only when the
+same advancement took no mutating path. Both host-width fixed-work samples
+failed to show a benefit and the candidate added complexity; it was not
+adopted. Full controller equivalence was not established. S39 remains active.
+
+### Current startup cost recheck
+
+A task-only x64 startup sample after the shared classifier change still shows
+distributed CPU, timing, board and memory costs. DMA signal snapshots span
+potential controller mutations, so their reuse is not yet proven. See S39
+evidence; the sample is not a complete boot or interactive validation.
+
+### Timing formula prefix scan candidate rejected
+
+A task-only prefix-count reuse candidate retained the older-model prefix
+fallback but did not improve either host-width fixed-work sample. It added a
+condition and did not establish callback or full-state equivalence, so it was
+not adopted. See the S39 convergence evidence. The full system-usability
+objective remains open.
+
+### Admitted common prefix-classifier consolidation
+
+Replace the CPU-private prefix classifier's individually repeated opcode
+cases with equivalent bounded bit groups, keeping one classifier and the
+existing V30 versus 32-bit profile semantics. All 256 opcode bytes and the
+full supported profile range plus out-of-range values matched in dual-width
+scratch exhaustive checks. No table, cache, App condition, API, new state,
+fetch, timing or execution route is introduced. Run existing dual-width
+prefix, NEC, exception, timing and receiver tests; check all fourteen release
+artifacts and actual private-media PC110 boot/response. The fixed-work
+comparisons do not establish end-to-end performance or complete guest state.
+
+Both widths passed 41 focused CPU tests, the expanded classifier test, 712
+full unit and 48 default integration tests, and all three PC profile receiver
+groups. MyRaidenII selected-set probes passed. Private-media menu/input
+frame-change samples were 179/8 x64 and 240/11 x86; these single samples do
+not establish native Window/RDP usability. S39 remains active.
+
+
+### Current prefix-dispatch candidate rejected
+
+Current-source opcode prefix classification reuse improved the x64 fixed
+checkpoint but was slower in both pinned x86 comparisons. It is not retained;
+the full system-usability objective remains open. See the S39 convergence
+evidence for scope and measurement limits.
+
+
+### Admitted PIC deadline owner consolidation
+
+Inline the sole `pic_ticks_until_one` helper into `x86_pic_ticks_until_event`;
+when no unmasked pending interrupt exists, retain the same INVALID_STATE
+result and untouched output without scanning the eight delay counters. Keep
+argument validation, earliest eligible delayed tick, cascade, mask and timing
+semantics, without new API, state, machine special case or alternate path.
+The dual-width differential includes varied delay values; run the existing
+PIC/board regressions and cached full Shared receiver and artifact gates,
+then compare actual PC110 boot/response. The objective remains usable system
+performance, not just an isolated PIC microbenchmark.
+
+The focused tests and 2,000,000-state differential variants passed on both
+widths. x64 full units/integration passed; x86 had two parallel unit timeouts
+that passed separately, then all remaining integration/profile receivers
+passed. Private x64 boot measurements reversed direction between two run
+orders, and neither they nor frame-change samples establish a stable gain or
+usable desktop experience. S39 remains active.
+
+
+### Admitted shared PIC idle-selection reduction
+
+When a ready 8259 has no unmasked pending request, return the existing
+INVALID_STATE result before scanning priority slots. Reuse that same pending
+mask in the existing nonempty scan; preserve invalid arguments, initialization,
+masked/delayed requests, priority, cascade, level, acknowledgment and output
+ownership. No state, API, model branch or guest-time shortcut is added. The
+PC110 response-path counter measured this existing case in both startup and
+interaction; its instrumented duration is not a speed benchmark. Differential
+state and focused PIC tests precede the dual-width full Shared receiver,
+fourteen-artifact and private-media system checks. User requires equivalent
+optimizations for all PC profiles and no model-specific special cases.
+
+Both widths passed 14 focused interrupt tests and two million sampled-state
+PIC differential cases. In the cached receiver, x64 unit was 711/712 with
+one parallel timeout passing on isolated retry; x86 was 712/712. Default
+integration was 47/48 on x64 (native MIDI unavailable) and 48/48 on x86;
+all PC profile receivers and MyRaidenII probes passed. Final private-media
+menu/input frame-change samples were 178/8 x64 and 254/13 x86; these isolated
+samples do not prove stable improvement or native Window/RDP responsiveness.
+S39 remains active for actual system usability.
+
+
+### Admitted cross-profile timing prefix handoff
+
+Compute Intel instruction-prefix position once in the existing timing selector
+and pass it through its current candidate, string, repeat, LOCK and 486 timing
+terms. Preserve each model's actual timing, failed-candidate ordering, fault,
+debug and observation behavior; V30 keeps its NEC native/emulation prefix
+representation. Keep formula-input classification where its existing prefix
+semantics differ. No App-specific branch, persistent state, second executor
+or public interface. Update the private CPU headers and existing tests without
+reducing assertions, and update source/test manifests. Qualify all CPU models,
+both host widths, all Shared receivers and fourteen artifacts. The isolated
+seven-profile loop and private PC110 system comparisons are evidence only,
+not sufficient acceptance or proof of usable system performance.
+
+Both host widths passed the full 712-unit and 48-default-integration groups,
+the three PC receiver groups, and MyRaidenII selected-set probes; all fourteen
+artifact PE widths were checked. The final x64 PC110 private-media probe
+reached its menu at sample 194 and a frame change at input sample 8. This
+single background measurement is not native Window/RDP validation and does
+not establish usable performance. S39 remains active for further bottleneck
+isolation and cross-model optimization.
+
+### Rejected 486 timing prefix handoff; cross-profile audit
+
+The 486-only local prefix handoff passed focused and receiver tests but
+showed slower complete PC110 startup in two sequential orderings. It was
+reverted along with its test adaptations; all receiver EXEs were restored to
+the previously validated baseline. See S39 evidence for limits and failures.
+
+The owner requires auditing equivalent repeated work across every CPU profile
+and avoiding PC110/App-specific shortcuts. Investigate an instruction-local
+Intel timing handoff only if it preserves each profile's existing prefix,
+fault, debug and timing contracts. V30's NEC and emulation prefix semantics
+must remain distinct. Do not add persistent state or a second executor.
+Any candidate requires named profile coverage, dual-width Shared receiver
+and fourteen-artifact gates, plus actual PC110 startup and response evidence.
+Do not treat isolated short-loop improvement as usable system performance.
+
+### Admitted repeated-instruction prefix reuse
+
+In the existing CPU repeat-timing record, compute the decoded prefix count at
+most once and pass that local value to continuation matching and the same
+record's opcode/byte-count updates. Retain V30's NEC-specific identity,
+prefix bounds, repeat phases, failure and observation semantics; do not add
+state, callbacks, an executor or a public API. Review the actual compiler
+output and both host widths, exercise the existing repeat, timing, interrupt,
+fault and preview fixtures, update the X86 Core manifest, then run the full
+Shared receiver gate and fourteen artifacts. Compare actual private-media
+PC110 system startup and interaction; a local reduction does not close the
+usability objective.
+Both 40-test focused suites and 712-test full unit suites passed. All three
+PC profile receiver groups passed on each width; the native MIDI output open
+assertion was the sole failure in each 48-test default integration run.
+MyRaidenII selected-set probes passed and fourteen PE widths were checked.
+An initial post-change PC110 sample captured an incompletely drawn window.
+A stricter repeat captured the same complete World Clock frame as baseline at
+the ninth one-second input sample, after menu sample 202. This single pair
+does not establish a speedup; system usability remains unresolved. See S39
+evidence.
+
+### Admitted lexical-preview snapshot copy reduction
+
+Keep the private decoder's CPU checkpoint adjacent to its existing access
+array and omit both from the preview's existing segmented copy. `ExecBoundary`
+must overwrite the entire checkpoint from the preview CPU before any preview
+consumer reads it; preserve the normal fetch, diagnostics, faults, timing and
+all profile paths. Do not change public interfaces or add state. Review all
+private-layout consumers, update the X86 Core source manifest, run relevant
+dual-width CPU tests followed by the full Shared receiver gate and fourteen
+product artifacts, and compare actual PC110 boot. This bounded reduction does
+not close the usability objective.
+The relevant 40 tests and all 712 unit tests passed on each width; default
+integration passed 47/48 on each width, with native MIDI output creation the
+sole failure. PC profile receivers and MyRaidenII selected-set probes passed.
+The x64 private-media menu probe took 200.83 seconds versus 210.25 seconds in
+one earlier same-harness baseline; this does not establish acceptable or
+statistically stable interactive performance. Details and limits are in S39
+evidence; T582 remains open.
+
+### Admitted inactive external-cycle observer removal
+
+Bind the existing CPU external-cycle observer only when the immutable machine
+contract enables a wait window or page timing, or runtime tracing is compiled
+in. Preserve the existing observer for all such configurations, and retain the
+CPU's independent bus timing. Exercise disabled and enabled wait windows and
+observable tracing, update the X86 Core manifests, and complete the Shared
+dual-width receiver gate and product artifacts. Compare the same private PC110
+startup workload; this bounded optimization does not itself close T582.
+Both 712-test unit suites and all PC profile receiver groups passed. Native
+MIDI opening failed on both widths; see the S39 evidence for exact limits.
+The measured menu wait remains approximately 198 seconds and is not accepted.
+Current same-loop remeasurement still shows a large CPU/Machine/reference
+gap. The attempted inline of external-cycle invalidation did not show a
+consistent dual-width gain and was rejected; see S39 evidence. Continue
+investigating the complete CPU/timing/bus chain against real startup rather
+than treating this microbenchmark as the product acceptance result.
+
+### Admitted inverse-pair condition evaluation
+
+In `src/x86-core/cpu/cpu_timing_model.c`, express the sixteen existing
+condition-code results as eight conditions and their inverse. Retain the
+original helper, flag meanings, null-output behavior and all CPU profiles;
+do not add state, a second executor or a timing approximation. Reuse existing
+condition and timing tests, update the source manifest and run the Shared
+dual-width receiver gate and fourteen product artifacts. This local code
+reduction does not close the PC110 performance objective.
+Dual-width unit and profile receiver tests passed; native MIDI output failed
+to open the host device on both widths. Detailed results are in S39 evidence.
+
+### Admitted invalid observation initialization
+
+In `src/x86-core/cpu/cpu_instructions.c`, invalidate the prior completed
+observation at refresh entry and clear only the next-lexeme field read before
+reconstruction. A valid observation must still be completely initialized by
+the existing copy path. Preserve fault, wait, interrupt, halt, debug and all
+profile behavior; no API, second path or additional state. Extend the existing
+CPU completion fixture only as needed, update X86 Core manifests, validate
+both host widths and complete the Shared receiver gate and product artifacts.
+This bounded reduction does not close the PC110 usability objective.
+Both 712-test unit runs and the profile receivers completed. Native MIDI
+opening failed on both widths, and the x86 MyNES native-window test passed
+only on isolated retry; see the S39 evidence for exact qualification limits.
+
+### Admitted FDC seek-state representation
+
+In `src/x86-nxvm/chips/fdc8272/fdc.c` and private `fdc.h`, replace the four
+per-drive pending-seek bytes with the single four-bit seek mask already
+represented by the controller's status register. Preserve drive admission,
+ready changes, per-drive deadlines, simultaneous seek/result order, reset and
+capture behavior. Do not add state, a public interface or a parallel path.
+Adapt the existing FDC causes fixture and add only missing drive-bit coverage;
+update the two X86 NXVM manifests. Validate x86/x64 FDC and board tests first,
+then perform the full Shared receiver gate and fourteen product artifacts.
+The storage and idle-scan reduction does not close the PC110 usability goal.
+The change and qualification results are recorded in
+`docs/nxvm/etc/evidence/t582-s39-execution-convergence.md`; x64 native MIDI
+device opening failed both the full run and isolated retry. Continue S39 with
+real PC110 startup and interaction bottleneck measurement.
+
+### Admitted memory-route arithmetic consolidation
+
+Within `src/x86-core/machine/memory.c`, calculate the raw and decoded access
+end values once in the existing provider resolver instead of adding the access
+size for each provider and mapping. Preserve unsigned 64-bit wrap behavior,
+all raw, mapping and provider precedence, query/failure ordering, CPU-only
+routes and bytewise fallback. No API, persistent state or second path is
+introduced. Update the X86 Core source manifest, run its relevant routing
+tests on x86/x64, then perform the full Shared receiving gate and fourteen
+receiver artifacts before committing or reporting delivery. The scratch
+comparison is bounded evidence, not a PC110 usability fix; T582 stays open.
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T582 S39 after S38. |
+| Admission And Approval | Owner authorized automatic numeric S progression and performance work preserving guest behavior. |
+| Objective | Identify and prototype a coherent reduction in CPU execution and timing overhead sufficient to materially improve PC110 startup and ordinary operation. |
+| Non-goals | No guest-work skipping, timing downgrade, second executor, host-clock substitution or owner-media mutation. |
+| Reference Baseline | Shared `f50bc9392`, [Game workload](../etc/evidence/t582-s26-personaware-game.md), [S35 attribution](../etc/evidence/t582-s35-cost-attribution.md), [S36 CPU evidence](../etc/evidence/t582-s36-cpu-hot-path.md), and [S38 scheduler evidence](../etc/evidence/t582-s38-clock-advancement.md). |
+| Candidate Proposal | [T582 proposal](../proposals/m5-pc110-startup-clock-performance.md), S39. |
+| Files And ABI Surface | Initially NXVM evidence and task-owned scratch; admit exact Shared owners, consumers and interfaces before production edits. |
+| Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding and source policy. |
+| Verification | Preserve full CPU state, faults, debug, timing, asynchronous events and all CPU profiles; compare representative workload on both widths and perform full Shared receiving for production changes. |
+| Expected Markers | A measured coherent design and implementation or a bounded evidence-backed rejection with a next actionable direction. |
+| Asset Needs | Existing private task-owned firmware and media copies only. |
+| Reporting Requirements | Report actual DOS/Personaware startup latency and ordinary operation separately from fixed-work diagnostics; distinguish native Window/RDP evidence and limits. Game is an optional workload, not the definition of usability. |
+| Stop Conditions | No unproven skipping of guest work, deadlines or observation and no separate execution path. |
+| Exit Criteria | Qualified meaningful candidate or documented negative result with a concrete next candidate; T582 stays open until actual usability and owner acceptance. |
+| Original Owner Request | Improve PC110 startup and ordinary-operation performance to practical emulator usability while preserving guest behavior; a game is not the acceptance target. |
+| Similar-Issue Sweep | Review S26 investigation index and S35–S38 evidence before repeating experiments. |
+
+[S39 evidence](../etc/evidence/t582-s39-execution-convergence.md) records the
+initial branch-result duplication audit. PC110 usability remains unresolved.
+The first 30 million startup instructions now have direct SMM-mode counts;
+Machine-return endpoint frequency is biased and must not be used as a proxy
+for execution time. A separate sampled CPU-refresh cost check places entry
+and exit together at about 3.4% of sampled refresh intervals in that early
+workload, not the dominant cost. Continue with the actual retirement-to-device
+path and retain the real DOS/Personaware startup endpoint as the performance
+target.
+
+Earlier current-source full-menu probes with original and candidate port
+routing did not reach the marker within 300 and 405 seconds respectively,
+while the preserved earlier binary reached it in 213 seconds. A subsequent
+current-build frame-capture probe reached the marker in 219 seconds and showed
+DOS startup at 180 seconds. A path audit established that the failed probe
+loaded an empty CMOS adjacent to its executable; the other two loaded a
+128-byte seed adjacent to theirs. The published DSTN CMOS is also empty.
+The earlier claim of identical CMOS inputs was incorrect, so these runs cannot
+establish a CPU or port-routing regression. Investigate the actual first-run
+CMOS path and use same-executable-directory inputs for future comparisons.
+Startup remains impractically slow. The port-grouping candidate was
+subsequently accepted and committed; it is not a complete usability fix. A
+corrected x64
+configured-CMOS comparison reached the menu in 234.64 seconds with the old
+route and 216.23 seconds with the candidate; this single pair is not an
+end-to-end usability solution. Both cached default-configuration builds and the x64
+and x86 712-test unit suites passed; the default-configuration integration
+suites passed 48/48 on each width, including native desktop and MIDI tests.
+All three additional PC profiles passed their receiver tests on each width,
+the MyRaidenII external receivers passed, and all 14 PE widths were checked.
+The port change is committed as Shared `d5415b5b9`, the MyRaidenII receivers
+as `1093a09ce`, and the PC receivers and evidence as `81ea72cbc`; all have
+been pushed. The S and T remain open because the measured PC110 startup is
+still not practically usable.
+
+### Admitted owner-local port grouping candidate
+
+In Shared `x86-core/machine`, replace the single linear port-provider list
+with per-Machine port buckets as the sole route storage. Preserve the current
+per-port provider order, exclusive and wired-OR behavior, byte lanes,
+registration rollback, owner removal, failure propagation and callback-time
+mutation observations. Do not add a process-global index, second execution
+path or public API. Update the existing port-registration tests and the two
+X86 Core manifests. First compare the actual implementation and restore it if
+it regresses or fails those invariants; then qualify all Shared consumers and
+fourteen product artifacts. The measured scratch upper bound uses unsafe
+process-global state and is not a production implementation or proof of
+end-to-end improvement. Record real DOS/Personaware timing and limitations;
+this candidate alone does not close T582.
+
+### Port registry partition rejected
+
+The admitted two-list port registry passed its focused dual-width tests but
+its real implementation was slower in both x86 ordered comparisons. It and
+its test/manifest edits were withdrawn; [S39 evidence](../etc/evidence/t582-s39-execution-convergence.md)
+records the measurements. The affected port targets were rebuilt and their
+focused tests passed on both architectures after restoration. Continue the
+performance investigation. No release artifact may contain the rejected code.
+
+### Admitted carry-rotate consolidation
+
+Within Shared `src/x86-core/cpu/cpu_instructions.c`, replace the six RCL/RCR
+width-specific loops with one private carry-ring implementation. Preserve
+effective-count rules for every profile, operand and undefined-flag records,
+CF/OF semantics, timing and the existing decoder path. The single-count case
+uses 32-bit arithmetic; other nonzero counts use a bounded 9/17/33-bit ring.
+No public API, state, clock or new execution owner is admitted. Existing CPU
+rotate, 486 timing and V30 tests remain the regression owners. Before the full
+Shared receiver, compare actual CPU baseline and candidate over all counts,
+independent CF/OF states, widths and supported profiles, and benchmark both
+host widths including the single-count path. Rebuild and qualify all affected
+Shared consumers and fourteen product artifacts. This source/algorithm
+consolidation is not by itself a claim of interactive PC110 performance.
+
+### Admitted double-precision shift result simplification
+
+In Shared `src/x86-core/cpu/cpu_instructions.c`, replace the existing SHLD
+and SHRD per-bit result loops with bounded unsigned shifts and masking. Keep
+the current opcode paths, count handling, undefined markers, operand records,
+flags, exceptions and timing unchanged; no public API, machine state or
+additional execution path is admitted. Before retaining the change, compare
+the actual original and candidate CPU for both widths and directions, count
+boundaries, flags, register and memory operands and existing timing outputs;
+run existing CPU/Debug/Memory fault and timing tests on both architectures.
+Update the affected manifest, perform the cached Shared receiver and rebuild
+the fourteen affected product EXEs. Measure the actual PC110 workload and
+report any uncertain speed benefit without treating this bounded simplification
+as proof of playability. All Shared consumers remain within the receiver scope.
+
+# M5 T582 S38 — Closed: clock and device advancement
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T582 S38 after S37. |
+| Admission And Approval | Owner authorized automatic numeric S progression and performance work preserving guest behavior. |
+| Objective | Identify and qualify a substantive reduction in repeated clock or device scheduling work on the actual PC110 workload. |
+| Non-goals | No skipped guest work, reduced timing fidelity, second clock or executor, or owner-media mutation. |
+| Reference Baseline | Shared `f50bc9392`, [S37 evidence](../etc/evidence/t582-s37-memory-bus.md) and [scheduler observations](../etc/evidence/t582-s13-scheduler-observation.md). |
+| Candidate Proposal | [T582 proposal](../proposals/m5-pc110-startup-clock-performance.md), S38. |
+| Files And ABI Surface | Initially NXVM evidence and task-owned scratch; admit exact Shared production owner and consumers before implementation. |
+| Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding and source policy. |
+| Verification | Preserve guest time, clock phase, device side effects, asynchronous event and failure ordering; compare equivalent work on both widths and run full Shared receiver if needed. |
+| Expected Markers | Evidence-backed improvement or a bounded rejection with a concrete subsequent direction. |
+| Asset Needs | Existing private task-owned firmware and media copies only. |
+| Reporting Requirements | Distinguish fixed-work measurements, guest clock and game behavior from desktop/RDP usability; report actual changes and limits. |
+| Stop Conditions | No unchecked deadline reuse or suppression of guest-visible events or mutations. |
+| Exit Criteria | Qualified candidate or documented negative result with a next actionable candidate; T582 stays open until real usability and owner acceptance. |
+| Original Owner Request | Improve PC110 performance to interactive usability while preserving guest behavior. |
+| Similar-Issue Sweep | Review S13 and S26 scheduler, deadline and clock experiments before repeating a candidate. |
+
+[S38 evidence](../etc/evidence/t582-s38-clock-advancement.md) records the
+initial Core timeline measurements. The performance objective remains open.
+
+# M5 T582 S37 — Closed: memory and bus hot paths
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T582 S37 after S36. |
+| Admission And Approval | Owner authorized automatic numeric S progression and performance work preserving guest behavior. |
+| Objective | Identify and qualify an evidence-backed reduction in repeated memory routing, bus access or cache work in the actual PC110 workload. |
+| Non-goals | No guest-work skipping, timing downgrade, second executor, host clock substitution or owner-media mutation. |
+| Reference Baseline | Shared `9ffb2bcfd`, [S35 attribution](../etc/evidence/t582-s35-cost-attribution.md) and [S36 CPU evidence](../etc/evidence/t582-s36-cpu-hot-path.md). |
+| Candidate Proposal | [T582 proposal](../proposals/m5-pc110-startup-clock-performance.md), S37. |
+| Files And ABI Surface | Initially evidence and task-owned scratch; admit the exact production owner and interfaces before implementation. |
+| Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding and source policy. |
+| Verification | Preserve mapping, cache invalidation, provider order and side effects, bus timing, faults and debug; use comparable dual-width probes and the full Shared receiver when needed. |
+| Expected Markers | A qualified improvement or evidence-backed rejection with a next actionable candidate. |
+| Asset Needs | Existing private task-owned firmware and media copies only. |
+| Reporting Requirements | Separate fixed-work timing, complete-frame Game behavior and native/RDP usability; report actual code and size changes. |
+| Stop Conditions | Do not assume ordinary provider accesses are observational or skip guest-visible memory and bus effects. |
+| Exit Criteria | Qualified candidate or documented negative result; T582 remains open until real usability and owner acceptance. |
+| Original Owner Request | Improve PC110 performance to interactive usability while preserving guest behavior. |
+| Similar-Issue Sweep | Consult the S26 investigation index and S31/S34 routing and cache evidence before repeating experiments. |
+
+[S37 evidence](../etc/evidence/t582-s37-memory-bus.md) records the first
+cache-fill mapping investigation and its PC110 startup frequency; the
+performance objective remains unresolved.
+
+### Admitted disabled data-breakpoint scan guard
+
+The existing private CPU data-breakpoint matcher may return after initializing
+its matched output when all four DR7 local/global enable pairs are clear.
+Its sole caller publishes the matched mask only if an enabled comparator
+matched, so disabled-only matches cannot change DR6 or a trap. Preserve the
+whole existing scan when any comparator is enabled, including mixed enabled
+and disabled matches, TF/RF, debug observations and fault ordering. This uses
+no new state, API, executor or clock; the disabled case avoids work proportional
+to recorded memory accesses. Existing comparator tests already enumerate all
+four-slot enabled/matched masks and both local/global forms. Both widths passed
+the focused checks and 712 unit tests; default integration had one MyNES native
+window failure per width, each passing on isolated rerun. Profile integrations
+and fourteen product artifact checks completed. Fixed-work timings are noisy,
+and the game sample did not show a meaningful improvement; the performance
+objective remains open. See the S37 evidence for the validation limits.
+
+# M5 T582 S36 — Closed: CPU execution hot paths
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T582 S36 after S35. |
+| Admission And Approval | Owner authorized automatic numeric S progression and CPU optimizations that preserve timing and behavior. |
+| Objective | Identify and qualify an evidence-backed reduction in CPU instruction execution or timing work for real PC110 workloads. |
+| Non-goals | No guest-work skipping, timing downgrade, second executor, host clock substitution or owner-media mutation. |
+| Reference Baseline | Shared `9ffb2bcfd` and [S35 attribution](../etc/evidence/t582-s35-cost-attribution.md). |
+| Candidate Proposal | [T582 proposal](../proposals/m5-pc110-startup-clock-performance.md), S36. |
+| Files And ABI Surface | Initial audit and probes only; admit exact production owner and interfaces before implementation. |
+| Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding and source policy. |
+| Verification | Preserve all CPU profiles, faults, timing, observation and instruction semantics; use comparable dual-width probes and the full Shared receiver when needed. |
+| Expected Markers | A qualified improvement or a bounded evidence-backed rejection, without claiming gameplay from a synthetic checkpoint. |
+| Asset Needs | Existing private task-owned firmware and media copies only. |
+| Reporting Requirements | State actual speed and code-size changes, host variance, test coverage and native/RDP limitations. |
+| Stop Conditions | Do not discard existing timing or observation semantics or add a second executor. |
+| Exit Criteria | Qualified CPU candidate or documented rejection with actionable follow-up; keep T582 open until owner acceptance. |
+| Original Owner Request | Improve PC110 performance to interactive usability while preserving guest behavior. |
+| Similar-Issue Sweep | Consult the S26 investigation index and S35 negative results before repeating experiments. |
+
+[S36 evidence](../etc/evidence/t582-s36-cpu-hot-path.md) records the initial
+timing-evaluator compiler experiment and its mixed results; the usability
+objective remains unresolved.
+
+# M5 T582 S35 — Closed: CPU and Machine cost attribution
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T582 S35 after S34. |
+| Admission And Approval | Owner authorized automatic numeric S progression and comparable cost investigation without reducing guest fidelity. |
+| Objective | Attribute the remaining PC110 workload cost among CPU execution, memory and port routing, clock advancement and device scheduling using comparable evidence. |
+| Non-goals | No guest-work skipping, timing downgrade, second executor, host clock substitution or owner-media mutation. |
+| Reference Baseline | Shared `9ffb2bcfd`, S20 and S26 execution-chain measurements and S34 profile and dispatch evidence. |
+| Candidate Proposal | [T582 proposal](../proposals/m5-pc110-startup-clock-performance.md), S35. |
+| Files And ABI Surface | Initially NXVM evidence and task-owned scratch only; admit any production change separately with its exact boundaries. |
+| Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding and source policy. |
+| Verification | Reuse earlier results; sample comparable workloads and report measurement overhead, uncertainty and observability limits. Preserve guest timing and state. |
+| Expected Markers | Ranked costs and concrete evidence-backed candidates, without subtracting measurements from unlike probes as if they had identical work. |
+| Asset Needs | Existing private task-owned firmware and media copies only; preserve owner assets. |
+| Reporting Requirements | Distinguish inclusive from exclusive costs, representative workload from synthetic loops and measured values from hypotheses. |
+| Stop Conditions | No timing downgrade, guessed hardware behavior or bypass of fault, event and device ordering. |
+| Exit Criteria | Actionable ranking with limitations and a next candidate; the T remains open until interactive usability is verified. |
+| Original Owner Request | Improve PC110 performance to interactive usability while preserving guest behavior. |
+| Similar-Issue Sweep | Consult the S26 investigation index and subsequent evidence before repeating any experiment. |
+
+The [initial attribution](../etc/evidence/t582-s35-cost-attribution.md)
+reconciles existing measurements and their limits. It does not yet identify a
+qualified substantial optimization or establish interactive performance.
+
+# M5 T582 S34 — Closed: remaining PC110 usability costs
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T582 S34 after S33. |
+| Admission And Approval | Owner authorized automatic numeric S progression and preserving timing and behavior while improving PC110 usability. |
+| Objective | Identify the next substantial, evidence-backed CPU, memory or device cost after S33 and design a safe improvement. |
+| Non-goals | No guest-work skipping, timing downgrade, second executor, host clock substitution or owner-media mutation. |
+| Reference Baseline | S27–S33 profiling and [S33 receiver evidence](../etc/evidence/t582-s33-prefix.md). |
+| Candidate Proposal | [T582 proposal](../proposals/m5-pc110-startup-clock-performance.md), S34. |
+| Files And ABI Surface | Initial audit limited to NXVM evidence and task-owned scratch. Before production edits, document the specific owner, interfaces, candidate and verification in this packet. |
+| Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding and source policy. |
+| Verification | Reuse prior samples before running focused probes; preserve guest timing, event ordering, faults, observations and all CPU profiles. Required full dual-width receiver applies to Shared edits. |
+| Expected Markers | A prioritized viable design and measured workload limits, or evidence explaining why a proposed improvement is not safe or worthwhile. |
+| Asset Needs | Existing private task-owned firmware and media copies only; preserve owner assets. |
+| Reporting Requirements | Explain actual observed costs, candidate size and tradeoffs, tests and remaining interactive usability gaps without claiming an unsupported speedup. |
+| Stop Conditions | Do not lower timing accuracy, skip guest work or treat matching PC/ticks or incomplete frames as proof of equivalence. |
+| Exit Criteria | Qualified improvement or evidence-backed next candidate; keep T582 open until actual usability and owner acceptance. |
+| Original Owner Request | Improve PC110 performance to interactive usability while preserving guest behavior. |
+| Similar-Issue Sweep | Reconcile existing CPU timing, preview, memory, board and device experiments before introducing another probe. |
+
+### Admitted PIC priority-scan consolidation
+
+S34 additionally admits consolidation of the duplicate master/slave PIC
+selection loops in `src/x86-nxvm/chips/pic8259/pic.c`. The existing master
+loop remains the single scan; slave requests bypass only the existing
+master-specific cascade rules. No interface, state, interrupt ordering,
+guest time or other component is changed. The scratch source reduces 28
+lines net. Review the actual diff and qualify the existing PIC priority,
+rotation, masking, cascade and board tests on both widths before the cached
+full Shared receiver gate and fourteen product artifacts. Record host-noise
+limits separately from semantic evidence; do not claim a product speedup or
+PC110 usability without direct evidence.
+
+The PIC consolidation and dual-width receiver have completed; see
+[PIC evidence](../etc/evidence/t582-s34-pic-scan.md). S34 remains active to
+identify a substantial route toward the still-unmet usability objective.
+
+### Admitted memory route tier consolidation
+
+The three duplicate query/failure loops over the already-matched device list
+in `src/x86-core/machine/memory.c` may use one tier-ordered loop. Preserve
+raw and selected-alias precedence, replacement/ordinary/fallback order,
+registration order, observational queries, failure notification and RAM
+fallback; no interface, persistent state or alternate route is added. Review
+and run existing overlap, alias, terminal-failure, memory and cache tests on
+both widths, then run the cached full Shared receiver and check all fourteen
+product artifacts. Fixed-work and direct-call comparisons are supporting
+evidence only; they do not establish interactive PC110 usability.
+
+The memory tier consolidation and dual-width receiver have completed; see
+[memory evidence](../etc/evidence/t582-s34-memory-tiers.md). S34 remains
+active because the PC110 usability objective is not yet established.
+
+### Admitted instruction-prefetch check consolidation
+
+`src/x86-core/cpu/cpu_instructions.c` may combine the repeated invalidations
+in `ExecInit` and use the already-established retained/refilled range when
+deciding whether to copy prefetch bytes. Preserve the zero-length case,
+physical reads, event ordering, memory-lock completion, exceptional paths,
+preview and every existing profile; introduce no state, callback, API or
+alternate execution path. The normal lock completion clears the active bit
+before its callback, and CPU execution reentry is prohibited; verify the
+existing signal, prefetch, decode admission, page/fault, self-modifying and
+LOCK regressions on both widths before the full cached Shared receiver and
+fourteen product artifacts. A matching PC/tick checkpoint is not proof of
+complete state or interactive usability.
+Extend the existing CPU prefetch test for stale same-range bytes on an expected
+PC mismatch and valid-but-empty prefetch, using actual 8088 and 486 execution.
+
+The prefetch consolidation and dual-width receiver have completed; see
+[prefetch evidence](../etc/evidence/t582-s34-prefetch-checks.md). S34 remains
+active because the PC110 usability objective is not yet established.
+
+### Admitted PIT deadline simplification
+
+The board PIT deadline helper may remove its impossible zero-tick branch and
+use zero as the unset minimum: `x86_pit_ticks_until_output` only returns OK
+with a nonzero result. Preserve all three calls, their order, clock conversion,
+error handling and the board's existing immediate-deadline result for other
+devices. No interface, persistent state or event ordering changes. Verify this
+invariant against the implementation and existing PIT/board deadline tests on
+both architectures, measure the fixed-work candidate, and run the cached full
+Shared receiver and fourteen artifact checks if retained. Do not claim that
+this bounded change establishes PC110 playability.
+
+The PIT simplification has been qualified and committed as Shared
+`7094decf8`; [evidence](../etc/evidence/t582-s34-pit-deadline.md) records the
+initial MyNES native-window failure and successful isolated rerun. S34 remains
+active because the performance and interactive-usability objective is open.
+
+### Admitted single-owner CPU dispatch consolidation
+
+Replace the CPU's two initialized per-instance handler arrays with one direct
+dispatch per instruction space; retain exactly one handler mapping and the
+existing initialized/uninitialized and V30-prefix selection behavior across
+profile rebinding. The two compact booleans replace the existing table-owned
+initialization state; they do not add a second machine state owner or executor.
+Preserve all opcode handlers, faults, prefetch, debug and timing. Extend an
+existing CPU test for the initialization and rebinding boundaries; verify the
+existing decode, V30, lifecycle and prefetch tests, the bounded differential,
+then the cached dual-width Shared receiver and fourteen artifacts. The
+[candidate evidence](../etc/evidence/t582-s34-single-dispatch.md) records
+the measured instance-space/source reduction and the lack of a measured Game
+speedup. Do not claim this closes PC110 interactive performance.
+
+Shared `9ffb2bcfd` contains the qualified CPU dispatch consolidation;
+the evidence records the initial static-check failure, its corrected rerun,
+dual-width receiver and remaining usability limitations. MyRaidenII receiver
+artifacts were refreshed separately. S34 remains open for the real PC110
+performance goal.
+
+# M5 T582 S33 — Closed: prefix classifier consolidation
+
+Shared `c1b6f95b4` and MyRaidenII `e51572b51` deliver the bounded candidate
+and receiver artifacts. [Evidence](../etc/evidence/t582-s33-prefix.md)
+records both-width qualification and performance limitations. The PC110
+usability goal remains open.
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T582 S33 after S32. |
+| Admission And Approval | Owner authorized automatic numeric S progression and code/algorithm simplification without material regression or timing downgrade. |
+| Objective | Move the existing single CPU-private prefix classifier into its private header for inlining across the execution and timing translation units. |
+| Non-goals | No new decoder, public API, persistent state, timing change, guest-work skipping or owner-media mutation. |
+| Reference Baseline | Shared `b2c17ba68`; S32 dual-width fixed-work candidate and source-caller audit. |
+| Candidate Proposal | [T582 proposal](../proposals/m5-pc110-startup-clock-performance.md), S33; [S32 evidence](../etc/evidence/t582-s32-execution-cost.md). |
+| Files And ABI Surface | X86 Core private CPU instruction source/header and manifest; existing relevant tests if necessary, fourteen receiver artifacts and NXVM evidence. No public interface change. |
+| Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding and source policy. |
+| Verification | Preserve all prefix classification and profiles; dual-width CPU, V30, fault, timing and preview tests, actual diff and generated-code size review, representative PC110 comparison, full cached dual-width receiver and artifact gates. |
+| Expected Markers | One classifier and no unsupported performance or usability claim. |
+| Asset Needs | Existing private task-owned firmware and media copies for performance probes; preserve owner assets. |
+| Reporting Requirements | Actual diff, artifact size, measured limits, tests, and unresolved PC110 usability. |
+| Stop Conditions | Do not change guest timing, observable behavior, CPU profile rules, public APIs or owner media. |
+| Exit Criteria | Qualified bounded improvement or documented rejection, with full receiver and documentation obligations where production changes. |
+| Original Owner Request | Improve PC110 performance to interactive usability while preserving guest behavior. |
+| Similar-Issue Sweep | Check all classifier references, supported CPU profiles, preview, fault and V30 paths. |
+
+# M5 T582 S32 — Closed: dominant PC110 execution cost
+
+[S32 evidence](../etc/evidence/t582-s32-execution-cost.md) records the
+deadline cost and rejected candidates, and the bounded dual-width prefix
+classifier candidate. It does not establish playable PC110 performance.
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T582 S32 after S31. |
+| Admission And Approval | Owner authorized automatic numeric S progression and requested a prioritized explanation of Machine overhead. |
+| Objective | Identify and prioritize the major remaining cost in the actual PC110 execution chain, including the Machine versus isolated CPU difference. |
+| Non-goals | No guest-work skipping, timing downgrade, second executor, host clock substitution or owner-media mutation. |
+| Reference Baseline | S27 performance envelope, S20 execution attribution, S28 execution-chain design and S31 memory evidence. |
+| Candidate Proposal | [T582 proposal](../proposals/m5-pc110-startup-clock-performance.md), S32. |
+| Files And ABI Surface | NXVM evidence and task-owned profiling scratch; no production changes or public interface changes in this audit. |
+| Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding and source policy. |
+| Verification | Trace actual execution and observation paths, distinguish nested from exclusive costs, and use bounded representative measurements only to resolve actionable gaps. |
+| Expected Markers | Evidence-ranked cost breakdown and a concrete viable candidate with owner, estimated change and validation boundaries. |
+| Asset Needs | Private task-owned copies of external firmware and media only if needed; preserve owner assets. |
+| Reporting Requirements | Separate measured facts and hypotheses, identify measurement limitations and do not claim PC110 usability. |
+| Stop Conditions | Do not modify production behavior or infer equivalence solely from matching instruction counts or PC. |
+| Exit Criteria | Reviewable prioritized design for S33 or documented evidence that another measured hypothesis is required. |
+| Original Owner Request | Improve PC110 performance to interactive usability while preserving guest behavior. |
+| Similar-Issue Sweep | Reconcile previous profiling and rejected candidates before introducing another probe. |
+
+# M5 T582 S31 — Closed: remaining workload bottlenecks
+
+Shared `b2c17ba68` and MyRaidenII `8c9509b95` qualify the bounded memory
+deduplication and receiver artifacts. [Evidence](../etc/evidence/t582-s31-memory.md)
+records both-width tests, artifacts and the lack of a proven product speedup.
+The T remains open for the PC110 usability objective.
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T582 S31 after S30. |
+| Admission And Approval | Owner authorized automatic S progression and optimizations with no material regression or timing downgrade. |
+| Objective | Re-evaluate actual PC110 workload bottlenecks and implement justified reductions in memory or other remaining paths. |
+| Non-goals | No guest work skipping, second executor, host clock substitution, timing downgrade or owner-media mutation. |
+| Reference Baseline | S27–S30 performance and receiver evidence and T582 investigation index. |
+| Candidate Proposal | [T582 proposal](../proposals/m5-pc110-startup-clock-performance.md), S31. |
+| Files And ABI Surface | Relevant Shared components, PC110 adaptation and existing tests only where justified by measurement and dependency boundaries; manifests, receiver artifacts and NXVM evidence. |
+| Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding and source policy. |
+| Verification | Preserve mappings, invalidation, faults, side effects and time/event ordering; targeted tests and required cached dual-width full Shared receiver gate after Shared production changes. |
+| Expected Markers | Evidence-backed improvement or explicit negative result; report actual workload and limits. |
+| Asset Needs | Private task-owned copies of existing external firmware and media if required. |
+| Reporting Requirements | Actual diff, component ownership, measured results, unchanged behavior and remaining usability work. |
+| Stop Conditions | Do not claim equivalence from matching PC/tick checkpoints alone, or skip device or input semantics. |
+| Exit Criteria | Qualified changes or prioritized evidence-backed follow-up; add numeric S work before final receiving if actual usability remains unmet. |
+| Original Owner Request | Improve PC110 performance until usable, retaining correct guest behavior. |
+| Similar-Issue Sweep | Compare prior CPU, memory, scheduler and display candidates before repeating a probe. |
+# M5 T582 S30 — Closed: guest-time and device advancement
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T582 S30 after S29. |
+| Admission And Approval | Owner authorized automatic numeric S progression and optimizations without timing-accuracy downgrade. |
+| Objective | Find and qualify a justified reduction in redundant guest-time or device-advancement work. |
+| Non-goals | No guest event skipping, host-clock substitution, second executor, owner-media mutation or product-specific timing special case. |
+| Reference Baseline | S27 performance envelope, S28 chain evidence and S29 receiver gate. |
+| Candidate Proposal | [T582 proposal](../proposals/m5-pc110-startup-clock-performance.md), S30. |
+| Files And ABI Surface | X86 Core Machine and X86 NXVM board scheduling only as justified by evidence, their existing tests and manifests, receiver artifacts and NXVM evidence. No unreviewed API expansion. |
+| Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding and source policy. |
+| Verification | Preserve deadline, asynchronous input, exception, device, reset, debug and before/internal/after ordering; targeted dual-width tests and required cached full Shared receiver gate after production changes. |
+| Expected Markers | Measured or demonstrable reduction with same clock and device behavior, or documented negative candidate result. |
+| Asset Needs | Task-owned private copies of external media if required. |
+| Reporting Requirements | Actual diff, results, limitations and no unsupported PC110 usability claim. |
+| Stop Conditions | No accuracy downgrade or assumption that a stable deadline implies no intervening mutation. |
+| Exit Criteria | Qualified optimization or evidence-backed rejection; T582 remains open until usability and owner acceptance. |
+| Original Owner Request | Improve PC110 performance while preserving guest execution. |
+| Similar-Issue Sweep | Reuse previous deadline, clock, DMA, interrupt and board observations before designing new work. |
+# M5 T582 S29 — Closed: bounded CPU shift simplification
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T582 S29 after S28. |
+| Admission And Approval | Owner authorized automatic numeric S progression and source/algorithm reductions without material regression; no timing downgrade. |
+| Objective | Replace duplicated iterative SHL/SHR/SAR execution with one bounded implementation preserving every existing profile's results and observations. |
+| Non-goals | No guest instruction skipping, separate executor, timing change, additional public interface, owner-media mutation or premature usability claim. |
+| Reference Baseline | S28 execution-chain evidence and accepted S26 rotate differential. |
+| Candidate Proposal | [T582 proposal](../proposals/m5-pc110-startup-clock-performance.md), S29; [design](../etc/evidence/t582-s28-execution-chain.md#shift-execution-candidate-for-s29). |
+| Files And ABI Surface | Shared X86 Core CPU instructions, existing relevant CPU tests and affected manifests; required receiver artifacts and NXVM evidence. No public ABI extension. |
+| Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding and source policy. |
+| Verification | Compare old and new actual CPU executions across profiles, widths, all counts, flags, timing and observations; existing targeted tests, cached dual-width builds and full Shared receiver unit/integration gates, fourteen EXE checks, matched PC110 work. |
+| Expected Markers | Single production shift path, fewer source lines and bounded computation with unchanged guest-visible behavior and documented measured limits. |
+| Asset Needs | Task-owned copies of existing external firmware and media; never mutate owner assets. |
+| Reporting Requirements | Actual diff and all results; do not equate a local simplification with usable PC110 performance. |
+| Stop Conditions | No timing downgrade, invalid C shifts, changed undefined-flag behavior or reduced test assertions. |
+| Exit Criteria | Qualified bounded implementation or evidence-backed rejection, plus required receiver and documentation obligations. T582 stays open until actual product acceptance. |
+| Original Owner Request | Improve PC110 performance and code/algorithm quality without materially worsening other properties. |
+| Similar-Issue Sweep | Compare all three directions, profiles, register/memory operations, boundary counts and error paths against original implementation. |
+# M5 T582 S28 — Closed: end-to-end execution-chain design
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T582 S28 after S27. |
+| Admission And Approval | Owner authorized continued performance work and automatic S sequencing; timing accuracy downgrades require approval. |
+| Objective | Trace and design justified simplifications across CPU execution, retirement, memory and board advancement using the S27 baseline. |
+| Non-goals | No second executor, skipped guest work, host-clock substitution, accuracy downgrade or owner-media modification. |
+| Reference Baseline | S27 evidence and T582 investigation index. |
+| Candidate Proposal | [T582 proposal](../proposals/m5-pc110-startup-clock-performance.md), S28. |
+| Files And ABI Surface | Task documentation and task-owned scratch for the design audit; no production changes in this design stage. |
+| Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding and source policy. |
+| Verification | Trace actual call sites and compare existing measurements; use bounded probes only for a specific unresolved hypothesis. |
+| Expected Markers | Reviewable candidate owners, exact ordering and invalidation boundaries, estimates and verification plans. |
+| Asset Needs | Existing private task-owned media only if a justified probe requires it. |
+| Reporting Requirements | Separate evidence from hypothesis and report rejected or uncertain candidates. |
+| Stop Conditions | Do not modify runtime behavior during the design stage or lower timing accuracy. |
+| Exit Criteria | Concrete justified designs or documented unsafe candidates sufficient to execute S29 and S30. |
+| Original Owner Request | Improve PC110 performance to usability with a single correct execution chain. |
+| Similar-Issue Sweep | Review CPU, memory, board advancement and prior candidate results without repeating settled experiments. |
+# M5 T582 S27 — Closed: comparable workload and performance envelope
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T582 S27 after accepted S26. |
+| Admission And Approval | Owner authorized continued PC110 performance work, automatic numeric S sequencing and the S27 workload-baseline plan; timing accuracy downgrades require explicit approval. |
+| Objective | Establish a traceable, comparable x86/x64 performance baseline and prioritize the end-to-end execution-chain work without repeating already settled experiments. |
+| Non-goals | No production change, host-clock substitution, guest-work skipping, second executor, timing downgrade, owner-media mutation or playability claim from an indirect probe. |
+| Reference Baseline | Accepted S26 through `602292076`, closure `010a4b067`, and the T582 investigation index and existing fixed-work and product-path evidence. |
+| Candidate Proposal | [T582 proposal](../proposals/m5-pc110-startup-clock-performance.md), S27 and following. |
+| Files And ABI Surface | NXVM task documentation and task-owned scratch probes only; no Shared or App production API, executable, configuration or owner media changes. |
+| Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding and source policy. |
+| Verification | Audit source/measurement provenance and workload identity; report guest instructions, ticks, host elapsed, display/input method, width and framebuffer completion where available. Run only new bounded probes required to fill an actionable gap; verify documentation and actual diff. |
+| Expected Markers | A prioritized cost/measurement table explicitly distinguishes matched work, approximate workloads, x86/x64 evidence, host variation and unmeasured or unsupported comparisons. |
+| Asset Needs | Existing task-owned private copies of PC110 firmware, CMOS and configured disk media; no external media content is committed. |
+| Reporting Requirements | Provide baseline values, measurement limitations, candidate priorities and a clear statement that the PC110 usability goal remains open. |
+| Stop Conditions | Do not modify guest timing, runtime code or published products during this audit; do not treat matching PC/ticks as complete-state proof. |
+| Exit Criteria | Reviewable baseline and prioritized evidence table sufficient to enter S28, with unavailable measurements and limitations explicitly recorded. |
+| Original Owner Request | Improve PC110 performance to usability while preserving guest behavior; compare the entire instruction-to-device chain with the reference emulator. |
+| Similar-Issue Sweep | Cross-check earlier startup, Game, World Clock, synthetic-loop, CPU timing and board-advance observations for duplicated probes and incompatible workloads. |
+
+# M5 T582 S26 — Closed: single-executor throughput design audit
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T582 S26 after S25 audit. |
+| Admission And Approval | Owner authorized continued PC110 performance work and autonomous numeric S sequencing; timing accuracy downgrades require owner consent. |
+| Objective | Qualify the compact lexical-preview copy, consolidate duplicate timing-input and lexical-prefix scans, simplify parity and conditional-branch timing calculations, eliminate duplicate timing-result publication, simplify ordinary rotate execution and remove redundant PC110 video-adapter aperture checks without changing guest behavior or timing; retain the larger PC110 usability goal. |
+| Non-goals | No hidden accuracy downgrade, guest-work skipping, host-time substitution, second executor or user media mutation. |
+| Reference Baseline | Shared `8dd8d06d0`, NXVM `65c15ab69`; [S25 comparison](../etc/evidence/t582-s25-execution-comparison.md). |
+| Candidate Proposal | [T582 proposal](../proposals/m5-pc110-startup-clock-performance.md), S26. |
+| Files And ABI Surface | Shared X86 Core CPU preview, timing-input, timing selection and flag implementations, their private declarations and manifest; existing CPU timing, preview, arithmetic, bus and Machine retirement-observation tests and their manifest; MyPC110 video adapter and existing route tests, plus NXVM evidence. All seven App receiver artifacts remain under the Shared gate. No public interface or other Shared production package change. |
+| Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding and source policy. |
+| Verification | Audit preview's read and failure paths and omitted fields, including 486 retirement observation across asynchronous entry; verify the unified timing and lexical prefix scans preserve flags and opcode positions for all profiles and malformed input, including prefixed lexeme decoding and real timing previews; verify all 256 parity inputs and all 16 branch conditions across flag combinations through actual CPU instructions. Verify ROL/ROR count, carry, overflow, undefined flags and widths across CPU profiles with real CPU differential and existing tests. Verify the video adapter retains null, zero-length, invalid-range and observed-read semantics using the existing chip and Machine paths. Run dual-width affected tests, manifest and dependency checks; cached 14-App builds and full unit/integration receiving gate apply to Shared changes. Retain fixed-work and actual Game evidence without claiming equal complete machine state. |
+| Expected Markers | The existing lexical preview remains the sole path, reads no omitted access log or dispatch table, and all receiver gates are honestly reported. |
+| Asset Needs | Existing external reference checkouts and private copied CMOS/media if needed. |
+| Reporting Requirements | Behavioral/timing consequences, scope, verification cost, and no claim of real-time usability without evidence. |
+| Stop Conditions | Do not change existing timing accuracy or clock contract without the owner's explicit consent. |
+| Exit Criteria | Fully qualified bounded improvement or rejection with evidence; T582 remains open until actual usability and full product qualification are achieved. |
+| Original Owner Request | Improve PC110 performance to usability while preserving guest behavior. |
+| Similar-Issue Sweep | Compare CPU, board timing, RTC, interrupt and all Shared receiver obligations. |
+
+S26 bounded preview-copy implementation is Shared `a794bfcdd`, with PC
+receiver artifacts `7e3bd57c8` and MyRaidenII artifacts `b76c5c71e`.
+The [evidence](../etc/evidence/t582-s26-compact-preview.md) records both-width
+qualification and measured limits. This is not PC110 usability acceptance;
+S26 is accepted as a bounded batch; T582 remains open because the larger
+throughput and usability objective is unresolved.
+
+An exploratory [same-host PC110-EMU run](../etc/evidence/t582-s26-pc110-emu-measurement.md)
+has now executed the owner-supplied BIOS and a private master-disk copy. Its
+instruction count, media configuration, guest state and service shortcuts
+differ from NXVM, so the recorded duration is not an equivalent speedup ratio.
+An isolated per-read refresh-status experiment did not reach the baseline
+checkpoint and remained at the firmware's CLI/HLT return address while guest
+time advanced; it is not admitted as a fix.
+An independent synthetic-loop comparison now shows a large per-instruction
+difference even without the real firmware shortcuts; the isolated CPU fixture
+and neutral Machine have different buses and observation contracts. This is
+an engineering lead, not a complete-state or gameplay qualification.
+
+The owner approved selecting a small, clearly deduplicating algorithm even
+without a large measured speedup. The timing-input collector's two scans are
+therefore admitted for equivalence review and consolidation; the mixed
+measurements are not presented as a proven performance gain. The snapshot-copy
+probe remains exploratory and is not admitted as a production change.
+The prefix-scan implementation is Shared `38b16a3b3`; its dual-width unit,
+integration and receiving results are recorded in the same comparison
+evidence. It is a bounded code reduction, not PC110 usability acceptance.
+The owner's net-code-reduction rule also admits the earlier parity-folding
+candidate for CPU-path and full receiver qualification. The low byte is fixed
+width; both the old and new operations are O(1), and mixed earlier timings do
+not prove a runtime speedup.
+The parity simplification is Shared `4a869137c`; its full dual-width receiving
+and the initially stale test-binary failures are detailed in
+[parity evidence](../etc/evidence/t582-s26-parity-audit.md). PC110 usability
+and the larger performance objective remain unverified and open.
+
+The timing selector's redundant output parameter and duplicate write have also
+been eliminated; [the evidence](../etc/evidence/t582-s26-timing-publication.md)
+records both-width receiving. This net-smaller internal change preserves the
+existing result and does not by itself establish a performance improvement.
+
+The proposed reuse of the 486 timing terms' prefix count was tested and
+withdrawn: [the comparison](../etc/evidence/t582-s26-486-term-prefix.md) found
+two slower x86 samples and substantial direct-test caller churn alongside the
+faster x64 samples. This is not proof of a stable regression or an improvement.
+
+The condition calculation now reads only the flags required by the selected
+branch, with no new state or execution path. [The evidence](../etc/evidence/t582-s26-branch-condition.md)
+records exhaustive flag comparisons, dual-width receiving and the limits of
+the synthetic performance comparison; it does not establish playable speed.
+
+The next-instruction preview remains required by completed-observation and
+asynchronous-entry contracts. An intentional observation ablation and an
+existing-test extension covering 486 are recorded in [the preview comparison](../etc/evidence/t582-s26-preview-observation-bound.md).
+The ablation is not a production proposal and does not establish playable speed.
+
+The PC110 display adapter's redundant aperture checks were removed without
+changing the chip's access validation or the adapter's invalid-input status;
+[the evidence](../etc/evidence/t582-s26-video-adapter.md) records both-width
+tests and a real Game-frame probe. This does not establish playable speed.
+
+The ordinary ROL/ROR helpers now use constant-work width-limited rotation
+instead of per-bit loops, retaining existing profile counts and flags. The
+[qualification](../etc/evidence/t582-s26-rotate-constant.md) records both-width
+CPU differential, unit and integration results, the corrected manifest failure,
+receiver artifacts and a Game-frame probe. It does not establish playable speed.
+
+Small-copy callsite attribution identified high-frequency firmware reads and
+four-byte RAM writes. A bounded write specialization showed mixed two-width
+results and was not adopted; [the evidence](../etc/evidence/t582-s26-small-copy-attribution.md)
+records its workload and limitations. A further two-byte firmware-copy
+specialization showed no x64 benefit and was also not adopted.
+
+S25 compared local external PC110 references: one uses host-derived RTC and BIOS shortcuts, the other describes QEMU translated execution and fixed per-instruction timing. These are not proven equivalent to NXVM's current timing contract; [evidence](../etc/evidence/t582-s25-execution-comparison.md). No production, public API or EXE changed; the S19 unit gate remains the last complete repository-only run on both widths.
+
+# M5 T582 S25 — Closed: PC110 execution-model comparison
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T582 S25 after S24 audit. |
+| Admission And Approval | Owner authorized reference to external emulators, L1/L2 modeling and autonomous numeric S sequencing. |
+| Objective | Compare the current PC110 execution and idle paths against external PC110-EMU and PC110-QEMU references to identify a justified performance direction. |
+| Non-goals | No imported third-party code, protected firmware commits, fabricated responses, user media mutation or unverified runtime claim. |
+| Reference Baseline | Shared `8dd8d06d0`, NXVM `65c15ab69`; [S24 evidence](../etc/evidence/t582-s24-asmi-audit.md). |
+| Candidate Proposal | [T582 proposal](../proposals/m5-pc110-startup-clock-performance.md), S25. |
+| Files And ABI Surface | Read-only external source and task-owned evidence/probes; changes require precise scope and receiving policy. |
+| Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding and source policy. |
+| Verification | Contrast actual execution, firmware services, guest clocks and I/O with existing measured NXVM behavior; label static versus dynamic evidence and L1/L2 confidence. |
+| Expected Markers | Concrete evidence of transferable architecture or behavior and semantic costs, or documented negative evidence. |
+| Asset Needs | Existing read-only reference checkouts and private copied CMOS/media as needed. |
+| Reporting Requirements | Provenance, estimated implementation/verification work, observable differences and remaining limitations. |
+| Stop Conditions | No attribution of a result to an external emulator without inspecting its actual implementation or running it. |
+| Exit Criteria | Traceable comparison or fully qualified improvement; T582 remains open pending usability qualification. |
+| Original Owner Request | Improve PC110 performance to usability while preserving guest behavior. |
+| Similar-Issue Sweep | Compare idle, interrupt, timing and device paths and the existing S19–S24 evidence. |
+
+S24 found that repeated World Clock ASMI requests are APM CPU Idle calls; one complete trace follows a firmware immediate-return branch after reading SCAMP state that matches the published live dump. The evidence does not support suppressing the requests or changing the state by guess; [evidence](../etc/evidence/t582-s24-asmi-audit.md). No production, public API or EXE changed; the S19 dual-width unit gate remains the last complete repository-only run. Usability remains unresolved.
+
+# M5 T582 S24 — Closed: World Clock ASMI service audit
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T582 S24 after S23 audit. |
+| Admission And Approval | Owner authorized continued PC110 performance work, L1/L2 models and autonomous numeric S sequencing. |
+| Objective | Determine whether repeated World Clock ASMI requests represent legitimate firmware service or waiting for an unimplemented device response. |
+| Non-goals | No ignored SMI, invented successful result, skipped guest work, duplicate executor or owner media mutation. |
+| Reference Baseline | Shared `8dd8d06d0`, NXVM `65c15ab69`; [S19 evidence](../etc/evidence/t582-s19-steady-profile.md), T580 S48/S90 service evidence. |
+| Candidate Proposal | [T582 proposal](../proposals/m5-pc110-startup-clock-performance.md), S24. |
+| Files And ABI Surface | Task-owned probes first; change owner determined by evidence and authorized scope. |
+| Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding and source policy. |
+| Verification | Capture actual service identifiers, frequency, return values and relevant guest activity using private media and existing single execution path. |
+| Expected Markers | Distinguish normal request traffic from a reproducible missing service, or record negative evidence. |
+| Asset Needs | Existing external firmware and private copied CMOS/media only. |
+| Reporting Requirements | Source confidence, measured workload, correctness and desktop limitations. |
+| Stop Conditions | Do not conflate counts with a fault or substitute guessed firmware return values. |
+| Exit Criteria | Traceable negative result or fully qualified correction; T582 stays open pending actual usability qualification. |
+| Original Owner Request | Improve PC110 performance to usability while preserving guest behavior. |
+| Similar-Issue Sweep | Compare startup and World Clock ASMI calls and existing T580 service records. |
+
+S23 measured instruction preparation/dispatch and rejected a variable-copy candidate without consistent cross-width improvement; [evidence](../etc/evidence/t582-s23-dispatch-audit.md). No production, public API or EXE changed; the S19 dual-width unit gate remains the last complete repository-only run. The real World Clock performance gap remains unresolved.
+
+# M5 T582 S23 — Closed: instruction dispatch cost audit
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T582 S23 after S22 audit. |
+| Admission And Approval | Owner authorized continued PC110 performance work and autonomous numeric S sequencing. |
+| Objective | Attribute the CPU instruction execution cost identified in S20 and investigate a measured semantics-preserving optimization or a negative result. |
+| Non-goals | No omitted fault/interrupt/device behavior, host-clock substitution, second executor, unproven JIT or user media mutation. |
+| Reference Baseline | Shared `8dd8d06d0`, NXVM `65c15ab69`; [S20 evidence](../etc/evidence/t582-s20-execution-cost.md). |
+| Candidate Proposal | [T582 proposal](../proposals/m5-pc110-startup-clock-performance.md), S23. |
+| Files And ABI Surface | Task-owned probes first; production changes only upon correctness and performance evidence and full Shared receiving policy. |
+| Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding and source policy. |
+| Verification | Short fixed-work probes first; product-path tests only when justified. Preserve all CPU profiles, timing, error and observation semantics. |
+| Expected Markers | Actual guest checkpoint, cost attribution and a measured candidate or negative evidence. |
+| Asset Needs | Existing external firmware and private copied CMOS/media only. |
+| Reporting Requirements | Variance, actual diffs, qualification and remaining limitations. |
+| Stop Conditions | Do not invent a duplicate decoder, replay path or persistent state. |
+| Exit Criteria | Traceable measured audit or fully qualified improvement; T582 remains open pending usability qualification. |
+| Original Owner Request | Improve PC110 performance to usability while preserving guest behavior. |
+| Similar-Issue Sweep | Inspect instruction preparation, dispatch, decoded operands and existing profiling evidence before proposing implementation. |
+
+S22 rejected a fixed-size cache-copy candidate and a partial LTO experiment due to absent or inconsistent benefit; [evidence](../etc/evidence/t582-s22-cache-copy-audit.md). No production, public API or EXE changed; the S19 unit gate remains the last complete repository-only unit run. The World Clock performance gap remains unresolved.
+
+# M5 T582 S22 — Closed: CPU cache-hit copy audit
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T582 S22 after S21 audit. |
+| Admission And Approval | Owner authorized continued performance work and autonomous numeric S sequencing. |
+| Objective | Assess actual CPU cache-hit copy costs and test a minimal semantics-preserving candidate, or record negative evidence. |
+| Non-goals | No new cache, altered guest timing, skipped accesses, undefined alignment or aliasing behavior, or user media mutation. |
+| Reference Baseline | Shared `8dd8d06d0`, NXVM `65c15ab69`; [S15 sampling](../etc/evidence/t582-s15-cpu-line-audit.md). |
+| Candidate Proposal | [T582 proposal](../proposals/m5-pc110-startup-clock-performance.md), S22. |
+| Files And ABI Surface | Task-owned probes first; production scope only with measured correctness and full Shared receiving policy. |
+| Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding and source policy. |
+| Verification | Short fixed-work comparisons first, dual width where warranted; retain full access width, cache and timing semantics. |
+| Expected Markers | Actual guest checkpoint and candidate gain or negative evidence. |
+| Asset Needs | Existing external firmware and private copied CMOS/media only. |
+| Reporting Requirements | Runtime variance, actual diffs and receiver qualification. |
+| Stop Conditions | Do not introduce a duplicate memory path, unaligned typed access, new state or claim performance from one short pair. |
+| Exit Criteria | Traceable negative result or fully tested and delivered improvement; T582 stays open until usability qualification. |
+| Original Owner Request | Improve PC110 performance to usability while preserving guest behavior. |
+| Similar-Issue Sweep | Inspect relevant cache reads/writes and existing sample evidence, avoiding unmeasured generalization. |
+
+S21 compared the same prefix classifier made inline in a scratch timing model; the result did not consistently improve both widths and was rejected. See [evidence](../etc/evidence/t582-s21-timing-input-audit.md). No production, public API or EXE changed; the S19 unit gate remains the last complete repository-only unit run.
+
+# M5 T582 S21 — Closed: instruction timing input reuse audit
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T582 S21 after S20 audit. |
+| Admission And Approval | Owner authorized continued performance work and autonomous numeric S sequencing. |
+| Objective | Assess repeated decoded-input work within the existing instruction timing owner and measure whether a correctness-preserving simplification improves throughput. |
+| Non-goals | No removed timing facts, skipped guest work, duplicate executor, host-time substitution, unsupported global cache or owner media mutation. |
+| Reference Baseline | Shared `8dd8d06d0`, NXVM `65c15ab69`; [S20 evidence](../etc/evidence/t582-s20-execution-cost.md). |
+| Candidate Proposal | [T582 proposal](../proposals/m5-pc110-startup-clock-performance.md), S21. |
+| Files And ABI Surface | Task-owned probes first; production scope limited to a justified timing-owner change and existing tests, subject to Shared receiving policy. |
+| Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding and source policy. |
+| Verification | Short fixed-work dual-width comparisons first; only a promising and semantically valid candidate merits a long product-path comparison. Preserve all profile, prefix, failure, event and timing observations. |
+| Expected Markers | Actual guest checkpoint, output/timing equivalence and candidate gain or negative evidence. |
+| Asset Needs | Existing external firmware and private copied CMOS/media only. |
+| Reporting Requirements | Runtime variance, source confidence, actual diffs, receiver gates and interactive limitations. |
+| Stop Conditions | No second decoder, new cross-instruction stale state, false precision, or claim of performance from microbenchmarks alone. |
+| Exit Criteria | Traceable negative result or fully tested and delivered improvement; T582 stays open until usability qualification. |
+| Original Owner Request | Improve PC110 performance to usability while preserving guest behavior. |
+| Similar-Issue Sweep | Check existing timing helpers and previous failed candidates before adding abstractions. |
+
+S20 sampled World Clock SMM, ordinary CPU refresh and timing selection; [evidence](../etc/evidence/t582-s20-execution-cost.md). It found no justified SMM shortcut, and no production, public API or EXE changed. The preceding S19 repository-only unit gate passed 712/712 on each architecture. Realtime usability remains unproven.
+
+# M5 T582 S20 — Closed: SMM execution and memory-service cost audit
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T582 S20 after S19 audit. |
+| Admission And Approval | Owner authorized continued PC110 performance work and autonomous numeric S sequencing. |
+| Objective | Attribute SMM and normal execution costs in World Clock and investigate a measured, semantics-preserving optimization or document negative evidence. |
+| Non-goals | No skipped firmware service, bypassed bus behavior, host-time substitution, second executor or user media mutation. |
+| Reference Baseline | S18 Shared `8dd8d06d0`, NXVM `65c15ab69`; [S19 evidence](../etc/evidence/t582-s19-steady-profile.md). |
+| Candidate Proposal | [T582 proposal](../proposals/m5-pc110-startup-clock-performance.md), S20. |
+| Files And ABI Surface | Task-owned probes and NXVM evidence/status; production scope requires measured correctness evidence and existing authorization. |
+| Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding and source policy. |
+| Verification | Hidden, bounded product-path measurements with private media; preserve physical access ordering, side effects, fault and timing semantics. |
+| Expected Markers | Explain measured hot owners and demonstrate an improvement or negative result. |
+| Asset Needs | Existing external firmware and private copied CMOS/media only. |
+| Reporting Requirements | State sampling limitations, model confidence, actual diffs and interactive gaps. |
+| Stop Conditions | No ignored SMI, skipped firmware work, unsupported cache eligibility or treating sampled instruction pointers as inclusive time. |
+| Exit Criteria | Traceable measured audit or fully qualified change; T582 stays open until actual usability qualification. |
+| Original Owner Request | Improve PC110 performance to usability while preserving guest behavior. |
+| Similar-Issue Sweep | Review SMM and ordinary execution, shared bus and other receiver behavior. |
+
+S19 recorded World Clock workload, SMM entry and instruction attribution, and a rejected SMRAM cache candidate; [evidence](../etc/evidence/t582-s19-steady-profile.md). All 712 repository-only unit tests passed on each architecture. No production, public API or EXE changed; realtime usability remains unproven.
+
+# M5 T582 S19 — Closed: PC110 steady-state performance audit
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T582 S19 after S18 delivery. |
+| Admission And Approval | Owner authorized continued PC110 performance work, appropriate L1/L2 models and autonomous numeric S sequencing. |
+| Objective | Identify and quantify the remaining dominant cost during actual Personaware/World Clock steady operation after the S18 cache improvement, and identify a safe next measurable optimization. |
+| Non-goals | No production or public API change in this audit, guest-work skipping, second executor, host-time substitution, user media mutation or unsupported realtime claim. |
+| Reference Baseline | Shared `8dd8d06d0`, NXVM `65c15ab69`, S18 [evidence](../etc/evidence/t582-s18-cache-design.md). |
+| Candidate Proposal | [T582 proposal](../proposals/m5-pc110-startup-clock-performance.md), S19. |
+| Files And ABI Surface | Task-owned probes and NXVM evidence/status only; no production or ABI change. |
+| Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding and source policy; preserve CPU, device, timing and interaction contracts. |
+| Verification | Use existing hidden product-path probes and private copied inputs; distinguish startup from steady state and identify the actual worker and hot owners before changing code. |
+| Expected Markers | Bounded guest clock, instruction and frame observations, actual worker attribution, and a measured candidate or negative evidence. |
+| Asset Needs | Existing external firmware and private copied CMOS/media only. |
+| Reporting Requirements | Sampling overhead, current PC110 user-visible limits, source confidence and any noninteractive gaps. |
+| Stop Conditions | No assumption that an IP sample is an inclusive cost or that a boot frame establishes realtime operation. |
+| Exit Criteria | Traceable steady-state evidence and measured correctness-preserving opportunity or negative result; repository-only unit suite and governance check; T582 remains open until user-facing usability is established. |
+| Original Owner Request | Improve PC110 performance to usability while preserving guest timing and correctness. |
+| Similar-Issue Sweep | Compare early, late and idle workloads and identify whether the same bottleneck applies to other CPU profiles. |
+
+# M5 T582 S18 — Closed: PC110 shadow cache design and measurement
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T582 S18 after S17 audit. |
+| Admission And Approval | Owner authorized continued PC110 performance work, L1/L2 models where hardware detail is absent, and autonomous numeric S sequencing. |
+| Objective | Design and measure a generic 486 provider-cache contract that can express the PC110 chipset's dynamic cacheability without corrupting read/write mappings or guest timing. Admit production work only if correctness and meaningful sustained benefit are demonstrated. |
+| Non-goals | No PC110 address special case in shared Core, host-time substitution, skipped guest work, second executor, owner media mutation or unverified usability claim. |
+| Reference Baseline | S17 [cacheability evidence](../etc/evidence/t582-s17-pc110-cacheability.md), S14 Shared `e92409c90`. |
+| Candidate Proposal | [T582 proposal](../proposals/m5-pc110-startup-clock-performance.md), S18. |
+| Files And ABI Surface | X86 Core memory provider cache-probe and VL82C420 selected-index interfaces, MyPC110 firmware/config wiring, and their existing tests/manifests; Lib and Emulator unchanged. |
+| Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding and source policy; documented L1/L2 distinction and unchanged owner boundaries. |
+| Verification | Compare actual PC110 early and late behavior; exercise cache enable/disable, dynamic remapping, asymmetric reads/writes, fetch/data, reset, DMA/snoop and failure paths; cached dual-width full-repository unit/integration and fourteen receiver artifacts before delivery. |
+| Expected Markers | Source-backed per-block gating, a single generic route owner, correct invalidation and write behavior, and measured PC110 gain or negative evidence. |
+| Asset Needs | Existing external firmware and private copied CMOS/media only. |
+| Reporting Requirements | Explicit model confidence, expected and actual diffs, full Shared receiving gate if code changes, and desktop limitations. |
+| Stop Conditions | Do not enable an incoherent provider cache or falsely call inference a vendor-documented 420 formula. Do not add a second execution or memory path. |
+| Exit Criteria | A tested, measured and fully delivered repair, or a documented negative result with repository-only unit and governance gates; T582 remains open until usability qualification. |
+| Original Owner Request | Improve PC110 performance to usability while preserving guest timing and correctness. |
+| Similar-Issue Sweep | Check other X86 Core provider routes, aliases and receiver applications; never assume all mapped devices are safe to cache. |
+
+
+S18 delivered Shared `8dd8d06d0`, NXVM `65c15ab69` and MyRaidenII receiver `4e563df94`; [evidence and measured limits](../etc/evidence/t582-s18-cache-design.md) and [14-artifact inventory](../etc/evidence/t582-s18-artifacts.json) document the dual-width receiving gate. The L1 PC110 provider model improves one measured startup pair but does not make the virtual clock realtime; T582 remains open.
+
+# M5 T582 S17 — Closed: PC110 memory cacheability audit
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T582 S17 after S16 audit. |
+| Admission And Approval | Owner authorized continued PC110 performance analysis and autonomous numeric S sequencing. |
+| Objective | Determine whether PC110 firmware and shadow-memory execution spends substantial time on non-cacheable provider access, and whether an accurate, single-owner model can safely improve it. |
+| Non-goals | No production or public API changes in this audit, no invented hardware cacheability, no guest-work skipping, second executor, owner media modification or unverified usability claim. |
+| Reference Baseline | S14 Shared `e92409c90`; S13 cache-control and sampling evidence and S16 execution audit. |
+| Candidate Proposal | [T582 proposal](../proposals/m5-pc110-startup-clock-performance.md), S17. |
+| Files And ABI Surface | Task-owned probes and NXVM evidence/status only; no production or public ABI changes. |
+| Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding and source policy; preserve guest timing, invalidation, memory side effects and source confidence. |
+| Verification | Inspect actual PC110 provider, 486 cache and decode/invalidation owners; measure actual accesses and cache eligibility using hidden bounded private-media probes before considering a candidate. |
+| Expected Markers | Access distribution, relevant control and decode changes, correctness requirements and bounded performance impact or negative evidence. |
+| Asset Needs | Existing external firmware and private copied CMOS/media only. |
+| Reporting Requirements | Separate observed facts from inferred hardware behavior; identify any contract or timing change and confidence level. |
+| Stop Conditions | Do not assume dynamic device memory is plain RAM, bypass callbacks or turn a timing-model change into an unnoticed speed shortcut. |
+| Exit Criteria | Traceable evidence and a correctness-preserving measured candidate or concrete negative evidence; repository-only unit suite and governance check; T582 remains open pending usability qualification. |
+| Original Owner Request | Improve PC110 performance to usability while preserving guest timing and correctness. |
+| Similar-Issue Sweep | Check firmware Flash, shadow RAM, address decode, cache invalidation and the other Core receivers before proposing shared changes. |
+
+
+S17 identified substantial PC110 shadow-provider traffic, actual early/late ECED cache-control transitions and a read/write mapping asymmetry whose CPU cache implications require source-backed modeling; see [evidence](../etc/evidence/t582-s17-pc110-cacheability.md). The repository-only unit suite passed 712/712 on both x64 and x86; NXVM documentation governance passed. No production, public API or EXE changed. PC110 usability remains unproven.
+
+# M5 T582 S16 — Closed: CPU execution observation cost audit
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T582 S16 after S15 audit. |
+| Admission And Approval | Owner authorized continued PC110 performance work and autonomous numeric S sequencing. |
+| Objective | Measure the CPU execution and instruction-observation work on the actual PC110 worker and identify a correctness-preserving optimization with a meaningful sustained product benefit, or record negative evidence. |
+| Non-goals | No production change in this audit, guest-work skipping, extra executor, host-clock substitution, mutation of owner inputs, or usability claim without proof. |
+| Reference Baseline | S14 Shared `e92409c90`, S15 evidence [CPU line audit](../etc/evidence/t582-s15-cpu-line-audit.md). |
+| Candidate Proposal | [T582 proposal](../proposals/m5-pc110-startup-clock-performance.md), S16. |
+| Files And ABI Surface | Task-owned probes and NXVM evidence/status only; no production or public ABI changes. |
+| Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding and source policy; preserve instruction, timing, Debug, event and observation contracts. |
+| Verification | Hidden bounded fixed-work and PC110 product-path comparisons with private copied media; identify exact workload and state invariants before proposing any optimization. |
+| Expected Markers | Evidence of dominant costs, candidate outcome and limits on both CPU widths where applicable. |
+| Asset Needs | Existing external firmware and private copied CMOS/media only. |
+| Reporting Requirements | Sample bias, semantic boundaries, measured gain or negative result and next action; do not claim realtime usability. |
+| Stop Conditions | Do not change production code, create a second execution path, skip guest work, or treat profiling samples as inclusive cost. |
+| Exit Criteria | Traceable audit and a measured correctness-preserving candidate or concrete negative evidence; complete repository-only unit suite and governance check; T582 remains open pending usability qualification. |
+| Original Owner Request | Improve PC110 performance to usability while preserving guest timing and correctness. |
+| Similar-Issue Sweep | Examine zeroing/copy, instruction observation, exception and asynchronous entry, Debug and timing ownership rather than generalizing one local result. |
+
+
+S16 audited instruction-observation, rollback and timing paths, and rejected scratch candidates that did not establish cross-width or sustained benefit; see [evidence](../etc/evidence/t582-s16-execution-audit.md). The full repository-only unit suite passed 712/712 x64 and 712/712 x86. No production, API or EXE changed; PC110 usability remains unproven.
+
+# M5 T582 S15 — Closed: CPU instruction-line hotspot audit
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T582 S15 after S14 delivery. |
+| Admission And Approval | Owner authorized continued PC110 performance work, Shared Core analysis and autonomous numeric S sequencing. |
+| Objective | Identify the dominant inlined CPU execution work in actual PC110 startup and later workload, and produce a correctness-preserving next optimization design or negative evidence. |
+| Non-goals | No Shared or App implementation changes, second executor, guest-work skipping, host-clock substitution, owner media mutation or unverified usability claim. |
+| Reference Baseline | S14 Shared `e92409c90`, published through `bc6c13166`; [S14 evidence](../etc/evidence/t582-s14-memory-routing.md) and [S13 CPU evidence](../etc/evidence/t582-s13-cpu-profile.md). |
+| Candidate Proposal | [T582 proposal](../proposals/m5-pc110-startup-clock-performance.md), S15. |
+| Files And ABI Surface | Task-owned build probes and NXVM evidence/status only; no production or public ABI changes. |
+| Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding and source policy; one owner and unchanged timing/observation semantics. |
+| Verification | Hidden background PC110 production-path sampling with debug line information, private copied inputs, actual worker identification, early/late windows and bounded runtime; compare potential design against existing timing, exception, device and Debug contracts. |
+| Expected Markers | Source-line samples, module and thread attribution, guest progress, overhead and a specific evidence-based next action. |
+| Asset Needs | Existing external firmware and private copied CMOS/media only. |
+| Reporting Requirements | Attribution limits, sampling overhead, concrete code boundaries, rejected designs and remaining noninteractive limitations. |
+| Stop Conditions | No machine semantics change, skipped guest work or claim that a sampled line is inclusive CPU cost; do not infer realtime usability. |
+| Exit Criteria | Traceable hotspot evidence and a measured correctness-preserving candidate or concrete negative evidence; T582 remains open until usability is proven. |
+| Original Owner Request | Improve PC110 performance to usability while preserving guest timing and correctness. |
+| Similar-Issue Sweep | Compare early startup and late Personaware phases; distinguish worker from waiting threads and debug/preview paths. |
+
+
+S15 completed its sampling and rejected three scratch-only candidates for lack of sustained product benefit; [evidence](../etc/evidence/t582-s15-cpu-line-audit.md) records their limits. The complete repository-only unit suite passed 712/712 on each architecture; NXVM documentation governance passed. No production code, public ABI or EXE changed. T582 remains open; PC110 usability remains unproven.
+
+# M5 T582 S14 — Closed: local memory-route candidate
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T582 S14 after the S13 measured audit. |
+| Admission And Approval | Owner authorized ongoing PC110 performance repair, Shared X86 Core work and autonomous numeric S sequencing; all seven App receivers are in scope. |
+| Objective | Reduce repeated physical-provider traversal by collecting matching registered provider indices once per route evaluation and retaining the existing query priority and order. |
+| Non-goals | No persistent cache, second routing path, guest-time substitution, extra execution owner, owner media mutation, or unproven usability claim. |
+| Reference Baseline | Shared 2003fef34 and [S13 measured evidence](../etc/evidence/t582-s13-scheduler-observation.md). |
+| Candidate Proposal | [T582 proposal](../proposals/m5-pc110-startup-clock-performance.md), S14. |
+| Files And ABI Surface | Shared src/x86-core/machine/memory.c, existing test/x86-core machine registration/route tests and manifests; NXVM evidence and status; fourteen App artifacts. No public API or persistent state change. |
+| Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding, NXVM layout and source policy; queries remain observational, single owner and existing provider limit. |
+| Verification | Dual-width targeted route tests including provider capacity, overlapping priorities, decline/failure order, raw/reset and CPU-only routes and aliases; cached full dual-width builds, unit and integration tests and fourteen published EXEs; preserve owner configuration/media. |
+| Expected Markers | Same accepted route, callback order, failure status and guest ticks; fixed-work x64/x86 and actual PC110 product-path measurements; all fourteen artifact identities and full-test disposition. |
+| Asset Needs | Existing external firmware with private copied CMOS/media, never owner inputs. |
+| Reporting Requirements | Actual per-scope diff and review, test and artifact evidence, measured limits and desktop/device gaps. |
+| Stop Conditions | Do not expose or retain indices outside one synchronous resolution; preserve raw and alias precedence, query ordering, observational contract, all 64 slots and failures. Reject if correctness or measured value cannot be shown. |
+| Exit Criteria | Candidate and actual diff reviewed, full Shared receiving gate complete and pushed; report bounded improvement without declaring T582 or PC110 usability complete. |
+| Original Owner Request | Improve PC110 performance to usability while preserving timing, correctness and one execution owner. |
+| Similar-Issue Sweep | Test zero/64 providers, overlapping same- and mixed-tier windows, declined/failed queries, raw and CPU-only routes, dynamic alias/A20 changes and both access directions. |
+
+S14 Shared implementation is `e92409c90`; [qualification and artifact evidence](../etc/evidence/t582-s14-memory-routing.md) records dual-width tests and receiving artifacts. This is a bounded performance improvement; T582 remains open because PC110 usability is not established. Product-scoped receiver commits and qualification record were published through `cfacbaed5`. S14 is closed; the remaining task is PC110 usability.
+
+# M5 T582 S13 — Closed: sustained execution bottleneck audit
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T582 S13 after S12 delivery. |
+| Admission And Approval | Owner authorized continued performance repair and autonomous numeric S sequencing. |
+| Objective | Identify a larger correctness-preserving performance opportunity for the actual PC110 startup and Personaware workload. |
+| Non-goals | No Shared or App implementation changes, host-time substitution, guest work skipping, second executor, owner media mutation or unverified usability claim. |
+| Reference Baseline | Shared 2003fef34, NXVM 2f2795611, MyRaidenII f7543ec23; [S12 evidence](../etc/evidence/t582-s12-preview-borrow.md). |
+| Candidate Proposal | [T582 proposal](../proposals/m5-pc110-startup-clock-performance.md), S13. |
+| Files And ABI Surface | Task-owned probes and NXVM evidence/status only; no ABI change. |
+| Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding, architecture/layout and source policy. |
+| Verification | Compare early startup and later Personaware workload using existing fixed-work and sampled guest-clock observations; isolate proposed changes and compare both architectures before admitting a repair. |
+| Expected Markers | Actual guest ticks, retired instructions, selected hotspots, bounds on measurement and explicit candidate correctness constraints. |
+| Asset Needs | Existing firmware and isolated copied CMOS/media only. |
+| Reporting Requirements | Evidence, measured overhead, estimated scope, retained timing/debug semantics and untested interactive boundaries. |
+| Stop Conditions | Do not claim that nominal tick rate or a limited fixed-work improvement proves usable PC110 performance. |
+| Exit Criteria | A measured, correctness-preserving next design or concrete negative evidence and continued investigation; T remains open pending actual usability. |
+| Original Owner Request | Improve PC110 performance until usable while preserving timing and correctness. |
+| Similar-Issue Sweep | Compare both host widths, startup versus later workload, and guest-time costs versus host waiting. |
+
+S13 measured the bounded local provider-list candidate in [scheduler evidence](../etc/evidence/t582-s13-scheduler-observation.md), including dual-width fixed-work and x64 product-path observations. [CPU evidence](../etc/evidence/t582-s13-cpu-profile.md) records other investigated candidates. S13 closes as an audit; it did not modify Shared or publish executables. S14 receives the measured route candidate. PC110 usability remains unproven.
+
+# M5 T582 S12 — Closed: bounded lexical-preview optimization
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T582 S12 after the S11 observation and qualification transfer. |
+| Admission And Approval | Owner authorized continued performance repair, Shared X86 Core updates and autonomous numeric S sequencing; all seven App receivers are in scope for qualification. |
+| Objective | Remove the measured redundant 486 cache/TLB copy from target-lexeme preview while retaining the original CPU-owned read state and guest semantics. |
+| Non-goals | No host-time substitution, second executor, skipped guest work, global state, diagnostics-pointer reuse, mirrored cache, public API change, owner media mutation, or claim that this alone achieves usability. |
+| Reference Baseline | a2ee593e2 and [S11 measurements](../etc/evidence/t582-s11-performance-observation.md). |
+| Candidate Proposal | [T582 performance proposal](../proposals/m5-pc110-startup-clock-performance.md), S12; S11 final receiving qualification is transferred to S13 or the next suitable S. |
+| Files And ABI Surface | Shared src/x86-core/cpu private implementation and corresponding test/x86-core fixtures and manifests; NXVM evidence; receiving binaries for NXVM, My5160, My5170, MyDeskPro386, MyPC110, MyRaidenII and MyNES x86/x64. No public ABI change. |
+| Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding, architecture/layout and source policy; single CPU owner, nonreentrant callbacks and temporary read-only borrow. |
+| Verification | Existing x86/x64 cache, TLB, debug and preview tests plus minimal borrow/lifetime regression; cached full dual-architecture builds, unit and integration qualification and fourteen receiving artifacts for Shared changes; matched PC110 fixed-work and representative guest progress. |
+| Expected Markers | Equal architectural, preview, cache/TLB and failure observations; no mutation through borrowed cache; measured performance reported with uncertainty. |
+| Asset Needs | Existing external firmware and isolated copied CMOS/media; no owner input modification. |
+| Reporting Requirements | Actual per-scope diff, retained owner, cache/preview invariants, measured x86/x64 results, fourteen binary identities, full-test results and any unverified desktop/device boundaries. |
+| Stop Conditions | Do not use diagnostic context as storage; do not borrow from mutable foreign threads, expose private state, retain a borrow beyond the synchronous preview, or change debug patch preflight. If equivalence cannot be established, abandon the production change. |
+| Exit Criteria | Actual-change review and all required qualification complete; no claim that T582 is complete until usable PC110 performance is directly established and accepted. |
+| Original Owner Request | Improve PC110 performance to usability while preserving guest timing, correctness and a single execution owner. |
+| Similar-Issue Sweep | Lexical preview versus debug patch preview, nested/reentrant callbacks, TLB hits and misses, cache hits/misses, SMM, exceptions, self-modifying code and all supported CPU profiles. |
+
+S12 implementation and receiving evidence are recorded in
+[S12](../etc/evidence/t582-s12-preview-borrow.md). Actual Shared source and
+test changes, product artifact identities and qualification were reviewed;
+Shared `2003fef34`, NXVM `2f2795611` and MyRaidenII `f7543ec23` are the
+product-scoped deliveries. The measured improvement is bounded and the
+original usable-performance goal remains open.
+
+# M5 T582 S11 — Deferred: PC110 performance receiving qualification
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T582 S11 after S10 delivery. |
+| Admission And Approval | Owner authorized continuous performance work and autonomous numeric S sequencing. |
+| Objective | Measure the delivered PC110 runtime against retained baseline evidence and qualify the current receiving state. |
+| Non-goals | No Shared or product implementation change, host-time shortcut, owner media mutation or unverified usability claim. |
+| Reference Baseline | T582 S1/S6 observations and S10 delivery d021cd925. |
+| Candidate Proposal | [T582 performance proposal](../proposals/m5-pc110-startup-clock-performance.md), S11. |
+| Files And ABI Surface | Task-owned probes and NXVM evidence/status only; no ABI change. |
+| Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding, architecture/layout and source policy. |
+| Verification | Compare representative startup and clock evidence, x64/x86 and display variants where supported; reuse the just-completed cached full qualification and product identities. |
+| Expected Markers | Explicit measured guest progress, RTC/clock evidence, display mode coverage and limitations. |
+| Asset Needs | Existing firmware and private media/CMOS copies, never owner inputs. |
+| Reporting Requirements | Sources, timings, measurement uncertainty, precise verification and untested interactive boundaries. |
+| Stop Conditions | Do not imply real-time performance, correct gameplay or matching UX without direct evidence. |
+| Exit Criteria | Receiving qualification evidence and truthful assessment; T remains open pending owner acceptance and all original objectives. |
+| Original Owner Request | Improve PC110 performance until usable, preserving timing and correctness. |
+| Similar-Issue Sweep | Compare both host widths, DSTN/TFT, guest clock and actual product-path observations. |
+# M5 T582 S10 — Closed: PIT deadline aggregation
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T582 S10 after S9 audit. |
+| Admission And Approval | Owner authorized performance repair and autonomous numeric S sequencing. |
+| Objective | Eliminate redundant clock conversions when selecting the earliest deadline across one PIT's three channels. |
+| Non-goals | No guest timing or PIT behavior change, extra state or API, Lib/Emulator change, or owner input mutation. |
+| Reference Baseline | Shared 67807dbed and [S9 evidence](../etc/evidence/t582-s9-execution-observation.md). |
+| Candidate Proposal | [T582 proposal](../proposals/m5-pc110-startup-clock-performance.md), S9 measured candidate and synthetic boundary comparison. |
+| Files And ABI Surface | X86-NXVM board-base/board_deadline.c, existing PIT/board regression as needed, corresponding manifests; approximately +8/-4 production lines. |
+| Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding, architecture/layout and source policy. |
+| Verification | Existing PIT/deadline tests; zero, maximum, overflow, phase and multiple-channel equivalence; cached full dual-width unit/integration and fourteen EXEs for Shared changes. |
+| Expected Markers | Same minimum deadline and immediate semantics, measured bounded performance improvement. |
+| Asset Needs | Existing firmware and isolated copied CMOS/media. |
+| Reporting Requirements | Actual diff, test results, artifact hashes and interactive limitations. |
+| Stop Conditions | Never lose UINT64_MAX or immediate events; do not mask conversion errors or change per-PIT clock domain. |
+| Exit Criteria | Actual Shared diff reviewed; x64/x86 cached qualification, fourteen receiving artifacts and selected-set MyRaidenII checks passed. Shared 96eab1131, NXVM f89764af4 and MyRaidenII ebb203dce were pushed. T582 remains open until PC110 usability is verified. |
+| Original Owner Request | Improve PC110 performance and eliminate redundancy until usable. |
+| Similar-Issue Sweep | Both primary and auxiliary PIT domains, invalid channels, conversion overflow and previous nearer deadline. |
+
+# M5 T582 S9 — Closed: execution observation and scheduling audit
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T582 S9 after S8 delivery and review. |
+| Admission And Approval | Owner authorized continued performance work and autonomous numeric S sequencing. |
+| Objective | Measure per-instruction CPU observation and scheduler costs and identify a larger equivalent optimization for PC110. |
+| Non-goals | No skipped instructions, fault rollback, timing or debug semantics; no new mirrored state, guest-clock substitution, public API or owner media changes. |
+| Reference Baseline | Shared 67807dbed, NXVM 5dd25ead4, MyRaidenII f507c8b97; S7 sampled execution profile. |
+| Candidate Proposal | [T582 proposal](../proposals/m5-pc110-startup-clock-performance.md) and [S7 evidence](../etc/evidence/t582-s7-execution-profile.md). |
+| Files And ABI Surface | Initially read-only X86 Core CPU and Machine; task-owned probes in build/t582. Record design and estimate before any implementation. |
+| Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding, NXVM architecture/layout and source policy. |
+| Verification | Matched Release work, exact guest ticks/PC and observation/debug/interrupt regression. Shared changes require 14 EXEs and full dual-width unit/integration tests. |
+| Expected Markers | Evidence-backed major cost and useful equivalent repair or documented negative result. |
+| Asset Needs | Existing firmware and isolated copied CMOS/media. |
+| Reporting Requirements | Measurement overhead, actual diff, architectural semantics, qualification and realtime limits. |
+| Stop Conditions | Preserve completed instruction observation across interrupt entry and all debug, trace, retirement and timing consumers. |
+| Exit Criteria | Bounded observation and PIT deadline candidates recorded in S9 evidence; the PIT candidate proceeds to S10 after boundary checks. T582 remains open. |
+| Original Owner Request | Improve PC110 performance until usable, maintaining correctness and simplicity. |
+| Similar-Issue Sweep | Examine instruction observation, interrupt entry, retirement/preview, scheduler deadlines and no-consumer paths. |
+
+# M5 T582 S8 — Closed: keyboard idle deadline repair
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T582 S8 after S7 measured audit. |
+| Admission And Approval | Owner authorized continuous performance repair and automatic numeric S sequencing. |
+| Objective | Eliminate redundant keyboard repeat deadline queries when the existing signal proves no repeat is active. |
+| Non-goals | No altered input, repeat, BAT or guest timing semantics; no new state, public API, Lib/Emulator change or user-media mutation. |
+| Reference Baseline | Shared 27ad35459, NXVM 6b01ffd3e; [S7 evidence](../etc/evidence/t582-s7-execution-profile.md). |
+| Candidate Proposal | [T582 plan](../proposals/m5-pc110-startup-clock-performance.md) and measured S7 KBC prototype. |
+| Files And ABI Surface | X86-NXVM board-at/kbc.c, existing keyboard/KBC tests if necessary, corresponding manifests; estimated +2/-1 production lines; no ABI change. |
+| Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding, architecture/layout and source policy. |
+| Verification | Existing keyboard/KBC tests for inactive/active repeat, scanning, BAT and FIFO; cached full unit/integration x64/x86 and fourteen receiver artifacts for Shared changes. |
+| Expected Markers | Same guest timing and input behavior with measured bounded startup work reduction. |
+| Asset Needs | Existing approved firmware, private CMOS/media copies and overlays. |
+| Reporting Requirements | Actual source/test diff, qualification, artifact hashes, measurement uncertainty and playability limits. |
+| Stop Conditions | No reduction of repeat correctness or ignored keyboard startup transitions. |
+| Exit Criteria | Coordinator reviewed Shared 67807dbed, NXVM 5dd25ead4 and MyRaidenII f507c8b97; required delivery passed. T582 remains open until usability is proven. |
+| Original Owner Request | Improve PC110 performance and eliminate redundant calculations until usable. |
+| Similar-Issue Sweep | Repeat signal/deadline behavior across enabled, disabled, empty, active and pending BAT/FIFO paths. |
+
+# M5 T582 S7 — Closed: current PC110 execution profile
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T582 S7 after S6 evidence delivery and coordinator review. |
+| Admission And Approval | Owner authorized continuous PC110 performance repair and autonomous numeric S sequencing. |
+| Objective | Identify the largest current early and late execution costs after landed DMA and memory optimizations. |
+| Non-goals | No production code, guest timing, media or product artifact changes in this audit. |
+| Reference Baseline | Shared 27ad35459; current PC 0.5.0582; S6 evidence 347742699. |
+| Candidate Proposal | [T582 plan](../proposals/m5-pc110-startup-clock-performance.md); [S6 evidence](../etc/evidence/t582-s6-display-observation.md). |
+| Files And ABI Surface | Task-owned profiling and NXVM evidence only; examine actual X86 Core, X86-NXVM and App paths. No API change. |
+| Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding and source policy. |
+| Verification | Bounded current-build guest samples with private CMOS/media; distinguish actual worker samples, instrumentation limitations and task ownership. |
+| Expected Markers | Ranked actual hot functions, reproducible workload, a measured next candidate or explicit negative result. |
+| Asset Needs | Existing approved firmware, task-owned copied CMOS and overlay media; preserve owner inputs. |
+| Reporting Requirements | Source identity, sampling windows, incomplete sample limitations, stop budget and concrete next design. |
+| Stop Conditions | Do not infer CPU-time percentages from mixed-thread samples or mutate guest behavior. |
+| Exit Criteria | Post-S4 sample and bounded PIC/KBC probes are recorded in S7 evidence; PIC result is inconclusive and KBC candidate advances to S8. PC110 playability remains unqualified. |
+| Original Owner Request | Optimize PC110 performance and eliminate redundancy until usable. |
+| Similar-Issue Sweep | Compare CPU, scheduler, memory, DMA, video and host pacing against post-S4 baseline. |
+
+# M5 T582 S6 — Closed: PC110 display observation design and proof
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T582 S6 after S5 measured audit. |
+| Admission And Approval | Owner authorized continued PC110 performance work and automatic numeric S sequencing. |
+| Objective | Prove and implement a single-owner display observation that avoids unnecessary PC110 frame capture while preserving visible behavior. |
+| Non-goals | No Lib/Emulator change, incomplete snapshots, skipped cursor phases, guest-time substitution, second display path or owner-media mutation. |
+| Reference Baseline | Shared 27ad35459 and NXVM 6b01ffd3e; S5 read-only display probe. |
+| Candidate Proposal | [S5 measured evidence and provisional design](../etc/evidence/t582-s5-cpu-timing-performance.md); [T582 proposal](../proposals/m5-pc110-startup-clock-performance.md). |
+| Files And ABI Surface | Design candidate extends existing X86-NXVM provider binding and F65535 observation plus PC110 binding, estimated +75/-15 production and +70 test lines. No Lib/Emulator. Prototype and verify before implementation. |
+| Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding, NXVM architecture/layout and source policy. |
+| Verification | Force, first frame, unchanged frame, cursor blink, reset, wrap and error paths; matched guest performance; cached dual-width full unit/integration and fourteen EXEs for Shared changes. |
+| Expected Markers | Preserve complete snapshot and guest display semantics; fewer captures and meaningful observed guest performance. |
+| Asset Needs | Existing firmware, isolated copied CMOS/media and overlays; do not modify owner inputs. |
+| Reporting Requirements | Exact interface and diff, measurements, tests, artifact hashes and native/RDP limits. |
+| Stop Conditions | Do not use standard VADP generation to suppress F65535 changes; never acknowledge failed capture or skip guest cursor phase. |
+| Exit Criteria | Coordinator reviewed pushed 347742699: the exploratory bypass has only 2.7% one-pair x64 product progress, no proven early-work gain, and lacks force semantics; no Shared change was landed. T582 playability stays open. |
+| Original Owner Request | Optimize PC110 hotspots and redundant calculations until usable. |
+| Similar-Issue Sweep | Standard VADP and custom F65535, lifecycle/reset, invalid/forced capture and all cursor states. |
+
+# M5 T582 S5 — Closed: CPU timing computation audit
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T582 S5 after S4 delivery and coordinator review. |
+| Admission And Approval | Owner authorized continued PC110 performance work and autonomous numeric S sequencing. |
+| Objective | Measure repeated CPU instruction timing and prefix decoding work on representative PC110 execution and identify a safe, useful optimization. |
+| Non-goals | No guest timing formula changes, skipped instructions, persistent mirrored decode state, new public API, Lib/Emulator changes or owner-input mutation. |
+| Reference Baseline | Shared 27ad35459, NXVM 6b01ffd3e, MyRaidenII 7636e914b. |
+| Candidate Proposal | [T582 performance proposal](../proposals/m5-pc110-startup-clock-performance.md); [S3 CPU candidate](../etc/evidence/t582-s3-execution-performance.md). |
+| Files And ABI Surface | Initially read-only X86 Core CPU timing and decoder; task-owned probes in build/t582. Record concrete design and diff estimate before edits. |
+| Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding, NXVM architecture/layout and source policy. |
+| Verification | Measure matched Release fixed-work on both widths, preserve timing results and Intel/V30 semantics; Shared edits require cached full dual-width unit/integration and fourteen artifacts. |
+| Expected Markers | Reproducible hotspot evidence and either a proven useful equivalent repair or a negative result and next owner. |
+| Asset Needs | Existing firmware and task-owned copied CMOS/media with overlays; preserve owner inputs. |
+| Reporting Requirements | Counts, measurement overhead, actual diff, coverage and remaining interactive/RDP limits. |
+| Stop Conditions | Do not conflate prefix semantics across profiles, runtime/preview or emulation modes; no timing accuracy downgrade. |
+| Exit Criteria | CPU prefix candidate produced conflicting x64/x86 results and was not landed; audit identified repeated unchanged F65535 captures. Evidence recorded; T582 remains open pending actual playability. |
+| Original Owner Request | Improve PC110 performance by eliminating evidenced redundant work until usable. |
+| Similar-Issue Sweep | Examine shared prefix count callers, nested timing calculations and other CPU profiles without duplicating test suites. |
+
+# M5 T582 S4 — Closed: DMA arbitration performance audit
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T582 S4 after S3 delivery and coordinator review. |
+| Admission And Approval | Owner authorized continued PC110 performance work and autonomous S sequencing. |
+| Objective | Measure board DMA arbitration in the actual PC110 workload and determine whether a safe idle fast path produces a useful improvement. |
+| Non-goals | No guest timing changes, skipped transfers or cascade updates, new persistent state, public API, Lib/Emulator changes or user-media mutations. |
+| Reference Baseline | Shared 1f8a4d477, NXVM f0907772f, MyRaidenII 825ac6b82; PC 0.5.0582. |
+| Candidate Proposal | [T582 performance proposal](../proposals/m5-pc110-startup-clock-performance.md) and [S3 evidence](../etc/evidence/t582-s3-execution-performance.md). |
+| Files And ABI Surface | Measured candidate: X86-NXVM board-base/dma_bus.c and existing DMA channel regression, plus respective manifests; approximately +8 production lines. No new ABI or state. [Evidence](../etc/evidence/t582-s4-dma-performance.md). |
+| Applicable Rules | NXVM guide, Execution, Documentation, Architecture, Coding, NXVM architecture/layout and source policy. |
+| Verification | Matched Release fixed-work comparison on x64/x86; cascade, active channels, request transitions and transfer regression. Any Shared change requires cached 14-EXE build and full dual-width unit/integration qualification. |
+| Expected Markers | Equivalent guest ticks and transfer behavior, measured host-time change, and a justified keep-or-reject decision. |
+| Asset Needs | Existing approved firmware and isolated private CMOS/media; preserve owner files. |
+| Reporting Requirements | Report actual hotspot evidence, measurement limits, estimated and actual diff, verification and remaining playability gap. |
+| Stop Conditions | Do not infer idle from the gated pending-request query; do not skip cascade propagation, active primary transfers, callbacks or guest timing. |
+| Exit Criteria | Coordinator reviewed pushed Shared 27ad35459, NXVM 6b01ffd3e and MyRaidenII 7636e914b; full qualification passed. T582 remains open until playability is proven. |
+| Original Owner Request | Improve PC110 performance and eliminate redundant work until usable. |
+| Similar-Issue Sweep | Review single/dual DMA controller, primary/secondary active/request, disabled/masked cascade, and request-changing callbacks. |
+
+# M5 T582 S3 — Closed: execution and memory-route costs
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T582 S3 after S2 closure 840094bdc. |
+| Admission And Approval | Owner authorized continued performance work and automatic numeric S sequencing; S2 proves a substantial whole-product gap remains. |
+| Objective | Measure CPU and physical-memory routing costs, remove evidenced redundant work at its owner, and demonstrate equivalent results with improved throughput. |
+| Non-goals | No guest-time reduction, skipped device effects, firmware-address shortcut, second executor, speculative public API, Lib/Emulator change or owner-input mutation. |
+| Reference Baseline | Shared d8a94dc61, receiver delivery 7c7a98a13/0d48682cf, S2 closure 840094bdc; PC 0.5.0582. |
+| Candidate Proposal | [T582 plan](../proposals/m5-pc110-startup-clock-performance.md); [S1 audit](../etc/evidence/t582-s1-performance-audit.md); [S2 measured delivery](../etc/evidence/t582-s2-planar-performance.md). |
+| Files And ABI Surface | Measured design admitted: X86 Core machine/memory.c and machine.c, existing memory-device-registration test and two manifests; [design and fixed-work evidence](../etc/evidence/t582-s3-execution-performance.md). Estimated production +30/-8, test about +35. No new ABI, persistent state, Lib/Emulator change or guest timing change. |
+| Applicable Rules | NXVM guide, CONTRIBUTING, Execution, Documentation, Architecture and Coding; NXVM architecture/layout, UX/source policy; current proposal. |
+| Verification | Fixed-work or matched-checkpoint baseline/candidate measurements, route-boundary semantics and existing regression reuse. Any Shared implementation must receive cached full x86/x64 unit/integration tests and all fourteen EXEs before closure. |
+| Expected Markers | Named measured cost; unchanged guest results, address routing and timing; meaningful improvement rather than a source-only smell claim. |
+| Asset Needs | Existing approved ROM and private CMOS/media copies; preserve all owner files. |
+| Reporting Requirements | Counts, measurement overhead, actual diff, discarded candidates, delivered source/artifact identities and native/RDP limits. |
+| Stop Conditions | No unproven fast path across narrow providers, A20, aliases, parity or observers; no private live cross-thread reads or false full-qualification claim. |
+| Exit Criteria | Implementation and actual-diff review complete; matched Release 30-million-instruction runs reduce host time 4.57% x64 and 6.61% x86 at identical guest ticks/PC. Full dual-width unit/integration qualification and 14-artifact publication complete. Shared 1f8a4d477, NXVM f0907772f and MyRaidenII 825ac6b82 are pushed; T582 playability remains open. |
+| Original Owner Request | Optimize PC110 hotspots and redundant calculations until usable; keep Shared receiving qualification complete. |
+| Similar-Issue Sweep | Read/write/fetch/cache queries, raw/reset and decoded routes, CPU profiles, timing-result consumers and all relevant boundary regressions. |
+
+# M5 T582 S2 — Closed: equivalent F65535 planar expansion
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T582 S2 after S1 coordinator audit closure. |
+| Admission And Approval | Owner admitted performance repair and automatic S sequencing; S1 actual source review and dual-width fixed-work evidence select this bounded implementation. |
+| Objective | Reduce redundant F65535 planar pixel work without changing any guest or snapshot result; measure product impact and qualify receivers. |
+| Non-goals | No timing downgrade, new cache/state/API, incomplete snapshot, firmware shortcut, Lib/Emulator change or user file edit; no whole-product performance claim from a microbenchmark. |
+| Reference Baseline | 990266ae0 S1 closure; production baseline 59ad6e78b, products 0.5.0581. |
+| Candidate Proposal | [T582 plan](../proposals/m5-pc110-startup-clock-performance.md), [S1 evidence and exact design](../etc/evidence/t582-s1-performance-audit.md); [S2 implementation and qualification](../etc/evidence/t582-s2-planar-performance.md). |
+| Files And ABI Surface | Shared: F65535 planar loop, existing chip test, source/test manifests; necessary PC version/preset synchronization; root Console test fixture restores detached standard handles and verifies child exit status after a reproduced x86 qualification crash. NXVM/MyNES/MyRaidenII: required receiver EXEs and own delivery records. No public ABI change. |
+| Applicable Rules | NXVM guide, CONTRIBUTING, Execution, Documentation, Architecture, Coding; NXVM architecture/layout, UX/source policy; S1 actual-change design. |
+| Verification | Existing chip regression plus complete-snapshot comparison on padded stride/nonzero start; cached x64/x86 Release builds and publication of all seven Apps (14 EXEs); full-repository unit/integration tests on both widths; manifest, dependency, artifact and documentation gates. Record desktop/device limitations honestly. |
+| Expected Markers | Identical output with fewer per-pixel calculations; measured fixed-work improvement, actual guest path intact, all required deployed hashes and PE widths. |
+| Asset Needs | Existing approved external ROM/media; isolated measurement copies only. No new inputs or modified owner INI/CMOS/media. |
+| Reporting Requirements | Per-owner actual diff, timings and their scope, tests, 14 artifacts, failures/unverified gates and remaining T582 performance gaps. |
+| Stop Conditions | No changed pixel/flag/palette/stride semantics, artificial guest speedup, false test pass or omitted receiver. Resolve in-scope defects; report genuine unavailable external prerequisites. |
+| Exit Criteria | Coordinator closed S2 after actual-diff review, complete dual-width qualification and 14-artifact delivery: Shared d8a94dc61, NXVM 7c7a98a13, MyRaidenII 0d48682cf, all pushed. Local improvement is proven; T582 remains open for whole-product playability and further proven hotspots. |
+| Original Owner Request | Optimize PC110 performance and redundant work; any Shared update requires cached 14-EXE publication and cached full tests. |
+| Similar-Issue Sweep | Text/cursor path unchanged; all planar dimensions, plane bits, palette/start/stride and first/repeated capture; check other receiver coupling and existing test overlap. |
+
+# M5 T582 S1 — Closed: measured planar repair admitted next
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New — M5 T582 S1; next numeric NXVM task after accepted T581. |
+| Admission And Approval | Owner closed T581 and explicitly selected performance as the next task on 2026-10-29; former queue position 14 is promoted. |
+| Objective | Establish representative current PC110 startup and steady-execution performance, locate evidenced costs, and design the smallest correct repair. |
+| Non-goals | No production optimization before evidence, guest-time substitution, timing downgrade, firmware shortcut, unrelated App change or owner media/configuration edit. |
+| Reference Baseline | Implementation 59ad6e78b, closure f07c61150, released PC version 0.5.0581; retain T580 S89 and T581 observations with their limits. |
+| Candidate Proposal | [Performance proposal](../proposals/m5-pc110-startup-clock-performance.md); S1 baseline/audit, S2 measured repair, final S qualification. |
+| Files And ABI Surface | S1 changes NXVM governance/evidence and only necessary task-owned probes; read App, X86-NXVM, X86 Core and neutral runtime paths. No production/public ABI or Shared source/test change is admitted by S1. |
+| Applicable Rules | NXVM guide; CONTRIBUTING; shared Execution, Documentation, Architecture and Coding; NXVM architecture, source layout, UX, roadmap and source/research policy; prior S89 and S90 evidence. |
+| Verification | Reuse stable cached builds; bounded sequential dual-width measurements with fixed private inputs and existing safe observation APIs; distinguish host time, Core ticks, RTC, PIT/DOS and frame/guest checkpoints. Documentation gate and actual audit review. Any later admitted Shared update triggers cached Release publication of all seven Apps x two architectures (14 EXEs) and cached full-repository unit/integration tests on both widths, per the current Execution rule and owner instruction. |
+| Expected Markers | Reproducible workload and timings, owner-attributed bottleneck evidence, unchanged input hashes, justified repair plan and diff estimate without guessed gains. |
+| Asset Needs | Existing external admitted BIOS/media; private configured CMOS and overlay/copied disks. No new downloads, ROM changes or owner input writes. |
+| Reporting Requirements | Report measured versus inferred results, sampling overhead, phase boundaries, proposed owner/files/diff and unverified desktop/RDP behavior. |
+| Stop Conditions | Do not turn failed/unfinished sampling into success, use unsafe live private reads, mutate user inputs, or implement unreviewed Shared contracts. Unproved hotspot means more bounded investigation, not a fabricated fix. |
+| Exit Criteria | Baseline and actual hot-path audit support a concrete repair design or accurately identify the remaining measurement gap; S1 does not claim the performance problem fixed. |
+| Original Owner Request | Close T581 and admit the next priority T to address performance. |
+| Similar-Issue Sweep | Compare DSTN/TFT, x86/x64, early firmware/late guest, Machine versus UI, pacing versus execution/device work, and prior rejected optimization candidates. |
+
+# M5 T581 — Closed after owner acceptance
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New — M5 T581 S1. |
+| Admission And Approval | Owner admitted the first queued task on 2026-10-29 and authorized autonomous execution. |
+| Objective | Determine and implement a safe stopped-state PC110 display/firmware selection and one executable per architecture. |
+| Non-goals | No runtime switching while running or paused, no user configuration or media destruction, no unnecessary changes to unrelated Apps or shared Lib/Emulator. |
+| Reference Baseline | T580 S90 accepted at d2ac7cf0b; existing four PC110 artifacts and fixed variant bindings. |
+| Candidate Proposal | [PC110 selectable display](../proposals/m5-pc110-display-variant-selection.md); [S1 design evidence](../etc/evidence/t581-s1-vdisplay-design.md) records media, worker and firmware ownership; implement the smallest correct route. |
+| Files And ABI Surface | NXVM and Shared targets: PC110 App and tests; X86-NXVM profile pre-reset, CMOS restore and Product context/extension hooks with tests/manifests. Lib/Emulator are unchanged. Rebuild all five PC products at their common 0.5.0581 version; MyNES/MyRaidenII are not receivers. |
+| Applicable Rules | NXVM guide, execution, architecture, coding, documentation, UX and source/research policy. |
+| Verification | Cached dual-width builds and ten deployed PC EXEs; 712/712 units per width; nine targeted integrations and three real-firmware integrations per width; three other PC entry receivers per width; actual DSTN-to-TFT guest boots reach Personaware on both widths. Native Window/RDP remains unverified; see S1 evidence. |
+| Expected Markers | DSTN default; vdisplay selects matching firmware and display only when stopped; two binaries with both BYOB firmware inputs. |
+| Asset Needs | Existing external BIOS and font inputs; isolated media and CMOS copies; preserve owner files. |
+| Reporting Requirements | Report actual owner boundaries, failure/rollback behavior, diff, tests, artifact identity, and desktop/RDP limitations. |
+| Stop Conditions | No live firmware mutation, partial selection, fake fallback, unintended media writes, or unrelated product changes. |
+| Exit Criteria | Owner accepted S1 and closed T581 on 2026-10-29. Shared 8031ee3e3 and NXVM 59ad6e78b are pushed; all delivery criteria accepted with the recorded native desktop/RDP and empty-CMOS boundaries. |
+| Original Owner Request | Default DSTN, vdisplay=dstn/tft while stopped, and only x86/x64 executables. |
+| Similar-Issue Sweep | Compare both variants, lifecycle transitions, firmware/CMOS ownership, and all existing product extension callers. |
+# M5 T580 — Closed by owner direction
+
+| Task | Retained progress |
+| --- | --- |
+| T580 | Owner closed T580 on 2026-10-29, transferring its five remaining qualification areas to the end of the NXVM queue. S90 was accepted. Shared `0904691e5` and NXVM `ce0353490` deliver the F65535 cursor and PC110 L1 startup compatibility repairs. Both architectures passed 713 unit cases and targeted firmware/product integrations; configured TFT and derived DSTN reached Personaware without input. [Evidence](../etc/evidence/t580-s90-acceptance-failure.md) preserves model and test limits. Empty DSTN CMOS requires initial configuration; startup throughput and native desktop/RDP qualification are transferred without a full-qualification claim. Earlier S records below are historical. |
+
+# M5 T580 S89 — Accepted: PC110 guest clock-rate investigation
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T580 S89. |
+| Admission And Approval | Owner requested autonomous completion of PC110; S88 retained the observed slow guest clock for investigation. |
+| Objective | Identify whether the observed slow World Clock originates in RTC, PIT/guest timing, CPU throughput or presentation, using bounded evidence. |
+| Non-goals | No unapproved Shared changes, host clock substitution, user-media writes or foreground execution. |
+| Reference Baseline | S87 released-product screenshots; S88 RTC persistence and clock ownership evidence. |
+| Candidate Proposal | Use existing firmware, product and machine observation paths with task-owned data; measure guest time against monotonic elapsed host time and identify the first supported cause before proposing changes. |
+| Files And ABI Surface | PC110 App, existing diagnostics/tests and NXVM evidence; Shared implementation or interface changes require established authorization. |
+| Applicable Rules | NXVM guide, execution, architecture, coding, documentation and source/research policies. |
+| Verification | Bounded actual-machine timing observation and targeted dual-width regressions for any admitted fix; retain baseline and limits. |
+| Expected Markers | Measured guest-versus-host progression, named owner, and justified correction or documented boundary. |
+| Asset Needs | Existing embedded firmware and task-owned configuration/media copies; preserve original inputs. |
+| Reporting Requirements | Distinguish RTC register values, DOS/PIT time, guest displayed time, host time and CPU throughput. |
+| Stop Conditions | No fabricated guest state, unapproved Shared changes or unexplained claims of exact hardware timing. |
+| Exit Criteria | Observed clock behavior explained and a necessary correction verified, or an evidenced narrow receiver retained without claiming full timing qualification. |
+| Original Owner Request | Complete a usable PC110 product without excessive or redundant test runs. |
+| Similar-Issue Sweep | Compare stopped and running guest behavior and both PC110 variants without imposing PC110 policy on other profiles. |
+
+The [S89 evidence](../etc/evidence/t580-s89-clock-rate.md) measures both
+Machine runners, reuses the late-guest trace and rejects two isolated
+optimization candidates. No production performance change or actual World
+Clock root cause is established. Late-guest timing and a measured safe
+performance correction remain a T580 receiver; the T is not complete.
+
+# M5 T580 S88 — Accepted: PC110 clock and configuration persistence
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T580 S88. |
+| Admission And Approval | Owner requested autonomous completion of T580 and approved RTC calendar persistence in X86-NXVM and MyPC110 without changing Lib or compensating host-off time. |
+| Objective | Preserve PC110 guest RTC calendar and configuration across normal product stop and process restart. |
+| Non-goals | No Lib change, host-off elapsed-time compensation, owner media edits, foreground execution, invented hardware behavior or unapproved Shared changes. |
+| Reference Baseline | S72 RTC persistence boundary; S83 product lifecycle; S87 four release guest observations. |
+| Candidate Proposal | Trace actual App persistence and RTC ownership; reproduce any concrete gap with isolated state, then design and fix only the established owner. |
+| Files And ABI Surface | PC110 App and tests; X86-NXVM RTC, Board, Machine and tests with the approved RTC persistence boundary; no Lib or Emulator changes. |
+| Applicable Rules | NXVM guide, execution, architecture, coding, documentation and source/research policies. |
+| Verification | Actual saved and restored guest-visible RTC/configuration across process restart, with targeted dual-width tests for any fix. |
+| Expected Markers | Evidence-backed persistence contract, reproduced behavior and an appropriate correction or explicit source boundary. |
+| Asset Needs | Existing firmware and task-owned configuration/media copies; preserve original inputs. |
+| Reporting Requirements | Distinguish configuration RAM, RTC calendar, elapsed host-off behavior and unverified hardware details. |
+| Stop Conditions | No guest-state fabrication, user-file edits or unsupported source-grade claims. |
+| Exit Criteria | RTC/configuration behavior correctly implemented and verified for the admitted contract, or an evidenced narrow receiver for continuation. |
+| Original Owner Request | Complete PC110 implementation and verify usable products. |
+| Similar-Issue Sweep | Compare TFT/DSTN and existing shared RTC behavior without imposing PC110 policy on other machines. |
+
+S87 established interactive Personaware on all four published EXEs with
+TFT-generated isolated CMOS; its limits are recorded in
+[S87 evidence](../etc/evidence/t580-s87-input-path.md). S72 records that
+configuration RAM and RTC calendar currently have different persistence.
+The [S88 investigation](../etc/evidence/t580-s88-clock-persistence.md)
+records the calendar persistence fix, dual-width tests and real Product Debug
+port round trip. The owner explicitly excluded elapsed host-off time. Real
+guest Setup/date-setting and the observed slow World Clock remain separate
+qualification work; S88 does not claim them complete.
+
+# M5 T580 S87 — Accepted: PC110 product guest startup continuation
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T580 S87. |
+| Admission And Approval | Owner requested autonomous completion of T580 and continuation of PC110 work. |
+| Objective | Trace the released PC110 product from DOS driver startup to an interactive guest or a precisely evidenced defect. |
+| Non-goals | No firmware patching, forced Guest state, owner media modification, foreground tasks or unapproved Shared changes. |
+| Reference Baseline | S79 real-firmware Guest diagnostic; S86 actual product Setup, F12 and DOS boot observations. |
+| Candidate Proposal | Compare Guest input and execution at the product driver boundary with the established real-firmware diagnostic using bounded, isolated background observations; correct only demonstrated defects. |
+| Files And ABI Surface | PC110 App, existing tests and task evidence; Shared changes require established approval. |
+| Applicable Rules | NXVM guide, execution, architecture, coding, documentation and source/research policies. |
+| Verification | Real product route, isolated guest media, input and frame evidence, affected dual-width checks for any production change. |
+| Expected Markers | Guest progress to interactive input or a reproducible and localized failure boundary. |
+| Asset Needs | Existing approved external firmware and task-owned media copies; preserve owner assets. |
+| Reporting Requirements | Distinguish native input delivery, guest consumption, product screen, isolated diagnostic and unresolved limits. |
+| Stop Conditions | No fabricated guest state, protected media change or Shared API change without its applicable approval. |
+| Exit Criteria | Observed interactive guest or an evidenced narrowly scoped implementation receiver with required checks. |
+| Original Owner Request | Complete PC110 implementation and verify usable released products. |
+| Similar-Issue Sweep | Compare product and diagnostic input paths and original/TFT variants where evidence warrants. |
+
+S86 established real TFT PC DOS startup but not an interactive desktop. Its
+final Guest diagnostic and screenshot are recorded in [S86 evidence](../etc/evidence/t580-s86-product-observation.md).
+
+Five product-path observations and their limits are recorded in
+[S87 evidence](../etc/evidence/t580-s87-input-path.md). The fifth reached the
+Personaware launcher through Emulator queue calibration; Tab and Enter posted
+to the actual Window were followed by World Clock opening. The x64 observation
+used scratch instrumentation and did not test native mouse capture or qualify
+the released EXE independently. Its owned background processes have exited.
+No firmware, user media or Shared source was changed.
+
+The sixth observation ended before F12 because its monitor-prompt handshake
+timed out despite a visible pause notification. The seventh reached
+Personaware and saved a 128-byte guest CMOS through orderly exit. The eighth
+used the byte-identical published TFT x64 EXE with a copy of that CMOS and
+reached Personaware; normal Window Tab/Enter was followed by World Clock.
+The direct-write task-owned master image changed during that run. Original
+inputs and user configuration remained untouched. The observer was stopped
+after the successful checkpoint, not counted as a full-budget test.
+
+The ninth and tenth release observations reached Personaware and opened World
+Clock through Window keyboard input: TFT x86 and derived-DSTN x64. Both used
+fresh task-owned copies of the TFT Guest-generated CMOS and media. The DSTN
+result is a cross-variant saved-configuration experiment, not a pristine DSTN
+cold-setup proof. Both were deliberately stopped after the checkpoint and
+are not full-budget registered integration results.
+
+The eleventh observation reached Personaware and opened World Clock through
+Window keyboard input on the published derived-DSTN x86 EXE. It used a copy
+of the TFT Guest-generated CMOS, so it is not a pristine DSTN cold-setup
+proof. It was deliberately stopped after the checkpoint, not counted as a
+full-budget integration pass. Existing capture-mock, PC110 construction and
+inking units passed 3/3 per architecture. Native mouse capture remains a
+separate proof. The owned background processes have exited.
+
+# M5 T580 S86 — Accepted: PC110 product boot and Setup observation
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T580 S86. |
+| Admission And Approval | Owner accepted S85 and requested continued PC110 work. |
+| Objective | Trace actual PC110 product execution toward Setup and determine whether its displayed colours match guest framebuffer data. |
+| Non-goals | No foreground processes, owner media or configuration edits, firmware patching, or unapproved Shared changes. |
+| Reference Baseline | S57 palette evidence, S78/S79 firmware boot, S83 lifecycle, S84/S85 product Window evidence. |
+| Candidate Proposal | Use bounded background product and guest-path probes to trace the existing firmware, device and display path; repair confirmed in-scope defects. |
+| Files And ABI Surface | PC110 App and tests, task evidence; shared changes require established approval. |
+| Applicable Rules | NXVM guide, execution, architecture, coding, documentation and source/research policies. |
+| Verification | Actual product path, isolated guest state, matching framebuffer and Window observations, applicable dual-width tests. |
+| Expected Markers | Identifiable startup progression, Setup display and guest colour evidence or a precisely localized defect. |
+| Asset Needs | Existing approved external ROM and task-owned temporary configuration/media; preserve owner inputs. |
+| Reporting Requirements | Separate actual guest, frame, Window, RDP and desktop evidence and unresolved gaps. |
+| Stop Conditions | No forced guest state, protected media modification or unsupported precision claims. |
+| Exit Criteria | Confirmed product behaviour and colour path with required verification, or an evidenced narrow receiver for continuation. |
+| Original Owner Request | Complete PC110 implementation and investigate unexpected blue Setup/Error pages. |
+| Similar-Issue Sweep | Compare original and TFT variants, guest output and shared display boundaries. |
+
+An initial isolated TFT x64 observation ended on a black Window while the
+firmware was still progressing. [S86 evidence](../etc/evidence/t580-s86-product-observation.md)
+records the longer observation. A scratch-instrumented TFT product reached the
+guest 640x480 ERROR
+and date/time pages in the actual RDP Window. Its background pixel matches the
+earlier pink guest-frame value; normal F12 and Enter input progressed the guest.
+The released derived-DSTN product also reached both pages through ordinary
+F12 and Enter input. The connected RDP client showed pink, matching the Guest
+frame. A released TFT product subsequently displayed PC DOS driver startup;
+its final driver screen and Guest state transfer to S87. Full boot and
+physical-panel qualification are not claimed.
+
+# M5 T580 S85 — Accepted: initial Window scale correction
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T580 S85. |
+| Admission And Approval | Owner accepted S84, approved the Shared Lib correction and requested focused review of snap restore, test fixture ownership, timeout budgets and cross-repository synchronization before acceptance. |
+| Objective | Prevent native minimum Window width from becoming the initial automatic frame scale. |
+| Non-goals | No new public API, second window state machine or recovery framework; do not change guest video semantics, owner media or configuration. |
+| Reference Baseline | S84 same-run PC110 Window trace and DeskPro EGA readiness record. |
+| Candidate Proposal | Limit the initial automatic scale to natural frame size while retaining fit-down and subsequent manual scaling. |
+| Files And ABI Surface | Lib Window implementation, existing Lib Window test, both manifests, NXVM/PC110, MyNES and MyRaidenII receiving artifacts and task evidence; no ABI changes. |
+| Applicable Rules | NXVM guide and execution, architecture, coding, documentation and UI rules. |
+| Verification | Dual-width cached full build and full registered tests, targeted size regression and actual PC110 Window observation, release and artifact verification. |
+| Expected Markers | 8x1 forced to 120x1 followed by 640x400 does not create 9600x6000; fit-down and manual scaling remain correct. |
+| Asset Needs | Existing external firmware and task-owned temporary probes; preserve owner inputs. |
+| Reporting Requirements | Actual diff, builds, tests, artifacts, desktop limits and pushed commits; await owner validation. |
+| Stop Conditions | Do not modify owner files or claim unexecuted checks. |
+| Exit Criteria | Reviewed fix, complete requested verification and published artifacts; owner validation required. |
+| Original Owner Request | Fix PC110 Window startup and continue its product qualification. |
+| Similar-Issue Sweep | Check initial fit-down, user resizing, PC110 and DeskPro, without guest-specific host rules. |
+
+S86 is reserved to resume S84 PC110 product and Setup colour observation after
+S85 delivery and owner acceptance; only one S is active at a time.
+
+The first draft passed the dual-width focused test but the real PC110 product
+still reached 9600x6000: a later WM_SIZE reset the scale. The owner approved
+the explicit-operation contract: WM_SIZE updates actual geometry but cannot
+itself select a scale; an actual WM_SIZING interaction commits its result on
+WM_EXITSIZEMOVE. Existing explicit natural-size and maximize operations retain
+their paths. Snapped-frame adaptation uses the current snapped region without
+replacing the scale for ordinary windows. Focused tests pass on both widths.
+The P1 production revision passed 759/759 registered non-MIDI tests per
+width; the strengthened snap assertion was separately rerun on both widths.
+Lib production and test manifests pass on both widths; both build trees report
+no work on an incremental rebuild.
+The P2 PC110 TFT x64 deployed binary was observed through an isolated
+background copy: before the probe resized it, its RDP client was 640x400.
+The probe's later debug handshake failed, so this is not a boot or setup-colour
+qualification. The [S85 evidence](../etc/evidence/t580-s85-window-scale.md)
+records product scope and verification limits.
+
+The owner subsequently identified an untested snap-restore-to-next-frame
+contract. A controlled existing fixture reproduced the loss of restored
+scale; the current correction treats the native snap-to-restored state
+transition as a distinct event. Both focused architecture tests pass; native
+drag message ordering remains unverified. Earlier P1/P2 are superseded by the
+corrective Shared and receiving-artifact commits.
+
+Both earlier full suites passed 759/760; the native MIDI output test failed
+in each architecture and in independent single-test reruns. A direct WinMM
+probe enumerated one MIDI device but midiOutOpen returned result 1. After the
+owner connected RDP, the native MIDI integration test passed separately on
+both x86 and x64. The initial full runs and individual later passes are distinct
+evidence; they are not a single uninterrupted 760-test passing run. Owner
+inputs were preserved.
+
+The later complete review run passed 760/760 on each width with RDP connected.
+It used the earlier configured timeout budgets. After the owner selected 60
+seconds, all three affected checks passed again on each width after
+reconfiguration. Physical snap/drag and cold-cache timing remain unverified.
+
+# M5 T580 S84 — Accepted: PC110 deployed Window observation
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T580 S84. |
+| Admission And Approval | Owner authorized autonomous T580 completion and requested investigation of actual PC110 setup colours. |
+| Objective | Observe a released PC110 executable's actual Window output and compare its guest setup colours with recorded guest framebuffer evidence. |
+| Non-goals | No foreground process, user INI or media changes, firmware modification, Shared production change or RDP claim without RDP evidence. |
+| Reference Baseline | S57 guest-frame colours; S78/S79 firmware diagnostics; S80 deployed binaries and S83 product lifecycle. |
+| Candidate Proposal | Run the existing product Window probe in a hidden background process using a task-owned copy and configuration; capture and inspect the client image, including an isolated copy of the already reviewed guest media. |
+| Files And ABI Surface | NXVM task evidence and temporary probe inputs only unless an actual product defect is demonstrated. |
+| Applicable Rules | NXVM Task Reading Set, execution, architecture, coding, documentation, UI and source/research policy. |
+| Verification | Report the actual executable, firmware, client dimensions, process status and captured pixels; distinguish desktop session and RDP. |
+| Expected Markers | Real Window frame and measurable colours, or an explicit bounded failure rather than an inferred result. |
+| Asset Needs | Existing deployed EXE and previously reviewed external media; task-owned temporary INI, CMOS and disk copies with overlay access. Preserve all owner files. |
+| Reporting Requirements | Include reproducible observation, capture limitations, unverified firmware variants and remaining task gaps. |
+| Stop Conditions | Do not force guest state, expose a foreground process, modify user media or infer colours from an unrelated window. |
+| Exit Criteria | Actual deployed Window evidence is reviewed and recorded, or a concrete unresolved receiver is identified for continued work. |
+| Original Owner Request | Implement PC110 and investigate the unexpectedly blue ERROR/Easy Setup pages. |
+| Similar-Issue Sweep | Compare the result against the separately captured firmware framebuffer and both fixed variants. |
+
+The deployed TFT x64 Window was observed in an RDP session at 9600x6000;
+the screenshot was black and does not prove the reported setup colour. A
+task-local instrumented product build now traces the initial 8x1 frame,
+native 120x1 client, stored 120/8 scale and subsequent 640x400 frame resized
+to 9600x6000 in one run. See [S84 evidence](../etc/evidence/t580-s84-product-window.md).
+A candidate Shared Lib correction requires the owner's Shared-code review;
+no Shared implementation has been changed and S84 remains active.
+The original F65535 reference also identifies an independent Screen Off
+snapshot gap; it is not yet tied to the observed window-size failure and
+requires a separate validated display behavior decision.
+The actual TFT x64 product's Window was subsequently resized by the
+background probe for observation. It showed a black 640x400 client with a
+short white cursor after 240 seconds; the paused debugger reported
+`3800:1333 HLT` with interrupts disabled. The owner of that no-media guest
+state remains unconfirmed; see S84 evidence.
+The address matches S51's firmware suspend point. A later task-local F12
+host-message probe did not establish delivery or a CPU continuation because
+its pause/query handshake failed; this remains unverified, not a product-failure
+claim. The current product README also omits the App's F12 resume binding.
+With the probe handshake corrected, a fresh timed F12 run reported a different
+CPU location, F000:E98A, after the input and paused successfully. It did not
+sample the location immediately before input and did not produce the pink
+page; F12 delivery and guest continuation are not yet fully attributed.
+A further product run did sample the prior 3800:1333 HLT, resumed through the
+normal monitor, posted F12 and later observed F000:C852. The screen was still
+black with a cursor. This is product-path continuation evidence, not a
+complete causal trace or colour/guest-media qualification.
+The real TFT x64 product also accepted an isolated, overlay-backed test master
+and remained controllable, but its timed F12 run still showed a black Window
+and did not establish a guest disk read or DOS/Setup. The source disk hashes
+were unchanged; see S84 evidence.
+The external BIOS identifies the post-F12 location as a candidate 3F4h FDC
+status-poll loop, consistent with the captured DX and opcode. That initial
+single sample did not distinguish forward progress from a stuck wait; runtime
+shadow bytes were not captured.
+In a further real-product run, the first post-F12 sample was F000:C852 and a
+second sample after six seconds of normal resume was 3000:8000. This proves
+the guest reached another instruction location, but does not by itself prove
+that the FDC loop completed; see S84 evidence.
+
+# M5 T580 S83 — Accepted: PC110 released-product lifecycle
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T580 S83. |
+| Admission And Approval | Owner authorized autonomous PC110 completion and required real product integration. |
+| Objective | Cover lifecycle commands through both actual PC110 product executables, complementing the lower-level real-firmware diagnostic. |
+| Non-goals | No new production API, extra execution path, Shared changes, guest patching or desktop/RDP claim. |
+| Reference Baseline | S80 product process test covers reset and CMOS; S82 verifies firmware via the lower-level diagnostic. |
+| Candidate Proposal | Extend the existing isolated product process test with start, pause, resume, reset, stop and exit using the existing monitor contract. |
+| Files And ABI Surface | PC110 App integration test and task evidence; no production ABI changes. |
+| Applicable Rules | NXVM Task Reading Set, execution, architecture, coding and documentation rules. |
+| Verification | Both variants and widths in real product processes, complete repository unit suite and documentation gate. |
+| Expected Markers | Correct ordered lifecycle completion texts from actual products and clean process exit. |
+| Asset Needs | Existing compiled EXEs and task-owned temporary INI/CMOS; preserve owner inputs. |
+| Reporting Requirements | Distinguish product lifecycle, low-level guest, actual desktop and RDP evidence. |
+| Stop Conditions | Do not lower assertions, add a private API or claim a guest frame from a monitor message. |
+| Exit Criteria | Both variant product lifecycle tests and the required complete unit suites pass on both widths. |
+| Original Owner Request | Complete PC110 implementations with meaningful product tests and clean delivery. |
+| Similar-Issue Sweep | Review whether existing diagnostics are being mistaken for product execution. |
+
+Both DSTN and TFT actual-product process lifecycle tests passed on x86 and
+x64. The complete registered unit suite passed 713/713 on each width. This
+test-only change did not rebuild product EXEs or modify Shared. The tests do
+not claim an observed PC110 desktop or RDP guest screen; see
+[S83 evidence](../etc/evidence/t580-s83-product-lifecycle.md).
+
+# M5 T580 S82 — Accepted: repository integration qualification
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T580 S82. |
+| Admission And Approval | Owner authorized autonomous T580 completion and full cached unit/integration validation. |
+| Objective | Run registered repository and owner-managed external integrations on x86 and x64, and resolve evidenced PC110 failures. |
+| Non-goals | No Shared Lib/Emulator changes, user-media modifications, hidden test skips or unsupported desktop qualification claims. |
+| Reference Baseline | S81 full unit qualification, S78–S80 real PC110 guest and product artifacts. |
+| Candidate Proposal | Build integration targets in the existing cached graphs and run registered integration cases, recording failures and owners. |
+| Files And ABI Surface | Task evidence and only the owner of an evidenced failure. |
+| Applicable Rules | NXVM Task Reading Set, execution, architecture, coding and documentation rules. |
+| Verification | Both-width integration suites, affected regression tests, artifact identity and documentation gates. |
+| Expected Markers | Actual test inventory and pass/fail/skip results; no partial-suite completion claim. |
+| Asset Needs | Existing authorized external media with task-owned writable copies; preserve masters, INI and snapshots. |
+| Reporting Requirements | Distinguish background, desktop and RDP evidence and report unresolved qualification. |
+| Stop Conditions | Do not suppress test failures, mutate owner media or bypass component boundaries. |
+| Exit Criteria | Required integration results and remaining qualification limits are recorded and submitted. |
+| Original Owner Request | Complete the PC110 task with valid releases and tests. |
+| Similar-Issue Sweep | Identify stale private diagnostic coupling and missing integration registration. |
+
+The four PC profile-specific integration matrices and the PC110 guest and
+artifact cases passed on both widths; the five registered desktop integration
+tests passed on each. The x64 default-profile non-desktop suite failed twice on
+native MIDI output when parallel, then passed 42/42 in a serial run; x86 passed
+42/42. Independent WinMM probes also returned an external error. That intermittent
+failure's cause remains unknown. See [S82 evidence](../etc/evidence/t580-s82-repository-qualification.md).
+The T580 diagnostic boundary and actual PC110 desktop/RDP experience remain
+open; these results do not alone close T580.
+
+# M5 T580 S81 — Accepted: remove duplicate PC110 test composition
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T580 S81. |
+| Admission And Approval | Owner authorized autonomous completion and explicitly requested a single production path and nonredundant tests. |
+| Objective | Remove the PC110 App's test-only duplicate base construction while preserving meaningful board, input and display coverage at the actual composition or owning chip. |
+| Non-goals | No new production APIs, raw Core getters, second machine path, Lib/Emulator edits or loss of demonstrated timing/latch checks. |
+| Reference Baseline | S78 evidence identifies pc110_machine.c as a second construction used only by base/display tests; machine_construction_smoke uses the actual plan and driver. |
+| Candidate Proposal | Inventory every retired assertion, use existing X86-NXVM chip/board tests where they already own it, migrate PC110-specific wiring checks through the real driver, then remove duplicate production code and tests. |
+| Files And ABI Surface | PC110 App/test/CMake and NXVM task evidence only; any genuinely missing Shared coverage is identified before changing its owner. |
+| Applicable Rules | NXVM Task Reading Set, execution, architecture, coding and documentation rules. |
+| Verification | Cached x86/x64 builds, complete repository unit suite, relevant chip/board tests, product composition and artifact identity, documentation and boundary gates. |
+| Expected Markers | One PC110 construction owner; no retired base-composition references; an assertion-by-assertion disposition and no coverage loss. |
+| Asset Needs | Existing synthetic test fixtures; preserve user firmware, media, configuration and released assets. |
+| Reporting Requirements | Report deleted and retained paths, per-assertion coverage, actual diff and any limitations. |
+| Stop Conditions | Do not make public interfaces or change guest behavior solely to simplify testing; do not delete unique checks without transferring them. |
+| Exit Criteria | Actual production composition and appropriate chip tests cover the former behaviors; duplicate code and test registration removed; complete repository unit suite passes on both widths. |
+| Original Owner Request | Implement a usable PC110 with clean architecture, relevant tests, released binaries and a clean worktree. |
+| Similar-Issue Sweep | Inspect remaining PC110-only tests for other duplicate composition and private implementation dependencies. |
+
+NXVM P1 `1a5b4cd6a` removes the test-only construction and its two tests,
+transfers PC110 wiring checks to the real product construction, and retains
+controller and latch tests at their owning components. Both widths passed 11
+PC110 unit tests, six artifact/CMOS integration tests and four controller and
+display owner tests. The four rebuilt EXEs passed their firmware identity
+checks. See [S81 evidence](../etc/evidence/t580-s81-composition-inventory.md).
+P2 prematurely marked S81 accepted before the required full unit suite. The
+reopened S81 completed the missing suite: 668 registered non-MyNES and 45
+MyNES unit tests passed for each of x86 and x64, using the same cached build
+trees. No MyNES product executable was rebuilt for this test.
+The real-firmware diagnostic's private Machine boundary and full-repository
+and desktop qualification remain open; this does not close T580.
+
+# M5 T580 S80 — Accepted: PC110 artifact build and deployment
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T580 S80. |
+| Admission And Approval | The owner authorized autonomous completion and explicitly requested four fixed PC110 binaries containing external BYOB firmware. |
+| Objective | Replace PC110-only previews with one build/deploy path for four named x86/x64 DSTN/TFT executables, retaining fixed firmware identities and the adjacent INI. |
+| Non-goals | No runtime firmware selection, ROM/media commit, user INI rewrite, duplicate production entry, Lib/Emulator change or premature T580 completion claim. |
+| Reference Baseline | S78 and S79 verified both firmware variants through real Setup, DOS and guest input; PC110 currently has only build-tree previews. |
+| Candidate Proposal | Use the existing product artifact helper and firmware libraries, retain one target per fixed variant, update consumers and owner-local release checks. |
+| Files And ABI Surface | NXVM App/test/CMake/docs/assets and the Shared repository ignore policy; no public API or Shared production component changes. |
+| Applicable Rules | NXVM Task Reading Set, execution, architecture, coding, documentation and source/research policy, including the owner's explicit embedded-EXE authorization. |
+| Verification | Cached x86/x64 build, four PE widths, exact names and embedded variant identities, product/INI integration, affected units, artifact and documentation gates. |
+| Expected Markers | Only mypc110_x86.exe, mypc110_x64.exe, mypc110_tft_x86.exe and mypc110_tft_x64.exe, with fixed BIOS/font hashes and unchanged INI. |
+| Asset Needs | Existing validated external PC110 firmware and generated build-only embedding sources; preserve all external media and INI. |
+| Reporting Requirements | Record exact artifacts/hashes, firmware provenance, tests and unverified desktop/RDP behavior; separate Shared and NXVM commits. |
+| Stop Conditions | Do not publish raw firmware, change firmware inputs, overwrite the owner INI, or claim the full T accepted from build success alone. |
+| Exit Criteria | Four correctly named, deployed and tracked binaries and their fixed firmware pairing are verified and committed with the build/test/document changes. |
+| Original Owner Request | Implement both PC110 variants and publish four owner-named EXEs, with tests, commits and push. |
+| Similar-Issue Sweep | Remove obsolete preview target references, inspect release-root ownership and avoid a second build or deployment path. |
+
+Shared P1 `da7c5a97d` limits tracking to the four owner-selected EXE names;
+NXVM P2 `6657cb7dc` supplies their formal build/deployment, artifacts,
+tests and [release evidence](../etc/evidence/t580-s80-pc110-release.md).
+Both-width product/CMOS/reset, positive and swapped-firmware negative tests,
+PE checks, artifact-root and documentation gates passed. The owner INI and
+CMOS files were not modified. This accepts S80, not the full T580: the
+test-only duplicate composition, diagnostic private boundary, full-repository
+qualification and desktop/RDP verification remain open.
+
+# M5 T580 S79 — Accepted: PC110 DSTN guest qualification
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T580 S79. |
+| Admission And Approval | The owner authorized autonomous PC110 S tasks and requested original and TFT variants on both host widths. |
+| Objective | Verify the derived DSTN firmware's own Setup, DOS boot and guest input on x86 and x64, and repair an evidenced machine-owned defect if found. |
+| Non-goals | No guest-state injection, ROM mutation, fabricated success, unrelated product changes or physical-accuracy claim. |
+| Reference Baseline | S78 accepted TFT guest input and both-width DSTN power/resume handoff; neither proves DSTN Setup or DOS. |
+| Candidate Proposal | Reuse the existing real-firmware guest diagnostic linked to the DSTN firmware; identify any true variant-specific divergence before changing its owner. |
+| Files And ABI Surface | PC110 App/tests and NXVM task evidence; Shared X86-Core/X86-NXVM only for demonstrated defects under existing authorization, no Lib/Emulator changes. |
+| Applicable Rules | NXVM Task Reading Set, execution, architecture, coding and source/research policy. |
+| Verification | Both-width real DSTN firmware and guest checkpoints, affected tests and artifacts if code changes, manifests and documentation gates. |
+| Expected Markers | Actual DSTN Setup execution, firmware boot handoff, DOS loader, guest input and resulting frame, with statuses and Core faults recorded. |
+| Asset Needs | Existing reviewed derived DSTN ROM, task-owned DOS media overlay and Setup reference; preserve external masters. |
+| Reporting Requirements | Separate derived-ROM provenance, actual guest results and unavailable desktop/RDP checks. |
+| Stop Conditions | Do not force TFT behavior onto DSTN, patch the guest, suppress a real fault or claim a host session was tested when absent. |
+| Exit Criteria | Both architectures reach and independently demonstrate the admitted original-panel guest path, or the exact failing owner is identified and repaired within this S. |
+| Original Owner Request | Implement PC110 with fixed original and TFT binaries and complete build, tests, release and submission. |
+| Similar-Issue Sweep | Review variant firmware selection and test oracle ownership without a second product execution path. |
+
+Both host widths reached the derived DSTN firmware's actual Setup entry and
+matched the reviewed Setup image, completed the DOS loader, all four inking
+calibration points and isolated PS/2 input, and produced the same launcher
+frame without a Core fault. Both diagnostic processes exited zero. The
+[S79 evidence](../etc/evidence/t580-s79-dstn-guest.md) records the derived
+firmware provenance and the limits of this background guest verification.
+PC110 release targets, production EXE qualification, test-boundary cleanup,
+desktop/RDP checks and the T580 closure gate remain open.
+
+# M5 T580 S78 — Accepted: PC110 controller restoration and pointing device
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T580 S78. |
+| Admission And Approval | The owner authorized autonomous PC110 S tasks and previously approved the bounded Shared/Core changes needed by the product. |
+| Objective | Identify and implement the missing controller restoration event and demonstrate the genuine PC110 BIOS and guest pointing-device path. |
+| Non-goals | No host BIOS interception, guest-memory injection, manufactured driver success, external media changes, Lib/Emulator changes, or physical-timing claim without a source. |
+| Reference Baseline | Accepted S77 records real C201h failure, the SMM lock, two real firmware callbacks and the 0Ah/9Bh and 11h mailbox sequence. Its 10h reply did not resolve the failure. |
+| Candidate Proposal | Follow the original controller image, firmware and source-labelled references to identify the receiver and event; implement one functional L2 model at its correct owner, then verify the actual guest. |
+| Files And ABI Surface | PC110 App and tests, or X86-NXVM/Core only if the evidence requires their existing boundary; no new public API merely for diagnostics. |
+| Applicable Rules | NXVM Task Reading Set, execution, architecture, coding and source/research policy. |
+| Verification | Affected x86/x64 unit and real-firmware regressions, actual guest driver and input path, plus required affected artifacts and manifest/gate checks. Long work is bounded and backgrounded. |
+| Expected Markers | Original firmware clears its lock; BIOS mouse requests succeed; actual guest input and final frame are independently observed; no Core fault. |
+| Asset Needs | Reviewed external BIOS, Setup oracle and task-owned disk overlays; preserve their originals. |
+| Reporting Requirements | Separate modeled controller facts, real guest outcomes, failure cases, both widths and unexecuted desktop/RDP validation. |
+| Stop Conditions | Do not patch guest state, substitute another device, fabricate a BIOS result or claim physical timing from an L2 model. |
+| Exit Criteria | The real firmware clears its own lock and guest pointing-device initialization and input are verified, with failures and cleanup honestly accounted for. |
+| Original Owner Request | Implement PC110 and both firmware variants through build, test, release and submission, with faithful input and display. |
+| Similar-Issue Sweep | Check controller reply ownership, reset/retention and device paths without introducing duplicate lifecycle or input queues. |
+
+An L1 temporary mailbox timing experiment let the original x64 firmware
+clear its own SMM lock and reach handoff, but does not establish the event's
+physical timing, data or actual guest mouse behavior. Its code was removed
+after launch. See the [S78 investigation](../etc/evidence/t580-s78-controller-restoration.md).
+A real-guest x64 probe using the temporary hypothesis checked the DOS mouse
+driver's actual BIOS request and return.
+The App candidate uses a separately defined L1 delay model;
+both-width PC110 unit suites, firmware resume and FDC/reset tests pass. The
+PC110 product is not yet released. The initial x64 DOS probe
+used the earlier experimental binary, so its result must not be described
+as direct validation of the revised implementation.
+That experimental probe returned C201h successfully but then recorded C206h
+failures and a Core fault. A subsequent bounded x64 probe of the candidate
+observed the relevant BIOS and 8042 calls.
+The follow-up confirmed that C206h fails because the mouse rejected E6h;
+Shared P1 `d93729439` corrects that command and NXVM P2 `2fc16aff3` refreshes
+the eight existing PC artifacts. Both commits are pushed. The current
+candidate passed both-width PC110 units and the full X86-NXVM test group,
+and both-width real TFT DOS/inking runs reached the same launcher image.
+NXVM P3 `0886b2211` records the independently tested controller model and is
+pushed. Both-width PS/2-only guest input probes succeeded and their matching
+moved-pointer frame is the same as the host-input run. DSTN power/resume and
+boot handoff also passed on both widths. NXVM P4 `e9a14aae5` retains the
+diagnostic and evidence. The reviewer accepts S78 against its scoped exit;
+complete DSTN guest qualification, final PC110 releases and T580 remain open.
+
+# M5 T580 S77 — Accepted: PC110 inking device and input boundary
+
+Coordinator review accepts pushed Shared P1 `2f853d2db` and NXVM P2
+`b597189bd` for the inking receiver and the independently sourced 10h
+completion. Both-width targeted units and firmware checkpoints are recorded
+in S77 evidence. The optional long guest diagnostic exits 1 on its inherited
+VM86 exception predicate and is not called a passing test. Mouse C201h,
+the duplicate test-only construction, private diagnostic boundary, DSTN DOS,
+desktop presentation and final PC110 release qualification remain open in
+T580; S78 investigates the mouse rather than declaring T580 complete.
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T580 S77. |
+| Admission And Approval | Owner authorized autonomous PC110 implementation and S76 was accepted at `7fa26dc31`. |
+| Objective | Investigate and implement the PC110 inking-device boundary needed by the genuine driver and calibration flow, using documented hardware or labelled L2 reference evidence. |
+| Non-goals | No host BIOS interception, guest-memory injection, external media modification, fake calibration success, or Lib/Emulator changes without an independently justified contract. |
+| Baseline | [S76 evidence](../etc/evidence/t580-s76-status-port.md) records real PC DOS driver output and its first inking-calibration request; input consumption is not yet proven. |
+| Candidate Proposal | Map existing Machine input, port and IRQ owners against the independently documented inking protocol; implement a single bounded hardware receiver and its input adapter, then verify the real guest path. |
+| Files And ABI Surface | PC110 App and appropriate X86-NXVM/Core receiver and tests if warranted; public contract extensions only under existing owner authorization. |
+| Applicable Rules | NXVM Task Reading Set, execution, architecture, coding and source/research policy. |
+| Verification | Deterministic protocol tests, affected dual-width builds and real-firmware/driver receiver as evidence warrants; hidden bounded background work in existing Ninja trees. |
+| Asset Needs | Reuse the reviewed task-owned test master and Setup oracle as read-only inputs with overlays; preserve external originals. |
+| Reporting Requirements | Distinguish protocol, host input, actual calibration, pointing-device driver, DOS startup and desktop validation. |
+| Stop Conditions | Do not invent the digitizer protocol, substitute a PS/2 mouse for inking, modify guest software or claim unobserved hardware precision. |
+| Exit Criteria | The documented inking interface and real driver calibration are demonstrated, or a specific next unimplemented owner is located and addressed. |
+| Original Owner Request | Complete PC110 implementation, original and TFT variants, and four published executables. |
+| Similar-Issue Sweep | Keep PS/2 relative pointing and inking samples independent and audit both routes for real caller ownership. |
+
+The implementation covers the documented inking receiver and the separately
+source-supported EC 10h completion. Shared P1 `2f853d2db` supplies the
+generic input/IRQ attachment and is pushed. The App implementation, tests,
+records and affected PC artifacts form the NXVM implementation P; coordinator
+review must retain the negative mouse result and the optional diagnostic's
+exit 1 rather than treating either as a passing result.
+
+The protocol, input/IRQ implementation and its dual-width unit verification are
+recorded in [S77 evidence](../etc/evidence/t580-s77-inking-boundary.md).
+The real TFT driver has accepted all four calibration points and reached the
+same Personaware launcher frame on x86 and x64; the older power diagnostic
+still returns failure on its unchanged exception-count predicate. Mouse-driver
+investigation and desktop presentation remain outstanding.
+The current mouse follow-up records the actual C201h SMI and EC mailbox
+instructions in a bounded background guest replay. A proposed FFh mailbox
+reply was rejected and removed after an isolated trace showed that it did
+not explain the observed failure; see S77 evidence for the distinction.
+The subsequent real trace confirms the guest's SMM lock branch. The selected
+controller firmware's 10h handler emits an AAh completion, now modeled by
+the App mailbox; all 13 PC110 units, real-firmware FDC/reset and boot-handoff
+tests pass on both host architectures. The separate DSTN firmware's FDC/reset
+and boot-handoff diagnostics passed on both widths. The candidate's real x64
+guest mouse trace still returns C201h failure with the SMM EC lock set; the
+10h completion is therefore not a demonstrated fix for that failure. A
+shorter real-firmware handoff probe confirmed that the lock is already 01h
+before DOS starts; power restoration is the next investigation boundary.
+The follow-up observed the mailbox transition from available at suspend to
+empty before RSM while the lock remained set. A bounded real-firmware trace
+identified 3E5DDh as the consumer; the observed restoration did not execute
+the known lock-clear points. A shorter resume-only trace confirmed both
+original callbacks are invoked: the first sends 0Ah/9Bh and 11h, while the
+second fails to observe the input needed to clear the lock. The controller
+event remains under investigation; temporary observers were removed.
+
+# M5 T580 S76 — Accepted: PC110 operating-system progression
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T580 S76. |
+| Admission And Approval | Owner authorized autonomous PC110 implementation and S75 was accepted at `57bae0c18`. |
+| Objective | Follow the real TFT BIOS and validated loader beyond its first instruction, capture actual system output and execution state, and identify and fix any evidenced next owner defect. |
+| Non-goals | No firmware interception, injected guest state, external image writes, Shared Lib/Emulator changes, or unsupported claim that a bounded run reached a DOS prompt. |
+| Baseline | [S75 evidence](../etc/evidence/t580-s75-system-loader.md) establishes matching initial loader execution on both host widths. |
+| Candidate Proposal | Continue the existing real-firmware diagnostic after loader handoff for a finite instruction budget, capture the actual guest display and machine stop reason, then use evidence to select any further repair. |
+| Files And ABI Surface | Existing PC110 diagnostic and responsible App or X86-NXVM/Core code only if the observed behavior requires a repair. |
+| Applicable Rules | NXVM Task Reading Set, execution, architecture, coding and source/research policy. |
+| Verification | Hidden bounded background execution using stable Ninja trees; x64 first, matching x86 and affected regressions when justified. |
+| Asset Needs | S73 task-owned derived test disk and Setup oracle, read-only inputs and guest overlays; retain external originals unmodified. |
+| Reporting Requirements | Distinguish actual guest screen, loader progression, DOS prompt, display and desktop results; record exact bounds, hashes and remaining gaps. |
+| Stop Conditions | Do not inject guest code, mutate external images, or treat reaching an instruction budget as operating-system success. |
+| Exit Criteria | A real DOS boot checkpoint is independently demonstrated or a specific evidenced next failing owner is repaired and validated. |
+| Original Owner Request | Complete PC110 implementation, original and TFT variants, and four published executables. |
+| Similar-Issue Sweep | Check the actual responsible loader, disk and display routes without speculative special cases. |
+
+The former F65535 status-port wait is corrected by Shared `e3bb44fc1`;
+targeted dual-width controller and real-firmware FDC checks pass. The x64
+post-loader replay passed that wait but later accumulated exceptions and
+entered another loop; a bounded follow-up captures its exception context.
+See [S76 evidence](../etc/evidence/t580-s76-status-port.md). At this checkpoint
+S76 was still active and no DOS or PC110 release qualification had been claimed.
+
+The subsequent context capture found an empty VM86 INT 1Ch IDT gate, so the
+observed IDT-related #GP is consistent with the CPU check. The later loop
+reads the BIOS timer byte at 0000:046Ch rather than polling the 02F8h port;
+the 50-million-instruction run ended after only three ticks while the guest
+waits for more than nineteen. A longer real-guest replay passed that wait
+but then showed a sustained exception storm without a new display frame;
+its responsible path remains under investigation. DOS startup is not proven.
+
+The storm sample is VM86 `INT 16h` with AH=01h, a keyboard availability
+query. A bounded probe sent one Enter through the existing Machine driver at
+an earlier query and inspected display registers after execution. No new
+frame was produced before the subsequent scanout change.
+
+The input probe's Enter was sent at an earlier query, so its outcome does not
+prove that the later wait consumed input. Its captured CRTC and graphics
+registers identify a 640-by-475, 128-byte-stride planar configuration that
+the former fixed mode-12 scanout rejected. The bounded planar receiver now
+produces identical real-firmware PC DOS startup frames on both widths, and
+the affected component and PC110 units pass. All eight existing PC receiver
+artifacts were rebuilt and their product/INI identity checks pass. See the
+S76 evidence for exact observations and the unresolved DOS-input and
+desktop-display boundaries.
+
+The later input probe reached PC DOS driver messages and the inking driver's
+first calibration request; because elapsed execution and one key both changed,
+it does not prove input consumption. The supplied disk invokes INKDRV and the
+local PC110 references describe an independent IRQ-driven digitizer. Inking,
+mouse-driver behavior, final DOS/Personaware operation, both physical panel
+variants, Window colour and product publication remain open under T580.
+
+# M5 T580 S75 — Accepted: PC110 system-loader handoff
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T580 S75. |
+| Admission And Approval | Owner authorized autonomous PC110 implementation and S74 was accepted at `d9b4cf893`. |
+| Objective | Follow the genuine selected TFT BIOS and disk boot chain through loading and executing the initial DOS system loader; independently compare guest-loaded bytes with the documented test disk. |
+| Non-goals | No BIOS or disk interception, synthetic guest-memory injection, ROM modification, external media writes, Lib/Emulator change, or claim that loader entry proves DOS startup. |
+| Baseline | [S74 evidence](../etc/evidence/t580-s74-partition-boot.md) proves both host widths reach the actual partition sector and x64 reaches the selected disk's system-file comparison. |
+| Candidate Proposal | Extend the existing bounded diagnostic to observe the first system loader at its disk-defined handoff, with independently read expected bytes; investigate and repair only any evidenced receiver defect. |
+| Files And ABI Surface | Existing MyPC110 diagnostic, responsible App or X86-NXVM/Core source and associated tests only when justified. |
+| Applicable Rules | NXVM Task Reading Set, execution, architecture, coding and source/research policy. |
+| Verification | Hidden bounded background execution using stable x64/x86 Ninja trees, independent disk evidence, affected regressions and manifests according to actual changes. |
+| Asset Needs | Reuse the S73 task-owned reviewed test master and Setup oracle as read-only inputs with overlays; retain their external originals untouched. |
+| Reporting Requirements | Distinguish partition entry, loader entry, DOS prompt and desktop; record input and output hashes, actual tests and remaining gaps. |
+| Stop Conditions | No guest boot-code injection, external image mutation or unsupported physical-accuracy claim. |
+| Exit Criteria | Real loader handoff proven at both widths or the specific next failure identified and repaired with relevant verification. |
+| Original Owner Request | Complete PC110 implementation, both panel variants and four released executables. |
+| Similar-Issue Sweep | Check disk geometry and shared receiver callers without speculative product-specific changes. |
+
+S75 delivery: the unchanged TFT BIOS and selected disk loaded and executed
+the independently checked 1,536-byte system loader on both host widths.
+Both widths built, passed all 12 MyPC110 units and rejected missing media.
+See [S75 evidence](../etc/evidence/t580-s75-system-loader.md); only the App
+diagnostic and task records changed, with no production or release binary
+changes. DOS prompt, original panel, Window colour and PC110 release remain
+open under T580.
+
+# M5 T580 S74 — Accepted: PC110 partition boot receiver
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation — M5 T580 S74. |
+| Admission And Approval | Owner authorized autonomous PC110 implementation, source-labelled L2 references, and S73 closed at `a916220f9`. |
+| Objective | Continue the genuine TFT BIOS handoff through the actual MBR and its active partition boot sector, identify and repair any evidenced device, board or CPU receiver defect, and retain the remaining DOS/Personaware path for T580. |
+| Non-goals | No host BIOS/disk interception, ROM patch, synthetic guest memory, external media writes, Lib/Emulator modification, or claim that reaching the partition sector proves DOS startup. |
+| Baseline | [S73 evidence](../etc/evidence/t580-s73-pc110-ata-slave.md): dual-width real BIOS to matching primary MBR, validated ATA Recalibrate, and identified task-local geometry-adjusted test image. |
+| Candidate Proposal | Extend the existing diagnostic after its verified MBR entry, follow the guest's ordinary INT 13h and the second 7C00h handoff, and independently compare the selected partition sector. Then observe the next finite DOS execution checkpoint and repair only a demonstrated existing owner. |
+| Files And ABI Surface | Existing MyPC110 diagnostics, affected App or X86-NXVM/Core implementation and tests only if evidence requires; no new public contract without the existing owner authorization. |
+| Applicable Rules | NXVM Task Reading Set, execution, architecture, coding and source/research policy. |
+| Verification | Hidden, finite background work in stable Ninja/ccache trees; x64/x86 direct guest and independent disk evidence; affected receiver regressions, manifests and artifacts as required by actual changes. |
+| Asset Needs | Reuse S73's reviewed task-local test image and Setup oracle for this immediate continuation, each as a read-only input with overlay. Preserve and hash the source external image; remove task-local inputs after the receiver no longer needs them. |
+| Reporting Requirements | Distinguish MBR, partition boot sector, DOS and desktop results; record source/test delta, provenance, budget, output hashes, failures and retained qualification gaps. |
+| Stop Conditions | Never alter external master media or inject guest boot code; do not treat a timeout or sector handoff as OS success. |
+| Exit Criteria | Actual MBR-to-partition transfer is proven on both widths, or a specific next failing owner is established and repaired within this bounded receiver; record subsequent DOS checkpoint honestly. |
+| Original Owner Request | Complete actual PC110 implementation, both hardware variants and four published executables. |
+| Similar-Issue Sweep | Check boot read geometry and shared ATA callers without changing other machines speculatively. |
+
+S74 delivery: the independently compared MBR and active partition boot sector
+were executed under the real TFT BIOS on both host widths. The x64 follow-up
+also reached the selected disk's successful system-file-name check. Both
+widths built, MyPC110 units passed 12/12 each, and missing-media preflight
+failed correctly on each. See [S74 evidence](../etc/evidence/t580-s74-partition-boot.md)
+for exact binary boundaries, hashes, provenance and remaining limitations.
+Only the App diagnostic and task documentation changed; no production source
+or released product binary changed. DOS, DSTN, Window colour and PC110
+publication remain open under T580.
+
+# M5 T580 — Closed by owner direction after S73
+
+S73 is accepted: Shared `43f87360a` implements ATA Recalibrate and NXVM
+`2056af519` records real-firmware dual-width BIOS-to-MBR handoff, receiving
+regressions and eight rebuilt PC artifacts. The accepted pair uses an
+explicitly documented, resized test master and the original read-only slave;
+this is not DOS or desktop qualification. Further boot, RTC, display and
+PC110 release work remains open. See [S73 evidence](../etc/evidence/t580-s73-pc110-ata-slave.md).
+
+S72 Shared `54a2518de` and NXVM `9c0a31a54` are accepted for configuration
+RAM persistence. Real TFT Setup/save and separate original-BIOS checksum
+replays pass on both host widths; Product file handling is exercised by both
+variants. The affected units, PC identity receivers, eight rebuilt PC EXEs
+and specialized gates are recorded in the
+[S72 evidence](../etc/evidence/t580-s72-cmos-persistence.md). The existing
+Storage operation is not crash-atomic, and RTC calendar/off-time persistence
+remains unqualified. T580 stays open for real guest boot, both panel models,
+desktop behavior and PC110 publication.
+
+S71 implementation `f23baaa30` is accepted for the bounded real-firmware
+post-Setup power path and optimized x86 Release correction. Both widths reach
+the real INT 19h handoff after the second wake; 669 x86 units and the affected
+PC receivers pass, and the four optimized x86 PC artifacts are published.
+The [S71 evidence](../etc/evidence/t580-s71-postsetup-power.md) preserves the
+exact timeout and remaining qualification boundaries. T580 remains open.
+
+S70 is accepted: Shared `3d692e367` corrects the 8259 input lifetime and
+NXVM `3a1c703a0` records dual-width receiver evidence and eight rebuilt PC
+artifacts. X86-NXVM units pass 233/233 per width, both real-firmware FDC and
+boot-handoff checkpoints pass per width, and all eight PC profile identity
+and boot receivers pass under their final measured budgets. Earlier timeouts
+and the old-PIC control remain documented, not relabelled as passes.
+
+The unchanged TFT BIOS passed the previously observed `102` branch and the
+subsequent power wait on both widths in S71. RTC calendar persistence, main
+Setup, actual guest/media boot, PCIC, panel identity and color, DSTN, desktop
+behavior and PC110 product publication remain unqualified. See
+[S70 evidence](../etc/evidence/t580-s70-reset-interrupt-investigation.md).
+
+## Verified Baseline
+
+S65 is accepted at `aba6329a8`. It traced the selected TFT BIOS through its
+ordinary recovery, POST and `INT 19h` route and found no F65535 XR index/data
+write. The bounded C000 replay also found none. The existing standard VGA
+palette route remains the sole evidenced colour owner; the reported blue frame
+does not authorize an RGB/BGR or panel-table patch. See
+[S65 evidence](../etc/evidence/t580-s65-f65535-panel-table-audit.md).
+
+## Verified Baseline
+
+Both host widths run the unchanged TFT BIOS's complete Setup loader and
+ordinary input/reset transaction. ERROR and subsequent date/time frames are
+byte-identical across host widths with programmed BE9E96 background.
+Both reach the fifth real reset at FFFF:FFF0 after 144,110,532 instructions,
+with four known exceptions and no Core fault. Normal main Setup,
+configuration persistence and selected guest boot remain unqualified.
+
+All 712 exact final-tree units per width and specialized gates pass.
+Main-feature real FDC/boot regressions pass at 40.54/215.85 s x64 and
+53.38/321.83 s x86; after the final preflight-only range guard, rebuilt
+firmware FDC regressions pass at 43.99/63.34 s. The
+[S57 record](../etc/evidence/t580-s57-f65535-planar-colour.md) distinguishes
+these exact source boundaries, the mathematical normal-domain equivalence,
+failed candidates, source grades and unverified domains. It does not
+relabel pre-guard executable bytes as the final build.
+
+Eight PC receiving builds and adjacent INI identities pass; their published
+relinks change only PE timestamp/checksum. Four PC110 previews are rebuilt
+but unpublished. The [inventory](../etc/evidence/t580-s57-artifacts.json)
+records actual hashes, PE widths and embedded 0.5.0580. Lib, Emulator,
+X86 Core/Debug/IBMPC, MyNES/MyRaidenII, owner INI and external ROM/font/media
+are unchanged. All 90 owned scratch files/13,302,526 bytes are removed after
+task-exit/hash review; stable Ninja/ccache remain.
+
+S58 adds the source-labelled empty two-slot RB5C396 controller at the actual
+3E0h/3E1h route, with no card, storage, IRQ/window or guest claim. Final-tree
+unit qualification is 714/714 on each width. Existing real-firmware
+FDC-reset/boot-handoff integrations pass x64 in 42.24/225.02 s and x86 in
+54.59/306.85 s; they remain bounded non-regression evidence, not PCIC
+consumption or product qualification. See the [S58 record](../etc/evidence/t580-s58-pcic-receiver.md)
+and [task history](../history/M5-T580-pc110-qualification.md).
+
+S59 completes the declared ATA two-device construction route.  After a fresh
+Ninja relink of every unit target, the complete repository-only unit suite
+passes **714/714** on both x64 and x86 (212.88 s and 73.32 s respectively).
+That qualification includes the focused ATA slave construction proofs and
+the existing real-firmware FDC-reset/boot-handoff non-regressions recorded in
+the S59 evidence.  It does not qualify authentic SunDisk/CF inputs, BIOS
+storage consumption, PCIC storage, Setup persistence, selected-guest boot,
+panel behavior, desktop use, or product publication.
+
+S60 selects the source-recorded primary SunDisk geometry through the existing
+master-only Machine construction route: **123x2x32**.  Its disposable
+exact-size/short-size proof and full MyPC110 labelled regression pass on x64
+and x86; the unchanged real-firmware FDC-reset/boot-handoff checks pass in
+45.91/231.73 seconds x64 and 53.51/318.12 seconds x86.  After fresh relinks,
+the full repository-only unit suite passes **714/714** on x64 (61.36 seconds)
+and x86 (59.03 seconds).  This does not qualify real SunDisk/CF media, BIOS
+storage consumption, Setup persistence, PCIC storage, selected guest or a
+PC110 release; no PC110 executable is published.  See the
+[S60 evidence](../etc/evidence/t580-s60-pc110-master-geometry.md).
+
+## Remaining T580 Qualification
+
+The [proposal](../history/M5-T580-pc110-qualification-proposal.md) and
+[convergence ledger](../etc/evidence/t580-s1-pc110-qualification-ledger.md)
+retain normal Setup/configuration persistence and post-reset progression,
+per-slot SunDisk/CF storage and selected guest, PCIC/card handling, display
+enable/blanking and panel/TFT/DSTN identity, live input/lifecycle, desktop and
+four-artifact publication. Restored ERROR/date-time colours close only the
+named standard planar/colour receiver.
+
+Next admission must consume a coherent remaining receiver with actual source
+and direct proof; do not seed successful CMOS, hook BIOS PCs, force guest
+flags or introduce host display swaps. Source-labelled functional L2 is
+permitted; physical-unit measurement is not a prerequisite to model work.
+No remaining original domain is removed or called complete.
+
+[Task history](../history/M5-T580-pc110-qualification.md) records acceptance.
+[Retained status](../history/M5-T580-retained-status.md) preserves prior
+packets as history, not concurrent active work.
+[Queue](../states/QUEUE.md) retains unrelated ordered candidates.
+
+## S64 acceptance
+
+Implementation `40be5c4f2` is accepted after actual-change review. The
+optional reset byte stays in the existing board-to-KBC configuration route;
+the generic `43h` default is preserved, and PC110's `65h` disables AUX until
+the guest sends the ordinary `A8h` command. All 714 unit tests pass on both
+widths; complete 755-test host runs retain only the unrelated
+`lib.integration/native_midi_output` host-endpoint failure. Eight existing PC
+artifacts are rebuilt and PE-width checked; four MyPC110 previews stay
+unpublished. The active packet will be replaced only when the next bounded
+T580 receiver is admitted.
+
+### Admitted internal transaction inlining candidate
+
+In X86 Core Machine, move the existing private transaction begin and commit
+implementations into their existing internal header as inline definitions;
+retain one transaction record implementation in transaction.c and call it
+only when tracing is bound. Keep all owner/hold checks, mutation and callback
+ordering, counters and cancellation semantics. No public interface, parallel
+transaction path or persistent state is added. Update the X86 Core source
+manifest, review existing transaction/CPU-bus tests and add a focused case
+only if a real callback or failure boundary is missing. Measure both widths
+and the actual PC110 startup; if the full change regresses or fails the
+existing contract, revert it. Shared production changes require all receivers
+and fourteen EXEs with the documented cached full unit/integration gates.
+
+The private transaction inlining candidate passed the cached receiving
+checks recorded in S39 evidence; both first-run native MIDI output tests failed
+and passed on individual retry. The x64 menu probe improved from 222.50 to
+216.38 seconds in one pair, still impractically slow. T582 and S39 remain
+open for material PC110 startup and ordinary-use improvement; no native
+PC110 Window/RDP acceptance is claimed.
+
+### Admitted PIC idle-counter candidate
+
+In X86 NXVM PIC, retain the existing counter advancement and skip it only
+when all eight remaining delays are already zero. This changes no interrupt
+selection, callback, interface or state; nonzero counters retain the existing
+path. Update the X86 NXVM source and test manifests. Reuse existing PIC, board and
+interrupt tests, including delayed unmask and reinitialization; cover each of
+the eight IRQ positions after an idle advance in the existing PIC fixture. Compare both widths and the
+actual PC110 menu startup, then perform the full cached Shared receiving and
+fourteen-artifact gate before publication. Revert if behavior or performance
+obviously worsens. This bounded optimization alone cannot close T582.
+
+The PIC idle-counter candidate passed its focused and cached receiver tests
+with the native MIDI first-run failures and individual retries documented in
+S39 evidence. Its one x64 full-menu pair was 213.47/203.26 seconds. This is
+a bounded improvement, not practical PC110 startup; S39 and T582 stay open.
