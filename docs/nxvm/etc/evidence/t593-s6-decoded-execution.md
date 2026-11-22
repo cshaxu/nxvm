@@ -480,3 +480,67 @@ above provide context. Native redraw and RDP were not measured here.
 This first full IPO test build took x64 22.1 min and x86 22.3 min
 for the unit targets. The isolated per-owner and caching probes remain
 follow-up build-cost work.
+
+## Post-release runtime and link cost probes
+
+The baseline was `9246e0937`, the published Windows GCC Release IPO build.
+All experiments used the same sources from that release. Changes were
+confined to temporary overlays and no product executable was replaced.
+
+The fractional clock prototype updated only saved phase and returned zero
+when the scaled elapsed value was below the denominator. This is exact and
+passed the existing rational-clock contract on both hosts. The four
+two-million-advance scenarios produced identical board checksums with and
+without the candidate. Comparisons included a single-tick step and one to
+eight ticks, each with the auxiliary PIT installed or absent. x86 medians
+moved between a 2.8 percent improvement and a 0.6 percent slowdown. x64
+medians moved between a 3.2 percent improvement and a 6.4 percent
+slowdown. No demonstrated general win justifies adding the branch.
+
+The PIC prototype packed four source counters at a time into a level mask.
+It preserved overlapping IRQ sources and did not add a second copy of
+state. It covered all 256 byte values per lane and mixed high-bit cases.
+Both architectures passed the existing lifecycle fixture, including its
+same-owner allocation failure injection. The two board workload checksums
+matched throughout.
+
+| Host | Board | Stock median, seconds | Packed PIC median, seconds |
+| --- | --- | ---: | ---: |
+| x64 | Cascaded, no auxiliary PIT | 0.605067 | 0.622041 |
+| x64 | Single with auxiliary PIT | 0.863398 | 0.849575 |
+| x86 | Cascaded, no auxiliary PIT | 0.961710 | 0.922624 |
+| x86 | Single with auxiliary PIT | 1.263322 | 1.202997 |
+
+This extra source is not selected given the mixed x64 behavior. The
+standalone function instruction count fell from 31/32 to 22 on x64/x86,
+but this does not predict an application-level latency reduction.
+
+The 22-minute unit-target relink is an independent build cost. Installed
+GCC 16.1 wrote an incremental LTO cache and passed three sampled existing
+Core fixtures on each host through stock, initial-cache and repeat links.
+The cache held 96 x64 files (8.77 MiB) and 84 x86 files (8.08 MiB) for the
+three test consumers. A modified test was then recompiled with a different
+success marker. Both the warm and cold relinks executed the new object and
+printed that marker.
+
+| Host | Standard link range | Repeat with cache | Edited test, warm / cold |
+| --- | ---: | ---: | ---: |
+| x64 | 29.10–31.12 s | 0.86–0.92 s | 0.862 / 24.670 s |
+| x86 | 25.85–27.02 s | 0.90–0.92 s | 0.984 / 26.460 s |
+
+This toolchain fails a link if the cache directory does not exist. It
+also prints that its incremental cache has no file-locking support. A
+temporary CMake fixture confirmed that two concurrently built executable
+targets independently populated pre-created target-specific cache
+directories on both widths. A shared writable directory is excluded
+from the repository candidate. These probes establish reuse of an
+unchanged Core archive after a test object edit. Reuse after a Core edit
+and the benefit on the full Ninja graph still need verification.
+
+| Transcript | SHA-256 |
+| --- | --- |
+| Rational-clock comparison | `ff7fa514b0b87952af38d3501ad0d42ea15abd128ae86c790a1a33eab48346df` |
+| PIC board comparison | `5735f5bfb97d07ae6e9ffd9bcff1b8d5a40726603bd268a31443518fb7d88336` |
+| Incremental links | `164a7db239d66226186136d0e55b75e4a27897483dbce5e1a5a290cd37a07b5f` |
+| Modified consumer relink | `ed16224adf01b5e729033e5ea40f8a9dcc6146930293f7e86a56daed712b133b` |
+| Independent CMake caches | `f8eb2729e16ca84ef74e4103fbd3d7b6c6886bfe422aab362a499c13c78b453e` |
