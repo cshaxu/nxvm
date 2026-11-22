@@ -222,9 +222,9 @@ typedef struct {
     t_cpu_data_sreg es, cs, ss, ds, fs, gs;
     t_cpu_data_sreg ldtr, tr, gdtr, idtr;
     /* control registers */
-    lib_u32 cr0, cr1, cr2, cr3, cr4, cr5, cr6, cr7;
-    lib_u32 dr0, dr1, dr2, dr3, dr4, dr5, dr6, dr7;
-    lib_u32 tr0, tr1, tr2, tr3, tr4, tr5, tr6, tr7;
+    lib_u32 cr0, cr1, cr2, cr3, cr4;
+    lib_u32 dr0, dr1, dr2, dr3, dr6, dr7;
+    lib_u32 tr3, tr4, tr5, tr6, tr7;
     /* control flags */
     lib_u8 flagHalt;
 } t_cpu_data;

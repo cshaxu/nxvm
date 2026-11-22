@@ -19168,7 +19168,7 @@ static void _amd_smm_enter(x86_core_cpu_execution_context *context)
     cpu_state.data.dr7 = 0u;
 }
 
-static lib_bool _smm_enter(x86_core_cpu_execution_context *context)
+static lib_bool _smm_enter_pending(x86_core_cpu_execution_context *context)
 {
     lib_u8 image[X86_CPU_SMM_IMAGE_BYTES];
     const lib_u32 physical = context->smbase + 0xfe00u;
@@ -19176,7 +19176,7 @@ static lib_bool _smm_enter(x86_core_cpu_execution_context *context)
     const lib_bool amd = context->cpu_profile == X86_CORE_CPU_PROFILE_AM386SXLV;
 
     if ((!amd && context->cpu_profile != X86_CORE_CPU_PROFILE_80486SX) ||
-        !context->smi_pending || context->smm_active || x86_core_cpu_is_system_waiting(context) ||
+        context->smm_active || x86_core_cpu_is_system_waiting(context) ||
         context->stop_requested || context->debug_pause_requested ||
         (context->shutdown_state != CPU_SHUTDOWN_NONE &&
          context->shutdown_state != CPU_SHUTDOWN_SMM) ||
@@ -21035,7 +21035,7 @@ static void ExecInt(x86_core_cpu_execution_context *context)
 
     if (context->stop_requested || x86_core_cpu_is_system_waiting(context)) return;
     if (_system_flush_pending(context) && context->flush_asserted) return;
-    if (_smm_enter(context)) {
+    if (context->smi_pending && _smm_enter_pending(context)) {
         if (instruction_state.data.except) ExecFinal(context);
         return;
     }
@@ -21292,7 +21292,7 @@ static void _execution_refresh(
         if (!context->instruction_fault_delivered) context->instruction_wait_stall = LIB_TRUE;
         return;
     }
-    if (_smm_enter(context)) {
+    if (context->smi_pending && _smm_enter_pending(context)) {
         if (instruction_state.data.except) ExecFinal(context);
         context->instruction_fault_delivered = LIB_TRUE;
         return;

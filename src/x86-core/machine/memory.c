@@ -225,11 +225,26 @@ static lib_bool x86_core_machine_memory_higher_provider(
         (candidate_tier == selected_tier && candidate < selected);
 }
 
-static lib_bool x86_core_machine_memory_has_partial_claim(const t_ram *ram)
+/* Byte resolution can change a claimed device access only when a higher
+ * partial replacement overlaps the decoded span. Address-line crossings
+ * have already been handled, and a raw route outranks every replacement. */
+static lib_bool x86_core_machine_memory_partial_can_split(const t_ram *ram,
+    lib_u32 physical, lib_uptr bytes,
+    const x86_core_machine_memory_device_provider *selected, lib_bool cpu_access)
 {
-    for (lib_uptr index = 0u; index < ram->connect.device_provider_count; ++index)
-        if (ram->connect.device_providers[index].partial_claim &&
-            ram->connect.device_providers[index].bytes != 0u) return LIB_TRUE;
+    if (selected->raw_decode) return LIB_FALSE;
+    if (bytes > (lib_u64)LIB_UINT32_MAX + 1u - physical) return LIB_TRUE;
+    const lib_u64 end = (lib_u64)physical + bytes;
+    for (lib_uptr index = 0u; index < ram->connect.device_provider_count; ++index) {
+        const x86_core_machine_memory_device_provider *candidate =
+            &ram->connect.device_providers[index];
+
+        if (candidate->partial_claim && candidate->bytes != 0u &&
+            (!candidate->cpu_only || cpu_access) &&
+            candidate->physical_start < end &&
+            physical < (lib_u64)candidate->physical_start + candidate->bytes &&
+            x86_core_machine_memory_higher_provider(candidate, selected)) return LIB_TRUE;
+    }
     return LIB_FALSE;
 }
 
@@ -307,7 +322,7 @@ static lib_status x86_core_machine_memory_allocate_for_with_test(t_ram *ram,
     if (backing == LIB_NULL) return LIB_STATUS_NO_MEMORY;
     lib_release((void *)ram->connect.backing);
     ram->connect.backing = (lib_uptr)backing;
-    ram->data.read_page_key = 0u;
+    ram->data.read_page_keys[0] = ram->data.read_page_keys[1] = 0u;
     ram->connect.installed_bytes = bytes;
     ram->connect.backing_capacity = bytes;
     return LIB_STATUS_OK;
@@ -609,7 +624,7 @@ void x86_core_machine_memory_unregister_owner(t_ram *ram, const void *owner)
             ram->connect.device_providers[retained++] = ram->connect.device_providers[index];
     }
     ram->connect.device_provider_count = retained;
-    ram->data.read_page_key = 0u;
+    ram->data.read_page_keys[0] = ram->data.read_page_keys[1] = 0u;
     retained = 0u;
     for (lib_size index = 0u; index < ram->connect.write_observer_count; ++index) {
         if (ram->connect.write_observers[index].owner != owner)
@@ -627,13 +642,19 @@ static lib_bool x86_core_machine_memory_read_page_is_plain(t_ram *ram,
 
     if (bytes > X86_CORE_MACHINE_MEMORY_PAGE_BYTES - (physical - start) ||
         !ram->connect.mappings_frozen || ram->connect.backing == 0u) return LIB_FALSE;
-    if (ram->data.read_page_key != page + 1u) {
-        ram->data.read_page_key = page + 1u;
-        ram->data.read_page_plain =
-            (lib_u64)start + X86_CORE_MACHINE_MEMORY_PAGE_BYTES <= ram->connect.installed_bytes &&
-            x86_core_machine_memory_is_plain_span(ram, start, X86_CORE_MACHINE_MEMORY_PAGE_BYTES);
-    }
-    return ram->data.read_page_plain;
+    /* The low bit holds the plain-span decision; zero is never a page key. */
+    const lib_u32 key = (page + 1u) << 1u;
+    const lib_u32 current = ram->data.read_page_keys[0];
+    const lib_u32 previous = ram->data.read_page_keys[1];
+    lib_bool plain;
+
+    if ((current ^ key) <= 1u) return current & 1u;
+    if ((previous ^ key) <= 1u) return previous & 1u;
+    plain = (lib_u64)start + X86_CORE_MACHINE_MEMORY_PAGE_BYTES <= ram->connect.installed_bytes &&
+        x86_core_machine_memory_is_plain_span(ram, start, X86_CORE_MACHINE_MEMORY_PAGE_BYTES);
+    ram->data.read_page_keys[1] = current;
+    ram->data.read_page_keys[0] = key | plain;
+    return plain;
 }
 
 static lib_status x86_core_machine_memory_read_routed(t_ram *ram, lib_u32 physical,
@@ -667,9 +688,10 @@ static lib_status x86_core_machine_memory_read_routed(t_ram *ram, lib_u32 physic
         }
         return LIB_STATUS_OK;
     }
-    if (byte > 1u && (provider == LIB_NULL ||
-        x86_core_machine_memory_has_partial_claim(ram)) &&
-        !x86_core_machine_memory_is_plain_span(ram, physical, byte)) {
+    if (byte > 1u && (provider == LIB_NULL ?
+        !x86_core_machine_memory_is_plain_span(ram, physical, byte) :
+        x86_core_machine_memory_partial_can_split(ram, provider_physical, byte,
+            provider, cpu_access))) {
         lib_uptr index;
         for (index = 0u; index < byte; ++index) {
             const x86_core_machine_memory_device_provider *single_provider = LIB_NULL;
@@ -833,9 +855,10 @@ lib_status x86_core_machine_memory_write_physical(t_ram *ram, lib_u32 physical,
         }
         return LIB_STATUS_OK;
     }
-    if (byte > 1u && (provider == LIB_NULL ||
-        x86_core_machine_memory_has_partial_claim(ram)) &&
-        !x86_core_machine_memory_is_plain_span(ram, physical, byte)) {
+    if (byte > 1u && (provider == LIB_NULL ?
+        !x86_core_machine_memory_is_plain_span(ram, physical, byte) :
+        x86_core_machine_memory_partial_can_split(ram, provider_physical, byte,
+            provider, cpu_access))) {
         lib_uptr index;
         for (index = 0u; index < byte; ++index) {
             const x86_core_machine_memory_device_provider *single_provider = LIB_NULL;

@@ -985,10 +985,17 @@ static lib_i32 masked_span_contract(void)
     failed = x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
         x86_core_machine_reset(machine) != LIB_STATUS_OK ||
         x86_core_machine_memory_write(machine, 0x100000u, input, 1u) != LIB_STATUS_OK ||
-        x86_core_machine_memory_read(machine, 0x100000u, output, 1u) != LIB_STATUS_OK ||
+        x86_core_machine_memory_read_instruction_physical(
+            &machine->executor_memory, 0x100000u, (lib_uptr)output, 1u) != LIB_STATUS_OK ||
         output[0] != input[0] ||
+        x86_core_machine_memory_write(machine, 0x101000u, input + 1u, 1u) != LIB_STATUS_OK ||
+        x86_core_machine_memory_read(machine, 0x101000u, output, 1u) != LIB_STATUS_OK ||
+        output[0] != input[1] ||
         x86_core_machine_signal_address_clear_mask(machine, 0x100000u) != LIB_STATUS_OK ||
-        x86_core_machine_memory_read(machine, 0x100000u, output, 1u) != LIB_STATUS_OK ||
+        x86_core_machine_memory_read_instruction_physical(
+            &machine->executor_memory, 0x100000u, (lib_uptr)output, 1u) != LIB_STATUS_OK ||
+        output[0] != 0u ||
+        x86_core_machine_memory_read(machine, 0x101000u, output, 1u) != LIB_STATUS_OK ||
         output[0] != 0u ||
         x86_core_machine_memory_write(machine, 0xfffffu, input, sizeof(input)) != LIB_STATUS_OK ||
         x86_core_machine_memory_read(machine, 0xfffffu, output, sizeof(output)) != LIB_STATUS_OK ||
