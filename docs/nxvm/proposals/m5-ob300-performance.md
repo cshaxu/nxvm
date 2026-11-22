@@ -72,6 +72,36 @@ second execution route or an unreported transfer.
    the targets remain unmet, document the limits for the owner's scope
    decision.
 
+5. **S5: Generic memory mapping reuse.** Use the 86Box instruction-page
+   and Bochs host-page lookup designs as independent references. Prove
+   ordinary RAM eligibility before reusing the mapping. Retain the original
+   resolver for boundaries and device routes. Compare equal work on both
+   widths with existing unit and short execution probes.
+6. **S6: Decoded execution sequence design.** Use Bochs as the design
+   reference. Identify reusable operand decoding, invalidation, fault
+   recovery, and exits at device deadlines. Preserve one instruction
+   semantics owner. Start with a bounded prototype and require evidence
+   before a production execution change.
+
+### Decoded execution sequence design boundary
+
+The interpreter already has a prefetch byte window. A decoded entry may
+reuse fixed opcode, operand-size and addressing-form information. It does not
+own guest bytes, architectural registers, memory translation or timing. Start
+with a short sequence of regular integer instructions. Factor the existing
+execution decoder so the same semantics and instruction handler consume
+both newly prepared and reused operands. Never cache a register-derived
+address or a condition result.
+
+The first prototype keeps every real instruction fetch, retirement and
+event check. A reused entry must match the current fetch bytes and decode
+mode, including profile and size defaults. Prove useful reduction before
+considering page-tag retention or batching retirement. A batch runner must
+return before pending observable events, traps, faults, single-step or an
+unknown memory/IO ownership boundary. Compare EIP, flags, memory writes,
+guest tick counts, precise faults and interrupt ordering. This stage does not
+propose host code generation or changing the reported timing grade.
+
 ## T588 handoff
 
 Consume the [OB300 design](m5-ob300-architecture.md), including its O01-O12
