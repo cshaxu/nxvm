@@ -1,7 +1,8 @@
-# M5 Candidate: OmniBook 300: original ROM Windows
+# M5 Withdrawn Candidate: OmniBook 300: original ROM Windows
 
-Owner queued this bounded T candidate on 2026-11-19. Numeric T/S identifiers
-are allocated only at admission. [Queue](../states/QUEUE.md) owns priority;
+The owner withdrew this candidate on 2026-11-21. No T/S identifier was
+allocated. This proposal is retained as a record. [Queue](../states/QUEUE.md)
+owns current priority;
 [family research and shared boundaries](m5-omnibook-emulator.md) apply.
 
 ## Objective and scope

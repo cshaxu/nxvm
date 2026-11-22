@@ -1,14 +1,14 @@
 # M5 T593 S6 - Active: Shared CPU decode optimization
 
-S5 closed at `9d77899d1`. The S6 [decoder consolidation and PC qualification](../etc/evidence/t593-s6-decoded-execution.md)
-were pushed through `22540337f`. The four rebuilt MyNES and MyRaidenII
-receiving EXEs remain local pending separate release approval.
+S5 closed at `9d77899d1`. The initial S6 PC delivery was recorded at
+`22540337f`. The [combined S6 delivery](../etc/evidence/t593-s6-decoded-execution.md)
+covers primary opcode classification reuse and the disabled execution-breakpoint
+fast path. All sixteen receiving EXEs were rebuilt together. Both host widths
+passed 717 unit tests and 48 integrations.
 
-The current candidate reuses primary opcode classification within one CPU
-profile. Focused tests pass on both host widths, including profile rebinding.
-The candidate has not yet completed full receiving qualification. Both MyOB300
-DIR targets and the x64 cold-start target remain open. Decoded sequence reuse
-is still under investigation.
+Both MyOB300 cold-start budgets and both DIR latency budgets remain open.
+The recorded DOS replay reached the prompt and passed key echo and pause
+on both widths. Decoded sequence reuse remains under investigation.
 
 The owner withdrew the [standalone ROM Windows candidate](../proposals/m5-ob300-rom-windows.md).
 

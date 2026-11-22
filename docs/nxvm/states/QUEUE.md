@@ -113,11 +113,10 @@ Completed: [T591 machine composition and real ROM DOS](../history/M5-T591-S4-ob3
 Completed: [T592 OmniBook 300 product assembly and verification](../history/M5-T592-ob300-product-qualification.md).
 Active: [T593 OmniBook 300 execution and interaction performance](../proposals/m5-ob300-performance.md).
 
-1. [OmniBook 300: original ROM Windows](../proposals/m5-ob300-rom-windows.md)
-2. [MyNeoGeo: Metal Slug 2](../proposals/myneogeo-metal-slug2.md)
-3. [CPU differential tools and specification tests](../proposals/m5-differential-and-unit-evidence.md)
-4. [Retained-machine DOS and Windows qualification](../proposals/m5-retained-guest-qualification.md)
-5. [x87 coprocessor execution](../proposals/m5-x87-coprocessor-execution.md)
+1. [MyNeoGeo: Metal Slug 2](../proposals/myneogeo-metal-slug2.md)
+2. [CPU differential tools and specification tests](../proposals/m5-differential-and-unit-evidence.md)
+3. [Retained-machine DOS and Windows qualification](../proposals/m5-retained-guest-qualification.md)
+4. [x87 coprocessor execution](../proposals/m5-x87-coprocessor-execution.md)
 
 The former PC App test adapter candidate was transferred into T564 S13 by
 owner direction; its [proposal](../proposals/m5-pc-app-test-encapsulation.md)
