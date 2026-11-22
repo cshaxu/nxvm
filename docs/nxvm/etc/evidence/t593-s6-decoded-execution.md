@@ -1070,3 +1070,37 @@ The reported improvement and receiving qualification stand. The proposal
 requires an explicit scope or budget decision before a larger execution
 redesign or Windows qualification. Preserve the one-second gate pending
 that decision.
+
+### Published x64 follow-up sample
+
+One diagnostic run reused the published Shared source `5a801f332`,
+qualified x64 Release link inputs and the existing read-only DOS replay.
+During DIR it obtained 264 host instruction-pointer samples from the
+Machine worker, with zero unavailable or previously suspended samples.
+The instrumented interval took 4.279 s for 3,293,184 retired instructions
+and 14,200,876 guest ticks. This is profiling evidence separate from the
+unprofiled acceptance measurement.
+
+| Sampled code | Samples | Share |
+| --- | ---: | ---: |
+| Physical routing, ROM, card and CPU memory-bus wrappers | 99 | 37.5% |
+| Board, clock and devices | 68 | 25.8% |
+| Remaining symbols and unclassified addresses | 97 | 36.7% |
+
+The route resolver alone accounted for 52 samples. Its geometry scans
+repeat on device pages, where the plain-RAM page shortcut cannot apply.
+A bounded routing experiment could filter these scans by page, while
+running the same provider queries in priority order on every access.
+The experiment would need to cover raw reset aliases, decoded address
+lines, provider range updates and removal, and accesses spanning pages.
+It would change only the list of geometrically eligible providers.
+
+Even subtracting every sample in the first two rows from the instrumented
+interval leaves 1.572 s in this diagnostic arithmetic. An isolated
+routing experiment can establish incremental value. Reaching the
+one-second target calls for evaluating throughput across CPU retirement,
+memory routing and device scheduling together. The source and shape of
+such a redesign remain subject to the active proposal's scope decision.
+
+The complete diagnostic transcript SHA-256 is
+`1bd8a98ef95caccef4d3e25b3d758d6981ef5c0b47067b7817f18d9e83114ea6`.
