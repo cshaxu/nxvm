@@ -1286,3 +1286,59 @@ Keep the original route scan.
 | driver.out | d114bd78653ef8f512d20676c0b195ea12ad357747042dcf2ca6e6980e61ea07 |
 | observation-recovery.out | 81627a82d7e567e2f675fa2d7efcffd099bd7470fa25d9fc7198841b0527f8f3 |
 | raw-inline-diagnostic.out | 5bedc9c5bf0d8ddd367821253ffc38e7e0a54d0adf52ea6438cfafb86d7f6bae |
+
+### Cross-profile and build-graph checks
+
+The same isolated profile-guided objects were tested with 8086, 286, 386,
+386SXLV, 486SX and V30 profiles. Two independent instruction loops and two
+host widths produced 24 pairs with the same retirements, guest ticks and
+checksum. Twenty-three median times improved. The x64 V30 register loop
+was 0.6% slower with overlapping sample ranges.
+
+An independent reproduction extracted the actual Release compile commands
+from both Ninja graphs and used the current tracked source. The two
+instrumented objects wrote the expected counters under a separate training
+directory. The guided objects consumed them under a separate receiving
+directory. On x64, the FAT12 RAM and overlapping ROM medians improved 25.9%
+and 27.4%. On x86 they improved 16.3% and 19.6%.
+
+The native profile prefix must match GCC's Windows working-directory
+spelling. The actual Ninja object names encode slashes as number signs in
+counter filenames. The local ccache bypasses the partial-training option.
+Ninja retained both objects on an unchanged build and recompiled when the
+explicit counter dependency changed. Strict GCC rejected missing and damaged
+counters. CMake supports target-specific source compile options, so the
+observable Machine can keep its current options. Its shared source-level
+dependency also observes a refreshed memory counter.
+
+### Remaining MyOB300 DOS hotspots
+
+An isolated sampling pass used the exact profile-guided objects from the
+paired DOS replay. Each run used fresh CMOS and the established read-only
+media. The instrumented intervals were 4.168 s on x64 and 4.718 s on x86.
+These measurements describe the sampling runs.
+
+| Host | Worker samples | Routing, card and memory bus | Board, clock and devices |
+| --- | ---: | ---: | ---: |
+| x64 | 260 | 103 (39.6%) | 74 (28.5%) |
+| x86 | 298 | 95 (31.9%) | 108 (36.2%) |
+
+Both widths had zero failed or previously suspended captures. The routed-read
+specializations account for 71 x64 and 64 x86 samples. Their sampled addresses
+are spread across the functions, including inlined route selection and
+range checks. The previous published sample had a separate route-resolver
+symbol. The current flat attribution therefore cannot support a direct
+comparison of that symbol alone. Even assigning zero time to both named
+groups yields about 1.33 s and 1.50 s from the sampled intervals. The
+one-second target still requires changes across more than one hot path.
+The prior published receivers remain the release baseline.
+
+| Evidence | SHA-256 |
+| --- | --- |
+| feedback-profile-matrix.out | 2e428af70a936fa03cba55da3a799dc47b5052c417d793847fe3274703313540 |
+| feedback-canonical-resume.out | 339754caad845426dd507b1a42244dd240f6ba84771e3cc7fbbadbbe817fb41c |
+| feedback-ninja-proof.out | 0adaf1adbbe47faf2852ecdb7c908308b277f1aea7c28533c791ba850506c5c5 |
+| feedback-cache-strict.out | 200e95d830a307e47d111e084b377cb704544e682d5821f9597c63291009a1e4 |
+| feedback-target-scope.out | 00f2c7d7ef7435e359c08140a6eed88317a6bd6085ef594f4c829bb3bbe1ad31 |
+| feedback-host-samples.out | 24210d79a619d2fd1a72ecea43363b5fe4b910c9aa10a5ce712e8e0d0311632d |
+| feedback-sample-addresses.out | c13c26f73d991520152f7b94cfcf7fb572eab296b89178204670fd8be978c760 |
