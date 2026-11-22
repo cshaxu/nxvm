@@ -835,3 +835,49 @@ This is flat statistical attribution with a sampler, independent of
 the ordinary latency runs. It points to routing work worth isolating;
 it does not prove the cause of the difference between the two builds.
 The sampling transcript SHA-256 is `5aacce5940d5928734634a656342a21e78b767d04ef199f935699fe17b624ef4`.
+
+## Held candidate: ROM route resolution and arithmetic timing
+
+This batch isolated decoded-device resolution, skipped the raw scan below
+the lowest possible raw mapping, and reused the existing results of
+bit-scan and 8086 division instructions in timing selection. It also folded
+odd parity without multiplication. Three production files changed by
++87/-112 lines. The existing CPU bit-scan fixture gained seven lines.
+The two manifests changed four entries. Both widths matched 300,000
+synthetic route cases each, including status and callback sequence,
+and passed seven focused contracts.
+
+All sixteen cached Release receivers were rebuilt and verified. Each
+host width passed 717 unit tests and 48 integrations with zero skipped.
+The receiving hashes are recorded in the qualification inventory, SHA-256
+`05f1f77ceff1386d38bc8e932006a3a088ac8a398bab37c8ba9b54150cfb7ed6`. All four DOS replay
+legs used the same read-only derived disk (SHA-256
+`34d5597e7b040ea7a8b09d84234eea118d7f2cd8934cc4fc6c5eceaadf90b67f`),
+the same System Card, identical instrumentation source, and fresh
+launch directories without CMOS sidecars. All acknowledged the guest's
+F1 check. x64 ran baseline then candidate. x86 ran candidate then baseline.
+
+| Host | Run | Cold through VER, s | DIR, s | Slowest key echo, ms | Pause, ms | DIR retirements | DIR guest ticks | Transcript SHA-256 |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| x64 | baseline | 53.012 | 4.270 | 32 | 16 | 3,289,088 | 14,177,065 | `dbebb1249248ee3354933c77938d952921c7f1db87e64e84d3f79bcf57fe7abd` |
+| x64 | candidate | 52.952 | 4.704 | 34 | 16 | 3,297,280 | 14,224,714 | `eee6014f8775564a6a7b80255aaf8cac152d7e2e44731800929c887d225411f3` |
+| x86 | baseline | 67.015 | 6.050 | 47 | 16 | 3,297,280 | 14,225,104 | `8da7d833108dbc712398073fc134ea57b956f50aeb550b2cb1a75f7a8e7049d3` |
+| x86 | candidate | 64.677 | 5.085 | 33 | 17 | 3,289,088 | 14,176,965 | `e9e57f84a46ac470aec372c4c849b8dbec182c55a554e023981a4f3e45cb86c3` |
+
+Both candidates passed the cold, key echo and pause budgets. x86 DIR
+improved by 0.965 s. x64 DIR regressed by 0.434 s despite only 0.25
+percent more retired instructions. Neither width met the one-second
+DIR budget. This paired check does not identify which source edit
+caused the change. The batch is held. The six unpublished source/test
+paths and sixteen receivers were restored to the previous published
+bytes. Native MyOB300 Window redraw, restart and RDP were outside
+these DOS runs.
+
+The previously published x64/x86 run-end samples put 692/804 and
+705/800 DIR endpoints on the guest page at ED000h. The sampled leading
+opcode matched the mapped System Card ROM at every one of those
+endpoints. In the local ROM inspection, 675 and 672 endpoints landed
+in packed FAT entry reads, sector selection or sector-cache lookup.
+These counts sample the end of each Core batch, not every instruction.
+They support tests that combine ROM fetch with RAM data accesses. They
+do not support bypassing active guest filesystem work as idle time.
