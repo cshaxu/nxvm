@@ -12,7 +12,9 @@ struct x86_nxvm_board_pic_bus {
     x86_pic *device;
     struct x86_nxvm_board_pic_bus *master;
     struct x86_nxvm_board_pic_bus *slave;
-    lib_u8 asserted[8];
+    lib_u8 levels;
+    /* Sources beyond the first assertion on each input line. */
+    lib_u8 additional_sources[8];
     x86_nxvm_board_pic_irq_source *sources;
 };
 

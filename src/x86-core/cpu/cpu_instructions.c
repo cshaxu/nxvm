@@ -1344,6 +1344,29 @@ static lib_u32 _kma_linear_logical(x86_core_cpu_execution_context *context, t_cp
     CPU_TRACE_CALL_END;
     return linear;
 }
+/* All accesses retain their range for hardware breakpoints. Only values
+ * visible in the debugger's bounded observation need to be copied. */
+static void _kma_record_access(x86_core_cpu_execution_context *context,
+    lib_u32 linear, lib_uptr buffer, lib_u8 bytes, lib_bool write)
+{
+    t_cpuins_data *data = &context->instructions->data;
+    const lib_u16 index = data->msize;
+    if (index >= X86_CORE_CPU_INSTRUCTION_MEMORY_ACCESS_CAPACITY) return;
+    data->mem[index].flagWrite = write;
+    data->mem[index].linear = linear;
+    data->mem[index].byte = bytes;
+    if (index < X86_CORE_CPU_DEBUG_MEMORY_ACCESS_CAPACITY) {
+        data->memory_values[index] = 0u;
+        lib_memory_copy(&data->memory_values[index], (const void *)buffer, bytes);
+    }
+    if (write ? data->flagWW : data->flagWR) {
+        const lib_u32 watch = write ? data->wwLinear : data->wrLinear;
+        if (watch >= linear && watch < linear + bytes)
+            _debug_record_watchpoint(context,
+                write ? X86_CORE_CPU_WATCH_WRITE : X86_CORE_CPU_WATCH_READ, watch);
+    }
+    ++data->msize;
+}
 /* read content from logical */
 static void _kma_read_linear(x86_core_cpu_execution_context *context, lib_u32 linear, lib_uptr rdata, lib_u8 byte, lib_u8 vpl, lib_u8 force)
 {
@@ -1472,7 +1495,6 @@ static void _kma_check_alignment(x86_core_cpu_execution_context *context,
 /* read content from logical */
 static void _kma_read_logical(x86_core_cpu_execution_context *context, t_cpu_data_sreg *rsreg, lib_u32 offset, lib_uptr rdata, lib_u8 byte, lib_u8 vpl, lib_u8 force)
 {
-    /* lib_uptr i; */
     lib_u32 linear;
     CPU_TRACE_CALL_BEGIN("_kma_read_logical");
     if (_kma_real_legacy_segment_wrap(context, offset, byte)) {
@@ -1488,41 +1510,12 @@ static void _kma_read_logical(x86_core_cpu_execution_context *context, t_cpu_dat
     CPU_TRACE_CHECK_RETURN(linear = _kma_linear_logical(context, rsreg, offset, byte, 0, vpl, force));
     CPU_TRACE_CHECK_RETURN(_kma_check_alignment(context, linear, byte, vpl, force));
     CPU_TRACE_CHECK_RETURN(_kma_read_linear(context, linear, rdata, byte, vpl, force));
-    if (!force && instruction_state.data.msize <
-        X86_CORE_CPU_INSTRUCTION_MEMORY_ACCESS_CAPACITY)
-    {
-        CPU_TRACE_BLOCK_BEGIN("!force");
-        instruction_state.data.mem[instruction_state.data.msize].flagWrite = LIB_FALSE;
-        instruction_state.data.mem[instruction_state.data.msize].data = 0;
-        lib_memory_copy((void *)X86_CPU_REFERENCE_OF(instruction_state.data.mem[instruction_state.data.msize].data), (void *)rdata, byte);
-        instruction_state.data.mem[instruction_state.data.msize].byte = byte;
-        instruction_state.data.mem[instruction_state.data.msize].linear = linear;
-        if (instruction_state.data.flagWR)
-        {
-            if (instruction_state.data.wrLinear >= instruction_state.data.mem[instruction_state.data.msize].linear &&
-                instruction_state.data.wrLinear < instruction_state.data.mem[instruction_state.data.msize].linear + byte)
-            {
-                _debug_record_watchpoint(context, X86_CORE_CPU_WATCH_READ,
-                    instruction_state.data.wrLinear);
-            }
-        }
-        /* for (i = 0;i < instruction_state.data.msize;++i) {
-            if (instruction_state.data.mem[i].flagWrite == instruction_state.data.mem[instruction_state.data.msize].flagWrite &&
-                instruction_state.data.mem[i].linear == instruction_state.data.mem[instruction_state.data.msize].linear) {
-                CPU_TRACE_BLOCK_BEGIN("mem(same)");
-                CPU_TRACE_IMPOSSIBLE_RETURN_ZERO;
-                CPU_TRACE_CALL_END;
-            }
-        } */
-        instruction_state.data.msize++;
-        CPU_TRACE_BLOCK_END;
-    }
+    if (!force) _kma_record_access(context, linear, rdata, byte, LIB_FALSE);
     CPU_TRACE_CALL_END;
 }
 /* write content to logical */
 static void _kma_write_logical(x86_core_cpu_execution_context *context, t_cpu_data_sreg *rsreg, lib_u32 offset, lib_uptr rdata, lib_u8 byte, lib_u8 vpl, lib_u8 force)
 {
-    /* lib_uptr i; */
     lib_u32 linear;
     CPU_TRACE_CALL_BEGIN("_kma_write_logical");
     if (_kma_real_legacy_segment_wrap(context, offset, byte)) {
@@ -1538,35 +1531,7 @@ static void _kma_write_logical(x86_core_cpu_execution_context *context, t_cpu_da
     CPU_TRACE_CHECK_RETURN(linear = _kma_linear_logical(context, rsreg, offset, byte, 1, vpl, force));
     CPU_TRACE_CHECK_RETURN(_kma_check_alignment(context, linear, byte, vpl, force));
     CPU_TRACE_CHECK_RETURN(_kma_write_linear(context, linear, rdata, byte, vpl, force));
-    if (!force && instruction_state.data.msize <
-        X86_CORE_CPU_INSTRUCTION_MEMORY_ACCESS_CAPACITY)
-    {
-        CPU_TRACE_BLOCK_BEGIN("!force");
-        instruction_state.data.mem[instruction_state.data.msize].flagWrite = LIB_TRUE;
-        instruction_state.data.mem[instruction_state.data.msize].data = 0;
-        lib_memory_copy((void *)X86_CPU_REFERENCE_OF(instruction_state.data.mem[instruction_state.data.msize].data), (void *)rdata, byte);
-        instruction_state.data.mem[instruction_state.data.msize].byte = byte;
-        instruction_state.data.mem[instruction_state.data.msize].linear = linear;
-        if (instruction_state.data.flagWW)
-        {
-            if (instruction_state.data.wwLinear >= instruction_state.data.mem[instruction_state.data.msize].linear &&
-                instruction_state.data.wwLinear < instruction_state.data.mem[instruction_state.data.msize].linear + byte)
-            {
-                _debug_record_watchpoint(context, X86_CORE_CPU_WATCH_WRITE,
-                    instruction_state.data.wwLinear);
-            }
-        }
-        /* for (i = 0;i < instruction_state.data.msize;++i) {
-            if (instruction_state.data.mem[i].flagWrite == instruction_state.data.mem[instruction_state.data.msize].flagWrite &&
-                instruction_state.data.mem[i].linear == instruction_state.data.mem[instruction_state.data.msize].linear) {
-                CPU_TRACE_BLOCK_BEGIN("mem(same)");
-                CPU_TRACE_IMPOSSIBLE_RETURN;
-                CPU_TRACE_CALL_END;
-            }
-        } */
-        instruction_state.data.msize++;
-        CPU_TRACE_BLOCK_END;
-    }
+    if (!force) _kma_record_access(context, linear, rdata, byte, LIB_TRUE);
     CPU_TRACE_CALL_END;
 }
 /* test logical accessing */
@@ -8822,13 +8787,8 @@ static lib_u8 _kdf_has_modrm(
             (opcode >= 0xb0u && opcode <= 0xbfu) ||
             opcode == 0xc0u || opcode == 0xc1u;
     }
-    return (opcode <= 0x03u) || (opcode >= 0x08u && opcode <= 0x0bu) ||
-        (opcode >= 0x10u && opcode <= 0x13u) ||
-        (opcode >= 0x18u && opcode <= 0x1bu) ||
-        (opcode >= 0x20u && opcode <= 0x23u) ||
-        (opcode >= 0x28u && opcode <= 0x2bu) ||
-        (opcode >= 0x30u && opcode <= 0x33u) ||
-        (opcode >= 0x38u && opcode <= 0x3bu) || opcode == 0x62u ||
+    /* The first four encodings in each primary ALU group carry ModR/M. */
+    return (opcode < 0x40u && (opcode & 7u) < 4u) || opcode == 0x62u ||
         opcode == 0x63u || opcode == 0x69u || opcode == 0x6bu ||
         (opcode >= 0x80u && opcode <= 0x8fu) || opcode == 0xc0u ||
         opcode == 0xc1u || (opcode >= 0xc4u && opcode <= 0xc7u) ||

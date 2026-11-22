@@ -474,20 +474,15 @@ static void x86_nxvm_board_dma_advance_one(t_latch *latch, t_dma *primary,
 
 lib_bool x86_nxvm_board_dma_has_pending_request(const x86_nxvm_board_dma_bus *bus)
 {
-    x86_dma_signals first;
-    x86_dma_signals second;
     if (bus == LIB_NULL || bus->primary.device == LIB_NULL) return LIB_FALSE;
-    const t_dma *primary = &bus->primary;
-    const t_dma *secondary = &bus->secondary;
-    first = x86_dma_get_signals(primary->device);
-    if (secondary->device == LIB_NULL) {
-        return first.enabled && (first.requests || first.active_channel < 4u);
+    if (bus->secondary.device != LIB_NULL) {
+        const x86_dma_signals second = x86_dma_get_signals(bus->secondary.device);
+        if (!second.enabled) return LIB_FALSE;
+        if (second.active_channel < 4u || (second.requests & 0x0eu)) return LIB_TRUE;
+        if (!(second.requests & 1u)) return LIB_FALSE;
     }
-    second = x86_dma_get_signals(secondary->device);
-    if (!second.enabled) return LIB_FALSE;
-    return second.active_channel < 4u || (second.requests & 0x0eu) ||
-        (first.enabled && (first.active_channel < 4u || first.requests) &&
-            (second.requests & 1u));
+    const x86_dma_signals first = x86_dma_get_signals(bus->primary.device);
+    return first.enabled && (first.requests || first.active_channel < 4u);
 }
 
 void x86_nxvm_board_dma_advance_transaction(x86_nxvm_board_dma_bus *bus,

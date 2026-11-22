@@ -243,6 +243,18 @@ static lib_i32 debug_state_test_data_breakpoints(x86_core_cpu_profile profile)
             LIB_STATUS_OK || fixture.fault.valid ||
         (after.data.dr6 & (1u | 0x00004000u)) != (1u | 0x00004000u) ||
         fixture.memory[0x1000u] != 0x5au) return 0;
+    /* ENTER writes the final frame pointer after the debugger's 32-value window. */
+    static const lib_u8 enter[] = {0xc8u, 0u, 0u, 31u};
+    cpu_instruction_prepare(&fixture, profile);
+    fixture.cpu.data.sp = 0x8000u;
+    fixture.cpu.data.bp = 0x9000u;
+    fixture.cpu.data.dr0 = 0x7fc0u;
+    fixture.cpu.data.dr7 = 0x00010001u;
+    if (cpu_instruction_run(&fixture, enter, sizeof(enter), &after) !=
+            LIB_STATUS_OK || fixture.fault.valid || !fixture.delivered_exception.valid ||
+        fixture.delivered_exception.exception_mask != VCPUINS_EXCEPT_DB ||
+        fixture.delivered_exception.point.eip != sizeof(enter) ||
+        (after.data.dr6 & 1u) == 0u) return 0;
     return 1;
 }
 

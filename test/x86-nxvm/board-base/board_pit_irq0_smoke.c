@@ -92,14 +92,14 @@ static lib_i32 pit_irq0_test_mode2_edge(void)
             fixture.slave);
     x86_pit_advance(fixture.pit, 1u);
     failed |= !x86_pit_get_output(fixture.pit, 0u) ||
-        !x86_nxvm_board_pic_irq_source_is_asserted(fixture.irq0) || fixture.master->asserted[0u] != 1u ||
+        !x86_nxvm_board_pic_irq_source_is_asserted(fixture.irq0) || (fixture.master->levels & (1u << 0u)) == 0u ||
         x86_nxvm_board_pic_get_interrupt(fixture.master, fixture.slave) != 0x08u;
     test_pic_port_write(fixture.machine, 0x0020u, 0x20u);
     failed |= test_pic_read(fixture.master, 0x0bu) != 0u ||
         x86_nxvm_board_pic_scan_interrupt(fixture.master, fixture.slave);
     x86_pit_advance(fixture.pit, 2u);
     failed |= x86_pit_get_output(fixture.pit, 0u) || x86_nxvm_board_pic_irq_source_is_asserted(fixture.irq0) ||
-        fixture.master->asserted[0u] != 0u;
+        (fixture.master->levels & (1u << 0u)) != 0u;
     x86_pit_set_gate(fixture.pit, 0u, LIB_FALSE);
     failed |= !x86_pit_get_output(fixture.pit, 0u) ||
         !x86_nxvm_board_pic_irq_source_is_asserted(fixture.irq0) ||
@@ -160,7 +160,7 @@ static lib_i32 pit_irq0_test_gate_and_reset(void)
     failed |= !x86_pit_get_output(fixture.pit, 0u) || !x86_nxvm_board_pic_irq_source_is_asserted(fixture.irq0);
     x86_nxvm_board_pic_reset(fixture.master, fixture.slave);
     x86_pit_reset(fixture.pit);
-    failed |= x86_nxvm_board_pic_irq_source_is_asserted(fixture.irq0) || fixture.master->asserted[0u] != 0u ||
+    failed |= x86_nxvm_board_pic_irq_source_is_asserted(fixture.irq0) || (fixture.master->levels & (1u << 0u)) != 0u ||
         x86_pit_get_output(fixture.pit, 0u);
     pit_irq0_finalize(&fixture);
     return failed;

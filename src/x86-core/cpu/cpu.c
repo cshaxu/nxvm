@@ -401,7 +401,7 @@ lib_status x86_core_cpu_debug_capture_instruction(
         out_observation->memory_accesses[index].bytes =
             instructions->mem[index].byte;
         out_observation->memory_accesses[index].data =
-            instructions->mem[index].data;
+            instructions->memory_values[index];
     }
     out_observation->watch_hit = instructions->watch_hit;
     out_observation->watch_kind = (x86_core_cpu_debug_watch_kind)

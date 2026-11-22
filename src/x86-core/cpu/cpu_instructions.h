@@ -100,10 +100,9 @@ typedef struct {
 } t_cpuins_data_logical;
 
 typedef struct {
-    lib_u8 flagWrite;
-    lib_u32 byte;
+    lib_bool flagWrite;
+    lib_u8 byte;
     lib_u32 linear;
-    lib_u64 data;
 } t_cpuins_data_memory;
 
 typedef struct {
@@ -203,6 +202,7 @@ typedef struct {
      * recorded stack accesses. This is executor bookkeeping for CPU debug
      * breakpoints, not the copied debugger-observation limit. */
     t_cpuins_data_memory mem[X86_CORE_CPU_INSTRUCTION_MEMORY_ACCESS_CAPACITY];
+    lib_u64 memory_values[X86_CORE_CPU_DEBUG_MEMORY_ACCESS_CAPACITY];
     lib_u16 msize;
     lib_u8 oplen;
     lib_u8 opcodes[15];

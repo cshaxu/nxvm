@@ -1,26 +1,6 @@
 /* Copyright 2012-2026 Neko. */
 #include "x86-nxvm/board-base/pic_bus.h"
 
-static lib_u8 pic_bus_four_levels(const lib_u8 *counts)
-{
-    const lib_u32 low_bits = 0x7f7f7f7fu;
-    const lib_u32 lanes = (lib_u32)counts[0] | ((lib_u32)counts[1] << 8u) |
-        ((lib_u32)counts[2] << 16u) | ((lib_u32)counts[3] << 24u);
-    /* Each low-seven-bit sum is at most 254, so no carry crosses a lane.
-     * An original high bit or the carry into bit seven denotes nonzero. */
-    const lib_u32 occupied = ((lanes | ((lanes & low_bits) + low_bits)) >> 7u) &
-        0x01010101u;
-
-    /* Collect the four lane bits in increasing input order. */
-    return (lib_u8)((occupied * 0x01020408u) >> 24u);
-}
-
-static lib_u8 pic_bus_levels(const x86_nxvm_board_pic_bus *bus)
-{
-    return (lib_u8)(pic_bus_four_levels(bus->asserted) |
-        (pic_bus_four_levels(bus->asserted + 4u) << 4u));
-}
-
 void x86_nxvm_board_pic_refresh(x86_nxvm_board_pic_bus *master,
     x86_nxvm_board_pic_bus *slave)
 {
@@ -28,12 +8,12 @@ void x86_nxvm_board_pic_refresh(x86_nxvm_board_pic_bus *master,
     lib_u8 address;
     lib_u8 cascade = 0u;
     if (master == LIB_NULL || slave == LIB_NULL) return;
-    x86_pic_set_inputs(slave->device, pic_bus_levels(slave), 0u, 0u);
+    x86_pic_set_inputs(slave->device, slave->levels, 0u, 0u);
     if (x86_pic_cascade_address(slave->device, &address) &&
         x86_pic_select(slave->device, &request) == LIB_STATUS_OK) {
         cascade = (lib_u8)(1u << address);
     }
-    x86_pic_set_inputs(master->device, pic_bus_levels(master), 0u, cascade);
+    x86_pic_set_inputs(master->device, master->levels, 0u, cascade);
 }
 
 lib_status x86_nxvm_board_pic_read_register(x86_nxvm_board_pic_bus *bus,
@@ -231,10 +211,11 @@ void x86_nxvm_board_pic_irq_source_assert(x86_nxvm_board_pic_irq_source *source)
         source->slave == LIB_NULL || source->irq >= 16u) return;
     bus = source->irq < 8u ? source->master : source->slave;
     line = source->irq & 7u;
-    edge = bus->asserted[line] == 0u ? (lib_u8)(1u << line) : 0u;
+    edge = (lib_u8)((1u << line) & ~bus->levels);
     source->asserted = LIB_TRUE;
-    if (bus->asserted[line] != 0xffu) ++bus->asserted[line];
-    x86_pic_set_inputs(bus->device, pic_bus_levels(bus), edge, 0u);
+    if (edge != 0u) bus->levels |= edge;
+    else if (bus->additional_sources[line] < 254u) ++bus->additional_sources[line];
+    x86_pic_set_inputs(bus->device, bus->levels, edge, 0u);
     x86_nxvm_board_pic_refresh(source->master, source->slave);
 }
 
@@ -247,8 +228,9 @@ void x86_nxvm_board_pic_irq_source_deassert(x86_nxvm_board_pic_irq_source *sourc
     if (source->master == LIB_NULL || source->slave == LIB_NULL || source->irq >= 16u) return;
     bus = source->irq < 8u ? source->master : source->slave;
     line = source->irq & 7u;
-    if (bus->asserted[line] == 0u) return;
-    --bus->asserted[line];
+    if (bus->additional_sources[line] != 0u) --bus->additional_sources[line];
+    else if ((bus->levels & (1u << line)) != 0u) bus->levels &= (lib_u8)~(1u << line);
+    else return;
     x86_nxvm_board_pic_refresh(source->master, source->slave);
 }
 

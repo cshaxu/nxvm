@@ -91,13 +91,13 @@ static lib_i32 pic_lifecycle_test_master_level(void)
     pic_lifecycle_bind(&fixture, &second, 5u);
     x86_nxvm_board_pic_irq_source_assert(first);
     x86_nxvm_board_pic_irq_source_assert(second);
-    failed |= fixture.master->asserted[5u] != 2u ||
+    failed |= fixture.master->additional_sources[5u] != 1u ||
         x86_nxvm_board_pic_get_interrupt(fixture.master, fixture.slave) != 0x0du;
     pic_lifecycle_eoi(&fixture, LIB_FALSE);
     x86_nxvm_board_pic_refresh(fixture.master, fixture.slave);
     failed |= !x86_nxvm_board_pic_scan_interrupt(fixture.master, fixture.slave);
     x86_nxvm_board_pic_irq_source_deassert(first);
-    failed |= fixture.master->asserted[5u] != 1u;
+    failed |= (fixture.master->levels & (1u << 5u)) == 0u;
     (void)x86_nxvm_board_pic_get_interrupt(fixture.master, fixture.slave);
     pic_lifecycle_eoi(&fixture, LIB_FALSE);
     x86_nxvm_board_pic_refresh(fixture.master, fixture.slave);
@@ -122,7 +122,7 @@ static lib_i32 pic_lifecycle_test_slave_level(void)
     x86_nxvm_board_pic_irq_source_assert(first);
     x86_nxvm_board_pic_irq_source_assert(second);
     x86_nxvm_board_pic_refresh(fixture.master, fixture.slave);
-    failed |= fixture.slave->asserted[6u] != 2u ||
+    failed |= fixture.slave->additional_sources[6u] != 1u ||
         x86_nxvm_board_pic_get_interrupt(fixture.master, fixture.slave) != 0x76u;
     pic_lifecycle_eoi(&fixture, LIB_TRUE);
     x86_nxvm_board_pic_refresh(fixture.master, fixture.slave);
@@ -131,7 +131,7 @@ static lib_i32 pic_lifecycle_test_slave_level(void)
     (void)x86_nxvm_board_pic_get_interrupt(fixture.master, fixture.slave);
     pic_lifecycle_eoi(&fixture, LIB_TRUE);
     x86_nxvm_board_pic_refresh(fixture.master, fixture.slave);
-    failed |= fixture.slave->asserted[6u] != 1u ||
+    failed |= (fixture.slave->levels & (1u << 6u)) == 0u ||
         !x86_nxvm_board_pic_scan_interrupt(fixture.master, fixture.slave);
     x86_nxvm_board_pic_irq_source_deassert(second);
     x86_nxvm_board_pic_refresh(fixture.master, fixture.slave);
@@ -157,18 +157,18 @@ static lib_i32 pic_lifecycle_test_pit_reset(void)
     test_pic_port_write(fixture.machine, 0x0040u, 0u);
     /* The first clock transfers CR to CE; the IRQ0 edge is the fifth clock. */
     x86_pit_advance(pit, 5u);
-    failed |= !irq0->asserted || fixture.master->asserted[0u] != 1u;
+    failed |= !irq0->asserted || (fixture.master->levels & (1u << 0u)) == 0u;
     x86_nxvm_board_pic_reset(fixture.master, fixture.slave);
     x86_pit_reset(pit);
-    failed |= irq0->asserted || fixture.master->asserted[0u] != 0u;
+    failed |= irq0->asserted || (fixture.master->levels & (1u << 0u)) != 0u;
     test_pic_port_write(fixture.machine, 0x0043u, 0x34u);
     test_pic_port_write(fixture.machine, 0x0040u, 3u);
     test_pic_port_write(fixture.machine, 0x0040u, 0u);
     x86_pit_advance(pit, 5u);
-    failed |= !irq0->asserted || fixture.master->asserted[0u] != 1u ||
+    failed |= !irq0->asserted || (fixture.master->levels & (1u << 0u)) == 0u ||
         (test_pic_read(fixture.master, 0x0au) & VPIC_IRR_IRQ(0u)) == 0u;
     x86_pit_destroy(pit);
-    failed |= irq0->asserted || fixture.master->asserted[0u] != 0u;
+    failed |= irq0->asserted || (fixture.master->levels & (1u << 0u)) != 0u;
     pic_lifecycle_finalize(&fixture);
     return failed;
 }
