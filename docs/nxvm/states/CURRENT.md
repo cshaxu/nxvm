@@ -12,6 +12,10 @@ and DIR to prompt of 4.592/6.677 s. See the evidence for exact budgets and scope
 The replay verified key echo and pause. Native redraw and RDP were outside
 the validation.
 
+The next shared batch passed all receiving tests, then reproduced a slower
+x64 DIR replay. It is held. The published receivers remain at `711cbda22`.
+See the evidence for the fresh CMOS comparison.
+
 The owner withdrew the [standalone ROM Windows candidate](../proposals/m5-ob300-rom-windows.md).
 
 | Field | Required record |

@@ -769,3 +769,69 @@ above provide context. Native redraw and RDP were not measured here.
 | `mynes/mynes_0_0_0044_x86.exe` | `014C` | `f79b1168dddded2b84ac38f4cbf23101c9990302a372f93dd620ce538b62519e` |
 | `myraidenii/myraidenii_0_0_0007_x64.exe` | `8664` | `97af1295301185b8393cfa2a9d0710da076d5ff43c9272f4d17d497062fa7a06` |
 | `myraidenii/myraidenii_0_0_0007_x86.exe` | `014C` | `b141dc2e838587db356d4423bb402aa947397005f483f6f3ffa5c474b1b6890a` |
+
+## Held candidate: retired prefixes, resident memory pages and board idle work
+
+Retirement timing consumes the prefix count already recorded by the
+executor. The count is bounded by the captured bytes for Intel timing.
+The NEC continuation retains its full decoded count. The existing prefix,
+time, fault and repeat fixtures passed for both widths.
+
+Ordinary RAM stores can reuse a resident read-page mapping. A store on a
+different page still uses the existing route resolver and leaves the read
+mapping intact. The store still invalidates CPU memory, updates parity and
+notifies observers in the established order. All 256 byte values and
+injected parity mismatches matched on both widths. Firmware routes and
+address decode keep their existing precedence.
+
+The shutdown policy is queried only when the CPU enters Shutdown. Both
+widths observed no policy calls during normal HALT and one during actual
+Shutdown, with the existing reset result. Board deadline observation skips
+unconfigured storage controllers and unnecessary positive conversions once
+the minimum is one tick. PIT and RTC receive calls only for nonzero
+device time. The PIC countdowns now use the width of their programmed
+delay and preserve saturation for a wider elapsed interval.
+
+The differential storage fixture matched 3,528 configurations per width.
+At the OmniBook clock ratios, 100,000 short board advances made 32,849
+PIT and 902 RTC calls. The same synthetic run delivered the same ticks
+and clock phases at every step. The PIC fixture matched 400,000 timer
+results per width. These are operation counts, separate from guest latency.
+
+
+The cached Release build produced all sixteen receivers. Both host widths
+passed 717 unit and 48 integration tests. The artifact identity list for
+the held candidate had SHA-256 `5a40a9fc895669e5809c14c53a18e8aa560b245823f0416ebc50672383239504`.
+No source or executable from this candidate was published.
+
+The first candidate replay was followed by a baseline/candidate check.
+The first baseline of each width started in an empty launch directory.
+The initial candidate comparison was discarded because it inherited the
+baseline's generated CMOS file. Only the candidate leg was repeated,
+in newly created directories. All rows below began with no CMOS sidecar
+and handled F1. They used the identical read-only DOS and System Card
+fixture. The short checks do not measure native redraw or RDP.
+
+| Host | Run | Cold through VER, s | DIR, s | Slowest key echo, ms | Pause, ms | Transcript SHA-256 |
+| --- | --- | ---: | ---: | ---: | ---: | --- |
+| x64 | first candidate | 62.068 | 5.648 | 33 | 16 | `787fa7f1f726341afd1decec488839613eeb19fa5da5310097925dc6d8fed124` |
+| x64 | baseline | 60.434 | 4.339 | 33 | 16 | `01ffa054e9b211bb8fe41f9277176f2334e840eaee46e3f9d2cdbb9d7e1a8009` |
+| x64 | candidate | 60.313 | 4.809 | 33 | 16 | `3903da9acdb3e4dcce0c8ff0f012c1c53dc94e94dac06325bfc94f3af7ff39fa` |
+| x86 | first candidate | 69.182 | 5.604 | 33 | 16 | `7280df9cd98bab442bcfb337cafe718dc9063b8768200c6de5705a1f523f4606` |
+| x86 | baseline | 65.006 | 5.684 | 33 | 16 | `35dadf75b8c981172601f0483b57393fe5bb73f5b5094d2d674d10a908bacec2` |
+| x86 | candidate | 68.684 | 5.306 | 35 | 16 | `61bec90a623521cdc5515920293504fd508da8542ba41f9b153360cb45cc4c21` |
+
+The fresh x64 check reproduced higher DIR latency with essentially the
+same cold time. The x86 check improved DIR with slower cold time. These
+are paired wall runs, not a controlled estimate of each source change.
+The candidate is held while the shared costs are separated. The tracked
+receivers were restored byte-for-byte to the previously qualified set.
+
+
+A separate x64 diagnostic sampled the executing host worker during DIR.
+Of 272 usable instruction-pointer samples, 54 were in physical memory
+route resolution, 11 in routed reads, and 10 in plain-span checks.
+This is flat statistical attribution with a sampler, independent of
+the ordinary latency runs. It points to routing work worth isolating;
+it does not prove the cause of the difference between the two builds.
+The sampling transcript SHA-256 is `5aacce5940d5928734634a656342a21e78b767d04ef199f935699fe17b624ef4`.
