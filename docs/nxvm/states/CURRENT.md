@@ -6,8 +6,8 @@ native Windows GCC Release IPO and the clock/PIC arithmetic changes.
 All sixteen EXEs were rebuilt together. Each host width passed 717 unit
 tests and 48 integrations.
 
-The MyOB300 DOS replay recorded x64/x86 cold through VER of 63.154/85.546 s
-and DIR to prompt of 5.795/7.679 s. See the evidence for exact budgets and scope.
+The MyOB300 DOS replay recorded x64/x86 cold through VER of 67.678/88.465 s
+and DIR to prompt of 6.745/7.645 s. See the evidence for exact budgets and scope.
 The replay verified key echo and pause. Native redraw and RDP were outside
 the validation.
 
@@ -21,7 +21,7 @@ The owner withdrew the [standalone ROM Windows candidate](../proposals/m5-ob300-
 | Non-goals | No product-specific path, third-party code import, public ABI change, JIT, second instruction engine or timing grade reduction. |
 | Reference Baseline | `9d77899d1` and the published S5 receiver set. Local Bochs 2.6 decoded trace cache is a design reference. |
 | Candidate Proposal | [Performance S sequence and decoded execution boundary](../proposals/m5-ob300-performance.md), S6. |
-| Files And ABI Surface | X86 Core CPU and Machine internals, X86 NXVM board internals, and NXVM evidence. Shared source changes reach all sixteen executables across NXVM, MyNES and MyRaidenII. |
+| Files And ABI Surface | X86 Core CPU and Machine internals, X86 NXVM peripheral and board internals, and NXVM evidence. Shared source changes reach all sixteen executables across NXVM, MyNES and MyRaidenII. |
 | Applicable Rules | NXVM Task Reading Set, shared Execution, Architecture, Coding and Documentation, local Core contract and NXVM source policy. |
 | Verification | Use dual-width decode and timing contracts, clock/PIC regressions and short equal-work probes. Qualify retained Shared changes with all sixteen published EXEs, the full cached unit and integration suites on both widths, and the MyOB300 read-only DOS replay. |
 | Expected Markers | Fewer redundant decode, clock or board operations. Preserve fetches, architecture state, execution and event order, faults, timing attribution and ticks. |

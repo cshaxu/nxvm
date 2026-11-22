@@ -598,3 +598,81 @@ above provide context. Native redraw and RDP were not measured here.
 | `mynes/mynes_0_0_0044_x86.exe` | `014C` | `c94a65179b1ebfa68bd0976f118e6e3f3d087def4388f1374655c7f83a432ddc` |
 | `myraidenii/myraidenii_0_0_0007_x64.exe` | `8664` | `069c900ee988ae0b734c417c3f28e7ff23e77839963fb52decf3da11b626871c` |
 | `myraidenii/myraidenii_0_0_0007_x86.exe` | `014C` | `e420e570e9dde373ec25fe1c13e20f746968fb507a42bdb084336346aac7f199` |
+
+## PIT quiet intervals and board clock work
+
+For long quiet intervals, the PIT advances all three counter values
+to the next boundary in constant work. The original per-counter order
+still handles every boundary tick, including changes triggered by an
+OUT callback. Mode 3 uses the same decrement rule for a single tick
+or multiple ticks. No persistent state or public interface was added.
+
+In each width, the differential probe covered 72,000 mixed operations
+across 8253 and 8254 personalities, with and without cross-channel Gate
+feedback. Counter state and ordered OUT transitions agreed at each
+operation and each observed callback. In a one-million-input-tick
+long-divider probe, the original three million per-counter tick calls
+fell to 93. A load of three still handled about two million per-counter
+ticks, and one-tick calls retained their existing work. The four existing
+PIT fixtures passed on both widths. The terminal-count waveform fixture
+also reads the latched count after a full free-running wrap.
+
+The optional PIT clock is advanced only on boards with that PIT
+installed. Its relative order with the primary PIT stays the same.
+The PIT minimum search exits at one device tick, the smallest positive
+boundary. Board deadlines outside the PIT still go through the existing
+queries. Long quiet intervals do not establish a MyOB300 latency gain.
+
+| Transcript | SHA-256 |
+| --- | --- |
+| Differential PIT operation and callback proof | `baf13e9ef82db4d4afc0878bdf4a5584094a87a30ea42a5e53f26ed1b2c6b783` |
+| Existing PIT fixtures and tick-count proof | `7525c3af8821b765d9d9d9ddb0e14f5d55b0fa088048ce917b608e437dc0e213` |
+
+## PIT and board advance delivery
+
+Build source revision: `aea89116e26937aa2723109e482eafb0685f5afb`.
+
+PIT bulk advancement uses existing event boundaries and the original
+edge processing. Board advancement skips absent auxiliary PIT clocks
+and ends the PIT minimum search at the lowest possible tick.
+Both widths verified all 22 Core IPO compilation commands.
+The normal cached Release build rebuilt and published all sixteen
+products. The native integration link may refresh the default NXVM
+timestamp, so hashes below identify the final qualified files.
+
+| Host | Suite | Passed | Transcript SHA-256 |
+| --- | --- | ---: | --- |
+| x64 | unit | 717/717 | `e015cf5fb2d84ec976975fd9fe30bb0c73629755e584dd73d5d4c6aa1860258b` |
+| x64 | integration | 48/48 | `42615b131601ce4801529971f5b3297c7a065e1f770e0def9bea0b324440c05a` |
+| x86 | unit | 717/717 | `bbf1f94f446ab284350d4881afaababadc9ff1c93890b239016c85fa0f2525e4` |
+| x86 | integration | 48/48 | `a290cc89d497a0cd2cd624626e2248e72d1d9b23fc0eab3b216e11e75c7ce78b` |
+
+The reduced-instrumentation MyOB300 replay used the existing read-only
+DOS and System Card fixture. Each width reached VER, verified DIR and
+return to prompt, then verified ten echoes and pause. These are separate
+single runs of the final build configuration. The paired stock comparisons
+above provide context. Native redraw and RDP were not measured here.
+
+| Host | Cold through VER, s | DIR, s | Slowest key echo, ms | Pause, ms | Transcript SHA-256 |
+| --- | ---: | ---: | ---: | ---: | --- |
+| x64 | 67.678 | 6.745 | 32 | 16 | `00f28127d7c1a3fc5913f753fcc898e682fcb25e9bdcdcf6ccb39e240202c7fb` |
+| x86 | 88.465 | 7.645 | 32 | 16 | `58c93d8e87efc1aa659134440b4e852972f7495ce51e0543fdd4ad9ea6faf47d` |
+
+| Artifact | PE machine | SHA-256 |
+| --- | --- | --- |
+| `nxvm/nxvm_0_5_0593_x64.exe` | `8664` | `0b13a33cfb8d357506b10dd36e5814074c80198fa9223942c4c818729d72c76d` |
+| `nxvm/nxvm_0_5_0593_x86.exe` | `014C` | `78fc98694d790cbf757059605b0cbd7f9291d440ec08aac170bb54e7e7775d74` |
+| `my5160/my5160_0_5_0593_x64.exe` | `8664` | `e026a8c6c8fba5350c9fb10edff7a4670bb68d915b7c2f3efd20fc2d4425afae` |
+| `my5160/my5160_0_5_0593_x86.exe` | `014C` | `1c3d0a503f4100d92f61bd3d0a58afd9e92d05a9f1b4f096efeec6c70d3fd323` |
+| `my5170/my5170_0_5_0593_x64.exe` | `8664` | `bfac32e765cfe203530a7b493fa5fc7cd2a34449bb13dced7335c00da6b818a9` |
+| `my5170/my5170_0_5_0593_x86.exe` | `014C` | `cf77dc28111b1bdbeececcb76c28c81666d4682d50f9ffc58d4140bf7f4909a1` |
+| `mydeskpro386/mydeskpro386_0_5_0593_x64.exe` | `8664` | `eb97a1a8830d30767a4b2336a98c60188c66d16f8eff882517f6372907c849ea` |
+| `mydeskpro386/mydeskpro386_0_5_0593_x86.exe` | `014C` | `3772d6ba25015015638dca28094eceea7aeb44e3e81b296cc25984851d6ce2b6` |
+| `mypc110/mypc110_x64.exe` | `8664` | `d6321c1a1f3ab69f062f7a009c1b27fce6734be6affbd0559637fc8c3aa78aa5` |
+| `mypc110/mypc110_x86.exe` | `014C` | `cb97e4e559e413f95d12760ac3f58cff507f9128a79ebfe0d9d5e3653628f723` |
+| `myob300/myob300_0_5_0593_x64.exe` | `8664` | `2d119617bce5a96df1a84af8da1655d5517d5b6c2e6a2ff361d308c3d086856a` |
+| `myob300/myob300_0_5_0593_x86.exe` | `014C` | `c8541addd6ebddc28152288fb4b7f960b02a050a57d14f72b5dd58592e02e347` |
+| `mynes/mynes_0_0_0044_x64.exe` | `8664` | `464cb6d80d292268453e1d0c76642830b95c8f5496db75983d5fff64b7f5edb0` |
+| `mynes/mynes_0_0_0044_x86.exe` | `014C` | `0395b2b920d87973a7e88d4d52053fe8a639842350a874c9589bc06b9316b0a3` |
+| `myraidenii/myraidenii_0_0_0007_x64.exe` | `8664` | `edf490d4e77e47d08e1c3836a3f95d9d59aa13307f6f5130cf8022cc2f670b07` |
+| `myraidenii/myraidenii_0_0_0007_x86.exe` | `014C` | `0bae1cc4f3f73f03b5979b58428866d13e5f09ce911868e1b191f084d4061d05` |
