@@ -860,6 +860,8 @@ static lib_i32 movable_range_contract(void)
             LIB_FALSE, LIB_TRUE, &decoded, &fill) != LIB_STATUS_OK || !fill ||
         x86_core_machine_debug_patch_registers(machine, &cr0) != LIB_STATUS_OK ||
         !range_cpu_read(machine, 0x1000u, 3u, ram) ||
+        x86_core_machine_memory_read(machine, 0x2000u, &value, 1u) != LIB_STATUS_OK ||
+        value != ram ||
         x86_core_machine_set_memory_device_range(machine, &overlay, 0x2000u, 16u) != LIB_STATUS_OK ||
         !range_cpu_read(machine, 0x1005u, 1u, overlay.value) || overlay.reads == 0u;
     reads = overlay.reads;
@@ -971,7 +973,7 @@ static lib_i32 partial_claim_contract(void)
 static lib_i32 masked_span_contract(void)
 {
     const x86_core_machine_executor_config config = {
-        .memory_bytes = 1024u * 1024u,
+        .memory_bytes = 2u * 1024u * 1024u,
         .cpu_profile = X86_CORE_CPU_PROFILE_80386,
         .address_decode = {0u, LIB_UINT32_MAX, 0u}};
     x86_core_machine *machine = LIB_NULL;
@@ -982,7 +984,12 @@ static lib_i32 masked_span_contract(void)
     if (x86_core_machine_neutral_create(&config, &machine) != LIB_STATUS_OK) return 1;
     failed = x86_core_machine_freeze_execution_providers(machine) != LIB_STATUS_OK ||
         x86_core_machine_reset(machine) != LIB_STATUS_OK ||
+        x86_core_machine_memory_write(machine, 0x100000u, input, 1u) != LIB_STATUS_OK ||
+        x86_core_machine_memory_read(machine, 0x100000u, output, 1u) != LIB_STATUS_OK ||
+        output[0] != input[0] ||
         x86_core_machine_signal_address_clear_mask(machine, 0x100000u) != LIB_STATUS_OK ||
+        x86_core_machine_memory_read(machine, 0x100000u, output, 1u) != LIB_STATUS_OK ||
+        output[0] != 0u ||
         x86_core_machine_memory_write(machine, 0xfffffu, input, sizeof(input)) != LIB_STATUS_OK ||
         x86_core_machine_memory_read(machine, 0xfffffu, output, sizeof(output)) != LIB_STATUS_OK ||
         lib_memory_compare(input, output, sizeof(input)) != 0 ||

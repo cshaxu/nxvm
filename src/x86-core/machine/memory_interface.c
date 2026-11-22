@@ -341,6 +341,8 @@ lib_status x86_core_machine_signal_address_clear_mask(x86_core_machine *machine,
     if (machine == LIB_NULL) return LIB_STATUS_INVALID_ARGUMENT;
     if (machine->executor_memory.connect.backing == 0u)
         return LIB_STATUS_INVALID_STATE;
+    if (machine->executor_memory.data.address_clear_mask != clear_mask)
+        machine->executor_memory.data.read_page_key = 0u;
     machine->executor_memory.data.address_clear_mask = clear_mask;
     return LIB_STATUS_OK;
 }
@@ -360,6 +362,7 @@ void x86_core_machine_signal_memory_decode_change(x86_core_machine *machine,
     lib_u32 physical, lib_size bytes)
 {
     if (machine == LIB_NULL) return;
+    machine->executor_memory.data.read_page_key = 0u;
     x86_core_cpu_execution_invalidate_memory_view(machine->executor_cpu_execution,
         physical, bytes);
 }

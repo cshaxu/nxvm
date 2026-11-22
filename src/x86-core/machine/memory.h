@@ -18,6 +18,8 @@ typedef struct x86_core_machine_memory_test_allocation
 
 typedef struct {
     lib_u32 address_clear_mask;
+    lib_u32 read_page_key;
+    lib_bool read_page_plain;
 } t_ram_data;
 
 typedef struct {

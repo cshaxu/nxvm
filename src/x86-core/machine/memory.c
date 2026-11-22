@@ -6,6 +6,9 @@
 
 #include "x86-core/machine/memory.h"
 
+#define X86_CORE_MACHINE_MEMORY_PAGE_SHIFT 12u
+#define X86_CORE_MACHINE_MEMORY_PAGE_BYTES (1u << X86_CORE_MACHINE_MEMORY_PAGE_SHIFT)
+
 static lib_u32 x86_core_machine_memory_decode_address(const t_ram *ram,
     lib_u32 offset)
 {
@@ -179,12 +182,23 @@ static lib_status x86_core_machine_memory_route_resolve(const t_ram *ram,
     return LIB_STATUS_OK;
 }
 
-/* A conservative geometric proof: no aliases or address-line changes, and
- * no provider intersects any byte. Otherwise use the existing byte queries. */
+/* A contiguous ordinary backing range must exclude aliases and device
+ * windows, and must preserve the physical addresses of all bytes. */
 static lib_bool x86_core_machine_memory_is_plain_span(const t_ram *ram, lib_u32 physical, lib_uptr bytes)
 {
-    if (ram->data.address_clear_mask != 0u || ram->connect.mapping_count != 0u ||
-        bytes > (lib_u64)LIB_UINT32_MAX + 1u - physical) return LIB_FALSE;
+    const lib_u64 end = (lib_u64)physical + bytes;
+    const lib_u32 mask = ram->data.address_clear_mask;
+
+    if (bytes > (lib_u64)LIB_UINT32_MAX + 1u - physical) return LIB_FALSE;
+    if (mask != 0u && end > (mask & (~mask + 1u)) &&
+        (lib_u64)physical <= ram->connect.address_decode.last &&
+        end > ram->connect.address_decode.first) return LIB_FALSE;
+    for (lib_uptr index = 0u; index < ram->connect.mapping_count; ++index) {
+        const x86_core_machine_memory_mapping *mapping = &ram->connect.mappings[index];
+
+        if ((lib_u64)physical < (lib_u64)mapping->physical_start + mapping->bytes &&
+            mapping->physical_start < end) return LIB_FALSE;
+    }
     for (lib_uptr index = 0u; index < ram->connect.device_provider_count; ++index) {
         const x86_core_machine_memory_device_provider *provider =
             &ram->connect.device_providers[index];
@@ -293,6 +307,7 @@ static lib_status x86_core_machine_memory_allocate_for_with_test(t_ram *ram,
     if (backing == LIB_NULL) return LIB_STATUS_NO_MEMORY;
     lib_release((void *)ram->connect.backing);
     ram->connect.backing = (lib_uptr)backing;
+    ram->data.read_page_key = 0u;
     ram->connect.installed_bytes = bytes;
     ram->connect.backing_capacity = bytes;
     return LIB_STATUS_OK;
@@ -594,6 +609,7 @@ void x86_core_machine_memory_unregister_owner(t_ram *ram, const void *owner)
             ram->connect.device_providers[retained++] = ram->connect.device_providers[index];
     }
     ram->connect.device_provider_count = retained;
+    ram->data.read_page_key = 0u;
     retained = 0u;
     for (lib_size index = 0u; index < ram->connect.write_observer_count; ++index) {
         if (ram->connect.write_observers[index].owner != owner)
@@ -601,6 +617,25 @@ void x86_core_machine_memory_unregister_owner(t_ram *ram, const void *owner)
     }
     ram->connect.write_observer_count = retained;
 }
+/* Only ordinary RAM is eligible. Reuse the geometry result, never guest
+ * bytes, MMIO dispositions or an address translated by the CPU. */
+static lib_bool x86_core_machine_memory_read_page_is_plain(t_ram *ram,
+    lib_u32 physical, lib_uptr bytes)
+{
+    const lib_u32 page = physical >> X86_CORE_MACHINE_MEMORY_PAGE_SHIFT;
+    const lib_u32 start = page << X86_CORE_MACHINE_MEMORY_PAGE_SHIFT;
+
+    if (bytes > X86_CORE_MACHINE_MEMORY_PAGE_BYTES - (physical - start) ||
+        !ram->connect.mappings_frozen || ram->connect.backing == 0u) return LIB_FALSE;
+    if (ram->data.read_page_key != page + 1u) {
+        ram->data.read_page_key = page + 1u;
+        ram->data.read_page_plain =
+            (lib_u64)start + X86_CORE_MACHINE_MEMORY_PAGE_BYTES <= ram->connect.installed_bytes &&
+            x86_core_machine_memory_is_plain_span(ram, start, X86_CORE_MACHINE_MEMORY_PAGE_BYTES);
+    }
+    return ram->data.read_page_plain;
+}
+
 static lib_status x86_core_machine_memory_read_routed(t_ram *ram, lib_u32 physical,
     lib_uptr destination, lib_uptr byte, lib_bool observe_only,
     lib_bool instruction_fetch, lib_bool cpu_access)
@@ -612,6 +647,10 @@ static lib_status x86_core_machine_memory_read_routed(t_ram *ram, lib_u32 physic
 
     if (ram == LIB_NULL || destination == 0u || byte == 0u) {
         return LIB_STATUS_INVALID_ARGUMENT;
+    }
+    if (x86_core_machine_memory_read_page_is_plain(ram, physical, byte)) {
+        offset = physical;
+        goto copy_backing;
     }
     status = x86_core_machine_memory_route_resolve(ram, physical, byte,
         X86_CORE_MACHINE_MEMORY_ACCESS_READ, LIB_TRUE, &provider,
@@ -679,6 +718,7 @@ static lib_status x86_core_machine_memory_read_routed(t_ram *ram, lib_u32 physic
             x86_core_machine_memory_decode_address(ram, physical), byte, &offset);
         if (status != LIB_STATUS_OK) return status;
     }
+copy_backing:
     lib_memory_copy((void *)destination,
         (void *)(ram->connect.backing + offset), byte);
     if (!observe_only && ram->connect.parity != 0u &&
