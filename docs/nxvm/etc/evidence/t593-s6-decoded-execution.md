@@ -1143,3 +1143,59 @@ sources nor deployed executables, and did not repeat the full DOS boot.
 | Route differential | `b07c633d8cc94476301ff2b9f5763c4e3a0a139f09c905209dbf0c0645968b0a` |
 | Route timing | `06f982d931a1d6e83e49f395be506c76e362a326f82ba09a2a526256bcbae99c` |
 | FAT12 Core execution | `00c536304bd91f8a4febec65cb0bf4bcd2508de5392407c73e14a00a3ebd047e` |
+
+### Why the page filter regressed
+
+The randomized differential counted provider visits without assigning
+a cost to each visit. The overlapping-ROM Core fixture registers two
+providers. The raw scan discards both through their mode flags. The
+decoded scan usually has to check both. The x64 measured route counts
+for the same 1,549,105 retired instructions were:
+
+| Phase | Direct provider visits | Filtered provider visits plus cache-fill scans | Added filter lookups |
+| --- | ---: | ---: | ---: |
+| Raw address | 37,366,094 | 952,004 | 18,683,047 |
+| Decoded address | 37,366,094 | 37,842,096 | 18,683,047 |
+
+The filter discarded cheap flag checks in the raw stage and added
+nearly the same number of lookups as there were discarded visits in
+both stages combined. The decoded stage made more provider visits
+after including fills. It still ran each selected provider's exact
+range check. The generated x64 resolver calls the filter twice, and
+uses the returned indices to visit the providers. Counting fewer
+provider visits did not capture those operations or their cost.
+
+One controlled comparison enabled the stages independently. Timing
+runs did not include the counters. Each run kept the retired instruction
+count, guest ticks and checksum fixed. Four measured medians followed
+one warmup per case.
+
+| Host | Overlapping ROM | Direct | Raw filter only | Decoded filter only | Both |
+| --- | --- | ---: | ---: | ---: | ---: |
+| x64 | Seconds | 1.152 | 1.230 | 1.308 | 1.315 |
+| x86 | Seconds | 1.520 | 1.492 | 1.594 | 1.647 |
+
+The decoded filter alone reproduced the regression on both widths.
+The raw filter's effect depended on host width. Differences between
+the four independently compiled variants also include generated-code
+layout. The data does not attribute the exact cost of each instruction
+or prove cache-miss or branch-misprediction counts.
+
+A separate candidate fused the provider scans without storing a page
+cache. It matched the complete routing trace on both widths, but its
+overlapping-ROM median went from 1.144 to 1.192 s on x64 and from 1.486
+to 1.458 s on x86. Its x86 disjoint-ROM median also increased from
+1.220 to 1.269 s. Fusing the scans still performs both address
+containment checks and moves decoded work ahead of raw selection.
+The candidate stays out of the release.
+
+For further route optimizations, count page lookup and fill work in the
+same workload as the discarded checks. Keep the overlapping-ROM,
+disjoint-ROM and ordinary RAM cases as controls, and separate stages
+before measuring the combined candidate. The earlier held batches
+remain separate observations.
+
+| Diagnostic transcript | SHA-256 |
+| --- | --- |
+| Filtering stage attribution | `82c8094e5ba8bd749821a92c802b16c4ad428f9b2ac74f221552b0d68208ff20` |
+| Single provider-table pass | `c06e3affac6de6a687657f0d98654984c22870149dfa592388f8492b531d76d1` |
