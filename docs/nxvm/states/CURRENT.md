@@ -12,9 +12,14 @@ and DIR to prompt of 4.592/6.677 s. See the evidence for exact budgets and scope
 The replay verified key echo and pause. Native redraw and RDP were outside
 the validation.
 
-Two subsequent batches passed receiving tests and are held after slower x64
-DIR comparisons. The latest pair measured x64 4.270 to 4.704 s and x86 6.050
-to 5.085 s. The published receivers remain at `711cbda22`.
+After two held batches, the selected SMI admission, private CPU state and
+memory routing changes passed paired DOS comparisons and full receiving
+qualification. All sixteen EXEs were rebuilt together. Each host width
+passed 717 unit tests and 48 integrations without skips. The paired x64/x86
+cold times fell from 49.789/62.340 s to 44.412/58.855 s. DIR fell from
+4.276/5.310 s to 4.123/5.206 s, above the one-second target. MyOB300 native
+DOS input and redraw passed on a private Windows desktop. Restart and
+RDP remain open.
 
 The owner withdrew the [standalone ROM Windows candidate](../proposals/m5-ob300-rom-windows.md).
 

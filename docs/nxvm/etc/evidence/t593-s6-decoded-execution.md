@@ -881,3 +881,156 @@ in packed FAT entry reads, sector selection or sector-cache lookup.
 These counts sample the end of each Core batch, not every instruction.
 They support tests that combine ROM fetch with RAM data accesses. They
 do not support bypassing active guest filesystem work as idle time.
+
+## Selected candidate: SMI admission, compact restore state and memory routing
+
+The existing SMM handler now runs only when the serialized CPU owner sees
+a pending SMI. This retains the same two admission points and all internal
+profile and state checks. Dual-width disassembly confirms that the ordinary
+instruction path skips the call. The private CPU restore record shrank
+from 340 to 308 bytes by removing eight storage slots with no architectural
+reader or writer. The published CPU state layout and SMM image format are
+unchanged. Seven existing CPU contracts passed per width for that layout.
+
+Core retains the results of its two most recent page classification misses in the same
+space as the previous one-page result and its padding. Entries contain
+geometry decisions only. The existing A20 test now warms both slots
+and reads both after the change. Deliberately clearing only one slot
+caused the test to fail on both widths. A candidate that separated
+instruction and data slots slowed the x86 FAT12 ROM workload and was held.
+
+A selected device access skips byte-by-byte route queries if the
+registered geometry cannot contain a higher partial claim. The earlier
+route priority and per-provider fallback remain in charge. Differential
+execution on each host width matched 184,087 observable records while
+reducing side-effect-free queries from 45,541 to 39,877 in the fixture.
+The particularly favorable disjoint-ROM probe is distinct from the
+overlapping System Card geometry used by MyOB300.
+
+The batch changed five production files by +56/-31 lines and one existing
+test by +9/-2. Two manifests changed six entries. It uses the same
+interpreter, bus transactions, guest clock and timing grades.
+
+### MyOB300 paired DOS replay
+
+Both variants use the same read-only derived DOS disk and external
+System Card. All launch directories were fresh without a CMOS sidecar and
+acknowledged F1. The isolated Core archives used the normal cached Release
+configuration. The replay uses identical instrumentation source for both
+variants. The baseline harness is the preserved previously published
+receiver control. x64 ran baseline first. x86 ran candidate first.
+
+| Host | Run | Cold through VER, s | DIR, s | Slowest key echo, ms | Pause, ms | DIR retirements | DIR guest ticks | Transcript SHA-256 |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| x64 | baseline | 49.789 | 4.276 | 32 | 16 | 3,293,184 | 14,202,436 | `600f4758e4b6d2dfb24ad9a5441df2a97d90afe6477c96f0933ae35e2be41c28` |
+| x64 | candidate | 44.412 | 4.123 | 32 | 15 | 3,293,184 | 14,200,984 | `0a4c964a2c427fc724810d7911d068cfe399f401bfb8e420eb8b4328d4cba780` |
+| x86 | baseline | 62.340 | 5.310 | 33 | 16 | 3,289,088 | 14,178,218 | `4114e56cbdc37032a289d29356f9e818e072d0854a53178bc6f12244b1569c34` |
+| x86 | candidate | 58.855 | 5.206 | 35 | 16 | 3,293,184 | 14,202,403 | `cb48df042186454f18592cb1def67e5485af44010b436f7fcd5498f590710907` |
+
+Both candidate boots, all ten key echoes per width and both pauses were
+within their declared budgets. The x64 and x86 DIR times improved by
+0.153 s and 0.104 s respectively. Both still exceed the one-second
+target. x64 matched the baseline DIR retirement count. The x86 count
+varied by about 0.12 percent at the observed prompt boundary.
+These paired observations describe the combined candidate on this host.
+Restart, native MyOB300 Window redraw and RDP were outside this replay.
+
+At the candidate's observed DIR workload of 3,293,184 retirements,
+the one-second target requires about 3.29 million retirements per second.
+This replay achieved about 0.80 million on x64 and 0.63 million on x86.
+The gap includes all work between command submission and the returning
+guest prompt. It cannot be estimated from isolated instruction-loop
+throughput alone.
+
+### Disposition of local System Card experiments
+
+The banked-window experiment advances an observational query by one
+16 KiB page once its selection is known. It retains bytewise reads and
+the registered window priority. The dual-width differential fixture
+matched 42,000 cases per width, including disabled windows, attribute
+space and page crossings. Its lookup count fell from 1,052,273 to
+51,048 per width. This is an isolated operation-count result. The
+candidate stayed outside the Shared receiver batch.
+
+A second experiment indexed enabled windows by page. It removed the
+linear scans in its fixture, but the paired real replay measured x64
+cold 53.533 to 61.311 seconds and x86 cold 68.091 to 71.724 seconds.
+DIR improved on both widths. This trade-off was held. The same-size
+register packing experiment matched 60,000 transfer/register cases
+per width, then increased isolated median mixed cost by approximately
+8 percent on both widths and slowed register writes. It was also held.
+
+| Local transcript | SHA-256 |
+| --- | --- |
+| Window-span differential | `d17c581d2ae953433b23c59bab2b1e280468a5d3c71044202e5d3e424f7202da` |
+| Page-index differential | `dd8015e7e9a98b3ee6b2c30b79413aef503f24c3fc8d2b23f47a832081c5337d` |
+| Packed-register differential | `dd464a133c9fb89ee366dc85c7a51a9013b2612b24f2698c84aee54dc21fba3a` |
+| Packed-register measurements | `d40976c34f6f5496db10d8f428f961fb46fdd6b2a09b1d77dc76dd3def06e62a` |
+
+### Full receiving qualification
+
+The qualified receiver set was built from Shared source `5a801f3329d364a3e73509fc4c833a9d5400589b`.
+
+All sixteen releases were rebuilt together in the existing cached GCC
+Ninja Release trees. Core CPU, FPU and Machine compilation used IPO on
+both widths. Each architecture passed all 717 unit and 48 integration
+tests, with zero skips. The final inventory records each deployed
+executable after checking PE width and product version. Its SHA-256 is
+`761d374080ca6ecd6944270e7f7c77d44eb3f04f425b519febba6e35833be8e6`.
+The frozen Core input inventory used by the receiving build has SHA-256
+`7599c361b61bfe962b28a8601728f5e7bd114253feefb5d28c1a735918b0ec5f`.
+
+The integration build refreshed the default NXVM entry on x64 and x86.
+Each refreshed deployment matched the build output used by the INI
+identity test. The remaining executables matched initial publication.
+
+| Artifact | PE machine | SHA-256 |
+| --- | --- | --- |
+| `nxvm/nxvm_0_5_0593_x64.exe` | `8664` | `472d196999259af54b70fdab68bc3bd9eef53261987a241d4467459f679e622e` |
+| `nxvm/nxvm_0_5_0593_x86.exe` | `014C` | `82e1f1671c2c7d12cb44a1a2b364d65abebc35f5db3aeffb7882faf2fc01879f` |
+| `my5160/my5160_0_5_0593_x64.exe` | `8664` | `7b816a4a1318a03386fe768a1b8540d8332c2246f369f666bdb3ca869b2561df` |
+| `my5160/my5160_0_5_0593_x86.exe` | `014C` | `5d1e944781def36f3b163dd8aa8317a99aa33f3244a7b9e158218da2ae89e359` |
+| `my5170/my5170_0_5_0593_x64.exe` | `8664` | `f27f3fe16fc5078e5236f34560454cf239add0d07c3beee0445575478b5148ca` |
+| `my5170/my5170_0_5_0593_x86.exe` | `014C` | `094ebb86a560e4ac7055a43f66b746b4220b5f64fa07c6ceb555c183d66960cf` |
+| `mydeskpro386/mydeskpro386_0_5_0593_x64.exe` | `8664` | `ceb675854a2abd6e8f5854c8446f9817b3054f02678fe25bdcae23a0a1b96339` |
+| `mydeskpro386/mydeskpro386_0_5_0593_x86.exe` | `014C` | `0b7731f8d982a63398f0fdfbbc66287189a4ca710c069ec3a4c74718152f5dbe` |
+| `mypc110/mypc110_x64.exe` | `8664` | `2b9373d5e0d040c14a1bf9b5aa04789ad7766bafc7abbb28a8fd69f378a810f8` |
+| `mypc110/mypc110_x86.exe` | `014C` | `857b0f1158db687f05071ee6fcc6de27331cbacfb6170087a675163c05a3c3c2` |
+| `myob300/myob300_0_5_0593_x64.exe` | `8664` | `56cef7b709380f315d260ff58e47a36dfe40059e35b615d90065bfb77212928f` |
+| `myob300/myob300_0_5_0593_x86.exe` | `014C` | `15f5cd04d0d8b176d45f7435f73742f1162180c0b4583dff3a0def266bc43248` |
+| `mynes/mynes_0_0_0044_x64.exe` | `8664` | `da105170a3fb412beec3d3852287d60fe5cfc192b7be2dda8db069e6cfd274a9` |
+| `mynes/mynes_0_0_0044_x86.exe` | `014C` | `53a51d1afd2499aba49c1056017925d6d259d09e38194b6e0cf84427d013f318` |
+| `myraidenii/myraidenii_0_0_0007_x64.exe` | `8664` | `055e1645a409d3cf7e13c3445c30eb9a4b5ff9f8f2881a9b57e3fb300b1db209` |
+| `myraidenii/myraidenii_0_0_0007_x86.exe` | `014C` | `e77b8ca19359035e6e5c5408a5cb66b1208674228d66bdf8b33643430c532360` |
+
+| Gate | x64 SHA-256 | x86 SHA-256 |
+| --- | --- | --- |
+| unit | `f52098a53fc6e3bc78368364fe35ef929e9278383a3293dcc0d7131db93a949f` | `2dd575670c0d3256d5ca3af742971460d8cdcd5f22e1a9b2b03dbd19749d909f` |
+| integration | `8c652f69b216786ccc1425e23c1c2e1db439061572cf1a19a46f86bc8a0aa2fc` | `4d37cbc6daf5022dba61d249aa84374c12722e9a178b196d1abf330d1908e26a` |
+
+The 48 registered integrations on each width include five desktop-labeled
+tests. MyOB300 native input-to-paint latency is a separate observation.
+
+### MyOB300 DOS input and native redraw
+
+The instrumented MyOB300 used the qualified Release link inputs with a
+paint observer in the existing Win32 presenter. It ran on a private,
+unswitched Windows desktop with the same read-only DOS disk and System
+Card. Each run issued the monitor's `start`, acknowledged F1 through
+the emulated Window, then sent ten make/break pairs to that Window.
+For each letter the observer found the expected guest echo in the
+region of a completed, successful `WM_PAINT`. All ten letters painted,
+and both processes exited normally after the Window closed and the
+monitor received `exit`.
+
+| Host | Cold start to painted DOS prompt | Slowest key to completed paint | Transcript SHA-256 |
+| --- | ---: | ---: | --- |
+| x64 | 48.734 s | 16 ms | `c4d06fff503d05bfe314a7f6d7ed6118f3d06e80349ca41db4c8a2bbbca80e86` |
+| x86 | 58.141 s | 31 ms | `580f642441cbbc37899a13600de9c5cb2a66bd9ccadddedbe71d4e6688044db2` |
+
+Both native runs were within the 250 ms key echo budget at the host
+tick counter's resolution. This measures posted native input messages
+through GDI painting, without physical input or display scanout timing.
+RDP, Windows guest workloads and MyOB300 restart performance were
+outside this probe. The earlier paired DOS runs still miss the
+one-second DIR gate.
