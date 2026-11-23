@@ -47,6 +47,34 @@ that compiler's `bin` directory first on `PATH`, then use
 `mingw-gcc-x86-release` and `current-gcc-x86`. This is a second compiler
 configuration, not a second source or product route.
 
+## Core compiler feedback
+
+Windows GCC Ninja Release can use profile-guided optimization for the CPU
+instruction and Machine memory compilation units. Configure both normal Release
+trees first. Train each architecture with its own compiler and the synthetic
+repository workload. This requires Windows Python 3.9 or later.
+
+```cmd
+python tools/shared/train_core_pgo.py build/.ninja/gcc-x64-release build/.ninja/gcc-x64-release/core-pgo
+python tools/shared/train_core_pgo.py build/.ninja/gcc-x86-release build/.ninja/gcc-x86-release/core-pgo
+cmake -S . -B build/.ninja/gcc-x64-release "-DREPOSITORY_CORE_PGO_DIRECTORY:PATH=%CD%/build/.ninja/gcc-x64-release/core-pgo"
+cmake -S . -B build/.ninja/gcc-x86-release "-DREPOSITORY_CORE_PGO_DIRECTORY:PATH=%CD%/build/.ninja/gcc-x86-release/core-pgo"
+tools\build.cmd all --no-pause
+```
+
+The build menu reuses the configured trees and their selected profile directories.
+Set `REPOSITORY_CORE_PGO_DIRECTORY` to an empty value for ordinary Release.
+Refresh counters after a compiler or Core input change by configuring ordinary
+Release and training into a fresh directory in the same tree. The training tool
+accepts a new destination only. The usual build-tree cleanup procedure owns
+obsolete counters. Keep generated counters local to their build tree.
+
+The compiler rejects missing or unusable profiles. Ninja tracks each counter as
+an input and reuses the compiled object when the inputs remain unchanged. The
+current ccache bypasses the two profile-guided commands. The observable Machine
+test target keeps its ordinary compiler flags. Continue to qualify both widths
+and all receivers before publication.
+
 Each fixed App's owner INI sits beside its EXE under `assets/<app>/`, not a
 profile subdirectory. Product builds never rewrite it; media paths resolve
 from that INI. No YAML compatibility route or generated replacement INI exists.

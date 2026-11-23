@@ -1342,3 +1342,112 @@ The prior published receivers remain the release baseline.
 | feedback-target-scope.out | 00f2c7d7ef7435e359c08140a6eed88317a6bd6085ef594f4c829bb3bbe1ad31 |
 | feedback-host-samples.out | 24210d79a619d2fd1a72ecea43363b5fe4b910c9aa10a5ce712e8e0d0311632d |
 | feedback-sample-addresses.out | c13c26f73d991520152f7b94cfcf7fb572eab296b89178204670fd8be978c760 |
+
+### Generic work still paid with compiler feedback
+
+The decoded memory route rebuilt its provider match list for every access
+and walked that list in three precedence tiers. A local experiment moves
+only the tier order to provider registration, owner removal and rollback.
+It retains registration order within each tier. The raw-address and alias
+stages stay in place. The guest callback still decides each claim at access
+time. On each host width the candidate matched 1,011,074 route records and
+315,355 provider queries. It adds one byte per possible provider to the
+private Memory layout. The comparison uses a separately built Machine so
+every object agrees on that layout.
+
+Another Memory experiment lets a write reuse a plain RAM page already
+proved by a read. A write miss uses the existing resolver and leaves the
+read cache alone. A hit reaches the same write tail, including the CPU
+snoop, parity update and write observers. Both widths matched 937,688
+records, including final backing and parity data. The candidate exercised
+4,565 cached plain writes per width. Neither Memory experiment is published.
+
+Core performs a provider clock conversion even when the execution provider
+has no time callback. The shared PC execution provider handles reset only.
+Moving that conversion to the existing callback branch leaves the rational
+clock contract for time consumers intact. The existing Core rational-clock
+and scheduler tests passed on both widths with this candidate. A separate
+experiment reuses the refresh request observed before arbitration instead
+of reading it twice. The post-DMA observation still runs where prefetch
+eligibility requires it. The existing scheduler and prefetch locality
+tests passed on both widths with this candidate. Neither scheduler change
+has undergone receiving qualification.
+
+The DMA candidate reuses already observed cascade state when the idle
+service pass has performed no transfer. Idle dual-controller advancement
+improved in isolation. On the read-only MyOB300 replay, cold boot improved
+on both widths. DIR changed from 3.951 to 4.115 s on x64 and from 5.437 to
+5.064 s on x86. Keep this candidate separate until its whole-path effect
+is better understood.
+
+| Evidence | SHA-256 |
+| --- | --- |
+| Ordered route differential | 556f25a126286dc7e3bc46a871914def18edc7fe8144e43514f3d6f543c54f69 |
+| Plain RAM write differential | c5f8b4f7e800ffeff79bc5914d13a325bbb4e1b5e6f29cdc30df6483bb6725f4 |
+| Provider clock and scheduler tests | 0c732061a82cf25d5d00cfc422a195decb1fd28d9a2a88f7431a73fb0d4778e9 |
+| Refresh arbitration tests | 768de0260c3f393295ebee14052eed4db6596bcf469dec7d920537c3765e231b |
+| DMA idle comparison | 230931ddf528e29165dd826572b1eeb10558ea41b5024f2f772942e2847daa6b |
+| DMA DOS replay | 6964d59ced128430186443fd291741bd8b220291d2df7432382aad8056eaccaa |
+
+### Qualified compiler-feedback build
+
+Shared P39 (eafe9a9a19ff6460c3abf7b2d2744219975368bb) adds optional
+Windows GCC Release feedback for the production CPU instruction and
+Machine memory objects. The observable Machine keeps its normal flags.
+A fresh tree uses ordinary Release unless supplied with trained counters.
+
+Both host widths passed 717 unit tests and 48 integration tests without
+skips. All sixteen EXEs passed PE architecture, version and hash checks.
+The default NXVM artifacts were relinked and deployed during integration.
+The final checks used those resulting artifact hashes.
+
+The read-only MyOB300 replay used the release Core archives and matched
+ordinary Release objects built from the same source. The reconstructed
+DOS image matched the original replay fixture SHA-256 exactly. These were
+paired wall times with real guest execution. Retirement counts differed.
+
+| Host | Cold through VER, stock / feedback | DIR to prompt, stock / feedback | Slowest key and pause with feedback |
+| --- | ---: | ---: | ---: |
+| x64 | 62.126 / 43.138 s | 6.433 / 3.813 s | 32 / 16 ms |
+| x86 | 66.988 / 63.578 s | 6.246 / 6.053 s | 32 / 14 ms |
+
+Both DIR measurements remain above the one-second target. This replay
+did not validate RDP, native redraw or Windows usability.
+
+The ordered-route experiment with a separately built Machine improved
+the overlapping-ROM workload by 10.1% on x64 and 5.9% on x86. Ordinary
+RAM improved 4.2% on x64 and was approximately flat on x86. The cached-write
+experiment had mixed results, including a 2.8% higher x86 raw-plus-overlapping
+ROM median, and remains separate.
+
+| Deployed EXE | PE machine | SHA-256 |
+| --- | --- | --- |
+| `nxvm/nxvm_0_5_0593_x64.exe` | `8664` | `7e7a7fdf5576adc1822f2cc177c676ba114338f79d06ff17f993003ff74b5688` |
+| `nxvm/nxvm_0_5_0593_x86.exe` | `014C` | `d6b308238411ac1f6ebd41a77ab2fffe6dc9649e117f4904a55845ef31febf7b` |
+| `my5160/my5160_0_5_0593_x64.exe` | `8664` | `fd89ddb0bd00878bfbaed03192ab4cb82adc07596d3d93eb94bef66ec1bdfe9e` |
+| `my5160/my5160_0_5_0593_x86.exe` | `014C` | `5bfd9a33549174c6f924eb6c305906a0e365b8b01cf5174491e8a12fc1715899` |
+| `my5170/my5170_0_5_0593_x64.exe` | `8664` | `3a549e8e35a2b5321ddf3a68fe599555e35a9cbbec52e1bd71a642dc21d483ba` |
+| `my5170/my5170_0_5_0593_x86.exe` | `014C` | `477b69a8f17ef8f64fb044c676244e704d57d37668d0ec40367d08a18b93b6df` |
+| `mydeskpro386/mydeskpro386_0_5_0593_x64.exe` | `8664` | `1f62ac72871d0255e2814e6c2bcb950c15441c9b00388f0042759a114a40bb0c` |
+| `mydeskpro386/mydeskpro386_0_5_0593_x86.exe` | `014C` | `8b8daca15fe3e57aa145bfe53a7060681662bbd7d5849b7e85e821815027b7de` |
+| `mypc110/mypc110_x64.exe` | `8664` | `eb9a11303a0d6f485ccaaf86172eef7c16d0d53b7ec1814dcfae79f289b5d499` |
+| `mypc110/mypc110_x86.exe` | `014C` | `45690918237cc3162a24d735fda996d5f9e488591baf5e12e269401d84239e04` |
+| `myob300/myob300_0_5_0593_x64.exe` | `8664` | `d8b23c5ade05eeac54e7c01522060c0a41d1c3b0a2e86a9ca956d5f5f2dfc7e9` |
+| `myob300/myob300_0_5_0593_x86.exe` | `014C` | `2bbc9516d2e0b9635ebd455de55e5e98000708d40e91fde94f66479b400a2c6a` |
+| `mynes/mynes_0_0_0044_x64.exe` | `8664` | `16b2f0b1264fe5f5f1d64b3366d3dcb620252174f5a2b52bb2f3329db19e22a1` |
+| `mynes/mynes_0_0_0044_x86.exe` | `014C` | `8bdec2404f7dc479e910a897b12bed4a466a0ca51f0ec558a36ea9365e082f22` |
+| `myraidenii/myraidenii_0_0_0007_x64.exe` | `8664` | `f76aed5db5d8e0210125a76061b3fec48f6baad97f111e437f68be46b37fb103` |
+| `myraidenii/myraidenii_0_0_0007_x86.exe` | `014C` | `833954becb2685701fa6bed5a39e9162ac8ec97f278d7fdaf82609ec3e44c53e` |
+
+| Verification transcript | SHA-256 |
+| --- | --- |
+| unit-x64.log | `730ce428f0e0a3ac178cc6de8566a0e2e4d1eb6e0c1a25aeb84d40e260252d76` |
+| integration-x64.log | `051b5023d0169825d7f5cee8683154c9f9be0ea078e8543b7e420f4c5cb4c7f8` |
+| unit-x86.log | `13814b715d06d3ef1f64d9d1af248cd13dbfbdacd71625c53956bb2c9f116a8d` |
+| integration-x86.log | `4ad577a8fd0da72066ba68efb9a4c924d48927bfa689b2b50df60f6023c8a943` |
+| x64-baseline.log | `cfa611d8f508c57d2b992c916d6a6ed386c1d4b06b792cc1f852829c5d13d609` |
+| x64-candidate.log | `df308827bba8c4d6e6e5d87d6185cfbaecf26e7b5d33e26d5e9d1ffe31126858` |
+| x86-baseline.log | `85213578c7b01368ae2bb74a0d48c88f15164f62a9f681ccbb932af510353e32` |
+| x86-candidate.log | `64b9d2c94ed5aecb5279295e6d9c81397430d1ae74123d076a1bdabb49b629dd` |
+| ordered-release-comparison.out | `c3e89a939e846c013543caacc2d898d60eabab2192907a548c3f959e1c7a2251` |
+| plain-write-release.out | `9964d3121f9afa7216ad3ce7b307063c485e3ab1acf72d3ee10d77f29ec5caed` |

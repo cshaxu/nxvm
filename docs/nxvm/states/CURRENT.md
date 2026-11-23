@@ -30,6 +30,14 @@ executable hashes were restored. An isolated compiler-feedback build improved
 paired MyOB300 DOS cold boot and DIR on both widths. Its DIR remained
 4.209/4.855 s, above the original gate. Neither candidate is deployed.
 
+The owner approved supplementary Release compiler feedback and continued
+investigation of generic execution costs. P39 compiled and qualified
+the two Core objects with feedback. Both widths passed 717 unit tests
+and 48 integrations, including the previously intermittent Lib window
+test. P40-P42 record all sixteen verified executables. The paired MyOB300
+DIR measured 3.813 s on x64 and 6.053 s on x86, above the one-second
+target. Generic route and scheduler work remains open.
+
 The owner withdrew the [standalone ROM Windows candidate](../proposals/m5-ob300-rom-windows.md).
 
 | Field | Required record |
@@ -40,7 +48,7 @@ The owner withdrew the [standalone ROM Windows candidate](../proposals/m5-ob300-
 | Non-goals | No product-specific path, third-party code import, public ABI change, JIT, second instruction engine or timing grade reduction. |
 | Reference Baseline | `9d77899d1` and the published S5 receiver set. Local Bochs 2.6 decoded trace cache is a design reference. |
 | Candidate Proposal | [Performance S sequence and decoded execution boundary](../proposals/m5-ob300-performance.md), S6. |
-| Files And ABI Surface | X86 Core CPU and Machine internals, X86 NXVM peripheral and board internals, and NXVM evidence. Shared source changes reach all sixteen executables across NXVM, MyNES and MyRaidenII. |
+| Files And ABI Surface | X86 Core CPU and Machine internals, X86 NXVM peripheral and board internals, Windows GCC Release compiler feedback build inputs, and NXVM evidence. Shared source changes reach all sixteen executables across NXVM, MyNES and MyRaidenII. |
 | Applicable Rules | NXVM Task Reading Set, shared Execution, Architecture, Coding and Documentation, local Core contract and NXVM source policy. |
 | Verification | Use dual-width decode and timing contracts, clock/PIC regressions and short equal-work probes. Qualify retained Shared changes with all sixteen published EXEs, the full cached unit and integration suites on both widths, and the MyOB300 read-only DOS replay. |
 | Expected Markers | Fewer redundant decode, clock or board operations. Preserve fetches, architecture state, execution and event order, faults, timing attribution and ticks. |
