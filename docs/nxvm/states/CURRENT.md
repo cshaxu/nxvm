@@ -36,7 +36,13 @@ the two Core objects with feedback. Both widths passed 717 unit tests
 and 48 integrations, including the previously intermittent Lib window
 test. P40-P42 record all sixteen verified executables. The paired MyOB300
 DIR measured 3.813 s on x64 and 6.053 s on x86, above the one-second
-target. Generic route and scheduler work remains open.
+target.
+
+P43-P46 deliver the generic ordered memory routes and all sixteen
+verified Release executables. Each host width passed 717 unit tests
+and 48 integrations. The final MyOB300 DOS replay measured DIR at 4.511 s
+on x64 and 5.201 s on x86. S6 remains open. See the evidence for the
+trained build inputs, measurements and artifact identities.
 
 The owner withdrew the [standalone ROM Windows candidate](../proposals/m5-ob300-rom-windows.md).
 

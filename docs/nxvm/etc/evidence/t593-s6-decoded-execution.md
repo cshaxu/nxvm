@@ -1451,3 +1451,69 @@ ROM median, and remains separate.
 | x86-candidate.log | `64b9d2c94ed5aecb5279295e6d9c81397430d1ae74123d076a1bdabb49b629dd` |
 | ordered-release-comparison.out | `c3e89a939e846c013543caacc2d898d60eabab2192907a548c3f959e1c7a2251` |
 | plain-write-release.out | `9964d3121f9afa7216ad3ce7b307063c485e3ab1acf72d3ee10d77f29ec5caed` |
+
+### Ordered memory routes on a real guest
+
+The paired MyOB300 DOS replay linked all sixteen Machine objects from each
+independent build, with the same feedback-guided CPU objects on each side.
+Machine memory used ordinary Release flags on both sides. Each pair used
+separate fresh CMOS state and the same verified read-only DOS image.
+
+| Host | Cold through VER, stock / ordered | DIR to prompt, stock / ordered | DIR retired instructions, stock / ordered | DIR guest ticks, stock / ordered |
+| --- | ---: | ---: | ---: | ---: |
+| x64 | 50.869 / 45.695 s | 4.646 / 3.997 s | 3,276,800 / 3,301,376 | 14,104,973 / 14,248,661 |
+| x86 | 63.275 / 60.511 s | 6.066 / 5.114 s | 3,284,992 / 3,280,896 | 14,154,022 / 14,129,560 |
+
+DIR fell 14.0% and 15.7% in these runs. Guest work differed slightly at
+the observed prompt boundary. Key echo and pause completed. The selected
+Core diff adds 33 and removes 28 production lines across three private
+files. Decoded route order is maintained when providers are installed,
+removed or rolled back. The candidate must pass the full receiving gate
+with newly generated feedback counters before publication.
+
+### Ordered-route production qualification
+
+Shared P43 (5cf03a49e7095d7805e380d6b6bd8a76c0e92789) owns the route-order changes.
+The stable x64 and x86 Release trees retrained the two Core objects
+after the source change. Both widths passed 717 unit and 48 integration
+tests without skips. All sixteen EXEs passed architecture, version
+and post-integration hash checks.
+
+The final DOS replay used the newly trained release archives. Each run
+used fresh CMOS state and the same verified read-only DOS image.
+
+| Host | Cold through VER | DIR to prompt | Slowest key | Pause |
+| --- | ---: | ---: | ---: | ---: |
+| x64 | 47.406 s | 4.511 s | 32 ms | 16 ms |
+| x86 | 57.817 s | 5.201 s | 48 ms | 17 ms |
+
+The result leaves S6 open for the original one-second DIR target.
+The qualification does not cover RDP or interactive Windows use.
+
+| Deployed EXE | PE machine | SHA-256 |
+| --- | --- | --- |
+| `nxvm/nxvm_0_5_0593_x64.exe` | `8664` | `bced44769332de055e8a4f1205752a137f0051e2cd9333a6e77fd78e1011561a` |
+| `nxvm/nxvm_0_5_0593_x86.exe` | `014C` | `88f77f60c9db4117c1984e28b0806a116dcbdb7fe19b6f0b2e29a1d3e97d2bae` |
+| `my5160/my5160_0_5_0593_x64.exe` | `8664` | `99ae5482a5d1d0d7433b80f154c93030ee094acc10780ea22203e35b39331919` |
+| `my5160/my5160_0_5_0593_x86.exe` | `014C` | `76b99ef6869411fd5496633a01147401df74605fcd0b577ecadefdf487ec1f0c` |
+| `my5170/my5170_0_5_0593_x64.exe` | `8664` | `653d56edd2d3c2103e229c262e2afd0d4e458e4251e81e3b4827cef9871cbccd` |
+| `my5170/my5170_0_5_0593_x86.exe` | `014C` | `8e7e002971d83185b0b47da244ba36e00988d3ba77c74017b12d3a7cd20b61b9` |
+| `mydeskpro386/mydeskpro386_0_5_0593_x64.exe` | `8664` | `e4935a3fa054ce6ee4835cb0a182a594d4e49447c9c71096b7ebe3742c72f39a` |
+| `mydeskpro386/mydeskpro386_0_5_0593_x86.exe` | `014C` | `bf2c00f7cbdaf4f0822f144ab222e195e6ef0df5578dc54bee557cb2293e10e3` |
+| `mypc110/mypc110_x64.exe` | `8664` | `e8cf0e6c02eda33c97aee4708a8e040f60d47b634599cb55827ace5c1c89fec5` |
+| `mypc110/mypc110_x86.exe` | `014C` | `c40654fea8e8f3bc6401729a3593fe4cb329e3e33c444acc90bf4c6d69b9412b` |
+| `myob300/myob300_0_5_0593_x64.exe` | `8664` | `bfe587df47430db02d1ddd71f918ec4c648aa07104cdc164c91e60d32a494dc1` |
+| `myob300/myob300_0_5_0593_x86.exe` | `014C` | `37709ee7637259f92f2889480e9167beb1934fb115f143038aa84f2af18e4b9a` |
+| `mynes/mynes_0_0_0044_x64.exe` | `8664` | `8a17ed9b9b8f22c876875c21d193bb175e3a8df289411ab63f49632fcf68d574` |
+| `mynes/mynes_0_0_0044_x86.exe` | `014C` | `0882fd779925f77e5ffbecaa5d487731ff4ee2e514531ddacb931efd7bcb6017` |
+| `myraidenii/myraidenii_0_0_0007_x64.exe` | `8664` | `ab4ec4c76dc424fae36a0c8b9b0c9b350c4a77589c453c569a66cd541a3a3a81` |
+| `myraidenii/myraidenii_0_0_0007_x86.exe` | `014C` | `8374093b7d705854d4756ee4464e576f59e3f3315e64d58f09c8511eb14ebc1b` |
+
+| Verification transcript | SHA-256 |
+| --- | --- |
+| unit-x64.log | `f2e7f6f0213bca07438fd92e306cdc5092d1b9c1e6e7a5ee2c64db754d8eb4d1` |
+| integration-x64.log | `3c10f94eca635a5dac7a0ac597ac7368956264fbf0580f6342767a07c4b45369` |
+| ordered-x64-candidate.log | `c9b602fd86d222e5ca08cfba9883aa54a83b28c3c6926b0284de63f037b81eab` |
+| unit-x86.log | `cd740f1f3928f813ffb61f0346abdf368a856f06ade17f07c6c5973bd0d921ba` |
+| integration-x86.log | `e0abcb5508223430e71bafe15b483185680c9e170e7c7683d780136490cf5cae` |
+| ordered-x86-candidate.log | `83f3be9aa46d8d7519967d3774766c7c30128a28db9568894d19d49eb3a54a29` |
