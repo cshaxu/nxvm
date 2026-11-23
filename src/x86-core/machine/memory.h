@@ -82,6 +82,7 @@ typedef struct {
     lib_uptr device_provider_capacity;
     x86_core_machine_memory_test_allocation *device_provider_test_allocation;
     lib_u8 mappings_frozen;
+    lib_u8 decoded_provider_order[X86_CORE_MACHINE_MEMORY_DEVICE_PROVIDER_LIMIT];
     x86_core_machine_address_decode address_decode;
 } t_ram_connect;
 
@@ -164,6 +165,7 @@ lib_status x86_core_machine_memory_register_fallback_device_provider(t_ram *ram,
     x86_core_machine_memory_device_read read, x86_core_machine_memory_device_write write,
     x86_core_machine_memory_device_query query, void *owner,
     x86_core_machine_memory_device_failure_observer failure);
+void x86_core_machine_memory_order_devices(t_ram *ram);
 void x86_core_machine_memory_freeze_mappings(t_ram *ram);
 /* Exclusive construction/teardown only; remove this owner's device routes and
  * write observers before destroying the callback context. */

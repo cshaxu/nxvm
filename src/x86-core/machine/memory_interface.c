@@ -132,6 +132,7 @@ lib_status x86_core_machine_install_memory_device_routes(x86_core_machine *machi
         status = x86_core_machine_memory_register_write_observer(memory, observer, owner);
     if (status != LIB_STATUS_OK) {
         memory->connect.device_provider_count = provider_count;
+        x86_core_machine_memory_order_devices(memory);
         memory->connect.write_observer_count = observer_count;
         if (parity != LIB_NULL) x86_core_machine_memory_release_parity(memory);
     }

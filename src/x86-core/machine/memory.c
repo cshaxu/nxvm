@@ -141,38 +141,23 @@ static lib_status x86_core_machine_memory_route_resolve(const t_ram *ram,
         *out_provider_physical = wrapped;
         return LIB_STATUS_OK;
     }
-    /* Match the frozen windows once, then retain tier and registration order. */
-    lib_u8 matches[X86_CORE_MACHINE_MEMORY_DEVICE_PROVIDER_LIMIT];
-    lib_uptr match_count = 0u;
     for (index = 0u; index < ram->connect.device_provider_count; ++index) {
         const x86_core_machine_memory_device_provider *provider =
-            &ram->connect.device_providers[index];
+            &ram->connect.device_providers[ram->connect.decoded_provider_order[index]];
         if ((provider->cpu_only && !cpu_access) || wrapped < provider->physical_start ||
             wrapped_end - provider->physical_start > provider->bytes) continue;
-        matches[match_count++] = (lib_u8)index;
-    }
-    /* Replacement, ordinary, then fallback; preserve registration order. */
-    for (lib_u8 tier = 0u; tier < 3u; ++tier) {
-        for (index = 0u; index < match_count; ++index) {
-            const x86_core_machine_memory_device_provider *provider =
-                &ram->connect.device_providers[matches[index]];
-            const lib_u8 provider_tier = provider->replacement ? 0u :
-                provider->fallback ? 2u : 1u;
-
-            if (provider_tier != tier) continue;
-            status = provider->query(provider->owner, wrapped, bytes, access);
-            if (status == LIB_STATUS_OK) {
-                *out_provider = provider;
-                *out_provider_physical = wrapped;
-                return LIB_STATUS_OK;
-            }
-            if (status != LIB_STATUS_UNSUPPORTED) {
-                *out_provider = provider;
-                if (notify_failure)
-                    x86_core_machine_memory_note_provider_failure(provider, wrapped,
-                        bytes, access, status);
-                return status;
-            }
+        status = provider->query(provider->owner, wrapped, bytes, access);
+        if (status == LIB_STATUS_OK) {
+            *out_provider = provider;
+            *out_provider_physical = wrapped;
+            return LIB_STATUS_OK;
+        }
+        if (status != LIB_STATUS_UNSUPPORTED) {
+            *out_provider = provider;
+            if (notify_failure)
+                x86_core_machine_memory_note_provider_failure(provider, wrapped,
+                    bytes, access, status);
+            return status;
         }
     }
     status = x86_core_machine_memory_offset(ram, physical, wrapped, bytes, out_offset);
@@ -487,6 +472,21 @@ static void x86_core_machine_memory_append_write_observer(t_ram *ram,
     slot->owner = owner;
 }
 
+void x86_core_machine_memory_order_devices(t_ram *ram)
+{
+    lib_uptr position = 0u;
+    for (lib_u8 tier = 0u; tier < 3u; ++tier) {
+        for (lib_uptr index = 0u; index < ram->connect.device_provider_count; ++index) {
+            const x86_core_machine_memory_device_provider *provider =
+                &ram->connect.device_providers[index];
+            const lib_u8 provider_tier = provider->replacement ? 0u :
+                provider->fallback ? 2u : 1u;
+            if (provider_tier == tier)
+                ram->connect.decoded_provider_order[position++] = (lib_u8)index;
+        }
+    }
+}
+
 static void x86_core_machine_memory_append_device_provider(t_ram *ram,
     lib_u32 physical_start, lib_size bytes,
     x86_core_machine_memory_device_read read, x86_core_machine_memory_device_write write,
@@ -512,6 +512,7 @@ static void x86_core_machine_memory_append_device_provider(t_ram *ram,
     provider->replacement = replacement;
     provider->partial_claim = LIB_FALSE;
     provider->fallback = fallback;
+    x86_core_machine_memory_order_devices(ram);
 }
 
 lib_status x86_core_machine_memory_register_write_observer(t_ram *ram,
@@ -624,6 +625,7 @@ void x86_core_machine_memory_unregister_owner(t_ram *ram, const void *owner)
             ram->connect.device_providers[retained++] = ram->connect.device_providers[index];
     }
     ram->connect.device_provider_count = retained;
+    x86_core_machine_memory_order_devices(ram);
     ram->data.read_page_keys[0] = ram->data.read_page_keys[1] = 0u;
     retained = 0u;
     for (lib_size index = 0u; index < ram->connect.write_observer_count; ++index) {
